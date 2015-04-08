@@ -61,7 +61,7 @@ class Node(object):
     # DEFINITIONS DES PROPRIETES
     #------------------------------------------------------------
     #
-    # Seules les modificationd de _elements_voisins et __status sont permises
+    # Seules les modifications de _elements_voisins sont permises
     # Les autres attributs sont accessibles en lecture seule
     #
     @property
