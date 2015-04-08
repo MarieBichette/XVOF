@@ -12,14 +12,16 @@ import numpy as np
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 class Node1d(Node):
     """
     Une classe pour les noeuds classiques dans le cas 1d
     """
     def __init__(self, indice, poz_init=np.zeros(1), vit_init=np.zeros(1),
                 section=1.):
-        Node.__init__(self, dim=1, index=indice, position_initiale = poz_init,
-                      vitesse_initiale = vit_init)
+        Node.__init__(self, dim=1, index=indice, position_initiale=poz_init,
+                      vitesse_initiale=vit_init)
 
         #
         self._section = section
@@ -54,8 +56,8 @@ class Node1d(Node):
             message += " voisins du {}".format(self)
             raise SystemExit(message)
         self._elements_voisins = elems[:]
-        self._elements_voisins = sorted\
-            (self._elements_voisins, key=lambda m: m.coord[0])
+        self._elements_voisins =\
+        sorted(self._elements_voisins, key=lambda m: m.coord[0])
 
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
@@ -94,7 +96,7 @@ class Node1d(Node):
         >>> print my_node.force
         [ 1500.]
         """
-        self._force[:] = (self.elements_voisins[0].pressure - \
+        self._force[:] = (self.elements_voisins[0].pressure -
             self.elements_voisins[1].pressure) * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
@@ -131,4 +133,3 @@ if __name__ == "__main__":
     print "Test unitaire : OK"
     MY_NODE = Node1d(123, section=1.0e-06)
     MY_NODE.infos()
-

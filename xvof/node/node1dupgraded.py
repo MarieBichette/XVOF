@@ -12,18 +12,20 @@ import numpy as np
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 class Node1dUpgraded(Node1d):
     """
     Une classe pour les noeuds enrichis dans le cas 1d
     """
     def __init__(self, indice, poz_init=np.zeros(1), vit_init=np.zeros(1),
                 section=1.):
-        Node1d.__init__(self, dim=1, index=indice, position_initiale = poz_init,
-                      vitesse_initiale = vit_init, section=section)
+        Node1d.__init__(self, dim=1, index=indice, position_initiale=poz_init,
+                      vitesse_initiale=vit_init, section=section)
 
-        self._umundemi_classique = vit_init[:];
-        self._upundemi_classique = vit_init[:];
-        self._force_classique = np.zeros(1, dtype=float);
+        self._umundemi_classique = vit_init[:]
+        self._upundemi_classique = vit_init[:]
+        self._force_classique = np.zeros(1, dtype=float)
         #==> Toutes les variables enrichies sont initialisées à 0
         self._umundemi_enrichi = np.zeros(1, dtype=float)
         self._upundemi_enrichi = np.zeros(1, dtype=float)
@@ -47,7 +49,7 @@ class Node1dUpgraded(Node1d):
         """
         Setter de la position relative
         """
-        if (pos not in (-1,1)):
+        if (pos not in (-1, 1)):
             message = "La position relative du noeud ne peut être que :\n"
             message += " -1 si il est à gauche de la discontinuité\n"
             message += " +1 si il est à droite"
@@ -87,14 +89,20 @@ class Node1dUpgraded(Node1d):
         Affichage des informations
         """
         Node1d.infos(self)
-        message  = "==> vitesse classique à t-1/2 = {}\n".format(self.umundemi_classique)
-        message += "==> vitesse enrichie à t-1/2 = {}\n".format(self.umundemi_enrichi)
-        message += "==> vitesse classique à t+1/2 = {}\n".format(self.upundemi_classique)
-        message += "==> vitesse enrichie à t+1/2 = {}\n".format(self.upundemi_enrichi)
-        message += "==> force classique à t-1/2 = {}\n".format(self.force_classique)
-        message += "==> force enrichie à t-1/2 = {}\n".format(self.force_enrichi)
-        message += "==> position relative  = {:2d}".format(self.position_relative)
-
+        message = "==> vitesse classique à t-1/2 = {}\n".\
+        format(self.umundemi_classique)
+        message += "==> vitesse enrichie à t-1/2 = {}\n".\
+        format(self.umundemi_enrichi)
+        message += "==> vitesse classique à t+1/2 = {}\n".\
+        format(self.upundemi_classique)
+        message += "==> vitesse enrichie à t+1/2 = {}\n".\
+        format(self.upundemi_enrichi)
+        message += "==> force classique à t-1/2 = {}\n".\
+        format(self.force_classique)
+        message += "==> force enrichie à t-1/2 = {}\n".\
+        format(self.force_enrichi)
+        message += "==> position relative  = {:2d}".\
+        format(self.position_relative)
 
     def initialize(self, vitesse_t_m, vitesse_t_p, force):
         """
@@ -112,17 +120,22 @@ class Node1dUpgraded(Node1d):
         """
         Calcul de la vitesse au demi pas de temps supérieur
         """
-        self._upundemi_enrichi = self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
-        self._upundemi_classique = self.force_classique / self.masse * delta_t + self.umundemi_classique
-        self._upundemi = self.upundemi_classique + self.position_relative * self.upundemi_enrichi
+        self._upundemi_enrichi =\
+            self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
+        self._upundemi_classique =\
+            self.force_classique / self.masse * delta_t + \
+                self.umundemi_classique
+        self._upundemi =\
+            self.upundemi_classique + \
+            self.position_relative * self.upundemi_enrichi
 
     def calculer_nouvo_force(self):
         """
         Calcul de la force agissant sur le noeud
         """
-        self._force_classique[:] = (self.elements_voisins[0].pressure - \
+        self._force_classique[:] = (self.elements_voisins[0].pressure -
             self.elements_voisins[1].pressure) * self.section
-        self._force_enrichi[:] = (-self.elements_voisins[0].pressure - \
+        self._force_enrichi[:] = (-self.elements_voisins[0].pressure -
             self.elements_voisins[1].pressure) * self.section
         self._force = None
 

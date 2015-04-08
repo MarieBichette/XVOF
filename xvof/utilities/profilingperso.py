@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Module simplisite pour du profiling simpliste
+Module simpliste pour du profiling simpliste
 """
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -13,6 +13,8 @@ import sys
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
 def timeit_file(filename=None):
     """
     Decorateur permettant de sortir dans le fichier de nom "filename"
@@ -30,13 +32,13 @@ def timeit_file(filename=None):
             wrapper autour de la fonction func
             """
             file_desc = None
-            if filename is not None :
-                file_desc = open(filename,'a+')
+            if filename is not None:
+                file_desc = open(filename, 'a+')
             else:
                 file_desc = sys.stdout
             begin_cpu_time = clock()
             begin_real_time = time()
-            print >> file_desc, "="*80
+            print >> file_desc, "=" * 80
             print >> file_desc, "Appel de {:s}".format(func.__name__)
             fonction = func(*args, **kwargs)
             end_cpu_time = clock()
@@ -45,18 +47,19 @@ def timeit_file(filename=None):
             format(end_cpu_time - begin_cpu_time)
             print >> file_desc, "\t Durée réelle : {:4f}s".\
             format(end_real_time - begin_real_time)
-            print >> file_desc, "="*80+"\n"
+            print >> file_desc, "=" * 80 + "\n"
             if filename is not None:
                 file_desc.close()
             return fonction
         return wrapper
     return timeit
 
+
 def logit(func):
     """
     Décorateur permettant de tracer l'appel des fonctions décorées en affichant
     leurs argurments
-    
+
     @param func : fonction dont on veut tracer l'appel
     """
     def wrapper(*args, **kwargs):
@@ -75,7 +78,7 @@ def logit(func):
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if __name__ == "__main__":
-    @timeit_file('toto.dat')
+    @timeit_file('toto.log')
     @logit
     def countdown(nbr_iter):
         """
@@ -88,4 +91,4 @@ if __name__ == "__main__":
 
     countdown(10000)
     countdown(10000)
-    print "name : ", countdown.__name__ 
+    print "name : ", countdown.__name__

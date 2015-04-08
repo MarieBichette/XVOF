@@ -14,8 +14,12 @@ from xvof.equationsofstate import EquationOfState
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # Deactivate pylint warnings due to NotImplementedError
 #pylint: disable=R0921
+
+
 class MieGruneisen(EquationOfState):
-    """Un objet décrivant l'équation d'état de type Mie_Gruneisen"""
+    """
+    Un objet décrivant l'équation d'état de type Mie_Gruneisen
+    """
     def __init__(self, **kwargs):
         """
         self.czero    : paramètre czero
@@ -30,14 +34,14 @@ class MieGruneisen(EquationOfState):
         EquationOfState.__init__(self)
         #
         self.__parameters = {
-        'czero'   : 3980.0,
-        'S1'      : 1.58,
-        'S2'      : 0.,
-        'S3'      : 0.,
-        'rhozero' : 8129.0,
+        'czero': 3980.0,
+        'S1': 1.58,
+        'S2': 0.,
+        'S3': 0.,
+        'rhozero': 8129.0,
         'grunzero': 1.6,
-        'b'       : 0.5,
-        'ezero'   : 0.
+        'b': 0.5,
+        'ezero': 0.
         }
 
         for (prop, default) in self.__parameters.iteritems():
@@ -102,7 +106,7 @@ class MieGruneisen(EquationOfState):
     def __str__(self):
         message = "EquationOfState : {}".format(self.__class__)
         message += "\nParameters : "
-        for key, val in sorted(self.__parameters.items(), key=lambda m : m[0]):
+        for key, val in sorted(self.__parameters.items(), key=lambda m: m[0]):
             message += "\n -- {:>20s} : {:>9.8g}".format(key, val)
         return message
 
@@ -111,23 +115,13 @@ class MieGruneisen(EquationOfState):
 
     def solve_ve(self, specific_volume, internal_energy):
         """
-        Fournit le triplet (pression | dérivée de la pression en fonction de l'énergie | vitesse du son)
-        à partir du couple ( volume massique | énergie interne )
+        Fournit le triplet (pression | dérivée de la pression en
+        fonction de l'énergie | vitesse du son) à partir du couple
+        ( volume massique | énergie interne )
 
         TEST UNITAIRE
 
         >>> ee = MieGruneisen()
-        >>> print ee
-        EquationOfState : <class '__main__.MieGruneisen'>
-        Parameters :
-         --                   S1 :      1.58
-         --                   S2 :         0
-         --                   S3 :         0
-         --                    b :       0.5
-         --                czero :      3980
-         --                ezero :         0
-         --             grunzero :       1.6
-         --              rhozero :      8129
         >>> rho = 9.000001000003e+03
         >>> e_int = 2.0e+03
         >>> ee.solve_ve(1.0/rho, e_int)
@@ -145,13 +139,13 @@ class MieGruneisen(EquationOfState):
         grunzero = self.grunzero
         ezero = self.ezero
         locb = self.coeff_b
-        czero2 = self.czero**2
+        czero2 = self.czero ** 2
         # Dérivee du coefficient de gruneisen
         dgam = rhozero * (grunzero - locb)
         #
         epsv = 1 - rhozero * specific_volume
         #
-        epsv2 = epsv**2
+        epsv2 = epsv ** 2
         # Coefficient de gruneisen
         gam = grunzero * (1 - epsv) + locb * epsv
         #
@@ -160,7 +154,7 @@ class MieGruneisen(EquationOfState):
         # Définition de variable locales redondantes
         #-------------------------------------------------
         redond_a = locs1 + 2. * locs2 * epsv + 3. * locs3 * epsv2
-        if(epsv>0):
+        if(epsv > 0):
             # ============================================================
             # si epsv > 0, la pression depend de einth et phi.
             # einth : energie interne specifique sur l hugoniot
@@ -171,7 +165,7 @@ class MieGruneisen(EquationOfState):
             # dpdv : dp/dv
             # ============================================================
             denom = (1. - (locs1 + locs2 * epsv + locs3 * epsv2) * epsv)
-            phi = rhozero * czero2 * epsv / denom**2
+            phi = rhozero * czero2 * epsv / denom ** 2
             einth = ezero + phi * epsv / (2. * rhozero)
             #
             dphi = phi * rhozero * (-1. / epsv - 2. * redond_a / denom)
@@ -182,7 +176,7 @@ class MieGruneisen(EquationOfState):
             (internal_energy - einth) / specific_volume - \
             gampervol * deinth
             #
-        elif(epsv<=0):
+        elif(epsv <= 0):
             #============================================================
             # traitement en tension : epsv < 0
             # la pression depend d une fonction de v : phi
@@ -193,7 +187,7 @@ class MieGruneisen(EquationOfState):
             #einth ---> e0
             einth = ezero
             #
-            dphi = -czero2 / specific_volume**2
+            dphi = -czero2 / specific_volume ** 2
             #
             dpdv = dphi + (dgam - gampervol) *\
             (internal_energy - einth) / specific_volume
@@ -208,10 +202,10 @@ class MieGruneisen(EquationOfState):
         #======================================
         # Carre de la vitesse du son :
         #======================================
-        vson2 = specific_volume**2 * (pressure * dpsurde - dpdv)
-        vson = vson2**0.5
+        vson2 = specific_volume ** 2 * (pressure * dpsurde - dpdv)
+        vson = vson2 ** 0.5
         #
-        if(not ((vson>0.)and(vson<10000.))):
+        if(not ((vson > 0.)and(vson < 10000.))):
             vson = 0.
         #
         return pressure, dpsurde, vson
@@ -231,15 +225,14 @@ if __name__ == '__main__':
     #
     import doctest
     doctest.testmod(verbose=0)
-    print "Test unitaire : OK"
-
     #
     # Lancemet du profiling
     #
-    from mypackage.utilities import timeit_file
+    from xvof.utilities import timeit_file
     from os import system
     #
-    @timeit_file('solve_ve.prof')
+
+    @timeit_file('solve_ve.log')
     def profil_solve_ve(equation_of_state, spec_vol, e_int, it_nb=100):
         """
         Fait it_nb appel(s) à solve_ve à des fins de profiling
@@ -254,7 +247,5 @@ if __name__ == '__main__':
     E_INT = 2.0e+03
     NBR_ITER = 100000
     print "Lancement profiling sur {:6d} itérations".format(NBR_ITER)
-    profil_solve_ve(MY_EE, 1./RHO, E_INT, NBR_ITER)
-    system('cat solve_ve.prof')
-
-
+    profil_solve_ve(MY_EE, 1. / RHO, E_INT, NBR_ITER)
+    system('cat solve_ve.log')
