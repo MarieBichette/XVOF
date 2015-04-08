@@ -19,7 +19,7 @@ class Node(object):
     """
     Une classe pour les noeuds
     """
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
     def __init__(self, dim=1, index=-1,
                  position_initiale=None,
@@ -228,5 +228,6 @@ class Node(object):
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     import doctest
-    doctest.testmod(verbose=1)
-    print "Test unitaire : OK"
+    testres = doctest.testmod(verbose=0)
+    if(testres[0] == 0):
+        print "TESTS UNITAIRES : OK"
