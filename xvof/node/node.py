@@ -127,6 +127,13 @@ class Node(object):
         """
         return self._force
 
+    @property
+    def dimension(self):
+        """
+        Dimension associée
+        """
+        return self.__dimension
+
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
     #------------------------------------------------------------
