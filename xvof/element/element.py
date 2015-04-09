@@ -8,9 +8,8 @@ Classe de base définissant un élément
 ############ IMPORTATIONS DIVERSES  ####################
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
-import numpy as np
 from xvof.miscellaneous import *
-
+import numpy as np
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -20,9 +19,13 @@ class Element(object):
     """
     Une classe pour les éléments
     """
+    # pylint: disable-msg=R0902
+    # 13 attributs : cela semble raisonnable pour ce cas
     def __init__(self, proprietes, indice, taille):
         self._index = indice
-        self._size = taille
+        self._dt = 0.
+        self._size_t = taille
+        self._size_t_plus_dt = taille
         self._properties = proprietes
         self._rho_t = proprietes.material.rho_init
         self._rho_t_plus_dt = proprietes.material.rho_init
@@ -50,11 +53,25 @@ class Element(object):
         return self._index
 
     @property
-    def taille(self):
+    def delta_t(self):
         """
-        Taille (longueur, aire, volume) de l'élément
+        Pas de temps de l'élément
         """
-        return self._size
+        return self._dt
+
+    @property
+    def taille_t(self):
+        """
+        Taille (longueur, aire, volume) de l'élément à l'instant t
+        """
+        return self._size_t
+
+    @property
+    def taille_t_plus_dt(self):
+        """
+        Taille (longueur, aire, volume) de l'élément à l'instant t + dt
+        """
+        return self._size_t_plus_dt
 
     @property
     def proprietes(self):
@@ -140,6 +157,32 @@ class Element(object):
         """
         self._noeuds[:] = node_list[:]
 
+    @property
+    def coord(self):
+        """
+        Position du centre de l'élément au temps t
+
+        TEST UNITAIRE
+        >>> from xvof.node import Node1d
+        >>> from xvof.miscellaneous import *
+        >>> from xvof.equationsofstate import MieGruneisen
+        >>> ee = MieGruneisen()
+        >>> num_props = numerical_props(0.2, 1.0, 0.35)
+        >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
+        >>> geom_props = geometrical_props(1.0e-06)
+        >>> props = properties(num_props, mat_props, geom_props)
+        >>> noda = Node1d(1, np.array([-0.5]))
+        >>> nodb = Node1d(2, np.array([0.5]))
+        >>> my_elem = Element(props, 1, 0.1)
+        >>> my_elem.noeuds = [noda, nodb]
+        >>> my_elem.coord
+        array([ 0.])
+        """
+        vec_coord = np.zeros(self.noeuds[0].dimension)
+        for nod in self.noeuds:
+            vec_coord += nod.coordt
+        return vec_coord / len(self.noeuds)
+
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
     #------------------------------------------------------------
@@ -151,9 +194,10 @@ class Element(object):
         """
         Affichage des informations concernant l'élément
         """
-        message = "{} {:4d}\n".format(self.__class__, self.index)
+        message = "{} {:4d}\n".format(self.__class__, self.indice)
         message += "==> noeuds = {}\n".format(self.noeuds)
-        message += "==> taille = {}\n".format(self.taille)
+        message += "==> taille à t = {}\n".format(self.taille_t)
+        message += "==> taille à t+dt = {}\n".format(self.taille_t_plus_dt)
         message += "==> masse volumique à t = {}\n".format(self.rho_t)
         message += "==> masse volumique à t+dt = {}\n".\
             format(self.rho_t_plus_dt)
@@ -168,82 +212,17 @@ class Element(object):
             format(self.cson_t_plus_dt)
         print message
 
+    #------------------------------------------------------------
+    # DEFINITIONS DES METHODES VIRTUELLES
+    #------------------------------------------------------------
+    @abstractmethod
     def calculer_nouvo_pression(self):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
         Formulation v-e
-
-        TEST UNITAIRE
-        >>> from xvof.miscellaneous import *
-        >>> from xvof.equationsofstate import MieGruneisen
-        >>> ee = MieGruneisen()
-        >>> num_props = numerical_props(0.2, 1.0)
-        >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
-        >>> geom_props = geometrical_props(1.0e-06)
-        >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element(props, 123, 2.5e-03)
-        >>> my_elem._rho_t_plus_dt = 9000.0
-        >>> my_elem.calculer_nouvo_pression()
         """
-        delta_v = 1. / self.rho_t_plus_dt - 1. / self.rho_t
-        pression_t = self.pression_t + 2. * self.pseudo
-        # Variable du Newton
-        nrj_i = self.nrj_t
-        # Critère de convergence
-        convergence = False
-        # Nombre d'itérations
-        nit = 0
-        #
 
-        def calcul_F_et_dF(enerj):
-            """
-            Fonction à annuler et sa dérivée pour le schéma VNR
-            Formulation v-e
-            """
-            (p_i, dpsurde, vitson) = \
-            self.proprietes.material.eos.solve_ve(1. / self.rho_t_plus_dt, enerj)
-            # Fonction à annuler
-            func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. -\
-                self.nrj_t
-            # Dérivée de la fonction à annuler
-            dfunc = 1 + dpsurde * delta_v / 2.
-            return (func, dfunc)
-        #
-        (fi, dfisurde) = calcul_F_et_dF(nrj_i)
-        #
-        while(not convergence and (nit < 100)):
-            # Correction
-            nrj_iplus1 = nrj_i - fi / dfisurde
-            nit += 1
-            if(abs(fi) < 1e-09):
-                convergence = True
-                res_nrj = nrj_i
-                res_pression_t_plus_dt, dummy, res_cson = \
-                self.proprietes.material.eos.solve_ve(
-                    1. / self.rho_t_plus_dt, res_nrj)
-                break
-            # Incrémentation
-            nrj_i = nrj_iplus1
-            #
-            (fi, dfisurde) = calcul_F_et_dF(nrj_i)
-            if(abs(dfisurde) < 1.e-09):
-                print "Sortie du NR par manque de pente :-)"
-                convergence = True
-                res_nrj = nrj_i
-                res_pression_t_plus_dt = p_i
-                res_cson = cel_son
-                break
-        if(nit == 100):
-            print "Erreur de convergence du NR"
-            print "fi=", fi
-            print "nit=", nit
-            exit(255)
-        return res_nrj, res_pression_t_plus_dt, res_cson
-
-    #------------------------------------------------------------
-    # DEFINITIONS DES METHODES VIRTUELLES
-    #------------------------------------------------------------
     @abstractmethod
     def calculer_nouvo_taille(self):
         """
@@ -263,11 +242,16 @@ class Element(object):
         Calcul de la nouvelle pseudo
         """
 
+    @abstractmethod
+    def calculer_nouvo_dt(self):
+        """
+        Calcul du nouveau pas de temps
+        """
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     import doctest
-    testres = doctest.testmod(verbose=0)
-    if(testres[0] == 0):
+    TESTRES = doctest.testmod(verbose=0)
+    if(TESTRES[0] == 0):
         print "TESTS UNITAIRES : OK"
