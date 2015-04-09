@@ -212,6 +212,15 @@ class Element(object):
             format(self.cson_t_plus_dt)
         print message
 
+    def incremener(self):
+        """
+        Incrémentation des variables
+        """
+        self._pression_t = self._pression_t_plus_dt
+        self._rho_t = self._rho_t_plus_dt
+        self._cson_t = self._cson_t_plus_dt
+        self._nrj_t = self._nrj_t_plus_dt
+        self._size_t_plus_dt = self._size_t
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES VIRTUELLES
     #------------------------------------------------------------
@@ -247,6 +256,7 @@ class Element(object):
         """
         Calcul du nouveau pas de temps
         """
+
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
