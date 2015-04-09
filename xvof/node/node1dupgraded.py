@@ -20,16 +20,15 @@ class Node1dUpgraded(Node1d):
     """
     # pylint: disable-msg=R0902
     # 9 attributs : cela semble raisonnable pour ce cas
-    def __init__(self, indice, poz_init=np.zeros(1), vit_init=np.zeros(1),
-                section=1.):
-        Node1d.__init__(self, indice, poz_init=poz_init,
-                      vit_init=vit_init, section=section)
+    def __init__(self, origin_node):
+        Node1d.__init__(self, origin_node.index, poz_init=origin_node.coordt,
+                      vit_init=origin_node.umundemi, section=origin_node.section)
 
-        self._upundemi = vit_init[:]
+        self._upundemi = origin_node.upundemi[:]
         self._force = np.zeros(1, dtype=float)
         #
-        self._umundemi_classique = vit_init[:]
-        self._upundemi_classique = vit_init[:]
+        self._umundemi_classique = origin_node.umundemi[:]
+        self._upundemi_classique = origin_node.upundemi[:]
         self._force_classique = np.zeros(1, dtype=float)
         #==> Toutes les variables enrichies sont initialisées à 0
         self._umundemi_enrichi = np.zeros(1, dtype=float)
@@ -141,7 +140,8 @@ class Node1dUpgraded(Node1d):
 
         TEST UNITAIRE
         >>> import numpy as np
-        >>> MY_NODE = Node1dUpgraded(123, section=1.0e-06)
+        >>> NODE_INI = Node1d(123, section=1.0e-06)
+        >>> MY_NODE = Node1dUpgraded(NODE_INI)
         >>> MY_NODE.initialize([-1.0], [2.5], [3.0e+04])
         >>> print MY_NODE.umundemi_classique
         [-1.]
@@ -149,7 +149,8 @@ class Node1dUpgraded(Node1d):
         [ 2.5]
         >>> print MY_NODE.force_classique
         [ 30000.]
-        >>> MY_NODE2 = Node1dUpgraded(123, section=1.0e-06)
+        >>> NODE2_INI = Node1d(124, section=1.0e-06)
+        >>> MY_NODE2 = Node1dUpgraded(NODE2_INI)
         >>> MY_NODE2.initialize(np.array([-1.0]), np.array([2.5]),\
                                 np.array([3.0e+04]))
         >>> print MY_NODE2.umundemi_classique
@@ -180,7 +181,8 @@ class Node1dUpgraded(Node1d):
         >>> elem_droite.pressure = 1.0e+09
         >>> elem_gauche.masse = 3./4.
         >>> elem_droite.masse = 1./4.
-        >>> my_node = Node1dUpgraded(123, section=1.0e-06)
+        >>> node_ini = Node1d(123, section=1.0e-06)
+        >>> my_node = Node1dUpgraded(node_ini)
         >>> my_node.elements_voisins = [elem_droite, elem_gauche]
         >>> my_node.calculer_masse_wilkins()
         >>> my_node.calculer_nouvo_force()
@@ -217,7 +219,8 @@ class Node1dUpgraded(Node1d):
         >>> elem_droite.coord = np.array([0.5])
         >>> elem_gauche.pressure = 2.5e+09
         >>> elem_droite.pressure = 1.0e+09
-        >>> my_node = Node1dUpgraded(123, section=1.0e-06)
+        >>> node_ini = Node1d(123, section=1.0e-06)
+        >>> my_node = Node1dUpgraded(node_ini)
         >>> my_node.elements_voisins = [elem_droite, elem_gauche]
         >>> for elem in my_node.elements_voisins:
         ...     print elem.coord
@@ -251,5 +254,6 @@ if __name__ == "__main__":
     testres = doctest.testmod(verbose=0)
     if(testres[0] == 0):
         print "TESTS UNITAIRES : OK"
-        MY_NODE = Node1dUpgraded(123, section=1.0e-06)
+        NODE_INI = Node1d(123, section=1.0e-06)
+        MY_NODE = Node1dUpgraded(NODE_INI)
         MY_NODE.infos()
