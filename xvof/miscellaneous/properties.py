@@ -12,7 +12,8 @@ from collections import namedtuple
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo"])
+numerical_props = namedtuple("numerical_props",
+                             ["a_pseudo", "b_pseudo", "cfl"])
 
 geometrical_props = namedtuple("geometrical_props", ["section"])
 
