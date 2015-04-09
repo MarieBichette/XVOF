@@ -7,6 +7,7 @@ Classe définissant un élément enrichi en 1d
 ############ IMPORTATIONS DIVERSES  ####################
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from xvof.element import Element1d
+from xvof.node import Node1dUpgraded
 import numpy as np
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -20,21 +21,24 @@ class Element1dUpgraded(Element1d):
     """
     def __init__(self, element_origin, pos_discontin):
         Element1d.__init__(self, element_origin.proprietes,
-                           element_origin.indice, element_origin.taille_t)
+                           element_origin.indice, element_origin.noeuds)
         #
         if(pos_discontin < 0.) or (pos_discontin > 1.):
             message = "La position de la discontinuité dans"
             message += " l'élément enrichi doit être comprise entre 0 et 1!"
             raise SystemExit(message)
+        # Les noeuds d'un élément enrichi sont également enrichis
+        self._noeuds = map(Node1dUpgraded, self.noeuds)
+        #
         self._pression_t_classique = element_origin.pression_t
-        self._pression_t_plus_dt_classique = 0.
+        self._pression_t_plus_dt_classique = element_origin.pression_t_plus_dt
         self._rho_t_classique = element_origin.rho_t
-        self._rho_t_plus_dt_classique = 0.
+        self._rho_t_plus_dt_classique = element_origin.rho_t_plus_dt
         self._nrj_t_classique = element_origin.nrj_t
-        self._nrj_t_plus_dt_classique = 0.
+        self._nrj_t_plus_dt_classique = element_origin.nrj_t_plus_dt
         self._pseudo_plus_undemi_classique = element_origin.pseudo
         self._cson_t_classique = element_origin.cson_t
-        self._cson_t_plus_dt_classique = 0.
+        self._cson_t_plus_dt_classique = element_origin.cson_t_plus_dt
         #
         self._pression_t_enrichi = 0.
         self._pression_t_plus_dt_enrichi = 0.
@@ -47,9 +51,9 @@ class Element1dUpgraded(Element1d):
         self._cson_t_plus_dt_enrichi = 0.
         #
         self._taille_gauche_t = element_origin.taille_t * pos_discontin
-        self._taille_gauche_t_plus_dt = 0.
+        self._taille_gauche_t_plus_dt = element_origin.taille_t_plus_dt * pos_discontin
         self._taille_droite_t = element_origin.taille_t * (1. - pos_discontin)
-        self._taille_droite_t_plus_dt = 0.
+        self._taille_droite_t_plus_dt = element_origin.taille_t_plus_dt * (1. - pos_discontin)
 
     @property
     def taille_t_gauche(self):
@@ -84,70 +88,70 @@ class Element1dUpgraded(Element1d):
         """
         Pression dans la partie gauche de l'élément au temps t
         """
-        return self._pression_t_classique + self._pression_t_enrichi
+        return self._pression_t_classique - self._pression_t_enrichi
 
     @property
     def pression_t_droite(self):
         """
         Pression dans la partie droite de l'élément au temps t
         """
-        return self._pression_t_classique - self._pression_t_enrichi
+        return self._pression_t_classique + self._pression_t_enrichi
 
     @property
     def rho_t_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t
         """
-        return self._rho_t_classique + self._rho_t_enrichi
+        return self._rho_t_classique - self._rho_t_enrichi
 
     @property
     def rho_t_droite(self):
         """
         Densité dans la partie droite de l'élément au temps t
         """
-        return self._rho_t_classique - self._rho_t_enrichi
+        return self._rho_t_classique + self._rho_t_enrichi
 
     @property
     def rho_t_plus_dt_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t+dt
         """
-        return self._rho_t_plus_dt_classique + self._rho_t_plus_dt_enrichi
+        return self._rho_t_plus_dt_classique - self._rho_t_plus_dt_enrichi
 
     @property
     def rho_t_plus_dt_droite(self):
         """
         Densité dans la partie droite de l'élément au temps t+dt
         """
-        return self._rho_t_plus_dt_classique - self._rho_t_plus_dt_enrichi
+        return self._rho_t_plus_dt_classique + self._rho_t_plus_dt_enrichi
 
     @property
     def nrj_t_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t
         """
-        return self._nrj_t_classique + self._nrj_t_enrichi
+        return self._nrj_t_classique - self._nrj_t_enrichi
 
     @property
     def nrj_t_droite(self):
         """
         Energie dans la partie droite de l'élément au temps t
         """
-        return self._nrj_t_classique - self._nrj_t_enrichi
+        return self._nrj_t_classique + self._nrj_t_enrichi
 
     @property
     def nrj_t_plus_dt_gauche(self):
         """
         Energie dans la partie gauche de l'élément au temps t+dt
         """
-        return self._nrj_t_plus_dt_classique + self._nrj_t_plus_dt_enrichi
+        return self._nrj_t_plus_dt_classique - self._nrj_t_plus_dt_enrichi
 
     @property
     def nrj_t_plus_dt_droite(self):
         """
         Energie dans la partie droite de l'élément au temps t+dt
         """
-        return self._nrj_t_plus_dt_classique - self._nrj_t_plus_dt_enrichi
+        return self._nrj_t_plus_dt_classique + self._nrj_t_plus_dt_enrichi
 
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
@@ -190,7 +194,7 @@ class Element1dUpgraded(Element1d):
 
         TEST UNITAIRE
         >>> import numpy as np
-        >>> from xvof.node import Node1dUpgraded
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -198,16 +202,15 @@ class Element1dUpgraded(Element1d):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
+        >>> noda = Node1d(1, poz_init=np.array([0.6]), section=1.0e-06)
+        >>> nodb = Node1d(1, poz_init=np.array([-0.2]), section=1.0e-06)
+        >>> my_elem = Element1d(props, 123, [noda, nodb])
         >>> my_elem_up = Element1dUpgraded(my_elem, 0.5)
-        >>> noda = Node1dUpgraded(1, poz_init=np.array([0.5]), section=1.0e-06)
-        >>> nodb = Node1dUpgraded(1, poz_init=np.array([-0.5]), section=1.0e-06)
-        >>> my_elem_up.noeuds = [noda, nodb]
         >>> my_elem_up.calculer_nouvo_taille(1.0e-06)
         >>> print my_elem_up.taille_t_plus_dt_gauche
-        [ 0.00125]
+        [ 0.4]
         >>> print my_elem_up.taille_t_plus_dt_droite
-        [ 0.00125]
+        [ 0.4]
         """
         # Les noeuds sont classés par coord croissante
         nod_g = self.noeuds[0]
@@ -221,6 +224,18 @@ class Element1dUpgraded(Element1d):
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
              * delta_t
 
+    def calculer_nouvo_densite(self):
+        """
+        Calcul des nouvelles densités
+        """
+        densite_gauche_t_plus_dt = self.rho_t_gauche * self.taille_t_gauche \
+            / self.taille_t_plus_dt_gauche
+        densite_droite_t_plus_dt = self.rho_t_droite * self.taille_t_droite \
+            / self.taille_t_plus_dt_droite
+        self._rho_t_plus_dt_classique = \
+            (densite_gauche_t_plus_dt + densite_droite_t_plus_dt) * 0.5
+        self._rho_t_plus_dt_enrichi = \
+            (densite_droite_t_plus_dt - densite_gauche_t_plus_dt) * 0.5
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
