@@ -224,7 +224,9 @@ if __name__ == '__main__':
     # Lancement du test unitaire
     #
     import doctest
-    doctest.testmod(verbose=0)
+    testres = doctest.testmod(verbose=0)
+    if(testres[0] == 0):
+        print "TESTS UNITAIRES : OK"
     #
     # Lancemet du profiling
     #
