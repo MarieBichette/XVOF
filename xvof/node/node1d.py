@@ -56,8 +56,8 @@ class Node1d(Node):
         s'assurer qu'il n y ait que deux voisins possibles et pour les trier
         de gauche à droite
         """
-        if(len(elems) != 2):
-            message = "En 1d seuls deux éléments peuveut être"
+        if(len(elems) > 2):
+            message = "En 1d au plus deux éléments peuveut être"
             message += " voisins du {}".format(self)
             raise SystemExit(message)
         self._elements_voisins = elems[:]
