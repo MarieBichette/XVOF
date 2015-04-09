@@ -82,8 +82,8 @@ class Element1d(Element):
     def __init__(self, proprietes, indice, noeuds):
         Element.__init__(self, proprietes, indice, noeuds)
         self.noeuds = noeuds
-        self._size_t = abs(self.noeuds[0].coordtpdt[0] -
-            self.noeuds[1].coordtpdt[0])
+        self._size_t = abs(self.noeuds[0].coordt[0] -
+            self.noeuds[1].coordt[0])
 
     #------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -116,6 +116,8 @@ class Element1d(Element):
         Formulation v-e
 
         TEST UNITAIRE
+        >>> import numpy as np
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -123,7 +125,9 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, [])
+        >>> noda = Node1d(1, poz_init=np.array([-1.0e-03]))
+        >>> nodb = Node1d(2, poz_init=np.array([1.5e-03]))
+        >>> my_elem = Element1d(props, 123, [noda, nodb])
         >>> my_elem._rho_t_plus_dt = 9000.0
         >>> my_elem.calculer_nouvo_pression()
         >>> print my_elem.nrj_t_plus_dt/1e+05
@@ -143,6 +147,8 @@ class Element1d(Element):
         Calcul de la nouvelle longueur de l'élément
 
         TEST UNITAIRE
+        >>> import numpy as np
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -150,14 +156,11 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
-        >>> class noeuds:
-        ...     pass
-        >>> noe1 = noeuds()
-        >>> noe1.coordtpdt = np.array([5.0e-03])
-        >>> noe2 = noeuds()
-        >>> noe2.coordtpdt = np.array([6.0e-03])
-        >>> my_elem.noeuds = [noe2, noe1]
+        >>> noda = Node1d(1, poz_init=np.array([-1.0e-03]))
+        >>> nodb = Node1d(2, poz_init=np.array([1.5e-03]))
+        >>> my_elem = Element1d(props, 123, [noda, nodb])
+        >>> noda._xtpdt = np.array([5.0e-03])
+        >>> nodb._xtpdt = np.array([6.0e-03])
         >>> my_elem.calculer_nouvo_taille()
         >>> print my_elem.taille_t_plus_dt
         0.001
@@ -207,14 +210,14 @@ class Element1d(Element):
         >>> props = properties(num_props, mat_props, geom_props)
         >>> noe1 = Node1d(1, poz_init=np.array([4.0e-03]))
         >>> noe2 = Node1d(2, poz_init=np.array([7.0e-03]))
-        >>> noe1.coordtpdt = np.array([5.0e-03])
-        >>> noe2.coordtpdt = np.array([6.0e-03])
+        >>> noe1._xtpdt = np.array([5.0e-03])
+        >>> noe2._xtpdt = np.array([6.0e-03])
         >>> my_elem = Element1d(props, 123, [noe2, noe1])
         >>> my_elem.calculer_nouvo_taille()
         >>> my_elem.calculer_nouvo_densite()
         >>> my_elem.calculer_nouvo_pseudo(1.0e-6)
         >>> print my_elem.pseudo
-        1706379008.75
+        2438700000.0
         """
         vnt = 1. / self.rho_t
         vnplusun = 1. / self.rho_t_plus_dt
@@ -285,6 +288,7 @@ if __name__ == "__main__":
         from xvof.miscellaneous import numerical_props, material_props
         from xvof.miscellaneous import geometrical_props, properties
         from xvof.equationsofstate import MieGruneisen
+        from xvof.node import Node1d
         #
 
         @timeit_file('calculer_nouvo_pression.log')
@@ -303,7 +307,9 @@ if __name__ == "__main__":
         MAT_PROPS = material_props(1.0e+05, 0.0, 8129., EE)
         GEOM_PROPS = geometrical_props(1.0e-06)
         PROPS = properties(NUM_PROPS, MAT_PROPS, GEOM_PROPS)
-        MY_ELEM = Element1d(PROPS, 123, 2.5e-03)
+        NODA = Node1d(1, np.array([0.5e-03]))
+        NODB = Node1d(2, np.array([3.0e-03]))
+        MY_ELEM = Element1d(PROPS, 123, [NODA, NODB])
         MY_ELEM._rho_t_plus_dt = 9000.0
         NBR_ITER = 100000
         print "Lancement profiling sur {:6d} itérations".format(NBR_ITER)
