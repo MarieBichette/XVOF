@@ -79,8 +79,11 @@ class Element1d(Element):
             exit(255)
         return res_nrj, res_pression_t_plus_dt, res_cson
 
-    def __init__(self, proprietes, indice, longueur_init):
-        Element.__init__(self, proprietes, indice, longueur_init)
+    def __init__(self, proprietes, indice, noeuds):
+        Element.__init__(self, proprietes, indice, noeuds)
+        self.noeuds = noeuds
+        self._size_t = abs(self.noeuds[0].coordtpdt[0] -
+            self.noeuds[1].coordtpdt[0])
 
     #------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -120,7 +123,7 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
+        >>> my_elem = Element1d(props, 123, [])
         >>> my_elem._rho_t_plus_dt = 9000.0
         >>> my_elem.calculer_nouvo_pression()
         >>> print my_elem.nrj_t_plus_dt/1e+05
@@ -168,6 +171,8 @@ class Element1d(Element):
         la conservation de la masse
 
         TEST UNITAIRE
+        >>> import numpy as np
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -175,7 +180,9 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
+        >>> noda = Node1d(1, poz_init=np.array([-1.0e-03]))
+        >>> nodb = Node1d(2, poz_init=np.array([1.5e-03]))
+        >>> my_elem = Element1d(props, 123, [nodb, noda])
         >>> my_elem._size_t_plus_dt = 1.25e-03
         >>> my_elem.calculer_nouvo_densite()
         >>> print my_elem.rho_t_plus_dt
@@ -189,6 +196,8 @@ class Element1d(Element):
         Calcul de la nouvelle pseudo
 
         TEST UNITAIRE
+        >>> import numpy as np
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -196,14 +205,11 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
-        >>> class noeuds:
-        ...     pass
-        >>> noe1 = noeuds()
+        >>> noe1 = Node1d(1, poz_init=np.array([4.0e-03]))
+        >>> noe2 = Node1d(2, poz_init=np.array([7.0e-03]))
         >>> noe1.coordtpdt = np.array([5.0e-03])
-        >>> noe2 = noeuds()
         >>> noe2.coordtpdt = np.array([6.0e-03])
-        >>> my_elem.noeuds = [noe2, noe1]
+        >>> my_elem = Element1d(props, 123, [noe2, noe1])
         >>> my_elem.calculer_nouvo_taille()
         >>> my_elem.calculer_nouvo_densite()
         >>> my_elem.calculer_nouvo_pseudo(1.0e-6)
@@ -233,6 +239,8 @@ class Element1d(Element):
         Calcul du pas de temps dans l'élément
 
         TEST UNITAIRE
+        >>> import numpy as np
+        >>> from xvof.node import Node1d
         >>> from xvof.miscellaneous import *
         >>> from xvof.equationsofstate import MieGruneisen
         >>> ee = MieGruneisen()
@@ -240,21 +248,18 @@ class Element1d(Element):
         >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         >>> geom_props = geometrical_props(1.0e-06)
         >>> props = properties(num_props, mat_props, geom_props)
-        >>> my_elem = Element1d(props, 123, 2.5e-03)
-        >>> class noeuds:
-        ...     pass
-        >>> noe1 = noeuds()
-        >>> noe1.coordtpdt = np.array([5.0e-03])
-        >>> noe2 = noeuds()
-        >>> noe2.coordtpdt = np.array([7.0e-03])
-        >>> my_elem.noeuds = [noe2, noe1]
+        >>> noe1 = Node1d(1, poz_init=np.array([4.0e-03]))
+        >>> noe2 = Node1d(2, poz_init=np.array([7.0e-03]))
+        >>> noe1._x_t_plus_dt = np.array([5.0e-03])
+        >>> noe2._x_t_plus_dt = np.array([7.0e-03])
+        >>> my_elem = Element1d(props, 123, [noe1, noe2])
         >>> my_elem.calculer_nouvo_taille()
         >>> my_elem.calculer_nouvo_densite()
         >>> my_elem.calculer_nouvo_pseudo(1.0e-6)
         >>> my_elem.calculer_nouvo_pression()
         >>> my_elem.calculer_nouvo_dt()
         >>> print my_elem.delta_t
-        1.12649789768e-07
+        2.63819095477e-07
         """
         cfl = self.proprietes.numeric.cfl
         if((self.rho_t_plus_dt - self.rho_t) > 0.1):

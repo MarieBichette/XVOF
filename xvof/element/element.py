@@ -21,11 +21,11 @@ class Element(object):
     """
     # pylint: disable-msg=R0902
     # 13 attributs : cela semble raisonnable pour ce cas
-    def __init__(self, proprietes, indice, taille):
+    def __init__(self, proprietes, indice, noeuds):
         self._index = indice
         self._dt = 0.
-        self._size_t = taille
-        self._size_t_plus_dt = taille
+        self._size_t = None
+        self._size_t_plus_dt = None
         self._properties = proprietes
         self._rho_t = proprietes.material.rho_init
         self._rho_t_plus_dt = proprietes.material.rho_init
@@ -37,6 +37,7 @@ class Element(object):
         self._nrj_t = proprietes.material.energie_init
         self._nrj_t_plus_dt = proprietes.material.energie_init
         self._noeuds = []
+        self.noeuds = noeuds
 
     #------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -173,8 +174,7 @@ class Element(object):
         >>> props = properties(num_props, mat_props, geom_props)
         >>> noda = Node1d(1, np.array([-0.5]))
         >>> nodb = Node1d(2, np.array([0.5]))
-        >>> my_elem = Element(props, 1, 0.1)
-        >>> my_elem.noeuds = [noda, nodb]
+        >>> my_elem = Element(props, 1, [noda, nodb])
         >>> my_elem.coord
         array([ 0.])
         """
