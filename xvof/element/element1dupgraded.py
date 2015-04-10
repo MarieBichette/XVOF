@@ -84,6 +84,11 @@ class Element1dUpgraded(Element1d):
         self._taille_droite_t = element_origin.taille_t * (1. - pos_discontin)
         self._taille_droite_t_plus_dt = \
             element_origin.taille_t_plus_dt * (1. - pos_discontin)
+        #
+        self._to_gauche = Element1dUpgraded.from_enrich_to_gauche
+        self._to_droite = Element1dUpgraded.from_enrich_to_droite
+        self._to_classic = Element1dUpgraded.from_geom_to_classic
+        self._to_enrich = Element1dUpgraded.from_geom_to_enrich
 
     @property
     def taille_t_gauche(self):
@@ -118,112 +123,122 @@ class Element1dUpgraded(Element1d):
         """
         Pression dans la partie gauche de l'élément au temps t
         """
-        return self._pression_t - self._pression_t_enrichi
+        return self._to_gauche(self._pression_t,
+            self._pression_t_enrichi)
 
     @property
     def pression_t_droite(self):
         """
         Pression dans la partie droite de l'élément au temps t
         """
-        return self._pression_t + self._pression_t_enrichi
+        return self._to_droite(self._pression_t,
+            self._pression_t_enrichi)
 
     @property
     def rho_t_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t
         """
-        return self._rho_t - self._rho_t_enrichi
+        return self._to_gauche(self._rho_t, self._rho_t_enrichi)
 
     @property
     def rho_t_droite(self):
         """
         Densité dans la partie droite de l'élément au temps t
         """
-        return self._rho_t + self._rho_t_enrichi
+        return self._to_droite(self._rho_t, self._rho_t_enrichi)
 
     @property
     def rho_t_plus_dt_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t+dt
         """
-        return self._rho_t_plus_dt - self._rho_t_plus_dt_enrichi
+        return self._to_gauche(self._rho_t_plus_dt,
+                               self._rho_t_plus_dt_enrichi)
 
     @property
     def rho_t_plus_dt_droite(self):
         """
         Densité dans la partie droite de l'élément au temps t+dt
         """
-        return self._rho_t_plus_dt + self._rho_t_plus_dt_enrichi
+        return self._to_droite(self._rho_t_plus_dt,
+                               self._rho_t_plus_dt_enrichi)
 
     @property
     def nrj_t_gauche(self):
         """
         Densité dans la partie gauche de l'élément au temps t
         """
-        return self._nrj_t - self._nrj_t_enrichi
+        return self._to_gauche(self._nrj_t, self._nrj_t_enrichi)
 
     @property
     def nrj_t_droite(self):
         """
         Energie dans la partie droite de l'élément au temps t
         """
-        return self._nrj_t + self._nrj_t_enrichi
+        return self._to_droite(self._nrj_t, self._nrj_t_enrichi)
 
     @property
     def nrj_t_plus_dt_gauche(self):
         """
         Energie dans la partie gauche de l'élément au temps t+dt
         """
-        return self._nrj_t_plus_dt - self._nrj_t_plus_dt_enrichi
+        return self._to_gauche(self._nrj_t_plus_dt,
+                               self._nrj_t_plus_dt_enrichi)
 
     @property
     def nrj_t_plus_dt_droite(self):
         """
         Energie dans la partie droite de l'élément au temps t+dt
         """
-        return self._nrj_t_plus_dt + self._nrj_t_plus_dt_enrichi
+        return self._to_droite(self._nrj_t_plus_dt,
+                               self._nrj_t_plus_dt_enrichi)
 
     @property
     def cson_t_gauche(self):
         """
         Vitesse du son dans la partie gauche de l'élément au temps t
         """
-        return self._cson_t - self._cson_t_enrichi
+        return self._to_gauche(self._cson_t, self._cson_t_enrichi)
 
     @property
     def cson_t_droite(self):
         """
         Vitesse du son dans la partie droite de l'élément au temps t
         """
-        return self._cson_t + self._cson_t_enrichi
+        return self._to_droite(self._cson_t, self._cson_t_enrichi)
 
     @property
     def cson_t_plus_dt_gauche(self):
         """
         Vitesse du son dans la partie gauche de l'élément au temps t+dt
         """
-        return self._cson_t_plus_dt - self._cson_t_plus_dt_enrichi
+        return self._to_gauche(self._cson_t_plus_dt,
+                               self._cson_t_plus_dt_enrichi)
 
     @property
     def cson_t_plus_dt_droite(self):
         """
         Vitesse du son dans la partie droite de l'élément au temps t+dt
         """
-        return self._cson_t_plus_dt + self._cson_t_plus_dt_enrichi
+        return self._to_droite(self._cson_t_plus_dt,
+                               self._cson_t_plus_dt_enrichi)
 
     @property
     def pseudo_gauche(self):
         """
         Pseudo viscosité dans la partie gauche de l'élément
         """
-        return self._pseudo_plus_un_demi - self._pseudo_plus_un_demi_enrichi
+        return self._to_gauche(self._pseudo_plus_un_demi,
+                               self._pseudo_plus_un_demi_enrichi)
 
     @property
     def pseudo_droite(self):
         """
         Pseudo viscosité dans la partie droite de l'élément
         """
-        return self._pseudo_plus_un_demi + self._pseudo_plus_un_demi_enrichi
+        return self._to_droite(self._pseudo_plus_un_demi,
+                               self._pseudo_plus_un_demi_enrichi)
 
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
@@ -301,20 +316,20 @@ class Element1dUpgraded(Element1d):
                 self.pression_t_droite, self.pseudo_droite,
                 self.nrj_t_droite)
         #
-        self._pression_t_plus_dt = (pression_t_plus_dt_g +
-            pression_t_plus_dt_d) / 2.0
-        self._pression_t_plus_dt_enrichi = (pression_t_plus_dt_d -
-            pression_t_plus_dt_g) / 2.0
+        self._pression_t_plus_dt = \
+            self._to_classic(pression_t_plus_dt_g, pression_t_plus_dt_d)
+        self._pression_t_plus_dt_enrichi = \
+            self._to_enrich(pression_t_plus_dt_g, pression_t_plus_dt_d)
         #
-        self._nrj_t_plus_dt = (nrj_t_plus_dt_g +
-            nrj_t_plus_dt_d) / 2.0
-        self._nrj_t_plus_dt_enrichi = (nrj_t_plus_dt_d -
-            nrj_t_plus_dt_g) / 2.0
+        self._nrj_t_plus_dt = \
+            self._to_classic(nrj_t_plus_dt_g, nrj_t_plus_dt_d)
+        self._nrj_t_plus_dt_enrichi = \
+            self._to_enrich(nrj_t_plus_dt_g, nrj_t_plus_dt_d)
         #
-        self._cson_t_plus_dt = (cson_t_plus_dt_g +
-            cson_t_plus_dt_d) / 2.0
-        self._nrj_t_plus_dt_enrichi = (cson_t_plus_dt_d -
-            cson_t_plus_dt_g) / 2.0
+        self._cson_t_plus_dt = \
+            self._to_classic(cson_t_plus_dt_g, cson_t_plus_dt_d)
+        self._cson_t_plus_dt_enrichi = \
+            self._to_enrich(cson_t_plus_dt_g, cson_t_plus_dt_d)
 
     def calculer_nouvo_taille(self, delta_t):
         """
@@ -361,9 +376,9 @@ class Element1dUpgraded(Element1d):
         densite_droite_t_plus_dt = self.rho_t_droite * self.taille_t_droite \
             / self.taille_t_plus_dt_droite
         self._rho_t_plus_dt = \
-            (densite_gauche_t_plus_dt + densite_droite_t_plus_dt) * 0.5
+            self._to_classic(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
         self._rho_t_plus_dt_enrichi = \
-            (densite_droite_t_plus_dt - densite_gauche_t_plus_dt) * 0.5
+            self._to_enrich(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
 
     def calculer_nouvo_pseudo(self, delta_t):
         """
@@ -377,9 +392,10 @@ class Element1dUpgraded(Element1d):
             self.rho_t_droite, self.rho_t_plus_dt_droite,
             self.taille_t_plus_dt_droite, self.cson_t_droite)
 
-        self._pseudo_plus_un_demi = (pseudo_gauche + pseudo_droite) * 0.5
+        self._pseudo_plus_un_demi = \
+            self._to_classic(pseudo_gauche, pseudo_droite)
         self._pseudo_plus_un_demi_enrichi = \
-            (pseudo_droite - pseudo_gauche) * 0.5
+            self._to_enrich(pseudo_gauche, pseudo_droite)
 
     def calculer_nouvo_dt(self):
         """
