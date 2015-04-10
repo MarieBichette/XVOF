@@ -44,6 +44,7 @@ class MieGruneisenTest(unittest.TestCase):
         dummy = 0.
         with self.assertRaises(NotImplementedError):
             self.equation_of_state.solve_vt(dummy, dummy)
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ############ PROGRAMME PRINCIPAL ####################
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
