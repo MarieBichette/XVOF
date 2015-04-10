@@ -14,6 +14,8 @@ import numpy as np
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+# @Todo : Créer un set (variable de classe) qui contient l'ensemble
+# des indices de tous les noeuds pour éviter les doublons
 
 class Node(object):
     """
@@ -50,10 +52,10 @@ class Node(object):
             message += "est incorrecte!"
             raise SystemExit(message)
         #
-        self._xt = position_initiale[:]
-        self._umundemi = vitesse_initiale[:]
-        self._xtpdt = position_initiale[:]
-        self._upundemi = vitesse_initiale[:]
+        self._xt = np.array(position_initiale)
+        self._umundemi = np.array(vitesse_initiale)
+        self._xtpdt = np.array(position_initiale)
+        self._upundemi = np.array(vitesse_initiale)
         self._masse = 0.
         self._force = np.zeros(self.__dimension, dtype=float)
 
