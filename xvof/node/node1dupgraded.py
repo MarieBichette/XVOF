@@ -208,6 +208,8 @@ class Node1dUpgraded(Node1d):
         """
         Calcul de la force agissant sur le noeud
 
+        @TODO : prise en compte des CLs
+
         TEST UNITAIRE
         >>> import numpy as np
         >>> class element:
