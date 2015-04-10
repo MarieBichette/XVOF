@@ -79,6 +79,42 @@ class Element1d(Element):
             exit(255)
         return res_nrj, res_pression_t_plus_dt, res_cson
 
+    @classmethod
+    def calculer_pseudo(cls, delta_t, rho_old, rho_new, size_new,
+                        cel_son, pseudo_a, pseudo_b):
+        """
+        Calcul de la pseudo
+        """
+        vnt = 1. / rho_old
+        vnplusun = 1. / rho_new
+        vnplusundemi = 0.5 * (vnt + vnplusun)
+        vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
+        divu = vpointnplusundemi / vnplusundemi
+        pseudo = 0.
+        if(divu < 0.):
+            pseudo = 1. / vnplusundemi * \
+            (
+            pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 /
+            vnplusundemi ** 2 +
+            pseudo_b * size_new * cel_son *
+            abs(vpointnplusundemi) / vnplusundemi
+            )
+        return pseudo
+
+    @classmethod
+    def calculer_dt(cls, cfl, rho_old, rho_new, taille_new, cson_new,
+                    pseudo):
+        """
+        Calcul du pas de temps
+        """
+        delta_t = 0.
+        if((rho_new - rho_old) > 0.1):
+            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
+            (rho_new - rho_old)) ** 0.5)
+        else:
+            delta_t = cfl * taille_new / (cson_new)
+        return delta_t
+
     def __init__(self, proprietes, indice, noeuds):
         Element.__init__(self, proprietes, indice, noeuds)
         self.noeuds = noeuds
@@ -219,23 +255,10 @@ class Element1d(Element):
         >>> print my_elem.pseudo
         2438700000.0
         """
-        vnt = 1. / self.rho_t
-        vnplusun = 1. / self.rho_t_plus_dt
-        vnplusundemi = 0.5 * (vnt + vnplusun)
-        vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
-        divu = vpointnplusundemi / vnplusundemi
-        pseuda = self.proprietes.numeric.a_pseudo
-        pseudb = self.proprietes.numeric.b_pseudo
-        if(divu < 0.):
-            self._pseudo_plus_un_demi = 1. / vnplusundemi * \
-            (
-            pseuda * self.taille_t_plus_dt ** 2 * vpointnplusundemi ** 2 /
-            vnplusundemi ** 2 +
-            pseudb * self.taille_t_plus_dt * self.cson_t *
-            abs(vpointnplusundemi) / vnplusundemi
-            )
-        else:
-            self._pseudo_plus_undemi = 0.
+        self._pseudo_plus_un_demi = Element1d.calculer_pseudo(delta_t,
+            self.rho_t, self.rho_t_plus_dt, self.taille_t_plus_dt,
+            self.cson_t, self.proprietes.numeric.a_pseudo,
+            self.proprietes.numeric.b_pseudo)
 
     def calculer_nouvo_dt(self):
         """
@@ -265,12 +288,8 @@ class Element1d(Element):
         2.63819095477e-07
         """
         cfl = self.proprietes.numeric.cfl
-        if((self.rho_t_plus_dt - self.rho_t) > 0.1):
-            self._dt = cfl * self.taille_t_plus_dt / \
-            ((self.cson_t_plus_dt ** 2 + 2. * self.pseudo /
-            (self.rho_t_plus_dt - self.rho_t)) ** 0.5)
-        else:
-            self._dt = cfl * self.taille_t_plus_dt / (self.cson_t_plus_dt)
+        self._dt = Element1d.calculer_dt(cfl, self.rho_t, self.rho_t_plus_dt,
+            self.taille_t_plus_dt, self.cson_t_plus_dt, self.pseudo)
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
