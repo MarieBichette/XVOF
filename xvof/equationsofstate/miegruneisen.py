@@ -118,15 +118,6 @@ class MieGruneisen(EquationOfState):
         Fournit le triplet (pression | dérivée de la pression en
         fonction de l'énergie | vitesse du son) à partir du couple
         ( volume massique | énergie interne )
-
-        TEST UNITAIRE
-
-        >>> ee = MieGruneisen()
-        >>> rho = 9.000001000003e+03
-        >>> e_int = 2.0e+03
-        >>> ee.solve_ve(1.0/rho, e_int)
-        (16004065578.856352, 13441.9005000015, 4869.690880710129)
-
         """
         #-------------------------------------------------
         # Définition de variable locales pour eviter de
@@ -220,13 +211,6 @@ class MieGruneisen(EquationOfState):
 ############ PROGRAMME PRINCIPAL ####################
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
-    #
-    # Lancement du test unitaire
-    #
-    import doctest
-    testres = doctest.testmod(verbose=0)
-    if(testres[0] == 0):
-        print "TESTS UNITAIRES : OK"
     #
     # Lancemet du profiling
     #
