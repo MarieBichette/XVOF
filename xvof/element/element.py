@@ -24,8 +24,8 @@ class Element(object):
     def __init__(self, proprietes, indice, noeuds):
         self._index = indice
         self._dt = 0.
-        self._size_t = None
-        self._size_t_plus_dt = None
+        self._size_t = 0.
+        self._size_t_plus_dt = 0.
         self._properties = proprietes
         self._rho_t = proprietes.material.rho_init
         self._rho_t_plus_dt = proprietes.material.rho_init
@@ -212,7 +212,7 @@ class Element(object):
             format(self.cson_t_plus_dt)
         print message
 
-    def incremener(self):
+    def incrementer(self):
         """
         Incrémentation des variables
         """
