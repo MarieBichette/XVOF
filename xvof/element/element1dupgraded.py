@@ -196,9 +196,66 @@ class Element1dUpgraded(Element1d):
         Pseudo viscosité dans la partie droite de l'élément
         """
         return self._pseudo_plus_un_demi + self._pseudo_plus_un_demi_enrichi
+
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
     #------------------------------------------------------------
+    def __str__(self):
+        message = "ELEMENT ENRICHI {:4d} ".format(self.indice)
+        return message
+
+    def infos(self):
+        """
+        Affichage des informations concernant l'élément
+        """
+        Element1d.infos(self)
+        message = "==> masse volumique à gauche à t = {}\n".\
+            format(self.rho_t_gauche)
+        message += "==> masse volumique à droite à t = {}\n".\
+            format(self.rho_t_droite)
+        message += "==> masse volumique à gauche à t+dt = {}\n".\
+            format(self.rho_t_plus_dt_gauche)
+        message += "==> masse volumique à droite à t+dt = {}\n".\
+            format(self.rho_t_plus_dt_droite)
+        message += "==> taille à gauche à t = {}\n".\
+            format(self.taille_t_gauche)
+        message += "==> taille à droite à t = {}\n".\
+            format(self.taille_t_droite)
+        message += "==> taille à gauche à t+dt = {}\n".\
+            format(self.taille_t_plus_dt_gauche)
+        message += "==> taille à droite à t+dt = {}\n".\
+            format(self.taille_t_plus_dt_droite)
+        message += "==> pression à gauche à t = {}\n".\
+            format(self.pression_t_gauche)
+        message += "==> pression à droite à t = {}\n".\
+            format(self.pression_t_droite)
+        message += "==> pression à gauche à t+dt = {}\n".\
+            format(self.pression_t_plus_dt_gauche)
+        message += "==> pression à droite à t+dt = {}\n".\
+            format(self.pression_t_plus_dt_droite)
+        message += "==> vitesse du son à gauche à t = {}\n".\
+            format(self.cson_t_gauche)
+        message += "==> vitesse du son à droite à t = {}\n".\
+            format(self.cson_t_droite)
+        message += "==> vitesse du son à gauche à t+dt = {}\n".\
+            format(self.cson_t_plus_dt_gauche)
+        message += "==> vitesse du son à droite à t+dt = {}\n".\
+            format(self.cson_t_plus_dt_droite)
+        message += "==> énergie à gauche à t = {}\n".\
+            format(self.nrj_t_gauche)
+        message += "==> énergie à droite à t = {}\n".\
+            format(self.nrj_t_droite)
+        message += "==> énergie à gauche à t+dt = {}\n".\
+            format(self.nrj_t_plus_dt_gauche)
+        message += "==> énergie à droite à t+dt = {}\n".\
+            format(self.nrj_t_plus_dt_droite)
+        message += "==> pseudo à gauche = {}\n".\
+            format(self.pseudo_gauche)
+        message += "==> pseudo à droite = {}\n".\
+            format(self.pseudo_droite)
+        print message
+
+
     def calculer_nouvo_pression(self):
         """
         Calcul du triplet energie, pression, vitesse du son
