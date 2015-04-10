@@ -259,7 +259,7 @@ class Node1dUpgraded(Node1d):
                 self.elements_voisins[1]._pseudo_plus_un_demi_enrichi
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
-            self._force_enrichi[:] = (-pgauche_enr - pdroite) * self.section
+            self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
         self._force = None
 
     def incrementer(self):
