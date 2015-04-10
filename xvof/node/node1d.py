@@ -80,8 +80,6 @@ class Node1d(Node):
         """
         Calcul de la force agissant sur le noeud
 
-        @TODO : prise en compte des CLs
-
         TEST UNITAIRE
         >>> import numpy as np
         >>> class element:
@@ -103,8 +101,24 @@ class Node1d(Node):
         >>> print my_node.force
         [ 1500.]
         """
-        self._force[:] = (self.elements_voisins[0].pressure -
-            self.elements_voisins[1].pressure) * self.section
+        if(len(self.elements_voisins) == 2):
+            pgauche = self.elements_voisins[0].pression_t_plus_dt +\
+                self.elements_voisins[0].pseudo_plus_undemi
+            pdroite = self.elements_voisins[1].pression_t_plus_dt +\
+                self.elements_voisins[1].pseudo_plus_undemi
+            self._force[:] = (pgauche - pdroite) * self.section
+        else:
+            # Cas des noeuds de bord
+            if(self.coordt[0] > self.elements_voisins[0].coord[0]):
+                # Noeud du bord droit
+                pgauche = self.elements_voisins[0].pression_t_plus_dt +\
+                self.elements_voisins[0].pseudo_plus_undemi
+                self._force[:] = pgauche * self.section
+            elif(self.coordt[0] < self.elements_voisins[0].coord[0]):
+                # Noeud du bord gauche
+                pdroite = self.elements_voisins[0].pression_t_plus_dt +\
+                self.elements_voisins[0].pseudo_plus_undemi
+                self._force[:] = - pdroite * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
