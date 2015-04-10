@@ -19,6 +19,34 @@ class Element1dUpgraded(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
     """
+    @classmethod
+    def from_geom_to_enrich(cls, champ_gauche, champ_droite):
+        """
+        Renvoi le champ enrichi à partir des champs gauche et droite
+        """
+        return (champ_droite - champ_gauche) * 0.5
+
+    @classmethod
+    def from_geom_to_classic(cls, champ_gauche, champ_droite):
+        """
+        Renvoi le champ classique à partir des champs gauche et droite
+        """
+        return (champ_droite + champ_gauche) * 0.5
+
+    @classmethod
+    def from_enrich_to_gauche(cls, champ_classic, champ_enrich):
+        """
+        Renvoi le champ à gauche d'après les champs classsique et enrichis
+        """
+        return (champ_classic - champ_enrich)
+
+    @classmethod
+    def from_enrich_to_droite(cls, champ_classic, champ_enrich):
+        """
+        Renvoi le champ à droite d'après les champs classsique et enrichis
+        """
+        return (champ_classic + champ_enrich)
+
     def __init__(self, element_origin, pos_discontin):
         Element1d.__init__(self, element_origin.proprietes,
                            element_origin.indice, element_origin.noeuds)
