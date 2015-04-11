@@ -17,6 +17,7 @@ import numpy as np
 # @Todo : Créer un set (variable de classe) qui contient l'ensemble
 # des indices de tous les noeuds pour éviter les doublons
 
+
 class Node(object):
     """
     Une classe pour les noeuds
@@ -202,7 +203,4 @@ class Node(object):
 #######          PROGRAMME PRINCIPAL        ###############
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
-    import doctest
-    testres = doctest.testmod(verbose=0)
-    if(testres[0] == 0):
-        print "TESTS UNITAIRES : OK"
+    print "Ceci est uniquement un module!"
