@@ -58,3 +58,6 @@ target/
 
 # Ignore spyder project settings
 .spyderproject
+
+# Ignore vim swap files
+.swp
