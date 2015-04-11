@@ -79,27 +79,6 @@ class Node1d(Node):
     def calculer_nouvo_force(self):
         """
         Calcul de la force agissant sur le noeud
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> class element:
-        ...     pass
-        ...
-        >>> elem_gauche = element()
-        >>> elem_droite = element()
-        >>> elem_gauche.coord = np.array([-0.5])
-        >>> elem_droite.coord = np.array([0.5])
-        >>> elem_gauche.pressure = 2.5e+09
-        >>> elem_droite.pressure = 1.0e+09
-        >>> my_node = Node1d(123, section=1.0e-06)
-        >>> my_node.elements_voisins = [elem_droite, elem_gauche]
-        >>> for elem in my_node.elements_voisins:
-        ...     print elem.coord
-        [-0.5]
-        [ 0.5]
-        >>> my_node.calculer_nouvo_force()
-        >>> print my_node.force
-        [ 1500.]
         """
         if(len(self.elements_voisins) == 2):
             pgauche = self.elements_voisins[0].pression_t_plus_dt +\
@@ -123,35 +102,10 @@ class Node1d(Node):
     def calculer_nouvo_vitesse(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> class element:
-        ...     pass
-        ...
-        >>> elem_gauche = element()
-        >>> elem_gauche.coord = np.array([-0.5])
-        >>> elem_gauche.masse = 3./4.
-        >>> elem_gauche.pressure = 2.5e+09
-        >>> elem_droite = element()
-        >>> elem_droite.coord = np.array([0.5])
-        >>> elem_droite.masse = 1./4.
-        >>> elem_droite.pressure = 1.0e+09
-        >>> my_node = Node1d(123, section=1.0e-06)
-        >>> my_node.elements_voisins = [elem_droite, elem_gauche]
-        >>> my_node.calculer_nouvo_force()
-        >>> my_node.calculer_masse_wilkins()
-        >>> my_node.calculer_nouvo_vitesse(1.0e-01)
-        >>> print my_node.upundemi
-        [ 300.]
         """
         self._upundemi = self.force / self.masse * delta_t + self.umundemi
 
 
 if __name__ == "__main__":
-    import doctest
-    testres = doctest.testmod(verbose=0)
-    if(testres[0] == 0):
-        print "TESTS UNITAIRES : OK"
-        MY_NODE = Node1d(123, section=1.0e-06)
-        MY_NODE.infos()
+    MY_NODE = Node1d(123, section=1.0e-06)
+    MY_NODE.infos()
