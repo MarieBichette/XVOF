@@ -162,20 +162,6 @@ class Node(object):
         """
         Calcule la masse associée au noeud par moyenne arithmétique de la
         masse des éléments voisins (méthode Wilkins)
-
-        TEST UNITAIRE
-        >>> class element:
-        ...     pass
-        ...
-        >>> elem_1 = element()
-        >>> elem_1.masse = 3./4.
-        >>> elem_2 = element()
-        >>> elem_2.masse = 2./3.
-        >>> my_node = Node()
-        >>> my_node.elements_voisins = [elem_1, elem_2]
-        >>> my_node.calculer_masse_wilkins()
-        >>> print my_node.masse
-        0.708333333333
         """
         for elem in self.elements_voisins:
             self._masse += elem.masse
@@ -186,14 +172,6 @@ class Node(object):
         Calcul de la coordonnée au temps t+dt
 
         @param delta_t : pas de temps
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> vit_init = np.array([-1.5e+03, 1.2e+03, 0.3e+03])
-        >>> my_node = Node(dim=3, vitesse_initiale=vit_init)
-        >>> my_node.calculer_nouvo_coord(delta_t=0.5e-06)
-        >>> print my_node.coordtpdt
-        [-0.00075  0.0006   0.00015]
         """
         self._xtpdt = self.coordt + self.upundemi * delta_t
 
@@ -201,18 +179,6 @@ class Node(object):
         """
         Mise à jour de la vitesse et de la coordonnée du noeud
         pour passer au pas de temps suivant.
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> poz_init = np.array([0.5, 0.025, -0.1])
-        >>> vit_init = np.array([-1.5e+03, 1.2e+03, 0.3e+03])
-        >>> my_node = Node(dim=3, position_initiale=poz_init, \
-        vitesse_initiale=vit_init)
-        >>> my_node.incrementer()
-        >>> print my_node.umundemi
-        [-1500.  1200.   300.]
-        >>> print my_node.coordt
-        [ 0.5    0.025 -0.1  ]
         """
         self._umundemi[:] = self.upundemi[:]
         self._xt[:] = self.coordtpdt[:]
