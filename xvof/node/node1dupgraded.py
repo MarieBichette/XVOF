@@ -29,7 +29,7 @@ class Node1dUpgraded(Node1d):
         #
         self._umundemi_classique = origin_node.umundemi[:]
         self._upundemi_classique = origin_node.upundemi[:]
-        self._force_classique = np.zeros(1, dtype=float)
+        self._force_classique = origin_node.force[:]
         #==> Toutes les variables enrichies sont initialisées à 0
         self._umundemi_enrichi = np.zeros(1, dtype=float)
         self._upundemi_enrichi = np.zeros(1, dtype=float)
@@ -129,40 +129,6 @@ class Node1dUpgraded(Node1d):
             message += "==> position relative  = {:2d}".\
         format(self.position_relative)
         print message
-
-    def initialize(self, vitesse_t_m, vitesse_t_p, force):
-        """
-        Initialisation des champs classiques
-
-        @param vitesse_t_m : vecteur vitesse au demi pas de temps précédent
-        @param vitesse_t_p : vecteur vitesse au demi pas de temps suivant
-        @param force : vecteur force
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> NODE_INI = Node1d(123, section=1.0e-06)
-        >>> MY_NODE = Node1dUpgraded(NODE_INI)
-        >>> MY_NODE.initialize([-1.0], [2.5], [3.0e+04])
-        >>> print MY_NODE.umundemi_classique
-        [-1.]
-        >>> print MY_NODE.upundemi_classique
-        [ 2.5]
-        >>> print MY_NODE.force_classique
-        [ 30000.]
-        >>> NODE2_INI = Node1d(124, section=1.0e-06)
-        >>> MY_NODE2 = Node1dUpgraded(NODE2_INI)
-        >>> MY_NODE2.initialize(np.array([-1.0]), np.array([2.5]),\
-                                np.array([3.0e+04]))
-        >>> print MY_NODE2.umundemi_classique
-        [-1.]
-        >>> print MY_NODE2.upundemi_classique
-        [ 2.5]
-        >>> print MY_NODE2.force_classique
-        [ 30000.]
-        """
-        self._umundemi_classique = np.array(vitesse_t_m[:])
-        self._upundemi_classique = np.array(vitesse_t_p[:])
-        self._force_classique = np.array(force[:])
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
