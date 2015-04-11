@@ -54,7 +54,7 @@ class Node(object):
         #
         self._xt = np.array(position_initiale)
         self._umundemi = np.array(vitesse_initiale)
-        self._xtpdt = np.array(position_initiale)
+        self._xtpdt = np.zeros(self.__dimension, dtype=float)
         self._upundemi = np.array(vitesse_initiale)
         self._masse = 0.
         self._force = np.zeros(self.__dimension, dtype=float)
