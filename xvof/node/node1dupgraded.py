@@ -22,7 +22,8 @@ class Node1dUpgraded(Node1d):
     # 9 attributs : cela semble raisonnable pour ce cas
     def __init__(self, origin_node):
         Node1d.__init__(self, origin_node.index, poz_init=origin_node.coordt,
-                      vit_init=origin_node.umundemi, section=origin_node.section)
+                      vit_init=origin_node.umundemi,
+                      section=origin_node.section)
 
         self._upundemi = origin_node.upundemi[:]
         self._force = np.zeros(1, dtype=float)
@@ -134,33 +135,6 @@ class Node1dUpgraded(Node1d):
     def calculer_nouvo_vitesse(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> class element:
-        ...     pass
-        ...
-        >>> elem_gauche = element()
-        >>> elem_droite = element()
-        >>> elem_gauche.coord = np.array([-0.5])
-        >>> elem_droite.coord = np.array([0.5])
-        >>> elem_gauche.pressure = 2.5e+09
-        >>> elem_droite.pressure = 1.0e+09
-        >>> elem_gauche.masse = 3./4.
-        >>> elem_droite.masse = 1./4.
-        >>> node_ini = Node1d(123, section=1.0e-06)
-        >>> my_node = Node1dUpgraded(node_ini)
-        >>> my_node.elements_voisins = [elem_droite, elem_gauche]
-        >>> my_node.calculer_masse_wilkins()
-        >>> my_node.calculer_nouvo_force()
-        >>> my_node.position_relative = -1
-        >>> my_node.calculer_nouvo_vitesse(1.0e-01)
-        >>> print my_node.upundemi_classique
-        [ 300.]
-        >>> print my_node.upundemi_enrichi
-        [-700.]
-        >>> print my_node.upundemi
-        [ 1000.]
         """
         self._upundemi_enrichi = \
             self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
@@ -176,32 +150,6 @@ class Node1dUpgraded(Node1d):
         Calcul de la force agissant sur le noeud
 
         @TODO : prise en compte des CLs
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> class element:
-        ...     pass
-        ...
-        >>> elem_gauche = element()
-        >>> elem_droite = element()
-        >>> elem_gauche.coord = np.array([-0.5])
-        >>> elem_droite.coord = np.array([0.5])
-        >>> elem_gauche.pressure = 2.5e+09
-        >>> elem_droite.pressure = 1.0e+09
-        >>> node_ini = Node1d(123, section=1.0e-06)
-        >>> my_node = Node1dUpgraded(node_ini)
-        >>> my_node.elements_voisins = [elem_droite, elem_gauche]
-        >>> for elem in my_node.elements_voisins:
-        ...     print elem.coord
-        [-0.5]
-        [ 0.5]
-        >>> my_node.calculer_nouvo_force()
-        >>> print my_node.force
-        None
-        >>> print my_node.force_classique
-        [ 1500.]
-        >>> print my_node.force_enrichi
-        [-3500.]
         """
         if (self.position_relative == 1):
             # Noeud à droite de la discontinuité
@@ -239,10 +187,6 @@ class Node1dUpgraded(Node1d):
         self._umundemi_enrichi[:] = self.upundemi_enrichi[:]
 
 if __name__ == "__main__":
-    import doctest
-    testres = doctest.testmod(verbose=0)
-    if(testres[0] == 0):
-        print "TESTS UNITAIRES : OK"
-        NODE_INI = Node1d(123, section=1.0e-06)
-        MY_NODE = Node1dUpgraded(NODE_INI)
-        MY_NODE.infos()
+    NODE_INI = Node1d(123, section=1.0e-06)
+    MY_NODE = Node1dUpgraded(NODE_INI)
+    MY_NODE.infos()
