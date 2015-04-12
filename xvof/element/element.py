@@ -4,17 +4,18 @@
 Classe de base définissant un élément
 """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
-from xvof.miscellaneous import *
+
 import numpy as np
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+from xvof.miscellaneous import *
+
+
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Element(object):
     """
     Une classe pour les éléments
@@ -39,9 +40,9 @@ class Element(object):
         self._noeuds = []
         self.noeuds = noeuds
 
-    #------------------------------------------------------------
+    ##############################################################
     # DEFINITIONS DES PROPRIETES
-    #------------------------------------------------------------
+    ##############################################################
     #
     # Seules les modifications de _noeuds_voisins sont permises
     # Les autres attributs sont accessibles en lecture seule
@@ -220,10 +221,11 @@ class Element(object):
         self._rho_t = self._rho_t_plus_dt
         self._cson_t = self._cson_t_plus_dt
         self._nrj_t = self._nrj_t_plus_dt
-        self._size_t_plus_dt = self._size_t
-    #------------------------------------------------------------
+        self._size_t = self._size_t_plus_dt
+    #############################################################
     # DEFINITIONS DES METHODES VIRTUELLES
-    #------------------------------------------------------------
+    #############################################################
+
     @abstractmethod
     def calculer_nouvo_pression(self):
         """
@@ -257,9 +259,9 @@ class Element(object):
         Calcul du nouveau pas de temps
         """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     import doctest
     TESTRES = doctest.testmod(verbose=0)
