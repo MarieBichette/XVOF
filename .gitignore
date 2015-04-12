@@ -61,3 +61,8 @@ target/
 
 # Ignore vim swap files
 .swp
+
+# Ignore pydev project
+.settings
+.pydevproject
+.project
