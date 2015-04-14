@@ -163,21 +163,6 @@ class Element(object):
     def coord(self):
         """
         Position du centre de l'élément au temps t
-
-        TEST UNITAIRE
-        >>> from xvof.node import Node1d
-        >>> from xvof.miscellaneous import *
-        >>> from xvof.equationsofstate import MieGruneisen
-        >>> ee = MieGruneisen()
-        >>> num_props = numerical_props(0.2, 1.0, 0.35)
-        >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
-        >>> geom_props = geometrical_props(1.0e-06)
-        >>> props = properties(num_props, mat_props, geom_props)
-        >>> noda = Node1d(1, np.array([-0.5]))
-        >>> nodb = Node1d(2, np.array([0.5]))
-        >>> my_elem = Element(props, 1, [noda, nodb])
-        >>> my_elem.coord
-        array([ 0.])
         """
         vec_coord = np.zeros(self.noeuds[0].dimension)
         for nod in self.noeuds:
