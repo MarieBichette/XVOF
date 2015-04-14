@@ -3,17 +3,16 @@
 """
 Classe définissant un élément en 1d
 """
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-from xvof.element import Element
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
+from xvof.element import Element
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Element1d(Element):
     """
     Une classe pour les éléments en 1D
@@ -43,7 +42,7 @@ class Element1d(Element):
             """
             (p_i, dpsurde, dummy) = eos.solve_ve(1. / rho_new, enerj)
             # Fonction à annuler
-            func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. -\
+            func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. - \
                 nrj_old
             # Dérivée de la fonction à annuler
             dfunc = 1 + dpsurde * delta_v / 2.
@@ -59,7 +58,7 @@ class Element1d(Element):
                 convergence = True
                 res_nrj = nrj_i
                 res_pression_t_plus_dt, dummy, res_cson = \
-                eos.solve_ve(1. / rho_new, res_nrj)
+                    eos.solve_ve(1. / rho_new, res_nrj)
                 break
             # Incrémentation
             nrj_i = nrj_iplus1
@@ -70,7 +69,7 @@ class Element1d(Element):
                 convergence = True
                 res_nrj = nrj_i
                 res_pression_t_plus_dt, dummy, res_cson = \
-                eos.solve_ve(1. / rho_new, res_nrj)
+                    eos.solve_ve(1. / rho_new, res_nrj)
                 break
         if(nit == 100):
             print "Erreur de convergence du NR"
@@ -93,12 +92,12 @@ class Element1d(Element):
         pseudo = 0.
         if(divu < 0.):
             pseudo = 1. / vnplusundemi * \
-            (
-            pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 /
-            vnplusundemi ** 2 +
-            pseudo_b * size_new * cel_son *
-            abs(vpointnplusundemi) / vnplusundemi
-            )
+                (
+                    pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 / 
+                    vnplusundemi ** 2 + 
+                    pseudo_b * size_new * cel_son * 
+                    abs(vpointnplusundemi) / vnplusundemi
+                 )
         return pseudo
 
     @classmethod
@@ -109,7 +108,7 @@ class Element1d(Element):
         """
         delta_t = 0.
         if((rho_new - rho_old) > 0.1):
-            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
+            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo / 
             (rho_new - rho_old)) ** 0.5)
         else:
             delta_t = cfl * taille_new / (cson_new)
@@ -118,7 +117,7 @@ class Element1d(Element):
     def __init__(self, proprietes, indice, noeuds):
         Element.__init__(self, proprietes, indice, noeuds)
         self.noeuds = noeuds
-        self._size_t = abs(self.noeuds[0].coordt[0] -
+        self._size_t = abs(self.noeuds[0].coordt[0] - 
             self.noeuds[1].coordt[0])
 
     #------------------------------------------------------------
@@ -201,7 +200,7 @@ class Element1d(Element):
         >>> print my_elem.taille_t_plus_dt
         0.001
         """
-        self._size_t_plus_dt = abs(self.noeuds[0].coordtpdt[0] -
+        self._size_t_plus_dt = abs(self.noeuds[0].coordtpdt[0] - 
                                     self.noeuds[1].coordtpdt[0])
 
     def calculer_nouvo_densite(self):
@@ -291,9 +290,9 @@ class Element1d(Element):
         self._dt = Element1d.calculer_dt(cfl, self.rho_t, self.rho_t_plus_dt,
             self.taille_t_plus_dt, self.cson_t_plus_dt, self.pseudo)
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 #######          PROGRAMME PRINCIPAL        ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     import doctest
     TESTRES = doctest.testmod(verbose=0)
