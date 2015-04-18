@@ -4,15 +4,8 @@
 Classe de base définissant un noeud
 """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
 import numpy as np
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 # @Todo : Créer un set (variable de classe) qui contient l'ensemble
 # des indices de tous les noeuds pour éviter les doublons
@@ -60,9 +53,6 @@ class Node(object):
         self._masse = 0.
         self._force = np.zeros(self.__dimension, dtype=float)
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES PROPRIETES
-    #------------------------------------------------------------
     #
     # Seules les modifications de _elements_voisins sont permises
     # Les autres attributs sont accessibles en lecture seule
@@ -137,9 +127,6 @@ class Node(object):
         """
         return self.__dimension
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
     def __str__(self):
         message = "NOEUD {:4d} ".format(self.index)
         message += "(dimension : {:1d})".format(self.__dimension)
@@ -184,9 +171,6 @@ class Node(object):
         self._umundemi[:] = self.upundemi[:]
         self._xt[:] = self.coordtpdt[:]
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES METHODES VIRTUELLES
-    #------------------------------------------------------------
     @abstractmethod
     def calculer_nouvo_force(self):
         """
@@ -199,8 +183,5 @@ class Node(object):
         Calcul de la vitesse au demi pas de temps supérieur
         """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#######          PROGRAMME PRINCIPAL        ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     print "Ceci est uniquement un module!"
