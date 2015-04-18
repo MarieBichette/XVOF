@@ -3,16 +3,16 @@
 """
 Classe définissant un élément en 1d
 """
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# --------------------------------------------------------
+#               IMPORTATIONS DIVERSES                    #
+# --------------------------------------------------------
 import numpy as np
 from xvof.element import Element
 
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# --------------------------------------------------------
+#        DEFINITION DES CLASSES ET FONCTIONS             #
+# --------------------------------------------------------
 class Element1d(Element):
     """
     Une classe pour les éléments en 1D
@@ -94,8 +94,7 @@ class Element1d(Element):
             pseudo = 1. / vnplusundemi * \
                 (
                     pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 / 
-                    vnplusundemi ** 2 + 
-                    pseudo_b * size_new * cel_son * 
+                    vnplusundemi ** 2 + pseudo_b * size_new * cel_son * 
                     abs(vpointnplusundemi) / vnplusundemi
                  )
         return pseudo
@@ -109,7 +108,7 @@ class Element1d(Element):
         delta_t = 0.
         if((rho_new - rho_old) > 0.1):
             delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo / 
-            (rho_new - rho_old)) ** 0.5)
+                                           (rho_new - rho_old)) ** 0.5)
         else:
             delta_t = cfl * taille_new / (cson_new)
         return delta_t
@@ -118,11 +117,11 @@ class Element1d(Element):
         Element.__init__(self, proprietes, indice, noeuds)
         self.noeuds = noeuds
         self._size_t = abs(self.noeuds[0].coordt[0] - 
-            self.noeuds[1].coordt[0])
+                           self.noeuds[1].coordt[0])
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES PROPRIETES
-    #------------------------------------------------------------
+    # --------------------------------------------------------
+    #            DEFINITION DES PROPRIETES                   #
+    # --------------------------------------------------------
     @property
     def noeuds(self):
         """
@@ -139,11 +138,11 @@ class Element1d(Element):
             raise SystemExit("En 1D, un élément possède 2 noeuds!")
         self._noeuds[:] = list_noeuds[:]
         self._noeuds = \
-        sorted(self._noeuds, key=lambda m: m.coordt[0])
+            sorted(self._noeuds, key=lambda m: m.coordt[0])
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
+    # --------------------------------------------------------
+    #            DEFINITION DES METHODES                     #
+    # --------------------------------------------------------
     def calculer_nouvo_pression(self):
         """
         Calcul du triplet energie, pression, vitesse du son
@@ -152,15 +151,16 @@ class Element1d(Element):
         """
         self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
             Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                self.rho_t, self.rho_t_plus_dt, self.pression_t, self.pseudo,
-                self.nrj_t)
+                                            self.rho_t, self.rho_t_plus_dt,
+                                            self.pression_t, self.pseudo,
+                                            self.nrj_t)
 
     def calculer_nouvo_taille(self):
         """
         Calcul de la nouvelle longueur de l'élément
         """
         self._size_t_plus_dt = abs(self.noeuds[0].coordtpdt[0] - 
-                                    self.noeuds[1].coordtpdt[0])
+                                   self.noeuds[1].coordtpdt[0])
 
     def calculer_nouvo_densite(self):
         """
@@ -174,22 +174,25 @@ class Element1d(Element):
         """
         Calcul de la nouvelle pseudo
         """
-        self._pseudo_plus_un_demi = Element1d.calculer_pseudo(delta_t,
-            self.rho_t, self.rho_t_plus_dt, self.taille_t_plus_dt,
-            self.cson_t, self.proprietes.numeric.a_pseudo,
-            self.proprietes.numeric.b_pseudo)
+        self._pseudo_plus_un_demi = \
+            Element1d.calculer_pseudo(delta_t, self.rho_t, self.rho_t_plus_dt,
+                                      self.taille_t_plus_dt, self.cson_t,
+                                      self.proprietes.numeric.a_pseudo,
+                                      self.proprietes.numeric.b_pseudo)
 
     def calculer_nouvo_dt(self):
         """
         Calcul du pas de temps dans l'élément
         """
         cfl = self.proprietes.numeric.cfl
-        self._dt = Element1d.calculer_dt(cfl, self.rho_t, self.rho_t_plus_dt,
-            self.taille_t_plus_dt, self.cson_t_plus_dt, self.pseudo)
+        self._dt = \
+            Element1d.calculer_dt(cfl, self.rho_t, self.rho_t_plus_dt,
+                                  self.taille_t_plus_dt, self.cson_t_plus_dt,
+                                  self.pseudo)
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#######          PROGRAMME PRINCIPAL        ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# --------------------------------------------------------
+#            PROGRAMME PRINCIPAL                         #
+# --------------------------------------------------------
 if __name__ == "__main__":
     #
     # Lancemet du profiling
