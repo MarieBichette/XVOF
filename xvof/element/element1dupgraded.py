@@ -3,18 +3,17 @@
 """
 Classe définissant un élément enrichi en 1d
 """
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+import numpy as np
 from xvof.element import Element1d
 from xvof.node import Node1dUpgraded
-import numpy as np
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Element1dUpgraded(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
@@ -240,9 +239,9 @@ class Element1dUpgraded(Element1d):
         return self._to_droite(self._pseudo_plus_un_demi,
                                self._pseudo_plus_un_demi_enrichi)
 
-    #------------------------------------------------------------
-    # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
+    # --------------------------------------------------------
+    #        DEFINITION DES METHODES                         #
+    # --------------------------------------------------------
     def __str__(self):
         message = "ELEMENT ENRICHI {:4d} ".format(self.indice)
         return message
@@ -298,7 +297,6 @@ class Element1dUpgraded(Element1d):
             format(self.pseudo_droite)
         print message
 
-
     def calculer_nouvo_pression(self):
         """
         Calcul du triplet energie, pression, vitesse du son
@@ -306,15 +304,19 @@ class Element1dUpgraded(Element1d):
         Formulation v-e
         """
         nrj_t_plus_dt_g, pression_t_plus_dt_g, cson_t_plus_dt_g = \
-        Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                self.rho_t_gauche, self.rho_t_plus_dt_gauche,
-                self.pression_t_gauche, self.pseudo_gauche,
-                self.nrj_t_gauche)
+            Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
+                                            self.rho_t_gauche,
+                                            self.rho_t_plus_dt_gauche,
+                                            self.pression_t_gauche,
+                                            self.pseudo_gauche,
+                                            self.nrj_t_gauche)
         nrj_t_plus_dt_d, pression_t_plus_dt_d, cson_t_plus_dt_d = \
-        Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                self.rho_t_droite, self.rho_t_plus_dt_droite,
-                self.pression_t_droite, self.pseudo_droite,
-                self.nrj_t_droite)
+            Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
+                                            self.rho_t_droite,
+                                            self.rho_t_plus_dt_droite,
+                                            self.pression_t_droite,
+                                            self.pseudo_droite,
+                                            self.nrj_t_droite)
         #
         self._pression_t_plus_dt = \
             self._to_classic(pression_t_plus_dt_g, pression_t_plus_dt_d)
@@ -334,38 +336,18 @@ class Element1dUpgraded(Element1d):
     def calculer_nouvo_taille(self, delta_t):
         """
         Calcul des nouvelles longueurs de l'élément
-
-        TEST UNITAIRE
-        >>> import numpy as np
-        >>> from xvof.node import Node1d
-        >>> from xvof.miscellaneous import *
-        >>> from xvof.equationsofstate import MieGruneisen
-        >>> ee = MieGruneisen()
-        >>> num_props = numerical_props(0.2, 1.0, 0.35)
-        >>> mat_props = material_props(1.0e+05, 0.0, 8129., ee)
-        >>> geom_props = geometrical_props(1.0e-06)
-        >>> props = properties(num_props, mat_props, geom_props)
-        >>> noda = Node1d(1, poz_init=np.array([0.6]), section=1.0e-06)
-        >>> nodb = Node1d(1, poz_init=np.array([-0.2]), section=1.0e-06)
-        >>> my_elem = Element1d(props, 123, [noda, nodb])
-        >>> my_elem_up = Element1dUpgraded(my_elem, 0.5)
-        >>> my_elem_up.calculer_nouvo_taille(1.0e-06)
-        >>> print my_elem_up.taille_t_plus_dt_gauche
-        [ 0.4]
-        >>> print my_elem_up.taille_t_plus_dt_droite
-        [ 0.4]
         """
         # Les noeuds sont classés par coord croissante
         nod_g = self.noeuds[0]
         nod_d = self.noeuds[1]
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
-            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
+            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) - 
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
             * delta_t
         self._taille_droite_t_plus_dt = self.taille_t_droite + \
-            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
+            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) - 
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
-             * delta_t
+            * delta_t
 
     def calculer_nouvo_densite(self):
         """
@@ -384,13 +366,17 @@ class Element1dUpgraded(Element1d):
         """
         Calcul de la nouvelle pseudo
         """
-        pseudo_gauche = Element1d.calculer_pseudo(delta_t,
-            self.rho_t_gauche, self.rho_t_plus_dt_gauche,
-            self.taille_t_plus_dt_gauche, self.cson_t_gauche)
+        pseudo_gauche = \
+            Element1d.calculer_pseudo(delta_t, self.rho_t_gauche,
+                                      self.rho_t_plus_dt_gauche,
+                                      self.taille_t_plus_dt_gauche,
+                                      self.cson_t_gauche)
 
-        pseudo_droite = Element1d.calculer_pseudo(delta_t,
-            self.rho_t_droite, self.rho_t_plus_dt_droite,
-            self.taille_t_plus_dt_droite, self.cson_t_droite)
+        pseudo_droite = \
+            Element1d.calculer_pseudo(delta_t, self.rho_t_droite,
+                                      self.rho_t_plus_dt_droite,
+                                      self.taille_t_plus_dt_droite,
+                                      self.cson_t_droite)
 
         self._pseudo_plus_un_demi = \
             self._to_classic(pseudo_gauche, pseudo_droite)
@@ -402,13 +388,19 @@ class Element1dUpgraded(Element1d):
         Calcul du pas de temps
         """
         cfl = self.proprietes.numeric.cfl
-        dt_g = Element1d.calculer_dt(cfl, self.rho_t_gauche,
-            self.rho_t_plus_dt_gauche, self.taille_t_plus_dt_gauche,
-            self.cson_t_plus_dt_gauche, self.pseudo_gauche)
+        dt_g = \
+            Element1d.calculer_dt(cfl, self.rho_t_gauche,
+                                  self.rho_t_plus_dt_gauche,
+                                  self.taille_t_plus_dt_gauche,
+                                  self.cson_t_plus_dt_gauche,
+                                  self.pseudo_gauche)
 
-        dt_d = Element1d.calculer_dt(cfl, self.rho_t_droite,
-            self.rho_t_plus_dt_droite, self.taille_t_plus_dt_droite,
-            self.cson_t_plus_dt_droite, self.pseudo_droite)
+        dt_d = \
+            Element1d.calculer_dt(cfl, self.rho_t_droite,
+                                  self.rho_t_plus_dt_droite,
+                                  self.taille_t_plus_dt_droite,
+                                  self.cson_t_plus_dt_droite,
+                                  self.pseudo_droite)
 
         self._dt = dt_g + dt_d  # Bizarre --> A vérifier
 
@@ -421,12 +413,3 @@ class Element1dUpgraded(Element1d):
         self._rho_t_enrichi = self._rho_t_plus_dt_enrichi
         self._cson_t_enrichi = self._cson_t_plus_dt_enrichi
         self._nrj_t_enrichi = self._nrj_t_plus_dt_enrichi
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#######          PROGRAMME PRINCIPAL        ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-if __name__ == "__main__":
-    import doctest
-    TESTRES = doctest.testmod(verbose=0)
-    if(TESTRES[0] == 0):
-        print "TESTS UNITAIRES : OK"
