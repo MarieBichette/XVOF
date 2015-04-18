@@ -30,16 +30,11 @@ class ElementTest(unittest.TestCase):
         pass
 
     def test_coord(self):
-        """
-        Test du calcul des coordonnées du centre maille
-        par la fonction Element.coord()
-        """
+        """ Test de la méthode Element.coord() """
         np.testing.assert_array_equal(self.my_elem.coord, np.array([-0.2]))
 
     def test_incrementer(self):
-        """
-        Test de la fonction Element.incrementer()
-        """
+        """ Test de la méthode Element.incrementer() """
         self.my_elem._pression_t_plus_dt = 2.0e+09
         self.my_elem._rho_t_plus_dt = 8500.
         self.my_elem._cson_t_plus_dt = 4360.

@@ -3,10 +3,11 @@
 """
 Classe de test du module node1dupgraded
 """
+import unittest
+
+import numpy as np
 import xvof.node.node1d as nd1d
 import xvof.node.node1dupgraded as nd1dup
-import numpy as np
-import unittest
 
 
 class Node1dUpgradedTest(unittest.TestCase):
@@ -33,9 +34,7 @@ class Node1dUpgradedTest(unittest.TestCase):
         self.my_node.calculer_masse_wilkins()
 
     def test_position_relative(self):
-        """
-        Test de l'affectation de position_relative
-        """
+        """ Test de l'affectation de position_relative """
         #
         # Si position relative n'est pas -1 ou 1 une exception de type
         # SystemExit doit ëtre levée
@@ -44,9 +43,7 @@ class Node1dUpgradedTest(unittest.TestCase):
             self.my_node.position_relative = 2
 
     def test_calculer_nouvo_force(self):
-        """
-        Test de la fonction Node1dUpgraded.calculer_nouvo_force
-        """
+        """ Test de la méthode Node1dUpgraded.calculer_nouvo_force() """
         # Noeud à droite de la discontinuité
         self.my_node.position_relative = -1
         self.my_node.calculer_nouvo_force()
@@ -63,9 +60,7 @@ class Node1dUpgradedTest(unittest.TestCase):
                                       np.array([-3250.]))
 
     def test_calculer_nouvo_vitesse(self):
-        """
-        Test de la méthode Node1dUpgraded.calculer_nouvo_vitesse
-        """
+        """ Test de la méthode Node1dUpgraded.calculer_nouvo_vitesse() """
         #  Noeud à droite de la discontinuité
         self.my_node.position_relative = -1
         self.my_node.calculer_nouvo_force()
@@ -83,8 +78,5 @@ class Node1dUpgradedTest(unittest.TestCase):
         np.testing.assert_array_equal(self.my_node.upundemi_enrichi,
                                       np.array([-650.0]))
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     unittest.main()

@@ -3,9 +3,10 @@
 """
 Classe de test du module node1d
 """
-import xvof.node.node1d as nd1d
-import numpy as np
 import unittest
+
+import numpy as np
+import xvof.node.node1d as nd1d
 
 
 class Node1dTest(unittest.TestCase):
@@ -28,10 +29,7 @@ class Node1dTest(unittest.TestCase):
         self.my_node = nd1d.Node1d(1, section=1.0e-06)
 
     def test_elements_voisins(self):
-        """
-        Test du setter de element_voisins de la classe Node1d
-        (Node1d.elements_voisins = )
-        """
+        """ Test de Node1d.elements_voisins = """
         #
         # En 1D affecter plus de deux éléments à un noeud doit lever
         # une exception de type SystemExit
@@ -47,9 +45,7 @@ class Node1dTest(unittest.TestCase):
                              self.my_node.elements_voisins[1].coord)
 
     def test_calculer_nouvo_force(self):
-        """
-        Test de la fonction Node1d.calculer_nouvo_force
-        """
+        """ Test de la méthode Node1d.calculer_nouvo_force() """
         #
         # Test du calcul de la force en présence de 2 éléments voisins
         #
@@ -70,9 +66,7 @@ class Node1dTest(unittest.TestCase):
         np.testing.assert_array_equal(self.my_node.force, np.array([-1500.]))
 
     def test_calculer_nouvo_vitesse(self):
-        """
-        Test de la fonction Node1d.calculer_nouvo_vitesse
-        """
+        """ Test de la méthode Node1d.calculer_nouvo_vitesse() """
         self.my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
         # On a besoin de la force agissant sur le noeud
         self.my_node.calculer_nouvo_force()
@@ -83,8 +77,5 @@ class Node1dTest(unittest.TestCase):
         self.my_node.calculer_nouvo_vitesse(1.0e-01)
         np.testing.assert_array_equal(self.my_node.upundemi, np.array([400.]))
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     unittest.main()
