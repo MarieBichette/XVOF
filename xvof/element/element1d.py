@@ -75,7 +75,7 @@ class Element1d(Element):
             print "Erreur de convergence du NR"
             print "func_i=", func_i
             print "nit=", nit
-            exit(255)
+            raise ValueError()
         return res_nrj, res_pression_t_plus_dt, res_cson
 
     @classmethod
@@ -140,6 +140,12 @@ class Element1d(Element):
         self._noeuds = \
             sorted(self._noeuds, key=lambda m: m.coordt[0])
 
+    @property
+    def masse(self):
+        """ Masse de l'élément """
+        return self.taille_t * self.proprietes.geometric.section * \
+            self.rho_t
+
     # --------------------------------------------------------
     #            DEFINITION DES METHODES                     #
     # --------------------------------------------------------
@@ -149,11 +155,15 @@ class Element1d(Element):
         au pas de temps suivant
         Formulation v-e
         """
-        self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
-            Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                                            self.rho_t, self.rho_t_plus_dt,
-                                            self.pression_t, self.pseudo,
-                                            self.nrj_t)
+        try:
+            self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
+                Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
+                                                self.rho_t, self.rho_t_plus_dt,
+                                                self.pression_t, self.pseudo,
+                                                self.nrj_t)
+        except ValueError as err:
+            print "Element concerné : {}".format(self)
+            raise err
 
     def calculer_nouvo_taille(self):
         """
