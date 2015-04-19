@@ -26,7 +26,7 @@ class Node(object):
         # _elements_voisins est rendu public par le property.setter
         # mais avec un contrôle sur les accès. Cette property est a surcharger
         # dans les classes filles
-        self._elements_voisins = None
+        self._elements_voisins = []
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if (not isinstance(index, int)):
@@ -36,7 +36,8 @@ class Node(object):
         if (position_initiale is None):
             position_initiale = np.zeros(self.__dimension, dtype=float)
         elif (np.shape(position_initiale) != (self.__dimension,)):
-            message = "La dimension du vecteur position_initiale "
+            message = "Node() : La dimension ({}) du vecteur position_initiale "\
+                .format(np.shape(position_initiale))
             message += "est incorrecte!"
             raise SystemExit(message)
         if (vitesse_initiale is None):
@@ -69,7 +70,7 @@ class Node(object):
         """
         Setter des elements voisins
         """
-        self._elements_voisins = elems[:]
+        self._elements_voisins.extend(elems)
 
     @property
     def index(self):

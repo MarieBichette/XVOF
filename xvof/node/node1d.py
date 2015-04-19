@@ -3,17 +3,16 @@
 """
 Classe définissant un noeud en 1d
 """
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-from xvof.node import Node
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
+from xvof.node import Node
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Node1d(Node):
     """
     Une classe pour les noeuds classiques dans le cas 1d
@@ -56,11 +55,12 @@ class Node1d(Node):
         s'assurer qu'il n y ait que deux voisins possibles et pour les trier
         de gauche à droite
         """
-        if(len(elems) > 2):
+        self._elements_voisins.extend(elems)
+        if(len(self.elements_voisins) > 2):
             message = "En 1d au plus deux éléments peuveut être"
             message += " voisins du {}".format(self)
+            message += "\n Liste des elements : {}".format(self.elements_voisins)
             raise SystemExit(message)
-        self._elements_voisins = elems[:]
         self._elements_voisins = \
         sorted(self._elements_voisins, key=lambda m: m.coord[0])
 
@@ -81,23 +81,23 @@ class Node1d(Node):
         Calcul de la force agissant sur le noeud
         """
         if(len(self.elements_voisins) == 2):
-            pgauche = self.elements_voisins[0].pression_t_plus_dt +\
+            pgauche = self.elements_voisins[0].pression_t_plus_dt + \
                 self.elements_voisins[0].pseudo
-            pdroite = self.elements_voisins[1].pression_t_plus_dt +\
+            pdroite = self.elements_voisins[1].pression_t_plus_dt + \
                 self.elements_voisins[1].pseudo
             self._force[:] = (pgauche - pdroite) * self.section
         else:
             # Cas des noeuds de bord
             if(self.coordt[0] > self.elements_voisins[0].coord[0]):
                 # Noeud du bord droit
-                pgauche = self.elements_voisins[0].pression_t_plus_dt +\
+                pgauche = self.elements_voisins[0].pression_t_plus_dt + \
                 self.elements_voisins[0].pseudo
                 self._force[:] = pgauche * self.section
             elif(self.coordt[0] < self.elements_voisins[0].coord[0]):
                 # Noeud du bord gauche
-                pdroite = self.elements_voisins[0].pression_t_plus_dt +\
+                pdroite = self.elements_voisins[0].pression_t_plus_dt + \
                 self.elements_voisins[0].pseudo
-                self._force[:] = - pdroite * self.section
+                self._force[:] = -pdroite * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
