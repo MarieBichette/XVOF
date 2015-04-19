@@ -40,6 +40,7 @@ class Node1dTest(unittest.TestCase):
         #
         # Les éléments doivent être triés selon les coordonnées croissantes
         #
+        self.my_node._elements_voisins = []
         self.my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
         self.assertLessEqual(self.my_node.elements_voisins[0].coord,
                              self.my_node.elements_voisins[1].coord)
@@ -52,12 +53,14 @@ class Node1dTest(unittest.TestCase):
         self.my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
         self.my_node.calculer_nouvo_force()
         np.testing.assert_array_equal(self.my_node.force, np.array([2000.]))
+        self.my_node._elements_voisins = []
         #
         # Test du calcul de la force pour un noeud de bord droit
         #
         self.my_node.elements_voisins = [self.elem_gauche]
         self.my_node.calculer_nouvo_force()
         np.testing.assert_array_equal(self.my_node.force, np.array([3500.]))
+        self.my_node._elements_voisins = []        
         #
         # Test du calcul de la force pour un noeud de bord gauche
         #
