@@ -49,6 +49,7 @@ class Element1d(Element):
             return (func, dfunc)
         #
         (func_i, dfunc_i_surde) = calcul_f_et_df(nrj_i)
+        # print "f={} et df={}".format(func_i, dfunc_i_surde)
         #
         while(not convergence and (nit < 100)):
             # Correction
@@ -76,6 +77,8 @@ class Element1d(Element):
             print "func_i=", func_i
             print "nit=", nit
             raise ValueError()
+#         else:
+#             print "Convergence du Newton en {:2d} itérations".format(nit)
         return res_nrj, res_pression_t_plus_dt, res_cson
 
     @classmethod
@@ -156,11 +159,20 @@ class Element1d(Element):
         Formulation v-e
         """
         try:
+#             print "Appel du Nexton avec :"
+#             print "rho_t =", self.rho_t
+#             print "rho_t_plus_dt =", self.rho_t_plus_dt
+#             print "pression_t =", self.pression_t
+#             print "nrj_t =", self.nrj_t
             self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
                 Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
                                                 self.rho_t, self.rho_t_plus_dt,
                                                 self.pression_t, self.pseudo,
                                                 self.nrj_t)
+#             print "Resultats du Newton :"
+#             print "pression_t_plus_dt = ", self.pression_t_plus_dt
+#             print "nrj_t_plus_dt =", self.nrj_t_plus_dt
+#             print "cson_t_plus_dt =", self.cson_t_plus_dt
         except ValueError as err:
             print "Element concerné : {}".format(self)
             raise err

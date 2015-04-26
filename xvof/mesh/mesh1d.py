@@ -42,7 +42,7 @@ class Mesh1d(object):
             self.__cells.append(elem)
             self.__nodes[m].elements_voisins = [elem]
             self.__nodes[m + 1].elements_voisins = [elem]
-    
+
     @property
     def nodes(self):
         """ Liste des noeuds """
@@ -94,3 +94,58 @@ class Mesh1d(object):
             noeud.incrementer()
         for cell in self.cells:
             cell.incrementer()
+
+    @property
+    def velocity_t_minus_half_field(self):
+        """ Champ de vitesse à t-1/2"""
+        return [node.umundemi for node in self.nodes]
+
+    @property
+    def velocity_t_plus_half_field(self):
+        """ Champ de vitesse à t+1/2"""
+        return [node.upundemi for node in self.nodes]
+
+    @property
+    def coord_t_field(self):
+        """ Champ de vitesse à t"""
+        return [node.coordt for node in self.nodes]
+
+    @property
+    def coord_t_plus_dt_field(self):
+        """ Champ de vitesse à t+dt"""
+        return [node.coordtpdt for node in self.nodes]
+
+    @property
+    def force_field(self):
+        """ Champ de force nodale"""
+        return [node.force for node in self.nodes]
+
+    @property
+    def size_t_field(self):
+        """ Tailles des éléments à t"""
+        return [elem.taille_t for elem in self.cells]
+
+    @property
+    def size_t_plus_dt_field(self):
+        """ Tailles des éléments à t"""
+        return [elem.taille_t_plus_dt for elem in self.cells]
+
+    @property
+    def pressure_t_field(self):
+        """ Champ de pression à t"""
+        return [elem.pression_t for elem in self.cells]
+
+    @property
+    def pressure_t_plus_dt_field(self):
+        """ Champ de pression à t+dt"""
+        return [elem.pression_t_plus_dt for elem in self.cells]
+
+    @property
+    def rho_t_field(self):
+        """ Champ de densité à t"""
+        return [elem.rho_t for elem in self.cells]
+
+    @property
+    def rho_t_plus_dt_field(self):
+        """ Champ de densité à t+dt"""
+        return [elem.rho_t_plus_dt for elem in self.cells]
