@@ -118,13 +118,21 @@ class Mesh1d(object):
 
     @property
     def coord_t_field(self):
-        """ Champ de vitesse à t"""
+        """ Champ de position à t"""
         return [node.coordt for node in self.nodes]
 
     @property
     def coord_t_plus_dt_field(self):
-        """ Champ de vitesse à t+dt"""
+        """ Champ de position à t+dt"""
         return [node.coordtpdt for node in self.nodes]
+
+    @property
+    def coord_elements_field(self):
+        """
+        Champ de position des éléments à t
+        (Moyenne des champs de position à t des noeuds)
+        """
+        return [cell.coord for cell in self.cells]
 
     @property
     def force_field(self):
@@ -144,12 +152,12 @@ class Mesh1d(object):
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        return [elem.pression_t / 1.e+09 for elem in self.cells]
+        return [elem.pression_t for elem in self.cells]
 
     @property
     def pressure_t_plus_dt_field(self):
         """ Champ de pression à t+dt"""
-        return [elem.pression_t_plus_dt / 1.e+09 for elem in self.cells]
+        return [elem.pression_t_plus_dt for elem in self.cells]
 
     @property
     def rho_t_field(self):
