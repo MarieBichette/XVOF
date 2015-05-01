@@ -60,8 +60,6 @@ class Element1d(Element):
                 res_pression_t_plus_dt, dummy, res_cson = \
                     eos.solve_ve(1. / rho_new, res_nrj)
                 break
-            #
-            # (func_i, dfunc_i_surde) = cls.calcul_f_et_df(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
             if(abs(dfunc_i_surde) < 1.e-09):
                 print "Sortie du NR par manque de pente :-)"
                 convergence = True
@@ -69,13 +67,6 @@ class Element1d(Element):
                 res_pression_t_plus_dt, dummy, res_cson = \
                     eos.solve_ve(1. / rho_new, res_nrj)
                 break
-#             if(nit >= 1):
-#                 print "Pb de convergence du NR"
-#                 print "func_i=", func_i
-#                 print "dfunc_i_surde=", dfunc_i_surde
-#                 print "nrj_i=", nrj_i
-#                 print "nrj_iplus1=", nrj_iplus1
-#                 print "nit=", nit
             # Incrémentation
             nrj_i = nrj_iplus1
         if(nit == iter_max):
@@ -165,20 +156,11 @@ class Element1d(Element):
         Formulation v-e
         """
         try:
-#             print "Appel du Nexton avec :"
-#             print "rho_t =", self.rho_t
-#             print "rho_t_plus_dt =", self.rho_t_plus_dt
-#             print "pression_t =", self.pression_t
-#             print "nrj_t =", self.nrj_t
             self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
                 Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
                                                 self.rho_t, self.rho_t_plus_dt,
                                                 self.pression_t, self.pseudo,
                                                 self.nrj_t)
-#             print "Resultats du Newton :"
-#             print "pression_t_plus_dt = ", self.pression_t_plus_dt
-#             print "nrj_t_plus_dt =", self.nrj_t_plus_dt
-#             print "cson_t_plus_dt =", self.cson_t_plus_dt
         except ValueError as err:
             print "Element concerné : {}".format(self)
             raise err
