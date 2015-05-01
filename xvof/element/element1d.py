@@ -18,6 +18,21 @@ class Element1d(Element):
     Une classe pour les éléments en 1D
     """
     @classmethod
+    def calcul_f_et_df(cls, enerj, rho_new, rho_old, pression_t, enerj_old, eos):
+        """
+        Fonction à annuler et sa dérivée pour le schéma VNR
+        Formulation v-e
+        """
+        (p_i, dpsurde, dummy) = eos.solve_ve(1. / rho_new, enerj)
+        # Fonction à annuler
+        delta_v = 1. / rho_new - 1. / rho_old
+        func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. - \
+            enerj_old
+        # Dérivée de la fonction à annuler
+        dfunc = 1 + dpsurde * delta_v / 2.
+        return (func, dfunc)
+    
+    @classmethod
     def newton_raphson_for_ve(cls, eos, rho_old, rho_new, pression_old,
                               pseudo_old, nrj_old):
         """
@@ -25,7 +40,7 @@ class Element1d(Element):
         energie/pression au pas de temps suivant
         Formulation v-e
         """
-        delta_v = 1. / rho_new - 1. / rho_old
+        iter_max = 20
         pression_t = pression_old + 2. * pseudo_old
         # Variable du Newton
         nrj_i = nrj_old
@@ -34,24 +49,8 @@ class Element1d(Element):
         # Nombre d'itérations
         nit = 0
         #
-
-        def calcul_f_et_df(enerj):
-            """
-            Fonction à annuler et sa dérivée pour le schéma VNR
-            Formulation v-e
-            """
-            (p_i, dpsurde, dummy) = eos.solve_ve(1. / rho_new, enerj)
-            # Fonction à annuler
-            func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. - \
-                nrj_old
-            # Dérivée de la fonction à annuler
-            dfunc = 1 + dpsurde * delta_v / 2.
-            return (func, dfunc)
-        #
-        (func_i, dfunc_i_surde) = calcul_f_et_df(nrj_i)
-        # print "f={} et df={}".format(func_i, dfunc_i_surde)
-        #
-        while(not convergence and (nit < 100)):
+        while(not convergence and (nit < iter_max)):
+            (func_i, dfunc_i_surde) = cls.calcul_f_et_df(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
             # Correction
             nrj_iplus1 = nrj_i - func_i / dfunc_i_surde
             nit += 1
@@ -61,10 +60,8 @@ class Element1d(Element):
                 res_pression_t_plus_dt, dummy, res_cson = \
                     eos.solve_ve(1. / rho_new, res_nrj)
                 break
-            # Incrémentation
-            nrj_i = nrj_iplus1
             #
-            (func_i, dfunc_i_surde) = calcul_f_et_df(nrj_i)
+            # (func_i, dfunc_i_surde) = cls.calcul_f_et_df(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
             if(abs(dfunc_i_surde) < 1.e-09):
                 print "Sortie du NR par manque de pente :-)"
                 convergence = True
@@ -72,7 +69,16 @@ class Element1d(Element):
                 res_pression_t_plus_dt, dummy, res_cson = \
                     eos.solve_ve(1. / rho_new, res_nrj)
                 break
-        if(nit == 100):
+#             if(nit >= 1):
+#                 print "Pb de convergence du NR"
+#                 print "func_i=", func_i
+#                 print "dfunc_i_surde=", dfunc_i_surde
+#                 print "nrj_i=", nrj_i
+#                 print "nrj_iplus1=", nrj_iplus1
+#                 print "nit=", nit
+            # Incrémentation
+            nrj_i = nrj_iplus1
+        if(nit == iter_max):
             print "Erreur de convergence du NR"
             print "func_i=", func_i
             print "nit=", nit
