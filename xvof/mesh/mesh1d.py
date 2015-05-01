@@ -3,6 +3,8 @@
 """
 Classe de base définissant un maillage 1d
 """
+from configobj import Section
+
 import numpy as np
 from xvof.element.element1d import Element1d
 from xvof.equationsofstate.miegruneisen import MieGruneisen
@@ -34,7 +36,8 @@ class Mesh1d(object):
             poz = initial_coordinates[n]
             vit = initial_velocities[n]
             nod = Node1d(n, poz_init=np.array([poz]),
-                         vit_init=np.array([vit]))
+                         vit_init=np.array([vit]),
+                         section=proprietes.geometric.section)
             self.__nodes.append(nod)
         # Création des éléments
         for m in xrange(self.__nbr_cells):
@@ -95,6 +98,14 @@ class Mesh1d(object):
         for cell in self.cells:
             cell.incrementer()
 
+    def calculer_nouvo_pdt_critique(self):
+        """ Calcul du pas de temps critique """
+        dts = []
+        for cell in self.cells:
+            cell.calculer_nouvo_dt()
+            dts.append(cell.delta_t)
+        return min(dts)
+
     @property
     def velocity_t_minus_half_field(self):
         """ Champ de vitesse à t-1/2"""
@@ -133,12 +144,12 @@ class Mesh1d(object):
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        return [elem.pression_t for elem in self.cells]
+        return [elem.pression_t / 1.e+09 for elem in self.cells]
 
     @property
     def pressure_t_plus_dt_field(self):
         """ Champ de pression à t+dt"""
-        return [elem.pression_t_plus_dt for elem in self.cells]
+        return [elem.pression_t_plus_dt / 1.e+09 for elem in self.cells]
 
     @property
     def rho_t_field(self):
