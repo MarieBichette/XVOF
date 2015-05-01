@@ -4,16 +4,16 @@
 Classe définissant une équation d'état de type Mie-Gruneisen
 """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from xvof.equationsofstate import EquationOfState
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # Deactivate pylint warnings due to NotImplementedError
-#pylint: disable=R0921
+# pylint: disable=R0921
 
 
 class MieGruneisen(EquationOfState):
@@ -175,12 +175,12 @@ class MieGruneisen(EquationOfState):
             # de e0 appelee einth
             #============================================================
             phi = rhozero * czero2 * epsv / (1. - epsv)
-            #einth ---> e0
+            # einth ---> e0
             einth = ezero
             #
             dphi = -czero2 / specific_volume ** 2
             #
-            dpdv = dphi + (dgam - gampervol) *\
+            dpdv = dphi + (dgam - gampervol) * \
             (internal_energy - einth) / specific_volume
         #****************************
         # Pression :
@@ -194,6 +194,13 @@ class MieGruneisen(EquationOfState):
         # Carre de la vitesse du son :
         #======================================
         vson2 = specific_volume ** 2 * (pressure * dpsurde - dpdv)
+        if(vson2 < 0):
+            print "Carré de la vitesse du son < 0"
+            print "specific_volume = {:15.9g}".format(specific_volume)
+            print "pressure = {:15.9g}".format(pressure)
+            print "dpsurde = {:15.9g}".format(dpsurde)
+            print "dpdv = {:15.9g}".format(dpdv)
+            raise SystemExit
         vson = vson2 ** 0.5
         #
         if(not ((vson > 0.)and(vson < 10000.))):
@@ -207,9 +214,9 @@ class MieGruneisen(EquationOfState):
     def solve_vt(self, specific_volume, temperatue):
         raise NotImplementedError
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ############ PROGRAMME PRINCIPAL ####################
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     #
     # Lancemet du profiling
