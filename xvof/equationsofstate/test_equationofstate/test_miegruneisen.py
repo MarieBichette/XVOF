@@ -17,16 +17,16 @@ class MieGruneisenTest(unittest.TestCase):
         Initialisation des tests
         """
         self.equation_of_state = mg.MieGruneisen()
-        self.rho = 9.000001000003e+03
-        self.e_int = 2.0e+03
+        self.rho = 9.000000000001e+03
+        self.e_int = 1.0e+04
 
     def test_solve_ve(self):
         """ Test de la méthode MieGruneisen.solve_ve() """
         (pression, dpde, vson) = self.equation_of_state.solve_ve(
             1.0 / self.rho, self.e_int)
-        self.assertEqual(pression, 16004065578.856352)
-        self.assertEqual(dpde, 13441.9005000015)
-        self.assertEqual(vson, 4869.690880710129)
+        self.assertEqual(pression, 1.6111579720792692e+10)
+        self.assertEqual(dpde, 1.3441900000000502e+04)
+        self.assertEqual(vson, 4.871932359704581e+03)
 
     def test_solve_vp(self):
         """ Test de la méthode MieGruneisen.solve_vp() """
