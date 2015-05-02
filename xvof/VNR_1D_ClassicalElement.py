@@ -20,7 +20,7 @@ Longueur = 0.1
 NbrElements = 300
 CFL = 0.35
 
-NbrImages = 250
+NbrImages = 25
 #  =================================================
 
 if __name__ == '__main__':
@@ -69,65 +69,47 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
-        print "Calcul de la nouvelle vitesse des noeuds :"
         my_mesh.calculer_nouvo_vit_noeuds(dt)
-        print "=> OK"
         # ---------------------------------------------#
         #         CALCUL DES COORDONNEES NODALES       #
         # ---------------------------------------------#
-        print "Calcul des nouvelles coordonnées des noeuds :"
         my_mesh.calculer_nouvo_coord_noeuds(dt)
-        print "=>OK"
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
-        print "Calcul des nouvelles tailles des éléments :"
         my_mesh.calculer_nouvo_taille_des_elements()
-        print "=> OK"
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
-        print "Calcul des nouvelles densités des éléments :"
         my_mesh.calculer_nouvo_densite_des_elements()
-        print "=> OK"
         # ---------------------------------------------#
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#
-        print "Calcul des nouvelles pressions des éléments :"
         my_mesh.calculer_nouvo_pression_des_elements()
-        print "=> OK"
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#
-        print "Calcul des nouvelles forces nodales :"
         my_mesh.calculer_nouvo_force_des_noeuds()
         # ---------------------------------------------#
         #         APPLICATION DU CHARGEMENT            #
         # ---------------------------------------------#
         my_mesh.nodes[0]._force[:] += pcharg * geom_props.section
         my_mesh.nodes[-1]._force[:] += -100149.28 * geom_props.section
-        print "=>OK"
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
-        print "Calcul du nouveau pas de temps critique"
         dt_crit = my_mesh.calculer_nouvo_pdt_critique()
-        print "=>OK"
         # ---------------------------------------------#
         #         CALCUL DE LA PSEUDOVISCOSITE         #
         # ---------------------------------------------#
-        print "Calcul des nouvelles pseudo des éléments"
         my_mesh.calculer_nouvo_pseudo_des_elements(dt)
-        print "=>OK"
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
-        print "Incrémentation"
         my_mesh.incrementer()
         dt = CFL * dt_crit
         time += dt
         step += 1
-        print "=>OK"
         # ---------------------------------------------#
         #                GESTION DES SORTIES           #
         # ---------------------------------------------#
