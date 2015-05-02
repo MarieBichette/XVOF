@@ -1,11 +1,12 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
 
-import matplotlib.animation as anim
 import matplotlib.pyplot as plt
 import numpy as np
-from xvof.element.element1d import Element1d
+
 from xvof.equationsofstate.miegruneisen import MieGruneisen
+from xvof.figure_manager.figure_manager import FigureManager
+
 from xvof.mesh.mesh1d import Mesh1d
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
@@ -18,7 +19,7 @@ Longueur = 0.1
 NbrElements = 300
 CFL = 0.35
 
-NbrImages = 250
+NbrImages = 25
 
 
 if __name__ == '__main__':
@@ -40,21 +41,13 @@ if __name__ == '__main__':
     coord_init = np.linspace(0, Longueur, NbrElements + 1)
     vit_init = np.zeros(NbrElements + 1)
     my_mesh = Mesh1d(props, initial_coordinates=coord_init, initial_velocities=vit_init)
+    my_fig_manager = FigureManager(my_mesh)
     #
     delta_t_images = tfinal / NbrImages
     t_next_image = delta_t_images
     print "=> OK"
     print "Initialisation des figures"
-    fig_pression = plt.figure()
-    ax_pression = fig_pression.add_subplot(111)
-    X = np.array(my_mesh.coord_elements_field)
-    Y = np.array([1.0e+09 for cell in my_mesh.cells])
-    pressure_line, = ax_pression.plot(X, Y, '-')
-    ax_pression.set_ylim([0, 1.25 * PChargement])
-    ax_pression.set_xlabel('Position [m]')
-    ax_pression.set_ylabel('Pression [Pa]')
-    ax_pression.set_title('Champ de pression')
-    plt.show(block=False)
+    my_fig_manager.populate_figs()
     print "=>OK"
     print "Calcul de la masse des noeuds :"
     my_mesh.calculer_masse_des_noeuds()
@@ -87,19 +80,20 @@ if __name__ == '__main__':
         my_mesh.nodes[0]._force[:] += pcharg * geom_props.section
         my_mesh.nodes[-1]._force[:] += -100149.28 * geom_props.section
         print "=>OK"
+        print "Calcul du nouveau pas de temps critique"
+        dt_crit = my_mesh.calculer_nouvo_pdt_critique()
+        print "=>OK"
+        print "Calcul des nouvelles pseudo des éléments"
+        my_mesh.calculer_nouvo_pseudo_des_elements(dt)
+        print "=>OK"
+        my_mesh.incrementer()
         if (time > t_next_image):
             print "Affichage des images"
-            X = np.array(my_mesh.coord_elements_field)
-            Y = np.array(my_mesh.pressure_t_plus_dt_field)
-            pressure_line.set_xdata(X)
-            pressure_line.set_ydata(Y)
-            fig_pression.canvas.draw()
-            plt.show(block=False)
+            my_fig_manager.update_figs()
             t_next_image += delta_t_images
             print "=>OK"
         print "Incrémentation"
-        dt_crit = my_mesh.calculer_nouvo_pdt_critique()
-        my_mesh.incrementer()
         dt = CFL * dt_crit
         time += dt
         step += 1
+    plt.show()
