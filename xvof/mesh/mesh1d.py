@@ -86,6 +86,11 @@ class Mesh1d(object):
         for cell in self.cells:
             cell.calculer_nouvo_pression()
 
+    def calculer_nouvo_pseudo_des_elements(self, delta_t):
+        """ Calcul de la nouvelle pseudo à t+dt"""
+        for cell in self.cells:
+            cell.calculer_nouvo_pseudo(delta_t)
+
     def calculer_nouvo_force_des_noeuds(self):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         for noeud in self.nodes:
@@ -168,3 +173,13 @@ class Mesh1d(object):
     def rho_t_plus_dt_field(self):
         """ Champ de densité à t+dt"""
         return [elem.rho_t_plus_dt for elem in self.cells]
+
+    @property
+    def nrj_t_field(self):
+        """ Champ d'énergie interne à t"""
+        return [elem.nrj_t for elem in self.cells]
+
+    @property
+    def pseudo_field(self):
+        """ Champ de pseudo """
+        return [elem.pseudo for elem in self.cells]
