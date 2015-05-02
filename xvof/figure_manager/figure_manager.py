@@ -14,10 +14,10 @@ from physic_figure import PhysicFigure
 
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max"])
 
-PressureField = Field("Pression [Pa]", "Champ de pression", 0, 0.75e+09)
+PressureField = Field("Pression [Pa]", "Champ de pression", 0, 7.5e+09)
 DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 8000.0, 8500.0)
-InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 2000.0)
-PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 0.5e+09)
+InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 40000.0)
+PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.0e+09)
 CellPositionField = Field("Position [m]", "Champ de position", 0, 0.15)
 
 class FigureManager(object):
