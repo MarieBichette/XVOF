@@ -215,7 +215,7 @@ if __name__ == "__main__":
     from xvof.node import Node1d
     #
 
-    @timeit_file('calculer_nouvo_pression.log')
+    @timeit_file('/tmp/calculer_nouvo_pression.log')
     def profil_calculer_nouvo_pression(element, it_nb=100):
         """
         Fait it_nb appel(s) à calculer_nouvo_pression à
@@ -238,4 +238,4 @@ if __name__ == "__main__":
     NBR_ITER = 100000
     print "Lancement profiling sur {:6d} itérations".format(NBR_ITER)
     profil_calculer_nouvo_pression(MY_ELEM, NBR_ITER)
-    system('cat calculer_nouvo_pression.log')
+    system('cat /tmp/calculer_nouvo_pression.log')
