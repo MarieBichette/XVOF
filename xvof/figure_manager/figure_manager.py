@@ -18,7 +18,7 @@ PressureField = Field("Pression [Pa]", "Champ de pression", 0, 7.5e+09)
 DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 8000.0, 8500.0)
 InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 40000.0)
 PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.0e+09)
-CellPositionField = Field("Position [m]", "Champ de position", 0, 0.15)
+CellPositionField = Field("Position [m]", "Champ de position", 0, 0.02)
 
 class FigureManager(object):
     """
@@ -58,6 +58,7 @@ class FigureManager(object):
         phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
                               titre=field_Y.titre)
         phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
+        phyfig.set_x_limit(field_X.val_min, field_X.val_max)
         return phyfig
 
     def populate_figs(self):
