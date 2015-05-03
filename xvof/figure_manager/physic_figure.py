@@ -23,6 +23,10 @@ class PhysicFigure(object):
         """ Fixation des limites en y"""
         self._ax.set_ylim([val_min, val_max])
 
+    def set_x_limit(self, val_min=0., val_max=1.0):
+        """ Fixation des limites en x"""
+        self._ax.set_xlim([val_min, val_max])
+
     def update(self, X=None, Y=None):
         """ Mise à jour de l'image pour avoir une animation"""
         if(X is not None):
