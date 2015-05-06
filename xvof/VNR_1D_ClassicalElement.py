@@ -20,7 +20,7 @@ Longueur = 10.0e-03
 NbrElements = 100
 CFL = 0.35
 
-NbrImages = 250
+NbrImages = 0
 #  =================================================
 
 if __name__ == '__main__':
