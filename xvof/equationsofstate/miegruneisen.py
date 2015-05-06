@@ -9,13 +9,12 @@ Classe définissant une équation d'état de type Mie-Gruneisen
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from xvof.equationsofstate import EquationOfState
 
+
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
-
-
 class MieGruneisen(EquationOfState):
     """
     Un objet décrivant l'équation d'état de type Mie_Gruneisen
