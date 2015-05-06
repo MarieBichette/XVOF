@@ -20,7 +20,7 @@ Longueur = 10.0e-03
 NbrElements = 100
 CFL = 0.35
 
-NbrImages = 0
+NbrImages = 250
 #  =================================================
 
 if __name__ == '__main__':
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (NbrImages != 0):
         delta_t_images = tfinal / NbrImages
-        my_fig_manager = FigureManager(my_mesh)
+        my_fig_manager = FigureManager(my_mesh, dump=True, show=False)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = tfinal * 2.0
@@ -118,8 +118,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         if (time > t_next_image):
             print "Affichage des images"
-            my_fig_manager.update_figs()
+            my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
             t_next_image += delta_t_images
             print "=>OK"
-  
+
     plt.show()
