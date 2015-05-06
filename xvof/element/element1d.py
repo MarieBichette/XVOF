@@ -31,7 +31,7 @@ class Element1d(Element):
         # Dérivée de la fonction à annuler
         dfunc = 1 + dpsurde * delta_v / 2.
         return (func, dfunc)
-    
+
     @classmethod
     def newton_raphson_for_ve(cls, eos, rho_old, rho_new, pression_old,
                               pseudo_old, nrj_old):
