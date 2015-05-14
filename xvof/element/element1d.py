@@ -200,6 +200,12 @@ class Element1d(Element):
                                   self.taille_t_plus_dt, self.cson_t_plus_dt,
                                   self.pseudo)
 
+    def impose_pression(self, pression):
+        """
+        On impose la pression à t+dt (par exemple pour endommagement)
+        """
+        self._pression_t_plus_dt = pression
+
 # --------------------------------------------------------
 #            PROGRAMME PRINCIPAL                         #
 # --------------------------------------------------------
