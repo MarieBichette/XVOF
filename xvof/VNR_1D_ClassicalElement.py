@@ -9,6 +9,7 @@ from xvof.mesh.mesh1d import Mesh1d
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
 from xvof.pressurelaw.constantpressure import ConstantPressure
+from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 
 
 #  =================================================
@@ -19,7 +20,8 @@ PressionInit = 100149.28
 EnergieInterneInit = 7.7
 RhoInit = 8129.
 EquationEtat = MieGruneisen()
-PChargementGauche = ConstantPressure(5.0e+09)
+# PChargementGauche = ConstantPressure(5.0e+09)
+PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
 PChargementDroite = ConstantPressure(PressionInit)
 Longueur = 10.0e-03
 NbrElements = 100
