@@ -27,6 +27,7 @@ class Mesh1d(object):
         self.__nbr_cells = self.__nbr_nodes - 1
         self.__nodes = []
         self.__cells = []
+        self.__ruptured_cells = []
         # Création des noeuds
         for n in xrange(self.__nbr_nodes):
             poz = initial_coordinates[n]
@@ -80,7 +81,8 @@ class Mesh1d(object):
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         for cell in self.cells:
-            cell.calculer_nouvo_pression()
+            if cell not in self.__ruptured_cells:
+                cell.calculer_nouvo_pression()
 
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
@@ -191,3 +193,17 @@ class Mesh1d(object):
     def pseudo_field(self):
         """ Champ de pseudo """
         return [elem.pseudo for elem in self.cells]
+
+    def get_ruptured_cells(self, rupture_criterion):
+        """ Liste des mailles endommagées"""
+        for elem in self.cells:
+            if rupture_criterion.checkCriterion(elem):
+                self.__ruptured_cells.append(elem)
+
+    def apply_rupture_treatment(self, treatment):
+        """
+        Application du traitement de rupture sur la liste
+        de cells passée en arguments
+        """
+        for cell in self.__ruptured_cells:
+            treatment.applyTreatment(cell)
