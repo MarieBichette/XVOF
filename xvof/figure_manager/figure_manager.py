@@ -18,7 +18,7 @@ from physic_figure import PhysicFigure
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
 PressureField = Field("Pression [Pa]", "Champ de pression", -7.5e+09, 7.5e+09, "./RESULTATS/PressureField")
-DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 7500.0, 8500.0, "./RESULTATS/DensityField")
+DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 0.0, 8500.0, "./RESULTATS/DensityField")
 InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 40000.0, "./RESULTATS/InternalEnergyField")
 PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.0e+09, "./RESULTATS/PseudoViscosityField")
 CellPositionField = Field("Position [m]", "Champ de position", 0, 0.02, "./RESULTATS/CellPositionField")

@@ -15,7 +15,7 @@ class PhysicFigure(object):
     def __init__(self, X, Y, xlabel="X", ylabel="Y", titre="titre", save_path=None):
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot(111)
-        self._line, = self._ax.plot(X, Y, '-')
+        self._line, = self._ax.plot(X, Y, '-+')
         self._ax.set_xlabel(xlabel)
         self._ax.set_ylabel(ylabel)
         self._ax.set_title(titre)
