@@ -105,6 +105,12 @@ class Node1d(Node):
         """
         self._upundemi = self.force / self.masse * delta_t + self.umundemi
 
+    def appliquer_pression(self, pression):
+        """
+        Appliquer une pression sur le noeud
+        """
+        self._force[:] += pression * self.section
+
 
 if __name__ == "__main__":
     MY_NODE = Node1d(123, section=1.0e-06)
