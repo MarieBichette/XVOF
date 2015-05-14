@@ -8,16 +8,23 @@ from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1d import Mesh1d
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
+from xvof.pressurelaw.constantpressure import ConstantPressure
 
 
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
-TFinal = 15.0e-06
-DT_init = 4.0e-09
-DT_max = 4.0e-09
-PChargement = 5.0e+09
+TempsFinal = 15.0e-06
+PasDeTempsInit = 4.0e-09
+PressionInit = 100149.28
+EnergieInterneInit = 7.7
+RhoInit = 8129.
+EquationEtat = MieGruneisen()
+PChargementGauche = ConstantPressure(5.0e+09)
+PChargementDroite = ConstantPressure(PressionInit)
 Longueur = 10.0e-03
 NbrElements = 100
+ParamPseudoA = 0.2
+ParamPseudoB = 1.0
 CFL = 0.35
 
 NbrImages = 250
@@ -25,18 +32,15 @@ NbrImages = 250
 
 if __name__ == '__main__':
     #
-    tfinal = TFinal
     time = 0.
     step = 0
-    dt = DT_init
+    dt = PasDeTempsInit
     dt_crit = 2 * dt
-    pcharg = PChargement
     # ---------------------------------------------#
     #         CREATION DES PROPRIETES              #
     # ---------------------------------------------#
-    equation_detat = MieGruneisen()
-    num_props = numerical_props(0.2, 1.0, 0.35)
-    mat_props = material_props(100149.28, 7.7, 8129., equation_detat)
+    num_props = numerical_props(ParamPseudoA, ParamPseudoB, CFL)
+    mat_props = material_props(PressionInit, EnergieInterneInit, RhoInit, EquationEtat)
     geom_props = geometrical_props(1.0e-06)
     props = properties(num_props, mat_props, geom_props)
     # ---------------------------------------------#
@@ -50,11 +54,11 @@ if __name__ == '__main__':
     #  MISE EN PLACE DU GESTIONNAIRE DE FIGURES    #
     # ---------------------------------------------#
     if (NbrImages != 0):
-        delta_t_images = tfinal / NbrImages
+        delta_t_images = TempsFinal / NbrImages
         my_fig_manager = FigureManager(my_mesh, dump=True, show=False)
         my_fig_manager.populate_figs()
     else:
-        delta_t_images = tfinal * 2.0
+        delta_t_images = TempsFinal * 2.0
     t_next_image = delta_t_images
     # ---------------------------------------------#
     #         CALCUL DES MASSES NODALES            #
@@ -63,7 +67,7 @@ if __name__ == '__main__':
     my_mesh.calculer_masse_des_noeuds()
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
-    while (time < tfinal):
+    while (time < TempsFinal):
 #         if(dt_crit < dt):
 #             raise SystemExit("Le pas de temps critique est plus petit que le pas de temps")
         print "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes"\
@@ -96,8 +100,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         APPLICATION DU CHARGEMENT            #
         # ---------------------------------------------#
-        my_mesh.appliquer_pression('gauche', pcharg)
-        my_mesh.appliquer_pression('droite', mat_props.pression_init)
+        my_mesh.appliquer_pression('gauche', PChargementGauche.evaluate(time))
+        my_mesh.appliquer_pression('droite', PChargementDroite.evaluate(time))
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
@@ -110,7 +114,7 @@ if __name__ == '__main__':
         #                INCREMENTATION                #
         # ---------------------------------------------#
         my_mesh.incrementer()
-        # dt = min([dt, CFL * dt_crit])
+#         dt = min([dt, num_props.cfl * dt_crit])
         time += dt
         step += 1
         # ---------------------------------------------#
