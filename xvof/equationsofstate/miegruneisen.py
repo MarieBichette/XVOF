@@ -3,16 +3,10 @@
 """
 Classe définissant une équation d'état de type Mie-Gruneisen
 """
-
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from xvof.equationsofstate import EquationOfState
 
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
 class MieGruneisen(EquationOfState):
@@ -33,14 +27,14 @@ class MieGruneisen(EquationOfState):
         EquationOfState.__init__(self)
         #
         self.__parameters = {
-        'czero': 3980.0,
-        'S1': 1.58,
-        'S2': 0.,
-        'S3': 0.,
-        'rhozero': 8129.0,
-        'grunzero': 1.6,
-        'b': 0.5,
-        'ezero': 0.
+                             'czero': 3980.0,
+                             'S1': 1.58,
+                             'S2': 0.,
+                             'S3': 0.,
+                             'rhozero': 8129.0,
+                             'grunzero': 1.6,
+                             'b': 0.5,
+                             'ezero': 0.
         }
 
         for (prop, default) in self.__parameters.iteritems():

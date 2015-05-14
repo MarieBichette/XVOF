@@ -3,15 +3,7 @@
 """
 Classe de base abstraite (interface) définissant une équation d'état
 """
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import ABCMeta, abstractmethod
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 class EquationOfState():
@@ -46,8 +38,3 @@ class EquationOfState():
         """
         pass
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if __name__ == "__main__":
-    print "Ce programme est uniquement un module!"
