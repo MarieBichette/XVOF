@@ -107,6 +107,18 @@ class Mesh1d(object):
             dts.append(cell.delta_t)
         return min(dts)
 
+    def appliquer_pression(self, surface, pression):
+        """
+        Appliquer une pression donnée sur 
+        les frontieres gauche ou droite
+        """
+        if surface.lower() not in ("gauche", "droite"):
+            raise(ValueError("Sur la surface <gauche> ou <droite> est possible en 1d!"))
+        if (surface.lower() == 'gauche'):
+            self.__nodes[0].appliquer_pression(pression)
+        else:
+            self.__nodes[-1].appliquer_pression(-pression)
+
     @property
     def velocity_t_minus_half_field(self):
         """ Champ de vitesse à t-1/2"""
