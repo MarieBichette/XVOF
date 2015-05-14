@@ -20,7 +20,7 @@ Longueur = 10.0e-03
 NbrElements = 100
 CFL = 0.35
 
-NbrImages = 0
+NbrImages = 250
 #  =================================================
 
 if __name__ == '__main__':
@@ -96,8 +96,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         APPLICATION DU CHARGEMENT            #
         # ---------------------------------------------#
-        my_mesh.nodes[0]._force[:] += pcharg * geom_props.section
-        my_mesh.nodes[-1]._force[:] += -100149.28 * geom_props.section
+        my_mesh.appliquer_pression('gauche', pcharg)
+        my_mesh.appliquer_pression('droite', mat_props.pression_init)
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
