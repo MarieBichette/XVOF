@@ -10,6 +10,8 @@ from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
+from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
+from xvof.rupturetreatment.imposepressure import ImposePressure
 
 
 #  =================================================
@@ -23,6 +25,8 @@ EquationEtat = MieGruneisen()
 # PChargementGauche = ConstantPressure(5.0e+09)
 PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
 PChargementDroite = ConstantPressure(PressionInit)
+CritereRupture = MinimumPressureCriterion(-16e+09)
+TraitementRupture = ImposePressure(0.0)
 Longueur = 10.0e-03
 NbrElements = 100
 ParamPseudoA = 0.2
@@ -95,6 +99,11 @@ if __name__ == '__main__':
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_pression_des_elements()
+        # ---------------------------------------------#
+        #              RUPTURE                         #
+        # ---------------------------------------------#
+        my_mesh.get_ruptured_cells(CritereRupture)
+        my_mesh.apply_rupture_treatment(TraitementRupture)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#
