@@ -370,13 +370,17 @@ class Element1dUpgraded(Element1d):
             Element1d.calculer_pseudo(delta_t, self.rho_t_gauche,
                                       self.rho_t_plus_dt_gauche,
                                       self.taille_t_plus_dt_gauche,
-                                      self.cson_t_gauche)
+                                      self.cson_t_gauche,
+                                      self.proprietes.numeric.a_pseudo,
+                                      self.proprietes.numeric.b_pseudo)
 
         pseudo_droite = \
             Element1d.calculer_pseudo(delta_t, self.rho_t_droite,
                                       self.rho_t_plus_dt_droite,
                                       self.taille_t_plus_dt_droite,
-                                      self.cson_t_droite)
+                                      self.cson_t_droite,
+                                      self.proprietes.numeric.a_pseudo,
+                                      self.proprietes.numeric.b_pseudo)
 
         self._pseudo_plus_un_demi = \
             self._to_classic(pseudo_gauche, pseudo_droite)
