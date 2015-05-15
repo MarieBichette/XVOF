@@ -165,7 +165,7 @@ class Element1d(Element):
             print "Element concerné : {}".format(self)
             raise err
 
-    def calculer_nouvo_taille(self):
+    def calculer_nouvo_taille(self, *args):
         """
         Calcul de la nouvelle longueur de l'élément
         """
