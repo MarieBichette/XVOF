@@ -9,7 +9,7 @@ import numpy as np
 from xvof.element.element1d import Element1d
 from xvof.node.node1d import Node1d
 
-class Mesh1d(object):
+class Mesh1dEnriched(object):
     """
     Une classe définissant un maillage 1d
     """

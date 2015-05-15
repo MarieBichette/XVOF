@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
-from xvof.mesh.mesh1d import Mesh1d
+from xvof.mesh.mesh1denriched import Mesh1dEnriched
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
 from xvof.pressurelaw.constantpressure import ConstantPressure
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     coord_init = np.linspace(0, Longueur, NbrElements + 1)
     vit_init = np.zeros(NbrElements + 1)
-    my_mesh = Mesh1d(props, initial_coordinates=coord_init,
+    my_mesh = Mesh1dEnriched(props, initial_coordinates=coord_init,
                      initial_velocities=vit_init)
     # ---------------------------------------------#
     #  MISE EN PLACE DU GESTIONNAIRE DE FIGURES    #
