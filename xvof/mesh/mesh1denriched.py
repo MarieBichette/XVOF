@@ -205,6 +205,14 @@ class Mesh1dEnriched(object):
         Application du traitement de rupture sur la liste
         de cells passée en arguments
         """
-        for cell in self.__ruptured_cells:
+#         print "Mailles rompues : {}".format(self.__ruptured_cells)
+        ruptured_cells = self.__ruptured_cells[:]
+        for cell in ruptured_cells:
+#             print "-->Traitement de la maille {}".format(cell)
             treatment.applyTreatment(cell, MAILLES=self.__cells,
-                                     MAILLES_ROMPUES=self.__ruptured_cells)
+                                     MAILLES_ROMPUES=self.__ruptured_cells,
+                                     NOEUDS=self.__nodes)
+#             for cell in self.__cells[cell.indice - 2:cell.indice + 2]:
+#                 print cell
+#             print "-->self.__ruptured_cells = {}".format(self.__ruptured_cells)
+#             raw_input()
