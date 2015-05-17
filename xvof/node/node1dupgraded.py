@@ -3,20 +3,23 @@
 """
 Classe définissant un noeud enrichi en 1d
 """
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-from xvof.node import Node1d
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
+from xvof.node import Node1d
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Node1dUpgraded(Node1d):
     """
     Une classe pour les noeuds enrichis dans le cas 1d
+    
+    @todo :
+    - Faut il recalculer la masse associée au noeud en cas d'enrichissement quand
+    la discontinuité n'est pas au milieu de l'élément?
     """
     # pylint: disable-msg=R0902
     # 9 attributs : cela semble raisonnable pour ce cas
@@ -31,12 +34,13 @@ class Node1dUpgraded(Node1d):
         self._umundemi_classique = origin_node.umundemi[:]
         self._upundemi_classique = origin_node.upundemi[:]
         self._force_classique = origin_node.force[:]
-        #==> Toutes les variables enrichies sont initialisées à 0
+        # ==> Toutes les variables enrichies sont initialisées à 0
         self._umundemi_enrichi = np.zeros(1, dtype=float)
         self._upundemi_enrichi = np.zeros(1, dtype=float)
         self._force_enrichi = np.zeros(1, dtype=float)
         #
         self.__position_relative = None
+        self._masse = origin_node.masse
         self.elements_voisins = origin_node.elements_voisins
 
     #------------------------------------------------------------
