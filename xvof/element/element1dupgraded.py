@@ -56,6 +56,9 @@ class Element1dUpgraded(Element1d):
             raise SystemExit(message)
         # Les noeuds d'un élément enrichi sont également enrichis
         self._noeuds = map(Node1dUpgraded, self.noeuds)
+        # Les noeuds de l'élément sont classés selon les x croissants
+        self._noeuds[0].position_relative = -1
+        self._noeuds[1].position_relative = +1
         #
         self._pression_t = element_origin.pression_t
         self._pression_t_plus_dt = element_origin.pression_t_plus_dt
@@ -131,7 +134,23 @@ class Element1dUpgraded(Element1d):
         Pression dans la partie droite de l'élément au temps t
         """
         return self._to_droite(self._pression_t,
-            self._pression_t_enrichi)
+                               self._pression_t_enrichi)
+
+    @property
+    def pression_t_plus_dt_gauche(self):
+        """
+        Pression dans la partie gauche de l'élément au temps t+dt
+        """
+        return self._to_gauche(self._pression_t_plus_dt,
+                               self._pression_t_plus_dt_enrichi)
+
+    @property
+    def pression_t_plus_dt_droite(self):
+        """
+        Pression dans la partie droite de l'élément au temps t+dt
+        """
+        return self._to_droite(self._pression_t_plus_dt,
+                               self._pression_t_plus_dt_enrichi)
 
     @property
     def rho_t_gauche(self):
