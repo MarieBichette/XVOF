@@ -3,16 +3,30 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from xvof.element.element1dupgraded import Element1dUpgraded
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
+from xvof.node.node1dupgraded import Node1dUpgraded
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.rupturetreatment.enrichelement import EnrichElement
 
+
+def print_infos_about_enrichment(cells, nodes):
+    has_been_enriched = False
+    for cell in cells:
+        if isinstance(cell, Element1dUpgraded):
+            cell.infos()
+            has_been_enriched = True
+    for node in nodes:
+        if isinstance(node, Node1dUpgraded):
+            node.infos()
+    if has_been_enriched:
+        raw_input("Poursuivre?")
 
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
@@ -22,13 +36,13 @@ PressionInit = 100149.28
 EnergieInterneInit = 7.7
 RhoInit = 8129.
 EquationEtat = MieGruneisen()
-# PChargementGauche = ConstantPressure(5.0e+09)
-PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
+# PChargementGauche = ConstantPressure(-3.5e+09)
+PChargementGauche = TwoStepsPressure(15.0e+09, 0e+09, TempsFinal / 3.0)
 PChargementDroite = ConstantPressure(PressionInit)
-CritereRupture = MinimumPressureCriterion(-6e+09)
+CritereRupture = MinimumPressureCriterion(-7.0e+09)
 TraitementRupture = EnrichElement(0.5)
 Longueur = 10.0e-03
-NbrElements = 100
+NbrElements = 51
 ParamPseudoA = 0.2
 ParamPseudoB = 1.0
 CFL = 0.35
@@ -124,6 +138,7 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
+        print_infos_about_enrichment(my_mesh.cells, my_mesh.nodes)
         my_mesh.incrementer()
 #         dt = min([dt, num_props.cfl * dt_crit])
         time += dt
