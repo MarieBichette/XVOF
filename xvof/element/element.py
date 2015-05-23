@@ -13,9 +13,6 @@ import numpy as np
 from xvof.miscellaneous import *
 
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Element(object):
     """
     Une classe pour les éléments
