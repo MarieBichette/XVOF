@@ -60,6 +60,8 @@ class Element1dUpgraded(Element1d):
         self._noeuds[0].position_relative = -1
         self._noeuds[1].position_relative = +1
         #
+        self._size_t = element_origin.taille_t
+        self._size_t_plus_dt = element_origin.taille_t_plus_dt
         self._pression_t = element_origin.pression_t
         self._pression_t_plus_dt = element_origin.pression_t_plus_dt
         self._rho_t = element_origin.rho_t
@@ -360,11 +362,11 @@ class Element1dUpgraded(Element1d):
         nod_g = self.noeuds[0]
         nod_d = self.noeuds[1]
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
-            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) - 
+            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
             * delta_t
         self._taille_droite_t_plus_dt = self.taille_t_droite + \
-            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) - 
+            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
             * delta_t
 
