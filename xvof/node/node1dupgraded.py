@@ -16,7 +16,7 @@ from xvof.node import Node1d
 class Node1dUpgraded(Node1d):
     """
     Une classe pour les noeuds enrichis dans le cas 1d
-    
+
     @todo :
     - Faut il recalculer la masse associée au noeud en cas d'enrichissement quand
     la discontinuité n'est pas au milieu de l'élément?
@@ -28,6 +28,8 @@ class Node1dUpgraded(Node1d):
                       vit_init=origin_node.umundemi,
                       section=origin_node.section)
 
+        self._xt = origin_node.coordt[:]
+        self._xtpdt = origin_node.coordtpdt[:]
         self._upundemi = origin_node.upundemi[:]
         self._force = np.zeros(1, dtype=float)
         #
@@ -166,7 +168,7 @@ class Node1dUpgraded(Node1d):
                 self.elements_voisins[1].pseudo
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
-            self._force_enrichi[:] = (-pgauche_enr - pdroite) * self.section
+            self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
         elif (self.position_relative == -1):
             # Noeud à gauche de la discontinuité
             pgauche = self.elements_voisins[0].pression_t_plus_dt + \
@@ -178,7 +180,7 @@ class Node1dUpgraded(Node1d):
                 self.elements_voisins[1]._pseudo_plus_un_demi_enrichi
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
-            self._force_enrichi[:] = (pgauche - pdroite_enr) * self.section
+            self._force_enrichi[:] = (-pgauche - pdroite_enr) * self.section
         self._force = None
 
     def incrementer(self):
