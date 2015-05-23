@@ -16,17 +16,27 @@ from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.rupturetreatment.enrichelement import EnrichElement
 
 
-def print_infos_about_enrichment(cells, nodes):
+def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     has_been_enriched = False
-    for cell in cells:
-        if isinstance(cell, Element1dUpgraded):
-            cell.infos()
-            has_been_enriched = True
-    for node in nodes:
-        if isinstance(node, Node1dUpgraded):
-            node.infos()
+    print "<--- {} --->".format(titre)
+    if cells is not None:
+        for cell in cells:
+            if isinstance(cell, Element1dUpgraded):
+                indice = cell.indice
+                cell_g = mesh.cells[indice-1]
+                cell_d = mesh.cells[indice+1]
+                cell_g.infos()
+                cell.infos()
+                cell_d.infos()
+                has_been_enriched = True
+    if nodes is not None:
+        for node in nodes:
+            if isinstance(node, Node1dUpgraded):
+                node.infos()
+                has_been_enriched = True
     if has_been_enriched:
         raw_input("Poursuivre?")
+    print "<--- {} --->".format("-"*len(titre))
 
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
@@ -36,9 +46,10 @@ PressionInit = 100149.28
 EnergieInterneInit = 7.7
 RhoInit = 8129.
 EquationEtat = MieGruneisen()
-# PChargementGauche = ConstantPressure(-3.5e+09)
-PChargementGauche = TwoStepsPressure(15.0e+09, 0e+09, TempsFinal / 3.0)
-PChargementDroite = ConstantPressure(PressionInit)
+PChargementGauche = ConstantPressure(-3.5e+09)
+#PChargementGauche = TwoStepsPressure(15.0e+09, 0e+09, TempsFinal / 3.0)
+#PChargementDroite = ConstantPressure(PressionInit)
+PChargementDroite = ConstantPressure(-3.5e+09)
 CritereRupture = MinimumPressureCriterion(-7.0e+09)
 TraitementRupture = EnrichElement(0.5)
 Longueur = 10.0e-03
@@ -97,14 +108,17 @@ if __name__ == '__main__':
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_vit_noeuds(dt)
+        print_infos_about_enrichment(my_mesh, titre="VITESSES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES COORDONNEES NODALES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_coord_noeuds(dt)
+        print_infos_about_enrichment(my_mesh, titre="COORDONNEES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_taille_des_elements(dt)
+        print_infos_about_enrichment(my_mesh, titre="VOLUMES DES MAILLES", cells=my_mesh.cells)
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
@@ -118,10 +132,12 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         my_mesh.get_ruptured_cells(CritereRupture)
         my_mesh.apply_rupture_treatment(TraitementRupture)
+        print_infos_about_enrichment(my_mesh, titre="APRES RUPTURE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_force_des_noeuds()
+        print_infos_about_enrichment(my_mesh, titre="FORCES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         APPLICATION DU CHARGEMENT            #
         # ---------------------------------------------#
@@ -138,7 +154,6 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
-        print_infos_about_enrichment(my_mesh.cells, my_mesh.nodes)
         my_mesh.incrementer()
 #         dt = min([dt, num_props.cfl * dt_crit])
         time += dt
