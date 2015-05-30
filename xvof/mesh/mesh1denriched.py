@@ -7,7 +7,9 @@ from configobj import Section
 
 import numpy as np
 from xvof.element.element1d import Element1d
+from xvof.element.element1dupgraded import Element1dUpgraded
 from xvof.node.node1d import Node1d
+
 
 class Mesh1dEnriched(object):
     """
@@ -147,7 +149,14 @@ class Mesh1dEnriched(object):
         Champ de position des éléments à t
         (Moyenne des champs de position à t des noeuds)
         """
-        return [cell.coord for cell in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.coord_gauche)
+                res.append(elem.coord_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.coord)
+        return res
 
     @property
     def force_field(self):
@@ -167,32 +176,75 @@ class Mesh1dEnriched(object):
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        return [elem.pression_t for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.pression_t_gauche)
+                res.append(elem.pression_t_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.pression_t)
+        return res
 
     @property
     def pressure_t_plus_dt_field(self):
         """ Champ de pression à t+dt"""
-        return [elem.pression_t_plus_dt for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.pression_t_plus_dt_gauche)
+                res.append(elem.pression_t_plus_dt_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.pression_t_plus_dt)
+        return res
 
     @property
     def rho_t_field(self):
         """ Champ de densité à t"""
-        return [elem.rho_t for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.rho_t_gauche)
+                res.append(elem.rho_t_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.rho_t)
+        return res
 
     @property
     def rho_t_plus_dt_field(self):
         """ Champ de densité à t+dt"""
-        return [elem.rho_t_plus_dt for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.rho_t_plus_dt_gauche)
+                res.append(elem.rho_t_plus_dt_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.rho_t_plus_dt)
+        return res
 
     @property
     def nrj_t_field(self):
         """ Champ d'énergie interne à t"""
-        return [elem.nrj_t for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.nrj_t_gauche)
+                res.append(elem.nrj_t_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.nrj_t)
+        return res
+
 
     @property
     def pseudo_field(self):
         """ Champ de pseudo """
-        return [elem.pseudo for elem in self.cells]
+        res = []
+        for elem in self.cells:
+            if isinstance(elem, Element1dUpgraded):
+                res.append(elem.pseudo_gauche)
+                res.append(elem.pseudo_droite)
+            elif isinstance(elem, Element1d):
+                res.append(elem.pseudo)
+        return res
 
     def get_ruptured_cells(self, rupture_criterion):
         """ Liste des mailles endommagées"""
