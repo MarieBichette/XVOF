@@ -17,7 +17,7 @@ from xvof.rupturetreatment.imposepressure import ImposePressure
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
 TempsFinal = 15.0e-06
-PasDeTempsInit = 4.0e-09
+PasDeTempsInit = 1.0e-09
 PressionInit = 100149.28
 EnergieInterneInit = 7.7
 RhoInit = 8129.
@@ -25,7 +25,7 @@ EquationEtat = MieGruneisen()
 PChargementGauche = ConstantPressure(-3.5e+09)
 # PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
 PChargementDroite = ConstantPressure(-3.5e+09)
-CritereRupture = MinimumPressureCriterion(-16e+09)
+CritereRupture = MinimumPressureCriterion(-7e+09)
 TraitementRupture = ImposePressure(0.0)
 Longueur = 10.0e-03
 NbrElements = 100
@@ -33,7 +33,7 @@ ParamPseudoA = 0.2
 ParamPseudoB = 1.0
 CFL = 0.35
 
-NbrImages = 250
+NbrImages = 3750
 #  =================================================
 
 if __name__ == '__main__':
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (NbrImages != 0):
         delta_t_images = TempsFinal / NbrImages
-        my_fig_manager = FigureManager(my_mesh, dump=True, show=False)
+        my_fig_manager = FigureManager(my_mesh, dump=True, show=True)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = TempsFinal * 2.0
@@ -133,7 +133,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         if (time > t_next_image):
             print "Affichage des images"
-            my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
+            if (time > 1.4e-06):
+                my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
             t_next_image += delta_t_images
             print "=>OK"
 
