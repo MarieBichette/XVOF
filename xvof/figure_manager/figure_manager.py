@@ -21,7 +21,9 @@ PressureField = Field("Pression [Pa]", "Champ de pression", -7.5e+09, 7.5e+09, "
 DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 0.0, 8500.0, "./RESULTATS/DensityField")
 InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 40000.0, "./RESULTATS/InternalEnergyField")
 PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.0e+09, "./RESULTATS/PseudoViscosityField")
-CellPositionField = Field("Position [m]", "Champ de position", 0, 0.02, "./RESULTATS/CellPositionField")
+CellPositionField = Field("Position [m]", "Champ de position", 0.0, 0.02, "./RESULTATS/CellPositionField")
+NodePositionField = Field("Position [m]", "Champ de position", 0.0 , 0.02, "./RESULTATS/NodePositionField")
+NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -250.0 , 250.0, "./RESULTATS/NodeVelocityField")
 
 class FigureManager(object):
     """
@@ -30,7 +32,9 @@ class FigureManager(object):
     def __init__(self, mesh_instance, dump=False, show=True):
         self.__mesh_instance = mesh_instance
         self.__figures_mailles = []
+        self.__figures_noeuds = []
         self.__champs_mailles = {}
+        self.__champs_noeuds = {}
         self.update_fields()
         self._dump = dump
         self._show = show
@@ -44,6 +48,11 @@ class FigureManager(object):
              InternalEnergyField: self.__mesh_instance.nrj_t_field,
              PseudoViscosityField: self.__mesh_instance.pseudo_field
             }
+        self.__champs_noeuds = \
+            {
+             NodePositionField: self.__mesh_instance.coord_t_plus_dt_field,
+             NodeVelocityField: self.__mesh_instance.velocity_t_plus_half_field
+             }
 
     def create_figure_for_cell_field(self, field_X, field_Y):
         """
@@ -70,6 +79,31 @@ class FigureManager(object):
         phyfig.set_x_limit(field_X.val_min, field_X.val_max)
         return phyfig
 
+    def create_figure_for_node_field(self, field_X, field_Y):
+        """
+        Création des figures pour les champs aux noeuds
+        (l'axe des X est donc l'abscisse des noeuds) 
+        """
+        try:
+            X = np.array(self.__champs_noeuds[field_X])
+        except ValueError as ve:
+            print "Le champ {} est inconnu!".format(field_X)
+            raise ve
+        try:
+            Y = np.array(self.__champs_noeuds[field_Y])
+        except ValueError as ve:
+            print "Le champ {} est inconnu!".format(field_Y)
+            raise ve
+        if self._dump:
+            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
+                              titre=field_Y.titre, save_path=field_Y.results_path)
+        else:
+            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
+                              titre=field_Y.titre)
+        phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
+        phyfig.set_x_limit(field_X.val_min, field_X.val_max)
+        return phyfig
+
     def populate_figs(self):
         """
         Création des figures associées à chacun des champs et ajout à 
@@ -80,6 +114,11 @@ class FigureManager(object):
             if champ_Y != champ_X:
                 fig = self.create_figure_for_cell_field(champ_X, champ_Y)
                 self.__figures_mailles.append((fig, champ_X, champ_Y))
+        champ_X = NodePositionField
+        for champ_Y in self.__champs_noeuds.keys():
+            if champ_Y != champ_X:
+                fig = self.create_figure_for_node_field(champ_X, champ_Y)
+                self.__figures_noeuds.append((fig, champ_X, champ_Y)) 
         if self._show:
             plt.show(block=False)
         if self._dump:
@@ -94,6 +133,10 @@ class FigureManager(object):
             champ_x_valeurs = self.__champs_mailles[champ_x]
             champ_y_valeurs = self.__champs_mailles[champ_y]
             fig.update(champ_x_valeurs, champ_y_valeurs, title_compl)
+        for (fig, champ_x, champ_y) in self.__figures_noeuds:
+            champ_x_valeurs = self.__champs_noeuds[champ_x]
+            champ_y_valeurs = self.__champs_noeuds[champ_y]
+            fig.update(champ_x_valeurs, champ_y_valeurs, title_compl)
         if self._show:
             plt.show(block=False)
 
@@ -101,7 +144,7 @@ class FigureManager(object):
         """
         Création des répertoires où sont stockées les figures
         """
-        for (_, _, field) in self.__figures_mailles:
+        for (_, _, field) in self.__figures_mailles + self.__figures_noeuds:
             path = field.results_path
             if (exists(path)):
                 msg = "Le chemin {:s} existe déjà!"
