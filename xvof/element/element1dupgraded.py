@@ -123,6 +123,24 @@ class Element1dUpgraded(Element1d):
         return self._taille_droite_t_plus_dt
 
     @property
+    def coord_gauche(self):
+        """
+        Position du centre de l'élément au temps t
+        """
+        vec_coord = np.zeros(self.noeuds[0].dimension)
+        vec_coord = self.noeuds[0].coordt[:] + self.taille_t_gauche / 2.0
+        return vec_coord
+
+    @property
+    def coord_droite(self):
+        """
+        Position du centre de l'élément au temps t
+        """
+        vec_coord = np.zeros(self.noeuds[0].dimension)
+        vec_coord = self.noeuds[1].coordt[:] - self.taille_t_droite / 2.0
+        return vec_coord
+
+    @property
     def pression_t_gauche(self):
         """
         Pression dans la partie gauche de l'élément au temps t
@@ -362,11 +380,11 @@ class Element1dUpgraded(Element1d):
         nod_g = self.noeuds[0]
         nod_d = self.noeuds[1]
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
-            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
+            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) - 
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
             * delta_t
         self._taille_droite_t_plus_dt = self.taille_t_droite + \
-            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
+            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) - 
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
             * delta_t
 
@@ -438,3 +456,5 @@ class Element1dUpgraded(Element1d):
         self._rho_t_enrichi = self._rho_t_plus_dt_enrichi
         self._cson_t_enrichi = self._cson_t_plus_dt_enrichi
         self._nrj_t_enrichi = self._nrj_t_plus_dt_enrichi
+        self._taille_gauche_t = self._taille_gauche_t_plus_dt
+        self._taille_droite_t = self._taille_droite_t_plus_dt
