@@ -127,9 +127,9 @@ class Node1dUpgraded(Node1d):
         format(self.upundemi_classique)
         message += "==> vitesse enrichie à t+1/2 = {}\n".\
         format(self.upundemi_enrichi)
-        message += "==> force classique à t-1/2 = {}\n".\
+        message += "==> force classique = {}\n".\
         format(self.force_classique)
-        message += "==> force enrichie à t-1/2 = {}\n".\
+        message += "==> force enrichie = {}\n".\
         format(self.force_enrichi)
         if(self.position_relative is None):
             message += "==> position relative  = None"
