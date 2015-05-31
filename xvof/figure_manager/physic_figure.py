@@ -44,8 +44,14 @@ class PhysicFigure(object):
             self._ax.set_title(self._title + ' ' + title_comp)
         self._fig.canvas.draw()
         if (self._save_path is not None):
-            fig_path = self._save_path + sep + self._title
-            fig_path += "_{:04d}.png".format(self._fig_number)
+            rac_path = self._save_path + sep + self._title
+            fig_path = rac_path + "_{:04d}.png".format(self._fig_number)
             fig_path = fig_path.replace(" ", "_")
+            data_path = rac_path + "_{:04d}.dat".format(self._fig_number)
+            data_path = data_path.replace(" ", "_")
             self._fig.savefig(fig_path)
             self._fig_number += 1
+            with open(data_path, 'w') as fo:
+                for a, b in zip(X, Y):
+                    fo.write("{:15.9g}{:s}{:15.9g}\n".format(float(a), 4 * " ", float(b)))
+
