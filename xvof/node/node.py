@@ -153,8 +153,7 @@ class Node(object):
         masse des éléments voisins (méthode Wilkins)
         """
         for elem in self.elements_voisins:
-            self._masse += elem.masse
-        self._masse /= len(self.elements_voisins)
+            self._masse += elem.masse / len(elem.noeuds)
 
     def calculer_nouvo_coord(self, delta_t=1.0):
         """
