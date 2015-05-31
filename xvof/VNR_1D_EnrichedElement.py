@@ -1,6 +1,8 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
 
+from math import pi
+
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.element.element1dupgraded import Element1dUpgraded
@@ -45,27 +47,41 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
         raw_input("Poursuivre?")
     print "<--- {} --->".format("-"*len(titre))
 
+
+def print_infos_about(mesh, titre="", cells=None, nodes=None):
+    print "<--- {} --->".format(titre)
+    if cells is not None:
+        for cell in cells:
+            cell.infos()
+    if nodes is not None:
+        for node in nodes:
+            node.infos()
+    print "<--- {} --->".format("-"*len(titre))
+    raw_input("Poursuivre?")
+
+
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
 TempsFinal = 15.0e-06
-PasDeTempsInit = 1.0e-09
+PasDeTempsInit = 4.0e-09
 PressionInit = 100149.28
-EnergieInterneInit = 7.7
+EnergieInterneInit = 7.689
 RhoInit = 8129.
+Section = pi * 0.01 ** 2
 EquationEtat = MieGruneisen()
 PChargementGauche = ConstantPressure(-3.5e+09)
 # PChargementGauche = TwoStepsPressure(15.0e+09, 0e+09, TempsFinal / 3.0)
 # PChargementDroite = ConstantPressure(PressionInit)
 PChargementDroite = ConstantPressure(-3.5e+09)
-CritereRupture = MinimumPressureCriterion(-7.0e+09)
+CritereRupture = MinimumPressureCriterion(-7.0e+10)
 TraitementRupture = EnrichElement(0.5)
 Longueur = 10.0e-03
-NbrElements = 51
-ParamPseudoA = 0.2
-ParamPseudoB = 1.0
+NbrElements = 101
+ParamPseudoA = 1.5
+ParamPseudoB = 0.2
 CFL = 0.35
 
-NbrImages = 3750
+NbrImages = 0  # 3750
 #  =================================================
 
 if __name__ == '__main__':
@@ -79,7 +95,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     num_props = numerical_props(ParamPseudoA, ParamPseudoB, CFL)
     mat_props = material_props(PressionInit, EnergieInterneInit, RhoInit, EquationEtat)
-    geom_props = geometrical_props(1.0e-06)
+    geom_props = geometrical_props(Section)
     props = properties(num_props, mat_props, geom_props)
     # ---------------------------------------------#
     #         CREATION DU MAILLAGE                 #
@@ -93,7 +109,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (NbrImages != 0):
         delta_t_images = TempsFinal / NbrImages
-        my_fig_manager = FigureManager(my_mesh, dump=True, show=True)
+        my_fig_manager = FigureManager(my_mesh, dump=False, show=False)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = TempsFinal * 2.0
@@ -112,6 +128,7 @@ if __name__ == '__main__':
             .format(step, time, dt)
         print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
         print_infos_about_enrichment(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
+#         print_infos_about(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
@@ -174,8 +191,7 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         if (time > t_next_image):
             print "Affichage des images"
-            if (time > 1.4e-06):
-                my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
+            my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
             t_next_image += delta_t_images
             print "=>OK"
 
