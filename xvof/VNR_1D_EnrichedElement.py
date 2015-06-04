@@ -25,23 +25,23 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
         print " Nombre de mailles : {:d}".format(len(cells))
         for cell in cells:
             if isinstance(cell, Element1dUpgraded):
-                indice = cell.indice
-                cell_g = mesh.cells[indice - 1]
-                cell_d = mesh.cells[indice + 1]
-                cell_g.infos()
+#                 indice = cell.indice
+#                 cell_g = mesh.cells[indice - 1]
+#                 cell_d = mesh.cells[indice + 1]
+#                 cell_g.infos()
                 cell.infos()
-                cell_d.infos()
+#                 cell_d.infos()
                 has_been_enriched = True
     if nodes is not None:
         print " Nombre de noeuds : {:d}".format(len(nodes))
         for node in nodes:
             if isinstance(node, Node1dUpgraded):
-                index = node.index
-                node_g = mesh.nodes[index - 1]
-                node_d = mesh.nodes[index + 1]
-                node_g.infos()
+#                 index = node.index
+#                 node_g = mesh.nodes[index - 1]
+#                 node_d = mesh.nodes[index + 1]
+#                 node_g.infos()
                 node.infos()
-                node_d.infos()
+#                 node_d.infos()
                 has_been_enriched = True
     if has_been_enriched:
         raw_input("Poursuivre?")
@@ -69,19 +69,19 @@ EnergieInterneInit = 7.689
 RhoInit = 8129.
 Section = pi * 0.01 ** 2
 EquationEtat = MieGruneisen()
-PChargementGauche = ConstantPressure(-3.5e+09)
-# PChargementGauche = TwoStepsPressure(15.0e+09, 0e+09, TempsFinal / 3.0)
-# PChargementDroite = ConstantPressure(PressionInit)
-PChargementDroite = ConstantPressure(-3.5e+09)
-CritereRupture = MinimumPressureCriterion(-7.0e+10)
+# PChargementGauche = ConstantPressure(-3.5e+09)
+PChargementGauche = TwoStepsPressure(15e+09, PressionInit, 2.0e-06)
+PChargementDroite = ConstantPressure(PressionInit)
+# PChargementDroite = ConstantPressure(-3.5e+09)
+CritereRupture = MinimumPressureCriterion(-7.0e+09)
 TraitementRupture = EnrichElement(0.5)
 Longueur = 10.0e-03
-NbrElements = 101
+NbrElements = 51
 ParamPseudoA = 1.5
 ParamPseudoB = 0.2
 CFL = 0.35
 
-NbrImages = 0  # 3750
+NbrImages = 150  # 3750
 #  =================================================
 
 if __name__ == '__main__':
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (NbrImages != 0):
         delta_t_images = TempsFinal / NbrImages
-        my_fig_manager = FigureManager(my_mesh, dump=False, show=False)
+        my_fig_manager = FigureManager(my_mesh, dump=True, show=True)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = TempsFinal * 2.0
@@ -126,9 +126,15 @@ if __name__ == '__main__':
 #             raise SystemExit("Le pas de temps critique est plus petit que le pas de temps")
         print "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes"\
             .format(step, time, dt)
-        print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
-        print_infos_about_enrichment(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
+#         print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
+#         print_infos_about_enrichment(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
 #         print_infos_about(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
+        # ---------------------------------------------#
+        #              RUPTURE                         #
+        # ---------------------------------------------#
+        my_mesh.get_ruptured_cells(CritereRupture)
+        my_mesh.apply_rupture_treatment(TraitementRupture)
+#         print_infos_about_enrichment(my_mesh, titre="APRES RUPTURE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
@@ -157,8 +163,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-        my_mesh.get_ruptured_cells(CritereRupture)
-        my_mesh.apply_rupture_treatment(TraitementRupture)
+#         my_mesh.get_ruptured_cells(CritereRupture)
+#         my_mesh.apply_rupture_treatment(TraitementRupture)
 #         print_infos_about_enrichment(my_mesh, titre="APRES RUPTURE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
