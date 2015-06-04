@@ -20,11 +20,13 @@ class EnrichElement(RuptureTreatment):
         if EnrichElement.__never_enriched:
             if (not isinstance(cell, Element1dUpgraded)):
                 print "Enrichissement de la maille : {}".format(cell)
-                raw_input()
                 enrich_element = Element1dUpgraded(cell, self.__position_rupture)
                 kwargs["MAILLES"][cell.indice] = enrich_element
                 print "Remplacement des noeuds concernés : {}".format(enrich_element.noeuds)
+                raw_input()
                 [node_l, node_r] = enrich_element.noeuds
+                kwargs["MAILLES"][cell.indice - 1].noeuds[1] = node_l
+                kwargs["MAILLES"][cell.indice + 1].noeuds[0] = node_r
                 kwargs["NOEUDS"][node_l.index] = node_l
                 kwargs["NOEUDS"][node_r.index] = node_r
                 node_l.elements_voisins[1] = enrich_element
