@@ -130,12 +130,6 @@ if __name__ == '__main__':
 #         print_infos_about_enrichment(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
 #         print_infos_about(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
-        #              RUPTURE                         #
-        # ---------------------------------------------#
-        my_mesh.get_ruptured_cells(CritereRupture)
-        my_mesh.apply_rupture_treatment(TraitementRupture)
-#         print_infos_about_enrichment(my_mesh, titre="APRES RUPTURE", cells=my_mesh.cells, nodes=my_mesh.nodes)
-        # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_vit_noeuds(dt)
@@ -163,8 +157,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-#         my_mesh.get_ruptured_cells(CritereRupture)
-#         my_mesh.apply_rupture_treatment(TraitementRupture)
+        my_mesh.get_ruptured_cells(CritereRupture)
+        my_mesh.apply_rupture_treatment(TraitementRupture)
 #         print_infos_about_enrichment(my_mesh, titre="APRES RUPTURE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
