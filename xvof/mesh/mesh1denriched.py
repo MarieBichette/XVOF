@@ -67,7 +67,11 @@ class Mesh1dEnriched(object):
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
         for noeud in self.nodes:
-            noeud.calculer_masse_wilkins()
+            neighbours_cells_indices = self.__topologie.getCellsInContactWithNode(noeud)
+            neighbours_cells = []
+            for i in neighbours_cells_indices:
+                neighbours_cells.append(self.__cells[i])
+            noeud.calculer_masse_wilkins(neighbours_cells)
 
     def calculer_nouvo_vit_noeuds(self, delta_t):
         """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
@@ -82,7 +86,12 @@ class Mesh1dEnriched(object):
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.cells:
-            cell.calculer_nouvo_taille(delta_t)
+            nodes_indices = self.__topologie.getNodesBelongingToCell(cell)
+            nodes = []
+            for i in nodes_indices:
+                nodes.append(self.__nodes[i])
+            nodes = sorted(nodes, key=lambda m : m.coordt)
+            cell.calculer_nouvo_taille(nodes, delta_t)
 
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
@@ -107,7 +116,8 @@ class Mesh1dEnriched(object):
             neighbours_cells = []
             for i in neighbours_cells_indices:
                 neighbours_cells.append(self.__cells[i])
-            neighbours_cells = sorted(neighbours_cells, key=lambda m: m.coord[0])
+            print "neighbours_cells = ", neighbours_cells
+#             neighbours_cells = sorted(neighbours_cells, key=lambda m: m.coord[0])
             noeud.calculer_nouvo_force(neighbours_cells)
 
     def incrementer(self):
@@ -165,11 +175,16 @@ class Mesh1dEnriched(object):
         """
         res = []
         for elem in self.cells:
+            nodes_indices = self.__topologie.getNodesBelongingToCell(elem)
+            nodes = []
+            for i in nodes_indices:
+                nodes.append(self.__nodes[i])
+            nodes = sorted(nodes, key=lambda m : m.coordt)
             if isinstance(elem, Element1dUpgraded):
-                res.append(elem.coord_gauche)
-                res.append(elem.coord_droite)
+                res.append(elem.coord_gauche(nodes))
+                res.append(elem.coord_droite(nodes))
             elif isinstance(elem, Element1d):
-                res.append(elem.coord)
+                res.append(elem.coord(nodes))
         return res
 
     @property
@@ -275,7 +290,7 @@ class Mesh1dEnriched(object):
         ruptured_cells = self.__ruptured_cells[:]
         for cell in ruptured_cells:
 #             print "-->Traitement de la maille {}".format(cell)
-            treatment.applyTreatment(cell, MAILLES=self.__cells,
+            treatment.applyTreatment(cell, TOPOLOGIE=self.__topologie, MAILLES=self.__cells,
                                      MAILLES_ROMPUES=self.__ruptured_cells,
                                      NOEUDS=self.__nodes)
 #             for cell in self.__cells[cell.indice - 2:cell.indice + 2]:

@@ -124,13 +124,13 @@ class Node(object):
         message += "==> force = {}".format(self.force)
         print message
 
-    def calculer_masse_wilkins(self):
+    def calculer_masse_wilkins(self, elements_voisins):
         """
         Calcule la masse associée au noeud par moyenne arithmétique de la
         masse des éléments voisins (méthode Wilkins)
         """
-        for elem in self.elements_voisins:
-            self._masse += elem.masse / len(elem.noeuds)
+        for elem in elements_voisins:
+            self._masse += elem.masse / elem.nbr_noeuds
 
     def calculer_nouvo_coord(self, delta_t=1.0):
         """

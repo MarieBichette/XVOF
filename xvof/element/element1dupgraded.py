@@ -55,10 +55,10 @@ class Element1dUpgraded(Element1d):
             message += " l'élément enrichi doit être comprise entre 0 et 1!"
             raise SystemExit(message)
         # Les noeuds d'un élément enrichi sont également enrichis
-        self._noeuds = map(Node1dUpgraded, self.noeuds)
+#         self._noeuds = map(Node1dUpgraded, self.noeuds)
         # Les noeuds de l'élément sont classés selon les x croissants
-        self._noeuds[0].position_relative = -1
-        self._noeuds[1].position_relative = +1
+#         self._noeuds[0].position_relative = -1
+#         self._noeuds[1].position_relative = +1
         #
         self._size_t = element_origin.taille_t
         self._size_t_plus_dt = element_origin.taille_t_plus_dt
@@ -123,21 +123,21 @@ class Element1dUpgraded(Element1d):
         return self._taille_droite_t_plus_dt
 
     @property
-    def coord_gauche(self):
+    def coord_gauche(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
-        vec_coord = np.zeros(self.noeuds[0].dimension)
-        vec_coord = self.noeuds[0].coordt[:] + self.taille_t_gauche / 2.0
+        vec_coord = np.zeros(noeuds[0].dimension)
+        vec_coord = noeuds[0].coordt[:] + self.taille_t_gauche / 2.0
         return vec_coord
 
     @property
-    def coord_droite(self):
+    def coord_droite(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
-        vec_coord = np.zeros(self.noeuds[0].dimension)
-        vec_coord = self.noeuds[1].coordt[:] - self.taille_t_droite / 2.0
+        vec_coord = np.zeros(noeuds[0].dimension)
+        vec_coord = noeuds[1].coordt[:] - self.taille_t_droite / 2.0
         return vec_coord
 
     @property
@@ -372,13 +372,13 @@ class Element1dUpgraded(Element1d):
         self._cson_t_plus_dt_enrichi = \
             self._to_enrich(cson_t_plus_dt_g, cson_t_plus_dt_d)
 
-    def calculer_nouvo_taille(self, delta_t):
+    def calculer_nouvo_taille(self, noeuds, delta_t):
         """
         Calcul des nouvelles longueurs de l'élément
         """
         # Les noeuds sont classés par coord croissante
-        nod_g = self.noeuds[0]
-        nod_d = self.noeuds[1]
+        nod_g = noeuds[0]
+        nod_d = noeuds[1]
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
             (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) - 
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \

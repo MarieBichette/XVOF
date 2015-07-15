@@ -17,6 +17,8 @@ class Element1d(Element):
     """
     Une classe pour les éléments en 1D
     """
+    nbr_noeuds = 2
+
     @classmethod
     def calcul_f_et_df(cls, enerj, rho_new, rho_old, pression_t, enerj_old, eos):
         """
@@ -115,30 +117,29 @@ class Element1d(Element):
 
     def __init__(self, proprietes, indice, noeuds):
         Element.__init__(self, proprietes, indice, noeuds)
-        self.noeuds = noeuds
-        self._size_t = abs(self.noeuds[0].coordt[0] - 
-                           self.noeuds[1].coordt[0])
+        self._size_t = abs(noeuds[0].coordt[0] - 
+                           noeuds[1].coordt[0])
 
     # --------------------------------------------------------
     #            DEFINITION DES PROPRIETES                   #
     # --------------------------------------------------------
-    @property
-    def noeuds(self):
-        """
-        Getter de la liste des noeuds de l'élément
-        """
-        return self._noeuds
+#     @property
+#     def noeuds(self):
+#         """
+#         Getter de la liste des noeuds de l'élément
+#         """
+#         return self._noeuds
 
-    @noeuds.setter
-    def noeuds(self, list_noeuds):
-        """
-        Setter de la liste des noeuds de l'élément
-        """
-        if (len(list_noeuds) != 2):
-            raise SystemExit("En 1D, un élément possède 2 noeuds!")
-        self._noeuds[:] = list_noeuds[:]
-        self._noeuds = \
-            sorted(self._noeuds, key=lambda m: m.coordt[0])
+#     @noeuds.setter
+#     def noeuds(self, list_noeuds):
+#         """
+#         Setter de la liste des noeuds de l'élément
+#         """
+#         if (len(list_noeuds) != 2):
+#             raise SystemExit("En 1D, un élément possède 2 noeuds!")
+#         self._noeuds[:] = list_noeuds[:]
+#         self._noeuds = \
+#             sorted(self._noeuds, key=lambda m: m.coordt[0])
 
     @property
     def masse(self):
@@ -165,12 +166,12 @@ class Element1d(Element):
             print "Element concerné : {}".format(self)
             raise err
 
-    def calculer_nouvo_taille(self, *args):
+    def calculer_nouvo_taille(self, noeuds, *args):
         """
         Calcul de la nouvelle longueur de l'élément
         """
-        self._size_t_plus_dt = abs(self.noeuds[0].coordtpdt[0] - 
-                                   self.noeuds[1].coordtpdt[0])
+        self._size_t_plus_dt = abs(noeuds[0].coordtpdt[0] - 
+                                   noeuds[1].coordtpdt[0])
 
     def calculer_nouvo_densite(self):
         """

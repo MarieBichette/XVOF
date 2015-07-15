@@ -34,8 +34,8 @@ class Element(object):
         self._cson_t_plus_dt = 0.
         self._nrj_t = proprietes.material.energie_init
         self._nrj_t_plus_dt = proprietes.material.energie_init
-        self._noeuds = []
-        self.noeuds = noeuds
+#         self._noeuds = []
+#         self.noeuds = noeuds
 
     ##############################################################
     # DEFINITIONS DES PROPRIETES
@@ -142,29 +142,29 @@ class Element(object):
         """
         return self._pseudo_plus_un_demi
 
-    @property
-    def noeuds(self):
-        """
-        Liste des noeuds de l'élément
-        """
-        return self._noeuds
+#     @property
+#     def noeuds(self):
+#         """
+#         Liste des noeuds de l'élément
+#         """
+#         return self._noeuds
+# 
+#     @noeuds.setter
+#     def noeuds(self, node_list):
+#         """
+#         Setter des noeuds de l'élément
+#         """
+#         self._noeuds[:] = node_list[:]
 
-    @noeuds.setter
-    def noeuds(self, node_list):
-        """
-        Setter des noeuds de l'élément
-        """
-        self._noeuds[:] = node_list[:]
-
-    @property
-    def coord(self):
+#     @property
+    def coord(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
-        vec_coord = np.zeros(self.noeuds[0].dimension)
-        for nod in self.noeuds:
+        vec_coord = np.zeros(noeuds[0].dimension)
+        for nod in noeuds:
             vec_coord += nod.coordt
-        return vec_coord / len(self.noeuds)
+        return vec_coord / len(noeuds)
 
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES

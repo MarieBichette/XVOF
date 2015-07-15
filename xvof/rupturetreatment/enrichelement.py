@@ -4,6 +4,7 @@
 Classe définissant un traitement de la rupture en enrichissant l'élément concerné
 """
 from xvof.element.element1dupgraded import Element1dUpgraded
+from xvof.node.node1dupgraded import Node1dUpgraded
 from xvof.rupturetreatment.rupturetreatment import RuptureTreatment
 
 
@@ -22,9 +23,18 @@ class EnrichElement(RuptureTreatment):
                 print "Enrichissement de la maille : {}".format(cell)
                 enrich_element = Element1dUpgraded(cell, self.__position_rupture)
                 kwargs["MAILLES"][cell.indice] = enrich_element
-                print "Remplacement des noeuds concernés : {}".format(enrich_element.noeuds)
+                topologie = kwargs['TOPOLOGIE']
+                enrich_nodes_indices = topologie.getNodesBelongingToCell(enrich_element)
+                enrich_nodes = []
+                for i in enrich_nodes_indices:
+                    enrich_nodes.append(kwargs["NOEUDS"][i])
+                    kwargs["NOEUDS"][i] = Node1dUpgraded(kwargs["NOEUDS"][i])
+                enrich_nodes = sorted(enrich_nodes, key=lambda m : m.coordt)
+                enrich_nodes[0].position_relative = -1
+                enrich_nodes[1].position_relative = +1
+                print "Remplacement des noeuds concernés : {}".format(enrich_nodes)
                 raw_input()
-                [node_l, node_r] = enrich_element.noeuds
+                [node_l, node_r] = enrich_nodes
                 kwargs["MAILLES"][cell.indice - 1].noeuds[1] = node_l
                 kwargs["MAILLES"][cell.indice + 1].noeuds[0] = node_r
                 kwargs["NOEUDS"][node_l.index] = node_l

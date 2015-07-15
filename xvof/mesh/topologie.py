@@ -19,8 +19,6 @@ class Topology1D(object):
         appartenant à la maille  'cell'
         '''
         self.__nodes_belonging_to_cell[cell.indice] = nodes_list
-#         self.__nodes_belonging_to_cell[cell.indice] = \
-#             sorted(self.__nodes_belonging_to_cell[cell.indice], key=lambda m: m.coordt[0])
 
     def addNodeBelongingToCell(self, cell, node):
         '''
@@ -28,8 +26,6 @@ class Topology1D(object):
         appartenant à la maille 'cell'
         '''
         self.__nodes_belonging_to_cell[cell.indice].append(node)
-#         self.__nodes_belonging_to_cell[cell.indice] = \
-#             sorted(self.__nodes_belonging_to_cell[cell.indice], key=lambda m: m.coordt[0])
 
     def setCellsInContactWithNode(self, node, cells_list):
         '''
@@ -37,8 +33,6 @@ class Topology1D(object):
         en contact avec le noeud 'node'
         '''
         self.__cells_in_contact_with_node[node.index] = cells_list
-#         self.__cells_in_contact_with_node[node.index] = \
-#             sorted(self.__cells_in_contact_with_node[node.index], key=lambda m: m.coord[0])
 
     def addCellInContactWithNode(self, node, cell):
         '''
@@ -46,8 +40,6 @@ class Topology1D(object):
         avec le noeud 'node'
         '''
         self.__cells_in_contact_with_node[node.index].append(cell)
-#         self.__cells_in_contact_with_node[node.index] = \
-#             sorted(self.__cells_in_contact_with_node[node.index], key=lambda m: m.coord[0])
 
     def getNodesBelongingToCell(self, cell):
         '''
