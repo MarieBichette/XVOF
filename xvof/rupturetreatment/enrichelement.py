@@ -29,7 +29,7 @@ class EnrichElement(RuptureTreatment):
                 kwargs["MAILLES"][cell.indice + 1].noeuds[0] = node_r
                 kwargs["NOEUDS"][node_l.index] = node_l
                 kwargs["NOEUDS"][node_r.index] = node_r
-                node_l.elements_voisins[1] = enrich_element
-                node_r.elements_voisins[0] = enrich_element
+#                 node_l.elements_voisins[1] = enrich_element
+#                 node_r.elements_voisins[0] = enrich_element
                 EnrichElement.__never_enriched = False
         kwargs["MAILLES_ROMPUES"].remove(cell)

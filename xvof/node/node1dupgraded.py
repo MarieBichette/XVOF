@@ -43,7 +43,6 @@ class Node1dUpgraded(Node1d):
         #
         self.__position_relative = None
         self._masse = origin_node.masse
-        self.elements_voisins = origin_node.elements_voisins
 
     #------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -151,7 +150,7 @@ class Node1dUpgraded(Node1d):
             self.upundemi_classique + \
             self.position_relative * self.upundemi_enrichi
 
-    def calculer_nouvo_force(self):
+    def calculer_nouvo_force(self, elements_voisins):
         """
         Calcul de la force agissant sur le noeud
 
@@ -159,25 +158,25 @@ class Node1dUpgraded(Node1d):
         """
         if (self.position_relative == 1):
             # Noeud à droite de la discontinuité
-            pgauche = self.elements_voisins[0].pression_t_plus_dt + \
-                self.elements_voisins[0].pseudo
+            pgauche = elements_voisins[0].pression_t_plus_dt + \
+                elements_voisins[0].pseudo
             pgauche_enr = \
-                self.elements_voisins[0]._pression_t_plus_dt_enrichi + \
-                self.elements_voisins[0]._pseudo_plus_un_demi_enrichi
-            pdroite = self.elements_voisins[1].pression_t_plus_dt + \
-                self.elements_voisins[1].pseudo
+                elements_voisins[0]._pression_t_plus_dt_enrichi + \
+                elements_voisins[0]._pseudo_plus_un_demi_enrichi
+            pdroite = elements_voisins[1].pression_t_plus_dt + \
+                elements_voisins[1].pseudo
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
         elif (self.position_relative == -1):
             # Noeud à gauche de la discontinuité
-            pgauche = self.elements_voisins[0].pression_t_plus_dt + \
-                self.elements_voisins[0].pseudo
-            pdroite = self.elements_voisins[1].pression_t_plus_dt + \
-                self.elements_voisins[1].pseudo
+            pgauche = elements_voisins[0].pression_t_plus_dt + \
+                elements_voisins[0].pseudo
+            pdroite = elements_voisins[1].pression_t_plus_dt + \
+                elements_voisins[1].pseudo
             pdroite_enr = \
-                self.elements_voisins[1]._pression_t_plus_dt_enrichi + \
-                self.elements_voisins[1]._pseudo_plus_un_demi_enrichi
+                elements_voisins[1]._pression_t_plus_dt_enrichi + \
+                elements_voisins[1]._pseudo_plus_un_demi_enrichi
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (-pgauche - pdroite_enr) * self.section

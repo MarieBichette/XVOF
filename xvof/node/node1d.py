@@ -26,8 +26,6 @@ class Node1d(Node):
         #
         self._section = section
         #
-        self._elements_voisins = []
-        #
         self._upundemi = vit_init
 
     #------------------------------------------------------------
@@ -41,29 +39,6 @@ class Node1d(Node):
         """
         return self._section
 
-    @property
-    def elements_voisins(self):
-        """
-        Liste des éléments voisins du noeud
-        """
-        return self._elements_voisins
-
-    @elements_voisins.setter
-    def elements_voisins(self, elems):
-        """
-        Setter des elements voisins. Surcharge de la méthode de Node pour
-        s'assurer qu'il n y ait que deux voisins possibles et pour les trier
-        de gauche à droite
-        """
-        self._elements_voisins.extend(elems)
-        if(len(self.elements_voisins) > 2):
-            message = "En 1d au plus deux éléments peuveut être"
-            message += " voisins du {}".format(self)
-            message += "\n Liste des elements : {}".format(self.elements_voisins)
-            raise SystemExit(message)
-        self._elements_voisins = \
-        sorted(self._elements_voisins, key=lambda m: m.coord[0])
-
     #------------------------------------------------------------
     # DEFINITIONS DES METHODES
     #------------------------------------------------------------
@@ -76,27 +51,27 @@ class Node1d(Node):
         message = "==> section = {:5.4g}".format(self.section)
         print message
 
-    def calculer_nouvo_force(self):
+    def calculer_nouvo_force(self, elements_voisins):
         """
         Calcul de la force agissant sur le noeud
         """
-        if(len(self.elements_voisins) == 2):
-            pgauche = self.elements_voisins[0].pression_t_plus_dt + \
-                self.elements_voisins[0].pseudo
-            pdroite = self.elements_voisins[1].pression_t_plus_dt + \
-                self.elements_voisins[1].pseudo
+        if(len(elements_voisins) == 2):
+            pgauche = elements_voisins[0].pression_t_plus_dt + \
+                elements_voisins[0].pseudo
+            pdroite = elements_voisins[1].pression_t_plus_dt + \
+                elements_voisins[1].pseudo
             self._force[:] = (pgauche - pdroite) * self.section
         else:
             # Cas des noeuds de bord
-            if(self.coordt[0] > self.elements_voisins[0].coord[0]):
+            if(self.coordt[0] > elements_voisins[0].coord[0]):
                 # Noeud du bord droit
-                pgauche = self.elements_voisins[0].pression_t_plus_dt + \
-                self.elements_voisins[0].pseudo
+                pgauche = elements_voisins[0].pression_t_plus_dt + \
+                elements_voisins[0].pseudo
                 self._force[:] = pgauche * self.section
-            elif(self.coordt[0] < self.elements_voisins[0].coord[0]):
+            elif(self.coordt[0] < elements_voisins[0].coord[0]):
                 # Noeud du bord gauche
-                pdroite = self.elements_voisins[0].pression_t_plus_dt + \
-                self.elements_voisins[0].pseudo
+                pdroite = elements_voisins[0].pression_t_plus_dt + \
+                elements_voisins[0].pseudo
                 self._force[:] = -pdroite * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):

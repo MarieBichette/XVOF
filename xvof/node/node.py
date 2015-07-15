@@ -23,10 +23,6 @@ class Node(object):
         # __dimension doit rester privé même pour les classes filles
         # un noeud consacré aux simulations 1d ne peut pas changer sa dimension
         self.__dimension = dim
-        # _elements_voisins est rendu public par le property.setter
-        # mais avec un contrôle sur les accès. Cette property est a surcharger
-        # dans les classes filles
-        self._elements_voisins = []
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if (not isinstance(index, int)):
@@ -53,24 +49,6 @@ class Node(object):
         self._upundemi = np.array(vitesse_initiale)
         self._masse = 0.
         self._force = np.zeros(self.__dimension, dtype=float)
-
-    #
-    # Seules les modifications de _elements_voisins sont permises
-    # Les autres attributs sont accessibles en lecture seule
-    #
-    @property
-    def elements_voisins(self):
-        """
-        Liste des éléments voisins du noeud
-        """
-        return self._elements_voisins
-
-    @elements_voisins.setter
-    def elements_voisins(self, elems):
-        """
-        Setter des elements voisins
-        """
-        self._elements_voisins.extend(elems)
 
     @property
     def index(self):
@@ -138,7 +116,6 @@ class Node(object):
         Affichage des informations concernant le noeud
         """
         message = "{} {:4d}\n".format(self.__class__, self.index)
-        message += "==> elements_voisins = {}\n".format(self.elements_voisins)
         message += "==> coordonnées à t = {}\n".format(self.coordt)
         message += "==> coordonnées à t+dt = {}\n".format(self.coordtpdt)
         message += "==> vitesse à t-1/2 = {}\n".format(self.umundemi)
