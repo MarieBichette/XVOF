@@ -30,6 +30,11 @@ class Mesh1dEnriched(object):
         self.__nodes = []
         self.__cells = []
         self.__ruptured_cells = []
+        ####
+        self.__topologie = {}
+        self.__topologie["nodes"] = []
+        self.__topologie["cells"] = []
+        ####
         # Création des noeuds
         for n in xrange(self.__nbr_nodes):
             poz = initial_coordinates[n]
@@ -38,12 +43,25 @@ class Mesh1dEnriched(object):
                          vit_init=np.array([vit]),
                          section=proprietes.geometric.section)
             self.__nodes.append(nod)
+            self.__topologie["nodes"].append([])
         # Création des éléments
         for m in xrange(self.__nbr_cells):
             elem = Element1d(proprietes, m, [self.__nodes[m], self.__nodes[m + 1]])
             self.__cells.append(elem)
+            self.__topologie["cells"].append([])
             self.__nodes[m].elements_voisins = [elem]
             self.__nodes[m + 1].elements_voisins = [elem]
+            self.__topologie["nodes"][self.__nodes[m].index].extend([elem.indice])
+            self.__topologie["nodes"][self.__nodes[m + 1].index].extend([elem.indice])
+            self.__topologie["cells"][elem.indice] = [self.__nodes[m].index, self.__nodes[m + 1].index]
+
+    def get_nodes_of_cells(self, cell):
+        """ Renvoie la liste des noeuds appartenant à la maille """
+        return self.__topologie["cells"][cell.indice]
+
+    def get_neighbouring_cells_of_node(self, node):
+        """ Renvoie la liste des éléments contenant le noeud """
+        return self.__topologie["nodes"][node.index]
 
     @property
     def nodes(self):
