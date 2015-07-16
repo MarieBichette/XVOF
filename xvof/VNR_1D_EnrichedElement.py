@@ -118,6 +118,7 @@ if __name__ == '__main__':
     #         CALCUL DES MASSES NODALES            #
     # ---------------------------------------------#
     print "Calcul de la masse des noeuds :"
+    my_mesh.calculer_taille_des_elements()
     my_mesh.calculer_masse_des_noeuds()
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
