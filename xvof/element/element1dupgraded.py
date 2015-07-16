@@ -47,19 +47,14 @@ class Element1dUpgraded(Element1d):
         return (champ_classic + champ_enrich)
 
     def __init__(self, element_origin, pos_discontin):
-        Element1d.__init__(self, element_origin.proprietes,
-                           element_origin.indice, element_origin.noeuds)
+        Element1d.__init__(self, element_origin.proprietes)
         #
         if(pos_discontin < 0.) or (pos_discontin > 1.):
             message = "La position de la discontinuité dans"
             message += " l'élément enrichi doit être comprise entre 0 et 1!"
             raise SystemExit(message)
-        # Les noeuds d'un élément enrichi sont également enrichis
-#         self._noeuds = map(Node1dUpgraded, self.noeuds)
-        # Les noeuds de l'élément sont classés selon les x croissants
-#         self._noeuds[0].position_relative = -1
-#         self._noeuds[1].position_relative = +1
         #
+        self.index = element_origin.index
         self._size_t = element_origin.taille_t
         self._size_t_plus_dt = element_origin.taille_t_plus_dt
         self._pression_t = element_origin.pression_t
@@ -122,7 +117,6 @@ class Element1dUpgraded(Element1d):
         """
         return self._taille_droite_t_plus_dt
 
-    @property
     def coord_gauche(self, noeuds):
         """
         Position du centre de l'élément au temps t
@@ -131,7 +125,6 @@ class Element1dUpgraded(Element1d):
         vec_coord = noeuds[0].coordt[:] + self.taille_t_gauche / 2.0
         return vec_coord
 
-    @property
     def coord_droite(self, noeuds):
         """
         Position du centre de l'élément au temps t
@@ -282,7 +275,7 @@ class Element1dUpgraded(Element1d):
     #        DEFINITION DES METHODES                         #
     # --------------------------------------------------------
     def __str__(self):
-        message = "ELEMENT ENRICHI {:4d} ".format(self.indice)
+        message = "ELEMENT ENRICHI {:4d} ".format(self.index)
         return message
 
     def infos(self):
@@ -380,11 +373,11 @@ class Element1dUpgraded(Element1d):
         nod_g = noeuds[0]
         nod_d = noeuds[1]
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
-            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) - 
+            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
             * delta_t
         self._taille_droite_t_plus_dt = self.taille_t_droite + \
-            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) - 
+            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
             * delta_t
 
