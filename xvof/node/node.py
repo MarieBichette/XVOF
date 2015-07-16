@@ -57,6 +57,13 @@ class Node(object):
         """
         return self._index
 
+    @index.setter
+    def index(self, index):
+        """
+        Setter de l'indice global du noeud
+        """
+        self._index = index
+
     @property
     def coordt(self):
         """
@@ -149,7 +156,7 @@ class Node(object):
         self._xt[:] = self.coordtpdt[:]
 
     @abstractmethod
-    def calculer_nouvo_force(self):
+    def calculer_nouvo_force(self, *args, **kwargs):
         """
         Calcul de la force agissant sur le noeud
         """
