@@ -17,10 +17,10 @@ class Node1d(Node):
     """
     Une classe pour les noeuds classiques dans le cas 1d
     """
-    def __init__(self, indice, poz_init=np.zeros(1), vit_init=np.zeros(1),
+    def __init__(self, poz_init=np.zeros(1), vit_init=np.zeros(1),
                 section=1.):
 
-        Node.__init__(self, dim=1, index=indice, position_initiale=poz_init,
+        Node.__init__(self, dim=1, position_initiale=poz_init,
                       vitesse_initiale=vit_init)
 
         #
@@ -51,28 +51,24 @@ class Node1d(Node):
         message = "==> section = {:5.4g}".format(self.section)
         print message
 
-    def calculer_nouvo_force(self, elements_voisins):
+    def calculer_nouvo_force(self, elements_voisins, isleftboundary=False, isrightboundary=False):
         """
         Calcul de la force agissant sur le noeud
         """
-        if(len(elements_voisins) == 2):
+        if isrightboundary:
+            pgauche = elements_voisins[0].pression_t_plus_dt + \
+            elements_voisins[0].pseudo
+            self._force[:] = pgauche * self.section
+        elif isleftboundary:
+            pdroite = elements_voisins[0].pression_t_plus_dt + \
+            elements_voisins[0].pseudo
+            self._force[:] = -pdroite * self.section
+        else:
             pgauche = elements_voisins[0].pression_t_plus_dt + \
                 elements_voisins[0].pseudo
             pdroite = elements_voisins[1].pression_t_plus_dt + \
                 elements_voisins[1].pseudo
             self._force[:] = (pgauche - pdroite) * self.section
-        else:
-            # Cas des noeuds de bord
-            if(self.coordt[0] > elements_voisins[0].coord[0]):
-                # Noeud du bord droit
-                pgauche = elements_voisins[0].pression_t_plus_dt + \
-                elements_voisins[0].pseudo
-                self._force[:] = pgauche * self.section
-            elif(self.coordt[0] < elements_voisins[0].coord[0]):
-                # Noeud du bord gauche
-                pdroite = elements_voisins[0].pression_t_plus_dt + \
-                elements_voisins[0].pseudo
-                self._force[:] = -pdroite * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
