@@ -24,10 +24,11 @@ class Node1dUpgraded(Node1d):
     # pylint: disable-msg=R0902
     # 9 attributs : cela semble raisonnable pour ce cas
     def __init__(self, origin_node):
-        Node1d.__init__(self, origin_node.index, poz_init=origin_node.coordt,
+        Node1d.__init__(self, poz_init=origin_node.coordt,
                       vit_init=origin_node.umundemi,
                       section=origin_node.section)
 
+        self.index = origin_node.index
         self._xt = origin_node.coordt[:]
         self._xtpdt = origin_node.coordtpdt[:]
         self._upundemi = origin_node.upundemi[:]
@@ -150,7 +151,7 @@ class Node1dUpgraded(Node1d):
             self.upundemi_classique + \
             self.position_relative * self.upundemi_enrichi
 
-    def calculer_nouvo_force(self, elements_voisins):
+    def calculer_nouvo_force(self, elements_voisins, *args, **kwargs):
         """
         Calcul de la force agissant sur le noeud
 
