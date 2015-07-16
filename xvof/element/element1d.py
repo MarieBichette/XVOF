@@ -95,8 +95,8 @@ class Element1d(Element):
         if(divu < 0.):
             pseudo = 1. / vnplusundemi * \
                 (
-                    pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 / 
-                    vnplusundemi ** 2 + pseudo_b * size_new * cel_son * 
+                    pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 /
+                    vnplusundemi ** 2 + pseudo_b * size_new * cel_son *
                     abs(vpointnplusundemi) / vnplusundemi
                  )
         return pseudo
@@ -109,38 +109,18 @@ class Element1d(Element):
         """
         delta_t = 0.
         if((rho_new - rho_old) > 0.1):
-            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo / 
+            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
                                            (rho_new - rho_old)) ** 0.5)
         else:
             delta_t = cfl * taille_new / (cson_new)
         return delta_t
 
-    def __init__(self, proprietes, indice, noeuds):
-        Element.__init__(self, proprietes, indice, noeuds)
-        self._size_t = abs(noeuds[0].coordt[0] - 
-                           noeuds[1].coordt[0])
+    def __init__(self, proprietes):
+        Element.__init__(self, proprietes)
 
     # --------------------------------------------------------
     #            DEFINITION DES PROPRIETES                   #
     # --------------------------------------------------------
-#     @property
-#     def noeuds(self):
-#         """
-#         Getter de la liste des noeuds de l'élément
-#         """
-#         return self._noeuds
-
-#     @noeuds.setter
-#     def noeuds(self, list_noeuds):
-#         """
-#         Setter de la liste des noeuds de l'élément
-#         """
-#         if (len(list_noeuds) != 2):
-#             raise SystemExit("En 1D, un élément possède 2 noeuds!")
-#         self._noeuds[:] = list_noeuds[:]
-#         self._noeuds = \
-#             sorted(self._noeuds, key=lambda m: m.coordt[0])
-
     @property
     def masse(self):
         """ Masse de l'élément """
@@ -166,11 +146,18 @@ class Element1d(Element):
             print "Element concerné : {}".format(self)
             raise err
 
+    def calculer_taille(self, noeuds, *args):
+        """
+        Calcul de la longueur de l'élément (à t)
+        """
+        self._size_t = abs(noeuds[0].coordt[0] -
+                           noeuds[1].coordt[0])
+
     def calculer_nouvo_taille(self, noeuds, *args):
         """
-        Calcul de la nouvelle longueur de l'élément
+        Calcul de la nouvelle longueur de l'élément (à t+dt)
         """
-        self._size_t_plus_dt = abs(noeuds[0].coordtpdt[0] - 
+        self._size_t_plus_dt = abs(noeuds[0].coordtpdt[0] -
                                    noeuds[1].coordtpdt[0])
 
     def calculer_nouvo_densite(self):
