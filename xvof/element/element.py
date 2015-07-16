@@ -19,8 +19,8 @@ class Element(object):
     """
     # pylint: disable-msg=R0902
     # 13 attributs : cela semble raisonnable pour ce cas
-    def __init__(self, proprietes, indice, noeuds):
-        self._index = indice
+    def __init__(self, proprietes):
+        self._index = -1
         self._dt = 0.
         self._size_t = 0.
         self._size_t_plus_dt = 0.
@@ -34,22 +34,25 @@ class Element(object):
         self._cson_t_plus_dt = 0.
         self._nrj_t = proprietes.material.energie_init
         self._nrj_t_plus_dt = proprietes.material.energie_init
-#         self._noeuds = []
-#         self.noeuds = noeuds
 
     ##############################################################
     # DEFINITIONS DES PROPRIETES
     ##############################################################
     #
-    # Seules les modifications de _noeuds_voisins sont permises
-    # Les autres attributs sont accessibles en lecture seule
-    #
     @property
-    def indice(self):
+    def index(self):
         """
         Indice global de l'élément
         """
         return self._index
+
+    @index.setter
+    def index(self, indice):
+        """
+        Setter de l'indice global de l'élément
+        """
+        self._index = indice
+
 
     @property
     def delta_t(self):
@@ -143,20 +146,6 @@ class Element(object):
         return self._pseudo_plus_un_demi
 
 #     @property
-#     def noeuds(self):
-#         """
-#         Liste des noeuds de l'élément
-#         """
-#         return self._noeuds
-# 
-#     @noeuds.setter
-#     def noeuds(self, node_list):
-#         """
-#         Setter des noeuds de l'élément
-#         """
-#         self._noeuds[:] = node_list[:]
-
-#     @property
     def coord(self, noeuds):
         """
         Position du centre de l'élément au temps t
@@ -170,15 +159,14 @@ class Element(object):
     # DEFINITIONS DES METHODES
     #------------------------------------------------------------
     def __str__(self):
-        message = "ELEMENT {:4d} ".format(self.indice)
+        message = "ELEMENT {:4d} ".format(self.index)
         return message
 
     def infos(self):
         """
         Affichage des informations concernant l'élément
         """
-        message = "{} {:4d}\n".format(self.__class__, self.indice)
-        message += "==> noeuds = {}\n".format(self.noeuds)
+        message = "{} {:4d}\n".format(self.__class__, self.index)
         message += "==> taille à t = {}\n".format(self.taille_t)
         message += "==> taille à t+dt = {}\n".format(self.taille_t_plus_dt)
         message += "==> masse volumique à t = {}\n".format(self.rho_t)
