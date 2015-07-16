@@ -30,7 +30,7 @@ class EnrichElement(RuptureTreatment):
                 enrich_nodes[0].position_relative = -1
                 enrich_nodes[1].position_relative = +1
                 print "Remplacement de l'élément concerné dans la topologie: {}".format(enrich_element)
-                topologie.cells[cell.index] = enrich_element
+                topologie.cells[enrich_element.index] = enrich_element
                 print "Remplacement des noeuds concernés dans la topologie: {}".format(enrich_nodes)
                 for nod in enrich_nodes:
                     topologie.nodes[nod.index] = nod
