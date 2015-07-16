@@ -20,26 +20,20 @@ class EnrichElement(RuptureTreatment):
     def applyTreatment(self, cell, *args, **kwargs):
         if EnrichElement.__never_enriched:
             if (not isinstance(cell, Element1dUpgraded)):
-                print "Enrichissement de la maille : {}".format(cell)
-                enrich_element = Element1dUpgraded(cell, self.__position_rupture)
-                kwargs["MAILLES"][cell.indice] = enrich_element
                 topologie = kwargs['TOPOLOGIE']
-                enrich_nodes_indices = topologie.getNodesBelongingToCell(enrich_element)
-                enrich_nodes = []
-                for i in enrich_nodes_indices:
-                    enrich_nodes.append(kwargs["NOEUDS"][i])
-                    kwargs["NOEUDS"][i] = Node1dUpgraded(kwargs["NOEUDS"][i])
+                print "Enrichissement de la maille : {}".format(cell)
+                print "Création de l'élément enrichi"
+                enrich_element = Element1dUpgraded(cell, self.__position_rupture)
+                print "Création des noeuds enrichis"
+                enrich_nodes = [Node1dUpgraded(nod) for nod in topologie._getNodesBelongingToCell(enrich_element)]
                 enrich_nodes = sorted(enrich_nodes, key=lambda m : m.coordt)
                 enrich_nodes[0].position_relative = -1
                 enrich_nodes[1].position_relative = +1
-                print "Remplacement des noeuds concernés : {}".format(enrich_nodes)
-                raw_input()
-                [node_l, node_r] = enrich_nodes
-                kwargs["MAILLES"][cell.indice - 1].noeuds[1] = node_l
-                kwargs["MAILLES"][cell.indice + 1].noeuds[0] = node_r
-                kwargs["NOEUDS"][node_l.index] = node_l
-                kwargs["NOEUDS"][node_r.index] = node_r
-#                 node_l.elements_voisins[1] = enrich_element
-#                 node_r.elements_voisins[0] = enrich_element
+                print "Remplacement de l'élément concerné dans la topologie: {}".format(enrich_element)
+                topologie.cells[cell.index] = enrich_element
+                print "Remplacement des noeuds concernés dans la topologie: {}".format(enrich_nodes)
+                for nod in enrich_nodes:
+                    topologie.nodes[nod.index] = nod
                 EnrichElement.__never_enriched = False
+                raw_input('TAPE')
         kwargs["MAILLES_ROMPUES"].remove(cell)
