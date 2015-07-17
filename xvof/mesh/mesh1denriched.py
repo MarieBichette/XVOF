@@ -98,8 +98,8 @@ class Mesh1dEnriched(object):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
-            neighbours_cells = sorted(neighbours_cells, key=
-                lambda m: m.coord(self.__topologie._getNodesBelongingToCell(m))[0])
+            neighbours_cells = sorted(neighbours_cells,
+                                      key=lambda m: m.coord(self.__topologie._getNodesBelongingToCell(m))[0])
             noeud.calculer_nouvo_force(neighbours_cells, isrightboundary=self.__topologie._isRightBoundary(noeud),
                                        isleftboundary=self.__topologie._isLeftBoundary(noeud))
 
@@ -159,7 +159,7 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
-            nodes = sorted(nodes, key=lambda m : m.coordt)
+            nodes = sorted(nodes, key=lambda m: m.coordt)
             if isinstance(elem, Element1dUpgraded):
                 res.append(elem.coord_gauche(nodes))
                 res.append(elem.coord_droite(nodes))
@@ -170,17 +170,17 @@ class Mesh1dEnriched(object):
     @property
     def force_field(self):
         """ Champ de force nodale"""
-        return [node.force for node in self.nodes]
+        return [node.force for node in self.__topologie.nodes]
 
     @property
     def size_t_field(self):
         """ Tailles des éléments à t"""
-        return [elem.taille_t for elem in self.cells]
+        return [elem.taille_t for elem in self.__topologie.cells]
 
     @property
     def size_t_plus_dt_field(self):
         """ Tailles des éléments à t"""
-        return [elem.taille_t_plus_dt for elem in self.cells]
+        return [elem.taille_t_plus_dt for elem in self.__topologie.cells]
 
     @property
     def pressure_t_field(self):
@@ -242,7 +242,6 @@ class Mesh1dEnriched(object):
                 res.append(elem.nrj_t)
         return res
 
-
     @property
     def pseudo_field(self):
         """ Champ de pseudo """
@@ -266,13 +265,7 @@ class Mesh1dEnriched(object):
         Application du traitement de rupture sur la liste
         de cells passée en arguments
         """
-#         print "Mailles rompues : {}".format(self.__ruptured_cells)
         ruptured_cells = self.__ruptured_cells[:]
         for cell in ruptured_cells:
-#             print "-->Traitement de la maille {}".format(cell)
             treatment.applyTreatment(cell, TOPOLOGIE=self.__topologie,
                                      MAILLES_ROMPUES=self.__ruptured_cells)
-#             for cell in self.__cells[cell.indice - 2:cell.indice + 2]:
-#                 print cell
-#             print "-->self.__ruptured_cells = {}".format(self.__ruptured_cells)
-#             raw_input()
