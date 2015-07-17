@@ -44,6 +44,7 @@ class Node1dEnriched(Node1d):
         #
         self.__position_relative = None
         self._masse = origin_node.masse
+        self._invmasse = origin_node.invmasse
 
     #------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -143,10 +144,11 @@ class Node1dEnriched(Node1d):
         Calcul de la vitesse au demi pas de temps supérieur
         """
         self._upundemi_enrichi = \
-            self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
+            self.force_enrichi * self.invmasse * delta_t + self.umundemi_enrichi
+#            self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
         self._upundemi_classique = \
-            self.force_classique / self.masse * delta_t + \
-                self.umundemi_classique
+            self.force_classique * self.invmasse * delta_t + self.umundemi_classique
+#            self.force_classique / self.masse * delta_t + \
         self._upundemi = \
             self.upundemi_classique + \
             self.position_relative * self.upundemi_enrichi

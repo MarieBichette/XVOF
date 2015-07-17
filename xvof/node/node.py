@@ -48,6 +48,7 @@ class Node(object):
         self._xtpdt = np.zeros(self.__dimension, dtype=float)
         self._upundemi = np.array(vitesse_initiale)
         self._masse = 0.
+        self._invmasse = 0.
         self._force = np.zeros(self.__dimension, dtype=float)
 
     @property
@@ -100,6 +101,13 @@ class Node(object):
         return self._masse
 
     @property
+    def invmasse(self):
+        """
+        Inverse de la masse nodale
+        """
+        return self._invmasse
+
+    @property
     def force(self):
         """
         Force nodale
@@ -138,6 +146,7 @@ class Node(object):
         """
         for elem in elements_voisins:
             self._masse += elem.masse / elem.nbr_noeuds
+            self._invmasse = 1. / self._masse
 
     def calculer_nouvo_coord(self, delta_t=1.0):
         """

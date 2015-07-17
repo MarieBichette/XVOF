@@ -74,7 +74,8 @@ class Node1d(Node):
         """
         Calcul de la vitesse au demi pas de temps supérieur
         """
-        self._upundemi = self.force / self.masse * delta_t + self.umundemi
+#        self._upundemi = self.force / self.masse * delta_t + self.umundemi
+        self._upundemi = self.umundemi + self.force * self.invmasse * delta_t
 
     def appliquer_pression(self, pression):
         """
