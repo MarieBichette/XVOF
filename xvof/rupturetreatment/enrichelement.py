@@ -4,8 +4,8 @@
 Classe définissant un traitement de la rupture en
 enrichissant l'élément et les noeuds concernés
 """
-from xvof.element.element1dupgraded import Element1dUpgraded
-from xvof.node.node1dupgraded import Node1dUpgraded
+from xvof.element.element1denriched import Element1dEnriched
+from xvof.node.node1denriched import Node1dEnriched
 from xvof.rupturetreatment.rupturetreatment import RuptureTreatment
 
 
@@ -21,13 +21,13 @@ class EnrichElement(RuptureTreatment):
 
     def applyTreatment(self, cell, *args, **kwargs):
         if EnrichElement.__never_enriched:
-            if (not isinstance(cell, Element1dUpgraded)):
+            if (not isinstance(cell, Element1dEnriched)):
                 topologie = kwargs['TOPOLOGIE']
                 print "<-- Enrichissement de la maille : {} -->".format(cell)
                 print "    |_> Création de l'élément enrichi"
-                enrich_element = Element1dUpgraded(cell, self.__position_rupture)
+                enrich_element = Element1dEnriched(cell, self.__position_rupture)
                 print "    |_> Création des noeuds enrichis"
-                enrich_nodes = [Node1dUpgraded(nod) for nod in
+                enrich_nodes = [Node1dEnriched(nod) for nod in
                                 topologie._getNodesBelongingToCell(enrich_element)]
                 enrich_nodes = sorted(enrich_nodes, key=lambda m: m.coordt)
                 enrich_nodes[0].position_relative = -1

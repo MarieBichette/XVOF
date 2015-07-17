@@ -6,13 +6,13 @@ from math import pi
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.VNR_1D_ClassicalElement import TraitementRupture
-from xvof.element.element1dupgraded import Element1dUpgraded
+from xvof.element.element1denriched import Element1dEnriched
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
-from xvof.node.node1dupgraded import Node1dUpgraded
+from xvof.node.node1denriched import Node1dEnriched
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
@@ -25,7 +25,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     if cells is not None:
         print " Nombre de mailles : {:d}".format(len(cells))
         for cell in cells:
-            if isinstance(cell, Element1dUpgraded):
+            if isinstance(cell, Element1dEnriched):
 #                 indice = cell.indice
 #                 cell_g = mesh.cells[indice - 1]
 #                 cell_d = mesh.cells[indice + 1]
@@ -36,7 +36,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     if nodes is not None:
         print " Nombre de noeuds : {:d}".format(len(nodes))
         for node in nodes:
-            if isinstance(node, Node1dUpgraded):
+            if isinstance(node, Node1dEnriched):
 #                 index = node.index
 #                 node_g = mesh.nodes[index - 1]
 #                 node_d = mesh.nodes[index + 1]

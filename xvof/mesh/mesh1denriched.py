@@ -6,7 +6,7 @@ Classe de base définissant un maillage 1d
 
 import numpy as np
 from xvof.element.element1d import Element1d
-from xvof.element.element1dupgraded import Element1dUpgraded
+from xvof.element.element1denriched import Element1dEnriched
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
 
@@ -160,7 +160,7 @@ class Mesh1dEnriched(object):
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
             nodes = sorted(nodes, key=lambda m: m.coordt)
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.coord_gauche(nodes))
                 res.append(elem.coord_droite(nodes))
             elif isinstance(elem, Element1d):
@@ -187,7 +187,7 @@ class Mesh1dEnriched(object):
         """ Champ de pression à t"""
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.pression_t_gauche)
                 res.append(elem.pression_t_droite)
             elif isinstance(elem, Element1d):
@@ -199,7 +199,7 @@ class Mesh1dEnriched(object):
         """ Champ de pression à t+dt"""
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.pression_t_plus_dt_gauche)
                 res.append(elem.pression_t_plus_dt_droite)
             elif isinstance(elem, Element1d):
@@ -211,7 +211,7 @@ class Mesh1dEnriched(object):
         """ Champ de densité à t"""
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.rho_t_gauche)
                 res.append(elem.rho_t_droite)
             elif isinstance(elem, Element1d):
@@ -223,7 +223,7 @@ class Mesh1dEnriched(object):
         """ Champ de densité à t+dt"""
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.rho_t_plus_dt_gauche)
                 res.append(elem.rho_t_plus_dt_droite)
             elif isinstance(elem, Element1d):
@@ -235,7 +235,7 @@ class Mesh1dEnriched(object):
         """ Champ d'énergie interne à t"""
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.nrj_t_gauche)
                 res.append(elem.nrj_t_droite)
             elif isinstance(elem, Element1d):
@@ -247,7 +247,7 @@ class Mesh1dEnriched(object):
         """ Champ de pseudo """
         res = []
         for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dUpgraded):
+            if isinstance(elem, Element1dEnriched):
                 res.append(elem.pseudo_gauche)
                 res.append(elem.pseudo_droite)
             elif isinstance(elem, Element1d):

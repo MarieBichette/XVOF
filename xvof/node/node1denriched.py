@@ -13,7 +13,7 @@ from xvof.node import Node1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class Node1dUpgraded(Node1d):
+class Node1dEnriched(Node1d):
     """
     Une classe pour les noeuds enrichis dans le cas 1d
 
@@ -194,5 +194,5 @@ class Node1dUpgraded(Node1d):
 
 if __name__ == "__main__":
     NODE_INI = Node1d(123, section=1.0e-06)
-    MY_NODE = Node1dUpgraded(NODE_INI)
+    MY_NODE = Node1dEnriched(NODE_INI)
     MY_NODE.infos()

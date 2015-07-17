@@ -8,13 +8,12 @@ Classe définissant un élément enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.element import Element1d
-from xvof.node import Node1dUpgraded
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 ####### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class Element1dUpgraded(Element1d):
+class Element1dEnriched(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
     """
@@ -84,10 +83,10 @@ class Element1dUpgraded(Element1d):
         self._taille_droite_t_plus_dt = \
             element_origin.taille_t_plus_dt * (1. - pos_discontin)
         #
-        self._to_gauche = Element1dUpgraded.from_enrich_to_gauche
-        self._to_droite = Element1dUpgraded.from_enrich_to_droite
-        self._to_classic = Element1dUpgraded.from_geom_to_classic
-        self._to_enrich = Element1dUpgraded.from_geom_to_enrich
+        self._to_gauche = Element1dEnriched.from_enrich_to_gauche
+        self._to_droite = Element1dEnriched.from_enrich_to_droite
+        self._to_classic = Element1dEnriched.from_geom_to_classic
+        self._to_enrich = Element1dEnriched.from_geom_to_enrich
 
     @property
     def taille_t_gauche(self):
