@@ -205,6 +205,12 @@ class Element(object):
         """
 
     @abstractmethod
+    def calculer_taille(self):
+        """
+        Calcul de la taille (longueur, aire, volume) au temps t de l'élément
+        """
+
+    @abstractmethod
     def calculer_nouvo_taille(self):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
