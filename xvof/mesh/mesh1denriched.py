@@ -3,12 +3,11 @@
 """
 Classe de base définissant un maillage 1d
 """
-from configobj import Section
 
 import numpy as np
 from xvof.element.element1d import Element1d
 from xvof.element.element1dupgraded import Element1dUpgraded
-from xvof.mesh.topologie import Topology1D
+from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
 
 
@@ -16,7 +15,7 @@ class Mesh1dEnriched(object):
     """
     Une classe définissant un maillage 1d
     """
-    def __init__(self, proprietes, initial_coordinates=np.linspace(0, 1, 11),
+    def __init__(self, properties, initial_coordinates=np.linspace(0, 1, 11),
                  initial_velocities=np.zeros(11)):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Les vecteurs initiaux de vitesse et coordonnées"
@@ -29,16 +28,23 @@ class Mesh1dEnriched(object):
         self.__ruptured_cells = []
         ####
         # Création des noeuds
-        noeuds = []
+        nodes = []
         for n in xrange(np.shape(initial_coordinates)[0]):
             poz = initial_coordinates[n]
             vit = initial_velocities[n]
             nod = Node1d(poz_init=np.array([poz]),
                          vit_init=np.array([vit]),
-                         section=proprietes.geometric.section)
-            noeuds.append(nod)
+                         section=properties.geometric.section)
+            nodes.append(nod)
+        nbr_nodes = len(nodes)
         ####
-        self.__topologie = Topology1D(noeuds, proprietes)
+        # Création des mailles
+        cells = []
+        for c in xrange(nbr_nodes - 1):
+            cells.append(Element1d(properties))
+        ####
+        # Création de la topologie
+        self.__topologie = Topology1D(nodes, cells)
 
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
