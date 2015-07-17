@@ -65,14 +65,12 @@ class Mesh1d(object):
         '''
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            nodes = sorted(nodes, key=lambda m : m.coordt)
             cell.calculer_taille(nodes)
 
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            nodes = sorted(nodes, key=lambda m : m.coordt)
             cell.calculer_nouvo_taille(nodes, delta_t)
 
     def calculer_nouvo_densite_des_elements(self):
@@ -95,8 +93,6 @@ class Mesh1d(object):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
-            neighbours_cells = sorted(neighbours_cells,
-                                      key=lambda m: m.coord(self.__topologie._getNodesBelongingToCell(m))[0])
             noeud.calculer_nouvo_force(neighbours_cells,
                                        isrightboundary=self.__topologie._isRightBoundary(noeud),
                                        isleftboundary=self.__topologie._isLeftBoundary(noeud))
@@ -157,7 +153,6 @@ class Mesh1d(object):
         res = []
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
-            nodes = sorted(nodes, key=lambda m: m.coordt)
             res.append(elem.coord(nodes))
         return res
 

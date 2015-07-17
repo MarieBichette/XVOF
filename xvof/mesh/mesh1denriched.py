@@ -10,6 +10,7 @@ from xvof.element.element1denriched import Element1dEnriched
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
 
+from xvof.utilities.profilingperso import timeit_file
 
 class Mesh1dEnriched(object):
     """
@@ -46,63 +47,68 @@ class Mesh1dEnriched(object):
         # Création de la topologie
         self.__topologie = Topology1D(nodes, cells)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
         for noeud in self.__topologie.nodes:
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
             noeud.calculer_masse_wilkins(neighbours_cells)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_vit_noeuds(self, delta_t):
         """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_vitesse(delta_t)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_coord_noeuds(self, delta_t):
         """ Calcul des nouvelles coordonnées de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_coord(delta_t)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_taille_des_elements(self):
         '''
         Calcul de la taille des éléments à t
         '''
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            nodes = sorted(nodes, key=lambda m : m.coordt)
             cell.calculer_taille(nodes)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            nodes = sorted(nodes, key=lambda m : m.coordt)
             cell.calculer_nouvo_taille(nodes, delta_t)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             cell.calculer_nouvo_densite()
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             if cell not in self.__ruptured_cells:
                 cell.calculer_nouvo_pression()
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
         for cell in self.__topologie.cells:
             cell.calculer_nouvo_pseudo(delta_t)
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_force_des_noeuds(self):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
-            neighbours_cells = sorted(neighbours_cells,
-                                      key=lambda m: m.coord(self.__topologie._getNodesBelongingToCell(m))[0])
             noeud.calculer_nouvo_force(neighbours_cells, isrightboundary=self.__topologie._isRightBoundary(noeud),
                                        isleftboundary=self.__topologie._isLeftBoundary(noeud))
-
+    @timeit_file('/tmp/timer.txt')
     def incrementer(self):
         """ Passage au pas de temps suivant"""
         for noeud in self.__topologie.nodes:
@@ -110,6 +116,7 @@ class Mesh1dEnriched(object):
         for cell in self.__topologie.cells:
             cell.incrementer()
 
+    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pdt_critique(self):
         """ Calcul du pas de temps critique """
         dts = []
@@ -118,6 +125,7 @@ class Mesh1dEnriched(object):
             dts.append(cell.delta_t)
         return min(dts)
 
+    @timeit_file('/tmp/timer.txt')
     def appliquer_pression(self, surface, pression):
         """
         Appliquer une pression donnée sur
@@ -159,7 +167,6 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
-            nodes = sorted(nodes, key=lambda m: m.coordt)
             if isinstance(elem, Element1dEnriched):
                 res.append(elem.coord_gauche(nodes))
                 res.append(elem.coord_droite(nodes))
