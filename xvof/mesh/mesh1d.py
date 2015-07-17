@@ -3,17 +3,16 @@
 """
 Classe de base définissant un maillage 1d
 """
-from configobj import Section
-
 import numpy as np
 from xvof.element.element1d import Element1d
 from xvof.node.node1d import Node1d
+from xvof.mesh.topology1d import Topology1D
 
 class Mesh1d(object):
     """
     Une classe définissant un maillage 1d
     """
-    def __init__(self, proprietes, initial_coordinates=np.linspace(0, 1, 11),
+    def __init__(self, properties, initial_coordinates=np.linspace(0, 1, 11),
                  initial_velocities=np.zeros(11)):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Les vecteurs initiaux de vitesse et coordonnées"
@@ -23,123 +22,131 @@ class Mesh1d(object):
             message = "Il s'agit d'un maillage 1D à initialiser avec des"
             message += " vecteurs à une dimension!"
             raise ValueError(message)
-        self.__nbr_nodes = np.shape(initial_coordinates)[0]
-        self.__nbr_cells = self.__nbr_nodes - 1
-        self.__nodes = []
-        self.__cells = []
         self.__ruptured_cells = []
+        ####
         # Création des noeuds
-        for n in xrange(self.__nbr_nodes):
+        nodes = []
+        for n in xrange(np.shape(initial_coordinates)[0]):
             poz = initial_coordinates[n]
             vit = initial_velocities[n]
-            nod = Node1d(n, poz_init=np.array([poz]),
+            nod = Node1d(poz_init=np.array([poz]),
                          vit_init=np.array([vit]),
-                         section=proprietes.geometric.section)
-            self.__nodes.append(nod)
-        # Création des éléments
-        for m in xrange(self.__nbr_cells):
-            elem = Element1d(proprietes, m, [self.__nodes[m], self.__nodes[m + 1]])
-            self.__cells.append(elem)
-            self.__nodes[m].elements_voisins = [elem]
-            self.__nodes[m + 1].elements_voisins = [elem]
-
-    @property
-    def nodes(self):
-        """ Liste des noeuds """
-        return self.__nodes
-
-    @property
-    def cells(self):
-        """ Liste des éléments """
-        return self.__cells
+                         section=properties.geometric.section)
+            nodes.append(nod)
+        nbr_nodes = len(nodes)
+        ####
+        # Création des mailles
+        cells = []
+        for c in xrange(nbr_nodes - 1):
+            cells.append(Element1d(properties))
+        ####
+        # Création de la topologie
+        self.__topologie = Topology1D(nodes, cells)
 
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
-        for noeud in self.nodes:
-            noeud.calculer_masse_wilkins()
+        for noeud in self.__topologie.nodes:
+            neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
+            noeud.calculer_masse_wilkins(neighbours_cells)
 
     def calculer_nouvo_vit_noeuds(self, delta_t):
         """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
-        for noeud in self.nodes:
+        for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_vitesse(delta_t)
 
     def calculer_nouvo_coord_noeuds(self, delta_t):
         """ Calcul des nouvelles coordonnées de chaque noeud à t+dt"""
-        for noeud in self.nodes:
+        for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_coord(delta_t)
 
-    def calculer_nouvo_taille_des_elements(self):
+    def calculer_taille_des_elements(self):
+        '''
+        Calcul de la taille des éléments à t
+        '''
+        for cell in self.__topologie.cells:
+            nodes = self.__topologie._getNodesBelongingToCell(cell)
+            nodes = sorted(nodes, key=lambda m : m.coordt)
+            cell.calculer_taille(nodes)
+
+    def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
-        for cell in self.cells:
-            cell.calculer_nouvo_taille()
+        for cell in self.__topologie.cells:
+            nodes = self.__topologie._getNodesBelongingToCell(cell)
+            nodes = sorted(nodes, key=lambda m : m.coordt)
+            cell.calculer_nouvo_taille(nodes, delta_t)
 
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
-        for cell in self.cells:
+        for cell in self.__topologie.cells:
             cell.calculer_nouvo_densite()
 
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
-        for cell in self.cells:
+        for cell in self.__topologie.cells:
             if cell not in self.__ruptured_cells:
                 cell.calculer_nouvo_pression()
 
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
-        for cell in self.cells:
+        for cell in self.__topologie.cells:
             cell.calculer_nouvo_pseudo(delta_t)
 
     def calculer_nouvo_force_des_noeuds(self):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
-        for noeud in self.nodes:
-            noeud.calculer_nouvo_force()
+        for noeud in self.__topologie.nodes:
+            neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
+            neighbours_cells = sorted(neighbours_cells,
+                                      key=lambda m: m.coord(self.__topologie._getNodesBelongingToCell(m))[0])
+            noeud.calculer_nouvo_force(neighbours_cells,
+                                       isrightboundary=self.__topologie._isRightBoundary(noeud),
+                                       isleftboundary=self.__topologie._isLeftBoundary(noeud))
 
     def incrementer(self):
         """ Passage au pas de temps suivant"""
-        for noeud in self.nodes:
+        for noeud in self.__topologie.nodes:
             noeud.incrementer()
-        for cell in self.cells:
+        for cell in self.__topologie.cells:
             cell.incrementer()
 
     def calculer_nouvo_pdt_critique(self):
         """ Calcul du pas de temps critique """
         dts = []
-        for cell in self.cells:
+        for cell in self.__topologie.cells:
             cell.calculer_nouvo_dt()
             dts.append(cell.delta_t)
         return min(dts)
 
     def appliquer_pression(self, surface, pression):
         """
-        Appliquer une pression donnée sur 
+        Appliquer une pression donnée sur
         les frontieres gauche ou droite
         """
         if surface.lower() not in ("gauche", "droite"):
             raise(ValueError("Sur la surface <gauche> ou <droite> est possible en 1d!"))
         if (surface.lower() == 'gauche'):
-            self.__nodes[0].appliquer_pression(pression)
+            self.__topologie.nodes[0].appliquer_pression(pression)
         else:
-            self.__nodes[-1].appliquer_pression(-pression)
+            self.__topologie.nodes[-1].appliquer_pression(-pression)
 
     @property
     def velocity_t_minus_half_field(self):
         """ Champ de vitesse à t-1/2"""
-        return [node.umundemi for node in self.nodes]
+        return [node.umundemi for node in self.__topologie.nodes]
 
     @property
     def velocity_t_plus_half_field(self):
         """ Champ de vitesse à t+1/2"""
-        return [node.upundemi for node in self.nodes]
+        return [node.upundemi for node in self.__topologie.nodes]
 
     @property
     def coord_t_field(self):
         """ Champ de position à t"""
-        return [node.coordt for node in self.nodes]
+        return [node.coordt for node in self.__topologie.nodes]
 
     @property
     def coord_t_plus_dt_field(self):
         """ Champ de position à t+dt"""
-        return [node.coordtpdt for node in self.nodes]
+        return [node.coordtpdt for node in self.__topologie.nodes]
 
     @property
     def coord_elements_field(self):
@@ -147,56 +154,61 @@ class Mesh1d(object):
         Champ de position des éléments à t
         (Moyenne des champs de position à t des noeuds)
         """
-        return [cell.coord for cell in self.cells]
+        res = []
+        for elem in self.__topologie.cells:
+            nodes = self.__topologie._getNodesBelongingToCell(elem)
+            nodes = sorted(nodes, key=lambda m: m.coordt)
+            res.append(elem.coord(nodes))
+        return res
 
     @property
     def force_field(self):
         """ Champ de force nodale"""
-        return [node.force for node in self.nodes]
+        return [node.force for node in self.__topologie.nodes]
 
     @property
     def size_t_field(self):
         """ Tailles des éléments à t"""
-        return [elem.taille_t for elem in self.cells]
+        return [elem.taille_t for elem in self.__topologie.cells]
 
     @property
     def size_t_plus_dt_field(self):
         """ Tailles des éléments à t"""
-        return [elem.taille_t_plus_dt for elem in self.cells]
+        return [elem.taille_t_plus_dt for elem in self.__topologie.cells]
 
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        return [elem.pression_t for elem in self.cells]
+        return [elem.pression_t for elem in self.__topologie.cells]
 
     @property
     def pressure_t_plus_dt_field(self):
         """ Champ de pression à t+dt"""
-        return [elem.pression_t_plus_dt for elem in self.cells]
+        return [elem.pression_t_plus_dt for elem in self.__topologie.cells]
 
     @property
     def rho_t_field(self):
         """ Champ de densité à t"""
-        return [elem.rho_t for elem in self.cells]
+        return [elem.rho_t for elem in self.__topologie.cells]
 
     @property
     def rho_t_plus_dt_field(self):
         """ Champ de densité à t+dt"""
-        return [elem.rho_t_plus_dt for elem in self.cells]
+        return [elem.rho_t_plus_dt for elem in self.__topologie.cells]
 
     @property
     def nrj_t_field(self):
         """ Champ d'énergie interne à t"""
-        return [elem.nrj_t for elem in self.cells]
+        return [elem.nrj_t for elem in self.__topologie.cells]
 
     @property
     def pseudo_field(self):
         """ Champ de pseudo """
-        return [elem.pseudo for elem in self.cells]
+        return [elem.pseudo for elem in self.__topologie.cells]
 
     def get_ruptured_cells(self, rupture_criterion):
         """ Liste des mailles endommagées"""
-        for elem in self.cells:
+        for elem in self.__topologie.cells:
             if rupture_criterion.checkCriterion(elem):
                 self.__ruptured_cells.append(elem)
 

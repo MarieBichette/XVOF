@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
+from math import pi
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,6 +22,7 @@ PasDeTempsInit = 1.0e-09
 PressionInit = 100149.28
 EnergieInterneInit = 7.7
 RhoInit = 8129.
+Section = pi * 0.01 ** 2
 EquationEtat = MieGruneisen()
 PChargementGauche = ConstantPressure(-3.5e+09)
 # PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
@@ -33,7 +35,7 @@ ParamPseudoA = 0.2
 ParamPseudoB = 1.0
 CFL = 0.35
 
-NbrImages = 3750
+NbrImages = 150
 #  =================================================
 
 if __name__ == '__main__':
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     num_props = numerical_props(ParamPseudoA, ParamPseudoB, CFL)
     mat_props = material_props(PressionInit, EnergieInterneInit, RhoInit, EquationEtat)
-    geom_props = geometrical_props(1.0e-06)
+    geom_props = geometrical_props(Section)
     props = properties(num_props, mat_props, geom_props)
     # ---------------------------------------------#
     #         CREATION DU MAILLAGE                 #
@@ -70,6 +72,7 @@ if __name__ == '__main__':
     #         CALCUL DES MASSES NODALES            #
     # ---------------------------------------------#
     print "Calcul de la masse des noeuds :"
+    my_mesh.calculer_taille_des_elements()
     my_mesh.calculer_masse_des_noeuds()
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
@@ -90,7 +93,7 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_taille_des_elements()
+        my_mesh.calculer_nouvo_taille_des_elements(dt)
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
@@ -133,8 +136,7 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         if (time > t_next_image):
             print "Affichage des images"
-            if (time > 1.4e-06):
-                my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
+            my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
             t_next_image += delta_t_images
             print "=>OK"
 
