@@ -3,12 +3,12 @@
 """
 Classe définissant une équation d'état de type Mie-Gruneisen
 """
-from xvof.equationsofstate import EquationOfState
+from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
 
 
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
-class MieGruneisen(EquationOfState):
+class MieGruneisen(EquationOfStateBase):
     """
     Un objet décrivant l'équation d'état de type Mie_Gruneisen
     """
@@ -23,7 +23,7 @@ class MieGruneisen(EquationOfState):
         self.coeff_b        : paramètre b
         self.ezero    : paramètre ezero
         """
-        EquationOfState.__init__(self)
+        super(MieGruneisen, self).__init__()
         #
         self.__parameters = {'czero': 3980.0,
                              'S1': 1.58,
@@ -102,7 +102,7 @@ class MieGruneisen(EquationOfState):
     def __repr__(self):
         return self.__str__()
 
-    def solve_ve(self, specific_volume, internal_energy):
+    def solveVolumeEnergy(self, specific_volume, internal_energy):
         """
         Fournit le triplet (pression | dérivée de la pression en
         fonction de l'énergie | vitesse du son) à partir du couple
@@ -112,29 +112,21 @@ class MieGruneisen(EquationOfState):
         # Définition de variable locales pour eviter de
         # multiples recherche (gain de temps)
         # -------------------------------------------------
-        locs1 = self.coeff_s1
-        locs2 = self.coeff_s2
-        locs3 = self.coeff_s3
         rhozero = self.rhozero
-        grunzero = self.grunzero
-        ezero = self.ezero
-        locb = self.coeff_b
         czero2 = self.czero ** 2
         # Dérivee du coefficient de gruneisen
-        dgam = rhozero * (grunzero - locb)
+        dgam = rhozero * (self.grunzero - self.coeff_b)
         #
         epsv = 1 - rhozero * specific_volume
         #
         epsv2 = epsv ** 2
         # Coefficient de gruneisen
-        gam = grunzero * (1 - epsv) + locb * epsv
-        #
-        gampervol = gam / specific_volume
+        gampervol = (self.grunzero * (1 - epsv) + self.coeff_b * epsv) / specific_volume
         # -------------------------------------------------
         # Définition de variable locales redondantes
         # -------------------------------------------------
-        redond_a = locs1 + 2. * locs2 * epsv + 3. * locs3 * epsv2
-        if(epsv > 0):
+        redond_a = self.coeff_s1 + 2. * self.coeff_s2 * epsv + 3. * self.coeff_s3 * epsv2
+        if epsv > 0:
             # ============================================================
             # si epsv > 0, la pression depend de einth et phi.
             # einth : energie interne specifique sur l hugoniot
@@ -144,9 +136,9 @@ class MieGruneisen(EquationOfState):
             # deinth : derivee de einth par rapport a v
             # dpdv : dp/dv
             # ============================================================
-            denom = (1. - (locs1 + locs2 * epsv + locs3 * epsv2) * epsv)
+            denom = (1. - (self.coeff_s1 + self.coeff_s2 * epsv + self.coeff_s3 * epsv2) * epsv)
             phi = rhozero * czero2 * epsv / denom ** 2
-            einth = ezero + phi * epsv / (2. * rhozero)
+            einth = self.ezero + phi * epsv / (2. * rhozero)
             #
             dphi = phi * rhozero * (-1. / epsv - 2. * redond_a / denom)
             #
@@ -156,7 +148,7 @@ class MieGruneisen(EquationOfState):
                 (internal_energy - einth) / specific_volume - \
                 gampervol * deinth
             #
-        elif(epsv <= 0):
+        elif epsv <= 0:
             # ============================================================
             # traitement en tension : epsv < 0
             # la pression depend d une fonction de v : phi
@@ -165,7 +157,7 @@ class MieGruneisen(EquationOfState):
             # ============================================================
             phi = rhozero * czero2 * epsv / (1. - epsv)
             # einth ---> e0
-            einth = ezero
+            einth = self.ezero
             #
             dphi = -czero2 / specific_volume ** 2
             #
@@ -175,30 +167,26 @@ class MieGruneisen(EquationOfState):
         # Pression :
         # ****************************
         pressure = phi + (gampervol) * (internal_energy - einth)
-        # ****************************************
-        # Derivee de la pression par rapport a e :
-        # ****************************************
-        dpsurde = gampervol
         # ======================================
         # Carre de la vitesse du son :
         # ======================================
-        vson2 = specific_volume ** 2 * (pressure * dpsurde - dpdv)
-        if(vson2 < 0):
+        vson2 = specific_volume ** 2 * (pressure * gampervol - dpdv)
+        if vson2 < 0:
             print "Carré de la vitesse du son < 0"
             print "specific_volume = {:15.9g}".format(specific_volume)
             print "pressure = {:15.9g}".format(pressure)
-            print "dpsurde = {:15.9g}".format(dpsurde)
+            print "dpsurde = {:15.9g}".format(gampervol)
             print "dpdv = {:15.9g}".format(dpdv)
             raise SystemExit
         vson = vson2 ** 0.5
         #
-        if(not ((vson > 0.)and(vson < 10000.))):
+        if not ((vson > 0.) and (vson < 10000.)):
             vson = 0.
         #
-        return pressure, dpsurde, vson
+        return pressure, gampervol, vson
 
-    def solve_vp(self, specific_volume, pressure):
+    def solveVolumePressure(self, specific_volume, pressure):
         raise NotImplementedError
 
-    def solve_vt(self, specific_volume, temperatue):
+    def solveVolumeTemperature(self, specific_volume, temperatue):
         raise NotImplementedError

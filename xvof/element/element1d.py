@@ -25,7 +25,7 @@ class Element1d(Element):
         Fonction à annuler et sa dérivée pour le schéma VNR
         Formulation v-e
         """
-        (p_i, dpsurde, dummy) = eos.solve_ve(1. / rho_new, enerj)
+        (p_i, dpsurde, dummy) = eos.solveVolumeEnergy(1. / rho_new, enerj)
         # Fonction à annuler
         delta_v = 1. / rho_new - 1. / rho_old
         func = enerj + p_i * delta_v / 2. + pression_t * delta_v / 2. - \
@@ -60,14 +60,14 @@ class Element1d(Element):
                 convergence = True
                 res_nrj = nrj_i
                 res_pression_t_plus_dt, dummy, res_cson = \
-                    eos.solve_ve(1. / rho_new, res_nrj)
+                    eos.solveVolumeEnergy(1. / rho_new, res_nrj)
                 break
             if(abs(dfunc_i_surde) < 1.e-09):
                 print "Sortie du NR par manque de pente :-)"
                 convergence = True
                 res_nrj = nrj_i
                 res_pression_t_plus_dt, dummy, res_cson = \
-                    eos.solve_ve(1. / rho_new, res_nrj)
+                    eos.solveVolumeEnergy(1. / rho_new, res_nrj)
                 break
             # Incrémentation
             nrj_i = nrj_iplus1

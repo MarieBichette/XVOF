@@ -168,10 +168,10 @@ class Mesh1dEnriched(object):
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.coord_gauche(nodes))
-                res.append(elem.coord_droite(nodes))
+                res.append(elem.getLeftPartCoordinates(nodes))
+                res.append(elem.getRightPartCoordinates(nodes))
             elif isinstance(elem, Element1d):
-                res.append(elem.coord(nodes))
+                res.append(elem.getCoordinates(nodes))
         return res
 
     @property

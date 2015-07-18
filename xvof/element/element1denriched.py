@@ -116,7 +116,7 @@ class Element1dEnriched(Element1d):
         """
         return self._taille_droite_t_plus_dt
 
-    def coord_gauche(self, noeuds):
+    def getLeftPartCoordinates(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
@@ -124,7 +124,7 @@ class Element1dEnriched(Element1d):
         vec_coord = noeuds[0].coordt[:] + self.taille_t_gauche / 2.0
         return vec_coord
 
-    def coord_droite(self, noeuds):
+    def getRightPartCoordinates(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
@@ -277,11 +277,11 @@ class Element1dEnriched(Element1d):
         message = "ELEMENT ENRICHI {:4d} ".format(self.index)
         return message
 
-    def infos(self):
+    def printInfos(self):
         """
         Affichage des informations concernant l'élément
         """
-        Element1d.infos(self)
+        Element1d.printInfos(self)
         message = "==> masse volumique à gauche à t = {}\n".\
             format(self.rho_t_gauche)
         message += "==> masse volumique à droite à t = {}\n".\

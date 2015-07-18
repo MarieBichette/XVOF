@@ -153,7 +153,7 @@ class Mesh1d(object):
         res = []
         for elem in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(elem)
-            res.append(elem.coord(nodes))
+            res.append(elem.getCoordinates(nodes))
         return res
 
     @property

@@ -6,7 +6,7 @@ Classe de base abstraite (interface) définissant une équation d'état
 from abc import ABCMeta, abstractmethod
 
 
-class EquationOfState():
+class EquationOfStateBase(object):
     """
     Une interface pour les équations d'état
     """
@@ -18,23 +18,22 @@ class EquationOfState():
         pass
 
     @abstractmethod
-    def solve_ve(self, specific_volume, internal_energy):
+    def solveVolumeEnergy(self, specific_volume, internal_energy):
         """
         Résolution en formulation V-E
         """
         pass
 
     @abstractmethod
-    def solve_vt(self, specific_volume, temperature):
+    def solveVolumeTemperature(self, specific_volume, temperature):
         """
         Résolution en formulation V-T
         """
         pass
 
     @abstractmethod
-    def solve_vp(self, specific_volume, pressure):
+    def solveVolumePressure(self, specific_volume, pressure):
         """
         Résolution en formulation V-P
         """
         pass
-

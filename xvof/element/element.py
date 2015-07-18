@@ -145,8 +145,7 @@ class Element(object):
         """
         return self._pseudo_plus_un_demi
 
-#     @property
-    def coord(self, noeuds):
+    def getCoordinates(self, noeuds):
         """
         Position du centre de l'élément au temps t
         """
@@ -155,14 +154,14 @@ class Element(object):
             vec_coord += nod.coordt
         return vec_coord / len(noeuds)
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     def __str__(self):
         message = "ELEMENT {:4d} ".format(self.index)
         return message
 
-    def infos(self):
+    def printInfos(self):
         """
         Affichage des informations concernant l'élément
         """
@@ -236,10 +235,10 @@ class Element(object):
         """
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-#######          PROGRAMME PRINCIPAL        ###############
+# ######          PROGRAMME PRINCIPAL        ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 if __name__ == "__main__":
     import doctest
     TESTRES = doctest.testmod(verbose=0)
-    if(TESTRES[0] == 0):
+    if TESTRES[0] == 0:
         print "TESTS UNITAIRES : OK"
