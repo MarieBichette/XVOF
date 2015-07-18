@@ -6,7 +6,6 @@ Classe définissant une équation d'état de type Mie-Gruneisen
 from xvof.equationsofstate import EquationOfState
 
 
-
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
 class MieGruneisen(EquationOfState):
@@ -26,17 +25,14 @@ class MieGruneisen(EquationOfState):
         """
         EquationOfState.__init__(self)
         #
-        self.__parameters = {
-                             'czero': 3980.0,
+        self.__parameters = {'czero': 3980.0,
                              'S1': 1.58,
                              'S2': 0.,
                              'S3': 0.,
                              'rhozero': 8129.0,
                              'grunzero': 1.6,
                              'b': 0.5,
-                             'ezero': 0.
-        }
-
+                             'ezero': 0.}
         for (prop, default) in self.__parameters.iteritems():
             self.__parameters[prop] = kwargs.get(prop, default)
 
@@ -112,10 +108,10 @@ class MieGruneisen(EquationOfState):
         fonction de l'énergie | vitesse du son) à partir du couple
         ( volume massique | énergie interne )
         """
-        #-------------------------------------------------
+        # -------------------------------------------------
         # Définition de variable locales pour eviter de
         # multiples recherche (gain de temps)
-        #-------------------------------------------------
+        # -------------------------------------------------
         locs1 = self.coeff_s1
         locs2 = self.coeff_s2
         locs3 = self.coeff_s3
@@ -134,9 +130,9 @@ class MieGruneisen(EquationOfState):
         gam = grunzero * (1 - epsv) + locb * epsv
         #
         gampervol = gam / specific_volume
-        #-------------------------------------------------
+        # -------------------------------------------------
         # Définition de variable locales redondantes
-        #-------------------------------------------------
+        # -------------------------------------------------
         redond_a = locs1 + 2. * locs2 * epsv + 3. * locs3 * epsv2
         if(epsv > 0):
             # ============================================================
@@ -157,16 +153,16 @@ class MieGruneisen(EquationOfState):
             deinth = phi * (-1. - epsv * redond_a / denom)
             #
             dpdv = dphi + (dgam - gampervol) * \
-            (internal_energy - einth) / specific_volume - \
-            gampervol * deinth
+                (internal_energy - einth) / specific_volume - \
+                gampervol * deinth
             #
         elif(epsv <= 0):
-            #============================================================
+            # ============================================================
             # traitement en tension : epsv < 0
             # la pression depend d une fonction de v : phi
             # et
             # de e0 appelee einth
-            #============================================================
+            # ============================================================
             phi = rhozero * czero2 * epsv / (1. - epsv)
             # einth ---> e0
             einth = ezero
@@ -174,18 +170,18 @@ class MieGruneisen(EquationOfState):
             dphi = -czero2 / specific_volume ** 2
             #
             dpdv = dphi + (dgam - gampervol) * \
-            (internal_energy - einth) / specific_volume
-        #****************************
+                (internal_energy - einth) / specific_volume
+        # ****************************
         # Pression :
-        #****************************
+        # ****************************
         pressure = phi + (gampervol) * (internal_energy - einth)
-        #****************************************
+        # ****************************************
         # Derivee de la pression par rapport a e :
-        #****************************************
+        # ****************************************
         dpsurde = gampervol
-        #======================================
+        # ======================================
         # Carre de la vitesse du son :
-        #======================================
+        # ======================================
         vson2 = specific_volume ** 2 * (pressure * dpsurde - dpdv)
         if(vson2 < 0):
             print "Carré de la vitesse du son < 0"
