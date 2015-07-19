@@ -160,7 +160,7 @@ class Element1d(Element):
         self._size_t_plus_dt = abs(noeuds[0].coordtpdt[0] -
                                    noeuds[1].coordtpdt[0])
 
-    def calculer_nouvo_densite(self):
+    def computeNewDensity(self):
         """
         Calcul de la densité à l'instant t+dt basé sur
         la conservation de la masse
@@ -168,7 +168,7 @@ class Element1d(Element):
         self._rho_t_plus_dt = \
             self.rho_t * self.taille_t / self.taille_t_plus_dt
 
-    def calculer_nouvo_pseudo(self, delta_t):
+    def computeNewPseudo(self, delta_t):
         """
         Calcul de la nouvelle pseudo
         """
@@ -178,7 +178,7 @@ class Element1d(Element):
                                       self.proprietes.numeric.a_pseudo,
                                       self.proprietes.numeric.b_pseudo)
 
-    def calculer_nouvo_dt(self):
+    def computeNewTimeStep(self):
         """
         Calcul du pas de temps dans l'élément
         """

@@ -8,17 +8,23 @@ Classe de base définissant un élément
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
-
 import numpy as np
-from xvof.miscellaneous import *
 
 
 class Element(object):
     """
     Une classe pour les éléments
     """
-    # pylint: disable-msg=R0902
-    # 13 attributs : cela semble raisonnable pour ce cas
+    @classmethod
+    def getCoordinates(cls, noeuds):
+        """
+        Position du centre de l'élément au temps t
+        """
+        vec_coord = np.zeros(noeuds[0].dimension)
+        for nod in noeuds:
+            vec_coord += nod.coordt
+        return vec_coord / len(noeuds)
+
     def __init__(self, proprietes):
         self._index = -1
         self._dt = 0.
@@ -52,7 +58,6 @@ class Element(object):
         Setter de l'indice global de l'élément
         """
         self._index = indice
-
 
     @property
     def delta_t(self):
@@ -145,15 +150,6 @@ class Element(object):
         """
         return self._pseudo_plus_un_demi
 
-    def getCoordinates(self, noeuds):
-        """
-        Position du centre de l'élément au temps t
-        """
-        vec_coord = np.zeros(noeuds[0].dimension)
-        for nod in noeuds:
-            vec_coord += nod.coordt
-        return vec_coord / len(noeuds)
-
     # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
     # ------------------------------------------------------------
@@ -216,20 +212,20 @@ class Element(object):
         """
 
     @abstractmethod
-    def calculer_nouvo_densite(self):
+    def computeNewDensity(self):
         """
         Calcul de la densité à l'instant t+dt basé sur
         la conservation de la masse
         """
 
     @abstractmethod
-    def calculer_nouvo_pseudo(self):
+    def computeNewPseudo(self):
         """
         Calcul de la nouvelle pseudo
         """
 
     @abstractmethod
-    def calculer_nouvo_dt(self):
+    def computeNewTimeStep(self):
         """
         Calcul du nouveau pas de temps
         """

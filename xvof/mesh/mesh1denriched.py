@@ -86,7 +86,7 @@ class Mesh1dEnriched(object):
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
-            cell.calculer_nouvo_densite()
+            cell.computeNewDensity()
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pression_des_elements(self):
@@ -99,7 +99,7 @@ class Mesh1dEnriched(object):
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
         for cell in self.__topologie.cells:
-            cell.calculer_nouvo_pseudo(delta_t)
+            cell.computeNewPseudo(delta_t)
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_force_des_noeuds(self):
@@ -122,7 +122,7 @@ class Mesh1dEnriched(object):
         """ Calcul du pas de temps critique """
         dts = []
         for cell in self.__topologie.cells:
-            cell.calculer_nouvo_dt()
+            cell.computeNewTimeStep()
             dts.append(cell.delta_t)
         return min(dts)
 

@@ -380,7 +380,7 @@ class Element1dEnriched(Element1d):
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
             * delta_t
 
-    def calculer_nouvo_densite(self):
+    def computeNewDensity(self):
         """
         Calcul des nouvelles densités
         """
@@ -393,7 +393,7 @@ class Element1dEnriched(Element1d):
         self._rho_t_plus_dt_enrichi = \
             self._to_enrich(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
 
-    def calculer_nouvo_pseudo(self, delta_t):
+    def computeNewPseudo(self, delta_t):
         """
         Calcul de la nouvelle pseudo
         """
@@ -418,7 +418,7 @@ class Element1dEnriched(Element1d):
         self._pseudo_plus_un_demi_enrichi = \
             self._to_enrich(pseudo_gauche, pseudo_droite)
 
-    def calculer_nouvo_dt(self):
+    def computeNewTimeStep(self):
         """
         Calcul du pas de temps
         """
