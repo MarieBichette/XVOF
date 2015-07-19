@@ -18,7 +18,7 @@ from physic_figure import PhysicFigure
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
 PressureField = Field("Pression [Pa]", "Champ de pression", -20e+09, 20e+09, "./RESULTATS/PressureField")
-DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 0.0, 8500.0, "./RESULTATS/DensityField")
+DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 7500.0, 8500.0, "./RESULTATS/DensityField")
 InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 40000.0, "./RESULTATS/InternalEnergyField")
 PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 10e+09, "./RESULTATS/PseudoViscosityField")
 CellPositionField = Field("Position [m]", "Champ de position", 0.0, 0.02, "./RESULTATS/CellPositionField")
@@ -57,7 +57,7 @@ class FigureManager(object):
     def create_figure_for_cell_field(self, field_X, field_Y):
         """
         Création des figures pour les champs aux mailles
-        (l'axe des X est donc l'abscisse des mailles) 
+        (l'axe des X est donc l'abscisse des mailles)
         """
         try:
             X = np.array(self.__champs_mailles[field_X])
@@ -82,7 +82,7 @@ class FigureManager(object):
     def create_figure_for_node_field(self, field_X, field_Y):
         """
         Création des figures pour les champs aux noeuds
-        (l'axe des X est donc l'abscisse des noeuds) 
+        (l'axe des X est donc l'abscisse des noeuds)
         """
         try:
             X = np.array(self.__champs_noeuds[field_X])
@@ -106,7 +106,7 @@ class FigureManager(object):
 
     def populate_figs(self):
         """
-        Création des figures associées à chacun des champs et ajout à 
+        Création des figures associées à chacun des champs et ajout à
         la liste des figures
         """
         champ_X = CellPositionField
@@ -118,7 +118,7 @@ class FigureManager(object):
         for champ_Y in self.__champs_noeuds.keys():
             if champ_Y != champ_X:
                 fig = self.create_figure_for_node_field(champ_X, champ_Y)
-                self.__figures_noeuds.append((fig, champ_X, champ_Y)) 
+                self.__figures_noeuds.append((fig, champ_X, champ_Y))
         if self._show:
             plt.show(block=False)
         if self._dump:

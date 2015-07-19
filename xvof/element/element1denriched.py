@@ -328,7 +328,7 @@ class Element1dEnriched(Element1d):
             format(self.pseudo_droite)
         print message
 
-    def calculer_nouvo_pression(self):
+    def computeNewPressure(self):
         """
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
@@ -364,7 +364,7 @@ class Element1dEnriched(Element1d):
         self._cson_t_plus_dt_enrichi = \
             self._to_enrich(cson_t_plus_dt_g, cson_t_plus_dt_d)
 
-    def calculer_nouvo_taille(self, noeuds, delta_t):
+    def computeNewSize(self, noeuds, delta_t):
         """
         Calcul des nouvelles longueurs de l'élément
         """
@@ -439,11 +439,11 @@ class Element1dEnriched(Element1d):
 
         self._dt = dt_g + dt_d  # Bizarre --> A vérifier
 
-    def incrementer(self):
+    def incrementVariables(self):
         """
         Incrémentation des variables
         """
-        Element1d.incrementer(self)
+        Element1d.incrementVariables(self)
         self._pression_t_enrichi = self._pression_t_plus_dt_enrichi
         self._rho_t_enrichi = self._rho_t_plus_dt_enrichi
         self._cson_t_enrichi = self._cson_t_plus_dt_enrichi

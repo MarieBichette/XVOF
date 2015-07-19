@@ -65,13 +65,13 @@ class Mesh1d(object):
         '''
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.calculer_taille(nodes)
+            cell.computeSize(nodes)
 
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.calculer_nouvo_taille(nodes, delta_t)
+            cell.computeNewSize(nodes, delta_t)
 
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
@@ -82,7 +82,7 @@ class Mesh1d(object):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             if cell not in self.__ruptured_cells:
-                cell.calculer_nouvo_pression()
+                cell.computeNewPressure()
 
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
@@ -102,7 +102,7 @@ class Mesh1d(object):
         for noeud in self.__topologie.nodes:
             noeud.incrementer()
         for cell in self.__topologie.cells:
-            cell.incrementer()
+            cell.incrementVariables()
 
     def calculer_nouvo_pdt_critique(self):
         """ Calcul du pas de temps critique """

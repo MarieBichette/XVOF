@@ -73,14 +73,14 @@ class Mesh1dEnriched(object):
         '''
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.calculer_taille(nodes)
+            cell.computeSize(nodes)
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.calculer_nouvo_taille(nodes, delta_t)
+            cell.computeNewSize(nodes, delta_t)
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_densite_des_elements(self):
@@ -93,7 +93,7 @@ class Mesh1dEnriched(object):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             if cell not in self.__ruptured_cells:
-                cell.calculer_nouvo_pression()
+                cell.computeNewPressure()
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
@@ -108,13 +108,14 @@ class Mesh1dEnriched(object):
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
             noeud.calculer_nouvo_force(neighbours_cells, isrightboundary=self.__topologie._isRightBoundary(noeud),
                                        isleftboundary=self.__topologie._isLeftBoundary(noeud))
+
     @timeit_file('/tmp/timer.txt')
     def incrementer(self):
         """ Passage au pas de temps suivant"""
         for noeud in self.__topologie.nodes:
             noeud.incrementer()
         for cell in self.__topologie.cells:
-            cell.incrementer()
+            cell.incrementVariables()
 
     @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pdt_critique(self):

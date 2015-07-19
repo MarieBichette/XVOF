@@ -130,7 +130,7 @@ class Element1d(Element):
     # --------------------------------------------------------
     #            DEFINITION DES METHODES                     #
     # --------------------------------------------------------
-    def calculer_nouvo_pression(self):
+    def computeNewPressure(self):
         """
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
@@ -146,14 +146,14 @@ class Element1d(Element):
             print "Element concerné : {}".format(self)
             raise err
 
-    def calculer_taille(self, noeuds, *args):
+    def computeSize(self, noeuds, *args):
         """
         Calcul de la longueur de l'élément (à t)
         """
         self._size_t = abs(noeuds[0].coordt[0] -
                            noeuds[1].coordt[0])
 
-    def calculer_nouvo_taille(self, noeuds, *args):
+    def computeNewSize(self, noeuds, *args):
         """
         Calcul de la nouvelle longueur de l'élément (à t+dt)
         """

@@ -5,7 +5,7 @@ Classe de base définissant un élément
 """
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
+# ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
 
@@ -182,7 +182,7 @@ class Element(object):
             format(self.cson_t_plus_dt)
         print message
 
-    def incrementer(self):
+    def incrementVariables(self):
         """
         Incrémentation des variables
         """
@@ -196,7 +196,7 @@ class Element(object):
     #############################################################
 
     @abstractmethod
-    def calculer_nouvo_pression(self):
+    def computeNewPressure(self):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
@@ -204,13 +204,13 @@ class Element(object):
         """
 
     @abstractmethod
-    def calculer_taille(self):
+    def computeSize(self):
         """
         Calcul de la taille (longueur, aire, volume) au temps t de l'élément
         """
 
     @abstractmethod
-    def calculer_nouvo_taille(self):
+    def computeNewSize(self):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
         """
