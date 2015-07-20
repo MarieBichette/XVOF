@@ -335,19 +335,19 @@ class Element1dEnriched(Element1d):
         Formulation v-e
         """
         nrj_t_plus_dt_g, pression_t_plus_dt_g, cson_t_plus_dt_g = \
-            Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                                            self.rho_t_gauche,
-                                            self.rho_t_plus_dt_gauche,
-                                            self.pression_t_gauche,
-                                            self.pseudo_gauche,
-                                            self.nrj_t_gauche)
+            Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
+                                                                     self.rho_t_gauche,
+                                                                     self.rho_t_plus_dt_gauche,
+                                                                     self.pression_t_gauche,
+                                                                     self.pseudo_gauche,
+                                                                     self.nrj_t_gauche)
         nrj_t_plus_dt_d, pression_t_plus_dt_d, cson_t_plus_dt_d = \
-            Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                                            self.rho_t_droite,
-                                            self.rho_t_plus_dt_droite,
-                                            self.pression_t_droite,
-                                            self.pseudo_droite,
-                                            self.nrj_t_droite)
+            Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
+                                                                     self.rho_t_droite,
+                                                                     self.rho_t_plus_dt_droite,
+                                                                     self.pression_t_droite,
+                                                                     self.pseudo_droite,
+                                                                     self.nrj_t_droite)
         #
         self._pression_t_plus_dt = \
             self._to_classic(pression_t_plus_dt_g, pression_t_plus_dt_d)
@@ -398,20 +398,20 @@ class Element1dEnriched(Element1d):
         Calcul de la nouvelle pseudo
         """
         pseudo_gauche = \
-            Element1d.calculer_pseudo(delta_t, self.rho_t_gauche,
-                                      self.rho_t_plus_dt_gauche,
-                                      self.taille_t_plus_dt_gauche,
-                                      self.cson_t_gauche,
-                                      self.proprietes.numeric.a_pseudo,
-                                      self.proprietes.numeric.b_pseudo)
+            Element1d.computePseudo(delta_t, self.rho_t_gauche,
+                                    self.rho_t_plus_dt_gauche,
+                                    self.taille_t_plus_dt_gauche,
+                                    self.cson_t_gauche,
+                                    self.proprietes.numeric.a_pseudo,
+                                    self.proprietes.numeric.b_pseudo)
 
         pseudo_droite = \
-            Element1d.calculer_pseudo(delta_t, self.rho_t_droite,
-                                      self.rho_t_plus_dt_droite,
-                                      self.taille_t_plus_dt_droite,
-                                      self.cson_t_droite,
-                                      self.proprietes.numeric.a_pseudo,
-                                      self.proprietes.numeric.b_pseudo)
+            Element1d.computePseudo(delta_t, self.rho_t_droite,
+                                    self.rho_t_plus_dt_droite,
+                                    self.taille_t_plus_dt_droite,
+                                    self.cson_t_droite,
+                                    self.proprietes.numeric.a_pseudo,
+                                    self.proprietes.numeric.b_pseudo)
 
         self._pseudo_plus_un_demi = \
             self._to_classic(pseudo_gauche, pseudo_droite)
@@ -424,18 +424,18 @@ class Element1dEnriched(Element1d):
         """
         cfl = self.proprietes.numeric.cfl
         dt_g = \
-            Element1d.calculer_dt(cfl, self.rho_t_gauche,
-                                  self.rho_t_plus_dt_gauche,
-                                  self.taille_t_plus_dt_gauche,
-                                  self.cson_t_plus_dt_gauche,
-                                  self.pseudo_gauche)
+            Element1d.computeTimeStep(cfl, self.rho_t_gauche,
+                                      self.rho_t_plus_dt_gauche,
+                                      self.taille_t_plus_dt_gauche,
+                                      self.cson_t_plus_dt_gauche,
+                                      self.pseudo_gauche)
 
         dt_d = \
-            Element1d.calculer_dt(cfl, self.rho_t_droite,
-                                  self.rho_t_plus_dt_droite,
-                                  self.taille_t_plus_dt_droite,
-                                  self.cson_t_plus_dt_droite,
-                                  self.pseudo_droite)
+            Element1d.computeTimeStep(cfl, self.rho_t_droite,
+                                      self.rho_t_plus_dt_droite,
+                                      self.taille_t_plus_dt_droite,
+                                      self.cson_t_plus_dt_droite,
+                                      self.pseudo_droite)
 
         self._dt = dt_g + dt_d  # Bizarre --> A vérifier
 

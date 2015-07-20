@@ -20,7 +20,7 @@ class Element1d(Element):
     nbr_noeuds = 2
 
     @classmethod
-    def calcul_f_et_df(cls, enerj, rho_new, rho_old, pression_t, enerj_old, eos):
+    def computeFunctionAndDerivative(cls, enerj, rho_new, rho_old, pression_t, enerj_old, eos):
         """
         Fonction à annuler et sa dérivée pour le schéma VNR
         Formulation v-e
@@ -35,8 +35,7 @@ class Element1d(Element):
         return (func, dfunc)
 
     @classmethod
-    def newton_raphson_for_ve(cls, eos, rho_old, rho_new, pression_old,
-                              pseudo_old, nrj_old):
+    def executeNewtonRaphsonForVolumeEnergyFormulation(cls, eos, rho_old, rho_new, pression_old, pseudo_old, nrj_old):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
@@ -51,18 +50,19 @@ class Element1d(Element):
         # Nombre d'itérations
         nit = 0
         #
-        while(not convergence and (nit < iter_max)):
-            (func_i, dfunc_i_surde) = cls.calcul_f_et_df(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
+        while not convergence and (nit < iter_max):
+            (func_i, dfunc_i_surde) = \
+                cls.computeFunctionAndDerivative(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
             # Correction
             nrj_iplus1 = nrj_i - func_i / dfunc_i_surde
             nit += 1
-            if(abs(func_i) < 1e-09):
+            if abs(func_i) < 1e-09:
                 convergence = True
                 res_nrj = nrj_i
                 res_pression_t_plus_dt, dummy, res_cson = \
                     eos.solveVolumeEnergy(1. / rho_new, res_nrj)
                 break
-            if(abs(dfunc_i_surde) < 1.e-09):
+            if abs(dfunc_i_surde) < 1.e-09:
                 print "Sortie du NR par manque de pente :-)"
                 convergence = True
                 res_nrj = nrj_i
@@ -71,7 +71,7 @@ class Element1d(Element):
                 break
             # Incrémentation
             nrj_i = nrj_iplus1
-        if(nit == iter_max):
+        if nit == iter_max:
             print "Erreur de convergence du NR"
             print "func_i=", func_i
             print "nit=", nit
@@ -81,8 +81,8 @@ class Element1d(Element):
         return res_nrj, res_pression_t_plus_dt, res_cson
 
     @classmethod
-    def calculer_pseudo(cls, delta_t, rho_old, rho_new, size_new,
-                        cel_son, pseudo_a, pseudo_b):
+    def computePseudo(cls, delta_t, rho_old, rho_new, size_new,
+                      cel_son, pseudo_a, pseudo_b):
         """
         Calcul de la pseudo
         """
@@ -92,23 +92,20 @@ class Element1d(Element):
         vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
         divu = vpointnplusundemi / vnplusundemi
         pseudo = 0.
-        if(divu < 0.):
+        if divu < 0.:
             pseudo = 1. / vnplusundemi * \
-                (
-                    pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 /
-                    vnplusundemi ** 2 + pseudo_b * size_new * cel_son *
-                    abs(vpointnplusundemi) / vnplusundemi
-                 )
+                (pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 / vnplusundemi ** 2 + pseudo_b * size_new * cel_son *
+                 abs(vpointnplusundemi) / vnplusundemi)
         return pseudo
 
     @classmethod
-    def calculer_dt(cls, cfl, rho_old, rho_new, taille_new, cson_new,
-                    pseudo):
+    def computeTimeStep(cls, cfl, rho_old, rho_new, taille_new, cson_new,
+                        pseudo):
         """
         Calcul du pas de temps
         """
         delta_t = 0.
-        if((rho_new - rho_old) > 0.1):
+        if (rho_new - rho_old) > 0.1:
             delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
                                            (rho_new - rho_old)) ** 0.5)
         else:
@@ -138,10 +135,10 @@ class Element1d(Element):
         """
         try:
             self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
-                Element1d.newton_raphson_for_ve(self.proprietes.material.eos,
-                                                self.rho_t, self.rho_t_plus_dt,
-                                                self.pression_t, self.pseudo,
-                                                self.nrj_t)
+                Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
+                                                                         self.rho_t, self.rho_t_plus_dt,
+                                                                         self.pression_t, self.pseudo,
+                                                                         self.nrj_t)
         except ValueError as err:
             print "Element concerné : {}".format(self)
             raise err
@@ -173,10 +170,10 @@ class Element1d(Element):
         Calcul de la nouvelle pseudo
         """
         self._pseudo_plus_un_demi = \
-            Element1d.calculer_pseudo(delta_t, self.rho_t, self.rho_t_plus_dt,
-                                      self.taille_t_plus_dt, self.cson_t,
-                                      self.proprietes.numeric.a_pseudo,
-                                      self.proprietes.numeric.b_pseudo)
+            Element1d.computePseudo(delta_t, self.rho_t, self.rho_t_plus_dt,
+                                    self.taille_t_plus_dt, self.cson_t,
+                                    self.proprietes.numeric.a_pseudo,
+                                    self.proprietes.numeric.b_pseudo)
 
     def computeNewTimeStep(self):
         """
@@ -184,11 +181,11 @@ class Element1d(Element):
         """
         cfl = self.proprietes.numeric.cfl
         self._dt = \
-            Element1d.calculer_dt(cfl, self.rho_t, self.rho_t_plus_dt,
-                                  self.taille_t_plus_dt, self.cson_t_plus_dt,
-                                  self.pseudo)
+            Element1d.computeTimeStep(cfl, self.rho_t, self.rho_t_plus_dt,
+                                      self.taille_t_plus_dt, self.cson_t_plus_dt,
+                                      self.pseudo)
 
-    def impose_pression(self, pression):
+    def imposePressure(self, pression):
         """
         On impose la pression à t+dt (par exemple pour endommagement)
         """
