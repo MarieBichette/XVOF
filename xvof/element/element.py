@@ -200,13 +200,13 @@ class Element(object):
         """
 
     @abstractmethod
-    def computeSize(self):
+    def computeSize(self, nodes):
         """
         Calcul de la taille (longueur, aire, volume) au temps t de l'élément
         """
 
     @abstractmethod
-    def computeNewSize(self):
+    def computeNewSize(self, nodes, time_step=None):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
         """
@@ -219,7 +219,7 @@ class Element(object):
         """
 
     @abstractmethod
-    def computeNewPseudo(self):
+    def computeNewPseudo(self, time_step):
         """
         Calcul de la nouvelle pseudo
         """
