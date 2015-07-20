@@ -334,20 +334,24 @@ class Element1dEnriched(Element1d):
         au pas de temps suivant
         Formulation v-e
         """
+        eos = self.proprietes.material.eos
+        function_to_vanish = Element1d.computeFunctionAndDerivative
+        left_part_old_state = {'Pressure': self.pression_t_gauche,
+                               'Density': self.rho_t_gauche,
+                               'Pseudo': self.pseudo_gauche,
+                               'Energy': self.nrj_t_gauche}
+        right_part_old_state = {'Pressure': self.pression_t_droite,
+                                'Density': self.rho_t_droite,
+                                'Pseudo': self.pseudo_droite,
+                                'Energy': self.nrj_t_droite}
         nrj_t_plus_dt_g, pression_t_plus_dt_g, cson_t_plus_dt_g = \
-            Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
-                                                                     self.rho_t_gauche,
-                                                                     self.rho_t_plus_dt_gauche,
-                                                                     self.pression_t_gauche,
-                                                                     self.pseudo_gauche,
-                                                                     self.nrj_t_gauche)
+            self.__class__.executeNewtonRaphsonForVolumeEnergyFormulation(function_to_vanish, eos,
+                                                                          left_part_old_state,
+                                                                          self.rho_t_plus_dt_gauche)
         nrj_t_plus_dt_d, pression_t_plus_dt_d, cson_t_plus_dt_d = \
-            Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
-                                                                     self.rho_t_droite,
-                                                                     self.rho_t_plus_dt_droite,
-                                                                     self.pression_t_droite,
-                                                                     self.pseudo_droite,
-                                                                     self.nrj_t_droite)
+            self.__class__.executeNewtonRaphsonForVolumeEnergyFormulation(function_to_vanish, eos,
+                                                                          right_part_old_state,
+                                                                          self.rho_t_plus_dt_droite)
         #
         self._pression_t_plus_dt = \
             self._to_classic(pression_t_plus_dt_g, pression_t_plus_dt_d)
@@ -402,16 +406,14 @@ class Element1dEnriched(Element1d):
                                     self.rho_t_plus_dt_gauche,
                                     self.taille_t_plus_dt_gauche,
                                     self.cson_t_gauche,
-                                    self.proprietes.numeric.a_pseudo,
-                                    self.proprietes.numeric.b_pseudo)
+                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
         pseudo_droite = \
             Element1d.computePseudo(delta_t, self.rho_t_droite,
                                     self.rho_t_plus_dt_droite,
                                     self.taille_t_plus_dt_droite,
                                     self.cson_t_droite,
-                                    self.proprietes.numeric.a_pseudo,
-                                    self.proprietes.numeric.b_pseudo)
+                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
         self._pseudo_plus_un_demi = \
             self._to_classic(pseudo_gauche, pseudo_droite)

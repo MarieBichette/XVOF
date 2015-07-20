@@ -20,7 +20,7 @@ class Element1d(Element):
     nbr_noeuds = 2
 
     @classmethod
-    def computeFunctionAndDerivative(cls, enerj, rho_new, rho_old, pression_t, enerj_old, eos):
+    def computeFunctionAndDerivative(cls, eos, enerj, rho_new, rho_old, pression_t, enerj_old):
         """
         Fonction à annuler et sa dérivée pour le schéma VNR
         Formulation v-e
@@ -35,12 +35,16 @@ class Element1d(Element):
         return (func, dfunc)
 
     @classmethod
-    def executeNewtonRaphsonForVolumeEnergyFormulation(cls, eos, rho_old, rho_new, pression_old, pseudo_old, nrj_old):
+    def executeNewtonRaphsonForVolumeEnergyFormulation(cls, function, eos, old_state, rho_new):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
         Formulation v-e
         """
+        rho_old = old_state['Density']
+        pression_old = old_state['Pressure']
+        pseudo_old = old_state['Pseudo']
+        nrj_old = old_state['Energy']
         iter_max = 20
         pression_t = pression_old + 2. * pseudo_old
         # Variable du Newton
@@ -52,7 +56,7 @@ class Element1d(Element):
         #
         while not convergence and (nit < iter_max):
             (func_i, dfunc_i_surde) = \
-                cls.computeFunctionAndDerivative(nrj_i, rho_new, rho_old, pression_t, nrj_old, eos)
+                function(eos, nrj_i, rho_new, rho_old, pression_t, nrj_old)
             # Correction
             nrj_iplus1 = nrj_i - func_i / dfunc_i_surde
             nit += 1
@@ -76,13 +80,11 @@ class Element1d(Element):
             print "func_i=", func_i
             print "nit=", nit
             raise ValueError()
-#         else:
-#             print "Convergence du Newton en {:2d} itérations".format(nit)
         return res_nrj, res_pression_t_plus_dt, res_cson
 
     @classmethod
     def computePseudo(cls, delta_t, rho_old, rho_new, size_new,
-                      cel_son, pseudo_a, pseudo_b):
+                      cel_son, a_pseudo, b_pseudo):
         """
         Calcul de la pseudo
         """
@@ -94,7 +96,8 @@ class Element1d(Element):
         pseudo = 0.
         if divu < 0.:
             pseudo = 1. / vnplusundemi * \
-                (pseudo_a * size_new ** 2 * vpointnplusundemi ** 2 / vnplusundemi ** 2 + pseudo_b * size_new * cel_son *
+                (a_pseudo * size_new ** 2 * vpointnplusundemi ** 2 / vnplusundemi ** 2 +
+                 b_pseudo * size_new * cel_son *
                  abs(vpointnplusundemi) / vnplusundemi)
         return pseudo
 
@@ -104,6 +107,8 @@ class Element1d(Element):
         """
         Calcul du pas de temps
         """
+        # pylint: disable=too-many-arguments
+        # 7 arguments pour cette méthode cela semble ok
         delta_t = 0.
         if (rho_new - rho_old) > 0.1:
             delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
@@ -134,23 +139,27 @@ class Element1d(Element):
         Formulation v-e
         """
         try:
+            eos = self.proprietes.material.eos
+            function_to_vanish = Element1d.computeFunctionAndDerivative
+            old_state = {'Pressure': self.pression_t,
+                         'Density': self.rho_t,
+                         'Pseudo': self.pseudo,
+                         'Energy': self.nrj_t}
             self._nrj_t_plus_dt, self._pression_t_plus_dt, self._cson_t_plus_dt = \
-                Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(self.proprietes.material.eos,
-                                                                         self.rho_t, self.rho_t_plus_dt,
-                                                                         self.pression_t, self.pseudo,
-                                                                         self.nrj_t)
+                Element1d.executeNewtonRaphsonForVolumeEnergyFormulation(function_to_vanish, eos,
+                                                                         old_state, self.rho_t_plus_dt)
         except ValueError as err:
             print "Element concerné : {}".format(self)
             raise err
 
-    def computeSize(self, noeuds, *args):
+    def computeSize(self, noeuds):
         """
         Calcul de la longueur de l'élément (à t)
         """
         self._size_t = abs(noeuds[0].coordt[0] -
                            noeuds[1].coordt[0])
 
-    def computeNewSize(self, noeuds, *args):
+    def computeNewSize(self, noeuds, time_step=None):
         """
         Calcul de la nouvelle longueur de l'élément (à t+dt)
         """
@@ -172,8 +181,7 @@ class Element1d(Element):
         self._pseudo_plus_un_demi = \
             Element1d.computePseudo(delta_t, self.rho_t, self.rho_t_plus_dt,
                                     self.taille_t_plus_dt, self.cson_t,
-                                    self.proprietes.numeric.a_pseudo,
-                                    self.proprietes.numeric.b_pseudo)
+                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
     def computeNewTimeStep(self):
         """
@@ -224,7 +232,7 @@ if __name__ == "__main__":
     PROPS = properties(NUM_PROPS, MAT_PROPS, GEOM_PROPS)
     NODA = Node1d(1, np.array([0.5e-03]))
     NODB = Node1d(2, np.array([3.0e-03]))
-    MY_ELEM = Element1d(PROPS, 123, [NODA, NODB])
+    MY_ELEM = Element1d(PROPS)
     MY_ELEM._rho_t_plus_dt = 9000.0
     NBR_ITER = 100000
     print "Lancement profiling sur {:6d} itérations".format(NBR_ITER)
