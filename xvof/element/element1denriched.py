@@ -4,49 +4,53 @@
 Classe définissant un élément enrichi en 1d
 """
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
+# ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.element import Element1d
+from xvof.solver.newtonraphson import NewtonRaphson
+from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
+# ###### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Element1dEnriched(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
     """
     @classmethod
-    def from_geom_to_enrich(cls, champ_gauche, champ_droite):
+    def fromGeometryToEnrichField(cls, champ_gauche, champ_droite):
         """
         Renvoi le champ enrichi à partir des champs gauche et droite
         """
         return (champ_droite - champ_gauche) * 0.5
 
     @classmethod
-    def from_geom_to_classic(cls, champ_gauche, champ_droite):
+    def fromGeometryToClassicField(cls, champ_gauche, champ_droite):
         """
         Renvoi le champ classique à partir des champs gauche et droite
         """
         return (champ_droite + champ_gauche) * 0.5
 
     @classmethod
-    def from_enrich_to_gauche(cls, champ_classic, champ_enrich):
+    def fromEnrichToLeftPartField(cls, champ_classic, champ_enrich):
         """
         Renvoi le champ à gauche d'après les champs classsique et enrichis
         """
-        return (champ_classic - champ_enrich)
+        return champ_classic - champ_enrich
 
     @classmethod
-    def from_enrich_to_droite(cls, champ_classic, champ_enrich):
+    def fromEnrichToRightPartField(cls, champ_classic, champ_enrich):
         """
         Renvoi le champ à droite d'après les champs classsique et enrichis
         """
-        return (champ_classic + champ_enrich)
+        return champ_classic + champ_enrich
 
     def __init__(self, element_origin, pos_discontin):
         Element1d.__init__(self, element_origin.proprietes)
+        self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
+        self._solver = NewtonRaphson(self._function_to_vanish, self.nrj_t)
         #
         if(pos_discontin < 0.) or (pos_discontin > 1.):
             message = "La position de la discontinuité dans"
@@ -83,10 +87,10 @@ class Element1dEnriched(Element1d):
         self._taille_droite_t_plus_dt = \
             element_origin.taille_t_plus_dt * (1. - pos_discontin)
         #
-        self._to_gauche = Element1dEnriched.from_enrich_to_gauche
-        self._to_droite = Element1dEnriched.from_enrich_to_droite
-        self._to_classic = Element1dEnriched.from_geom_to_classic
-        self._to_enrich = Element1dEnriched.from_geom_to_enrich
+        self._to_gauche = Element1dEnriched.fromEnrichToLeftPartField
+        self._to_droite = Element1dEnriched.fromEnrichToRightPartField
+        self._to_classic = Element1dEnriched.fromGeometryToClassicField
+        self._to_enrich = Element1dEnriched.fromGeometryToEnrichField
 
     @property
     def taille_t_gauche(self):
@@ -137,8 +141,7 @@ class Element1dEnriched(Element1d):
         """
         Pression dans la partie gauche de l'élément au temps t
         """
-        return self._to_gauche(self._pression_t,
-            self._pression_t_enrichi)
+        return self._to_gauche(self._pression_t, self._pression_t_enrichi)
 
     @property
     def pression_t_droite(self):
@@ -334,24 +337,28 @@ class Element1dEnriched(Element1d):
         au pas de temps suivant
         Formulation v-e
         """
-        eos = self.proprietes.material.eos
-        function_to_vanish = Element1d.computeFunctionAndDerivative
-        left_part_old_state = {'Pressure': self.pression_t_gauche,
-                               'Density': self.rho_t_gauche,
-                               'Pseudo': self.pseudo_gauche,
-                               'Energy': self.nrj_t_gauche}
-        right_part_old_state = {'Pressure': self.pression_t_droite,
-                                'Density': self.rho_t_droite,
-                                'Pseudo': self.pseudo_droite,
-                                'Energy': self.nrj_t_droite}
-        nrj_t_plus_dt_g, pression_t_plus_dt_g, cson_t_plus_dt_g = \
-            self.__class__.executeNewtonRaphsonForVolumeEnergyFormulation(function_to_vanish, eos,
-                                                                          left_part_old_state,
-                                                                          self.rho_t_plus_dt_gauche)
-        nrj_t_plus_dt_d, pression_t_plus_dt_d, cson_t_plus_dt_d = \
-            self.__class__.executeNewtonRaphsonForVolumeEnergyFormulation(function_to_vanish, eos,
-                                                                          right_part_old_state,
-                                                                          self.rho_t_plus_dt_droite)
+        # Traitement partie gauche
+        my_variables = {'EquationOfState': self.proprietes.material.eos,
+                        'OldDensity': self.rho_t_gauche,
+                        'NewDensity': self.rho_t_plus_dt_gauche,
+                        'Pressure': self.pression_t_gauche + 2. * self.pseudo_gauche,
+                        'OldEnergy': self.nrj_t_gauche}
+        self._function_to_vanish.setVariables(my_variables)
+        nrj_t_plus_dt_g = self._solver.computeSolution()
+        pression_t_plus_dt_g, _, cson_t_plus_dt_g = \
+            self.proprietes.material.eos.solveVolumeEnergy(1. / self.rho_t_plus_dt_gauche, nrj_t_plus_dt_g)
+        self._function_to_vanish.eraseVariables()
+        # Traitement partie droite
+        my_variables = {'EquationOfState': self.proprietes.material.eos,
+                        'OldDensity': self.rho_t_droite,
+                        'NewDensity': self.rho_t_plus_dt_droite,
+                        'Pressure': self.pression_t_droite + 2. * self.pseudo_droite,
+                        'OldEnergy': self.nrj_t_droite}
+        self._function_to_vanish.setVariables(my_variables)
+        nrj_t_plus_dt_d = self._solver.computeSolution()
+        pression_t_plus_dt_d, _, cson_t_plus_dt_d = \
+            self.proprietes.material.eos.solveVolumeEnergy(1. / self.rho_t_plus_dt_droite, nrj_t_plus_dt_d)
+        self._function_to_vanish.eraseVariables()
         #
         self._pression_t_plus_dt = \
             self._to_classic(pression_t_plus_dt_g, pression_t_plus_dt_d)
@@ -368,7 +375,7 @@ class Element1dEnriched(Element1d):
         self._cson_t_plus_dt_enrichi = \
             self._to_enrich(cson_t_plus_dt_g, cson_t_plus_dt_d)
 
-    def computeNewSize(self, noeuds, delta_t):
+    def computeNewSize(self, noeuds, time_step=None):
         """
         Calcul des nouvelles longueurs de l'élément
         """
@@ -378,11 +385,11 @@ class Element1dEnriched(Element1d):
         self._taille_gauche_t_plus_dt = self.taille_t_gauche + \
             (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
-            * delta_t
+            * time_step
         self._taille_droite_t_plus_dt = self.taille_t_droite + \
             (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
              0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
-            * delta_t
+            * time_step
 
     def computeNewDensity(self):
         """
