@@ -196,8 +196,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.pression_t_gauche)
-                res.append(elem.pression_t_droite)
+                res.append(elem.getLeftField('Pressure'))
+                res.append(elem.getRightField('Pressure'))
             elif isinstance(elem, Element1d):
                 res.append(elem.pression_t)
         return res
@@ -208,8 +208,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.pression_t_plus_dt_gauche)
-                res.append(elem.pression_t_plus_dt_droite)
+                res.append(elem.getLeftField('NewPressure'))
+                res.append(elem.getRightField('NewPressure'))
             elif isinstance(elem, Element1d):
                 res.append(elem.pression_t_plus_dt)
         return res
@@ -220,8 +220,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.rho_t_gauche)
-                res.append(elem.rho_t_droite)
+                res.append(elem.getLeftField('Density'))
+                res.append(elem.getRightField('Density'))
             elif isinstance(elem, Element1d):
                 res.append(elem.rho_t)
         return res
@@ -232,8 +232,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.rho_t_plus_dt_gauche)
-                res.append(elem.rho_t_plus_dt_droite)
+                res.append(elem.getLeftField('NewDensity'))
+                res.append(elem.getRightField('NewDensity'))
             elif isinstance(elem, Element1d):
                 res.append(elem.rho_t_plus_dt)
         return res
@@ -244,8 +244,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.nrj_t_gauche)
-                res.append(elem.nrj_t_droite)
+                res.append(elem.getLeftField('Energy'))
+                res.append(elem.getRightField('Energy'))
             elif isinstance(elem, Element1d):
                 res.append(elem.nrj_t)
         return res
@@ -256,8 +256,8 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.pseudo_gauche)
-                res.append(elem.pseudo_droite)
+                res.append(elem.getLeftField('Pseudo'))
+                res.append(elem.getRightField('Pseudo'))
             elif isinstance(elem, Element1d):
                 res.append(elem.pseudo)
         return res

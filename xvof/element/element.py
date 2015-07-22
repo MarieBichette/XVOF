@@ -53,17 +53,17 @@ class Element(object):
         return self._index
 
     @index.setter
-    def index(self, indice):
+    def index(self, index):
         """
         Setter de l'indice global de l'élément
         """
-        self._index = indice
+        self._index = index
 
     @property
     def delta_t(self):
-        """
-        Pas de temps de l'élément
-        """
+        '''
+        Pas de temps critique de la maille
+        '''
         return self._dt
 
     @property
@@ -154,14 +154,14 @@ class Element(object):
     # DEFINITIONS DES METHODES
     # ------------------------------------------------------------
     def __str__(self):
-        message = "ELEMENT {:4d} ".format(self.index)
+        message = "ELEMENT {:4d} ".format(self._index)
         return message
 
     def printInfos(self):
         """
         Affichage des informations concernant l'élément
         """
-        message = "{} {:4d}\n".format(self.__class__, self.index)
+        message = "{} {:4d}\n".format(self.__class__, self._index)
         message += "==> taille à t = {}\n".format(self.taille_t)
         message += "==> taille à t+dt = {}\n".format(self.taille_t_plus_dt)
         message += "==> masse volumique à t = {}\n".format(self.rho_t)
