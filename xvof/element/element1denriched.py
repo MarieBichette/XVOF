@@ -53,7 +53,9 @@ class Element1dEnriched(Element1d):
                   'Density': (self._rho_t, self._rho_t_enrichi),
                   'NewDensity': (self._rho_t_plus_dt, self._rho_t_plus_dt_enrichi),
                   'Energy': (self._nrj_t, self._nrj_t_enrichi),
-                  'Pseudo': (self._pseudo_plus_un_demi, self._pseudo_plus_un_demi_enrichi)}
+                  'Pseudo': (self._pseudo_plus_un_demi, self._pseudo_plus_un_demi_enrichi),
+                  'SoundVelocity': (self._cson_t, self._cson_t_enrichi),
+                  'NewSoundVelocity': (self._cson_t_plus_dt, self._cson_t_plus_dt_enrichi)}
         return Element1dEnriched.fromEnrichToLeftPartField(fields[key_field][0], fields[key_field][1])
 
     def getRightField(self, key_field):
@@ -62,7 +64,9 @@ class Element1dEnriched(Element1d):
                   'Density': (self._rho_t, self._rho_t_enrichi),
                   'NewDensity': (self._rho_t_plus_dt, self._rho_t_plus_dt_enrichi),
                   'Energy': (self._nrj_t, self._nrj_t_enrichi),
-                  'Pseudo': (self._pseudo_plus_un_demi, self._pseudo_plus_un_demi_enrichi)}
+                  'Pseudo': (self._pseudo_plus_un_demi, self._pseudo_plus_un_demi_enrichi),
+                  'SoundVelocity': (self._cson_t, self._cson_t_enrichi),
+                  'NewSoundVelocity': (self._cson_t_plus_dt, self._cson_t_plus_dt_enrichi)}
         return Element1dEnriched.fromEnrichToRightPartField(fields[key_field][0], fields[key_field][1])
 
     def __init__(self, element_origin, pos_discontin):
@@ -176,42 +180,6 @@ class Element1dEnriched(Element1d):
                                                                 self._pseudo_plus_un_demi_enrichi))
         print message
 
-    def __fillLeftPartVariables(self):
-        '''
-        Remplissage d'une structure de variables à passer à la fonction à annuler
-        Cas de la partie gauche de l'élément rompu
-        '''
-        rho_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t_plus_dt,
-                                                                           self._rho_t_plus_dt_enrichi)
-        pression_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._pression_t, self._pression_t_enrichi)
-        nrj_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._nrj_t, self._nrj_t_enrichi)
-        pseudo_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._pseudo_plus_un_demi,
-                                                                    self._pseudo_plus_un_demi_enrichi)
-        return {'EquationOfState': self.proprietes.material.eos,
-                'OldDensity': rho_t_gauche,
-                'NewDensity': rho_t_plus_dt_gauche,
-                'Pressure': pression_t_gauche + 2. * pseudo_gauche,
-                'OldEnergy': nrj_t_gauche}
-
-    def __fillRightPartVariables(self):
-        '''
-        Remplissage d'une structure de variables à passer à la fonction à annuler
-        Cas de la partie droite de l'élément rompu
-        '''
-        rho_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t_plus_dt,
-                                                                            self._rho_t_plus_dt_enrichi)
-        pression_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._pression_t, self._pression_t_enrichi)
-        nrj_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._nrj_t, self._nrj_t_enrichi)
-        pseudo_droite = Element1dEnriched.fromEnrichToRightPartField(self._pseudo_plus_un_demi,
-                                                                     self._pseudo_plus_un_demi_enrichi)
-        return {'EquationOfState': self.proprietes.material.eos,
-                'OldDensity': rho_t_droite,
-                'NewDensity': rho_t_plus_dt_droite,
-                'Pressure': pression_t_droite + 2. * pseudo_droite,
-                'OldEnergy': nrj_t_droite}
-
     def computeNewPressure(self):
         """
         Calcul du triplet energie, pression, vitesse du son
@@ -219,22 +187,26 @@ class Element1dEnriched(Element1d):
         Formulation v-e
         """
         # Traitement partie gauche
-        my_variables = self.__fillLeftPartVariables()
-        rho_t_plus_dt_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t_plus_dt,
-                                                                           self._rho_t_plus_dt_enrichi)
+        my_variables = {'EquationOfState': self.proprietes.material.eos,
+                        'OldDensity': self.getLeftField('Density'),
+                        'NewDensity': self.getLeftField('NewDensity'),
+                        'Pressure': self.getLeftField('Pressure') + 2. * self.getLeftField('Pseudo'),
+                        'OldEnergy': self.getLeftField('Energy')}
         self._function_to_vanish.setVariables(my_variables)
         nrj_t_plus_dt_g = self._solver.computeSolution()
         pression_t_plus_dt_g, _, cson_t_plus_dt_g = \
-            self.proprietes.material.eos.solveVolumeEnergy(1. / rho_t_plus_dt_gauche, nrj_t_plus_dt_g)
+            self.proprietes.material.eos.solveVolumeEnergy(1. / self.getLeftField('NewDensity'), nrj_t_plus_dt_g)
         self._function_to_vanish.eraseVariables()
         # Traitement partie droite
-        my_variables = self.__fillRightPartVariables()
-        rho_t_plus_dt_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t_plus_dt,
-                                                                            self._rho_t_plus_dt_enrichi)
+        my_variables = {'EquationOfState': self.proprietes.material.eos,
+                        'OldDensity': self.getRightField('Density'),
+                        'NewDensity': self.getRightField('NewDensity'),
+                        'Pressure': self.getRightField('Pressure') + 2. * self.getRightField('Pseudo'),
+                        'OldEnergy': self.getRightField('Energy')}
         self._function_to_vanish.setVariables(my_variables)
         nrj_t_plus_dt_d = self._solver.computeSolution()
         pression_t_plus_dt_d, _, cson_t_plus_dt_d = \
-            self.proprietes.material.eos.solveVolumeEnergy(1. / rho_t_plus_dt_droite, nrj_t_plus_dt_d)
+            self.proprietes.material.eos.solveVolumeEnergy(1. / self.getRightField('NewDensity'), nrj_t_plus_dt_d)
         self._function_to_vanish.eraseVariables()
         #
         self._pression_t_plus_dt = \
@@ -272,10 +244,8 @@ class Element1dEnriched(Element1d):
         """
         Calcul des nouvelles densités
         """
-        rho_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t, self._rho_t_enrichi)
-        densite_gauche_t_plus_dt = rho_t_gauche * self._taille_gauche_t / self._taille_gauche_t_plus_dt
-        rho_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t, self._rho_t_enrichi)
-        densite_droite_t_plus_dt = rho_t_droite * self._taille_droite_t / self._taille_droite_t_plus_dt
+        densite_gauche_t_plus_dt = self.getLeftField('Density') * self._taille_gauche_t / self._taille_gauche_t_plus_dt
+        densite_droite_t_plus_dt = self.getRightField('Density') * self._taille_droite_t / self._taille_droite_t_plus_dt
         self._rho_t_plus_dt = \
             Element1dEnriched.fromGeometryToClassicField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
         self._rho_t_plus_dt_enrichi = \
@@ -285,10 +255,9 @@ class Element1dEnriched(Element1d):
         """
         Calcul de la nouvelle pseudo
         """
-        rho_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t_plus_dt,
-                                                                           self._rho_t_plus_dt_enrichi)
-        cson_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._cson_t, self._cson_t_enrichi)
+        rho_t_gauche = self.getLeftField('Density')
+        rho_t_plus_dt_gauche = self.getLeftField('NewDensity')
+        cson_t_gauche = self.getLeftField('SoundVelocity')
         pseudo_gauche = \
             Element1d.computePseudo(delta_t, rho_t_gauche,
                                     rho_t_plus_dt_gauche,
@@ -296,10 +265,9 @@ class Element1dEnriched(Element1d):
                                     cson_t_gauche,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
-        rho_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t_plus_dt,
-                                                                            self._rho_t_plus_dt_enrichi)
-        cson_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._cson_t, self._cson_t_enrichi)
+        rho_t_droite = self.getRightField('Density')
+        rho_t_plus_dt_droite = self.getRightField('NewDensity')
+        cson_t_droite = self.getRightField('SoundVelocity')
         pseudo_droite = \
             Element1d.computePseudo(delta_t, rho_t_droite,
                                     rho_t_plus_dt_droite,
@@ -317,13 +285,10 @@ class Element1dEnriched(Element1d):
         Calcul du pas de temps
         """
         cfl = self.proprietes.numeric.cfl
-        rho_t_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._rho_t_plus_dt,
-                                                                           self._rho_t_plus_dt_enrichi)
-        cson_t_plus_dt_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._cson_t_plus_dt,
-                                                                            self._cson_t_plus_dt_enrichi)
-        pseudo_gauche = Element1dEnriched.fromEnrichToLeftPartField(self._pseudo_plus_un_demi,
-                                                                    self._pseudo_plus_un_demi_enrichi)
+        rho_t_gauche = self.getLeftField('Density')
+        rho_t_plus_dt_gauche = self.getLeftField('NewDensity')
+        cson_t_plus_dt_gauche = self.getLeftField('NewSoundVelocity')
+        pseudo_gauche = self.getLeftField('Pseudo')
         dt_g = \
             Element1d.computeTimeStep(cfl, rho_t_gauche,
                                       rho_t_plus_dt_gauche,
@@ -331,13 +296,10 @@ class Element1dEnriched(Element1d):
                                       cson_t_plus_dt_gauche,
                                       pseudo_gauche)
 
-        rho_t_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t, self._rho_t_enrichi)
-        rho_t_plus_dt_droite = Element1dEnriched.fromEnrichToRightPartField(self._rho_t_plus_dt,
-                                                                            self._rho_t_plus_dt_enrichi)
-        cson_t_plus_dt_droite = Element1dEnriched.fromEnrichToRightPartField(self._cson_t_plus_dt,
-                                                                             self._cson_t_plus_dt_enrichi)
-        pseudo_droite = Element1dEnriched.fromEnrichToRightPartField(self._pseudo_plus_un_demi,
-                                                                     self._pseudo_plus_un_demi_enrichi)
+        rho_t_droite = self.getRightField('Density')
+        rho_t_plus_dt_droite = self.getRightField('NewDensity')
+        cson_t_plus_dt_droite = self.getRightField('NewSoundVelocity')
+        pseudo_droite = self.getRightField('Pseudo')
         dt_d = \
             Element1d.computeTimeStep(cfl, rho_t_droite,
                                       rho_t_plus_dt_droite,
