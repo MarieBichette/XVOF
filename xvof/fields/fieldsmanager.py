@@ -1,0 +1,51 @@
+#!/usr/bin/env python2.7
+# -*- coding: iso-8859-1 -*-
+"""
+Classe définissant le gestionnaire de champ
+"""
+from xvof.fields.field import Field
+from xvof.fields.enrichedfield import EnrichedField
+
+
+class FieldManager(object):
+    '''
+    Gestionnaire de champ
+    '''
+    def __init__(self):
+        self.__fields = {}
+
+    def addClassicalField(self, name, current_value=0., new_value=0.):
+        '''
+        Ajoute un champ au gestionnaire
+        '''
+        if name not in self.__fields.keys():
+            self.__fields[name] = Field(current_value, new_value)
+        else:
+            raise KeyError('Le champ {:s} existe déjà dans le gestionnaire!'.format(name))
+
+    def moveClassicalToEnrichedFields(self):
+        '''
+        Transforme un champ classique en un champ enrichi
+        '''
+        for name, field in self.__fields.items():
+            self.__fields[name] = EnrichedField(field.current_value, field.new_value)
+
+    def getField(self, name):
+        '''
+        Retourne le champ demandé
+        '''
+        return self.__fields[name]
+
+    def incrementFields(self):
+        '''
+        Incrémente tous les champs
+        '''
+        for field in self.__fields.values():
+            field.incrementValues()
+
+    def printInfos(self):
+        '''
+        Quelques infos
+        '''
+        for name, field in self.__fields.items():
+            print "<-- Champ {:s} de type {}-->".format(name, type(field))
