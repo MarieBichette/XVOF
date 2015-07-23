@@ -9,6 +9,7 @@ Classe de base définissant un élément
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
 import numpy as np
+from xvof.fields.fieldsmanager import FieldManager
 
 
 class Element(object):
@@ -31,20 +32,20 @@ class Element(object):
         self._size_t = 0.
         self._size_t_plus_dt = 0.
         self._properties = proprietes
-        self._rho_t = proprietes.material.rho_init
-        self._rho_t_plus_dt = proprietes.material.rho_init
-        self._pression_t = proprietes.material.pression_init
-        self._pression_t_plus_dt = proprietes.material.pression_init
-        self._pseudo_plus_un_demi = 0.
-        self._cson_t = 0.
-        self._cson_t_plus_dt = 0.
-        self._nrj_t = proprietes.material.energie_init
-        self._nrj_t_plus_dt = proprietes.material.energie_init
-
+        self._fields_manager = FieldManager()
+        self._fields_manager.addClassicalField('Density', proprietes.material.rho_init,
+                                               proprietes.material.rho_init)
+        self._fields_manager.addClassicalField('Pressure', proprietes.material.pression_init,
+                                               proprietes.material.pression_init)
+        self._fields_manager.addClassicalField('Pseudo')
+        self._fields_manager.addClassicalField('SoundVelocity')
+        self._fields_manager.addClassicalField('Energy', proprietes.material.energie_init,
+                                               proprietes.material.energie_init)
     ##############################################################
     # DEFINITIONS DES PROPRIETES
     ##############################################################
     #
+
     @property
     def index(self):
         """
@@ -88,67 +89,39 @@ class Element(object):
         return self._properties
 
     @property
-    def rho_t(self):
+    def density(self):
         """
-        Masse volumique de l'élément au temps t
+        Champ masse volumique de l'élément
         """
-        return self._rho_t
+        return self._fields_manager.getField('Density')
 
     @property
-    def rho_t_plus_dt(self):
+    def pressure(self):
         """
-        Masse volumique de l'élément au temps t + dt
+        Champ pression dans l'élément
         """
-        return self._rho_t_plus_dt
+        return self._fields_manager.getField('Pressure')
 
     @property
-    def pression_t(self):
+    def sound_velocity(self):
         """
-        Pression dans l'élément au temps t
+        Champ vitesse du son dans l'élément
         """
-        return self._pression_t
+        return self._fields_manager.getField('SoundVelocity')
 
     @property
-    def pression_t_plus_dt(self):
+    def energy(self):
         """
-        Pression dans l'élément au temps t + dt
+        Champ énergie interne de l'élément
         """
-        return self._pression_t_plus_dt
-
-    @property
-    def cson_t(self):
-        """
-        Vitesse du son dans l'élément au temps t
-        """
-        return self._cson_t
-
-    @property
-    def cson_t_plus_dt(self):
-        """
-        Vitesse du son dans l'élément au temps t + dt
-        """
-        return self._cson_t_plus_dt
-
-    @property
-    def nrj_t(self):
-        """
-        Energie interne de l'élément au temps t
-        """
-        return self._nrj_t
-
-    @property
-    def nrj_t_plus_dt(self):
-        """
-        Energie interne dans l'élément au temps t + dt
-        """
-        return self._nrj_t_plus_dt
+        return self._fields_manager.getField('Energy')
 
     @property
     def pseudo(self):
         """
-        Pseudo viscosité dans l'élément
+        Champ pseudoviscosité dans l'élément
         """
-        return self._pseudo_plus_un_demi
+        return self._fields_manager.getField('Pseudo')
 
     # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
@@ -164,28 +137,25 @@ class Element(object):
         message = "{} {:4d}\n".format(self.__class__, self._index)
         message += "==> taille à t = {}\n".format(self.taille_t)
         message += "==> taille à t+dt = {}\n".format(self.taille_t_plus_dt)
-        message += "==> masse volumique à t = {}\n".format(self.rho_t)
+        message += "==> masse volumique à t = {}\n".format(self.density.current_value)
         message += "==> masse volumique à t+dt = {}\n".\
-            format(self.rho_t_plus_dt)
-        message += "==> pression à t = {}\n".format(self.pression_t)
+            format(self.density.new_value)
+        message += "==> pression à t = {}\n".format(self.pressure.current_value)
         message += "==> pression à t+dt = {}\n".\
-            format(self.pression_t_plus_dt)
-        message += "==> énergie interne à t = {}\n".format(self.nrj_t)
+            format(self.pressure.new_value)
+        message += "==> énergie interne à t = {}\n".format(self.energy.current_value)
         message += "==> énergie interne à t+dt = {}\n".\
-            format(self.nrj_t_plus_dt)
-        message += "==> vitesse du son à t = {}\n".format(self.cson_t)
+            format(self.energy.new_value)
+        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value)
         message += "==> vitesse du son à t+dt = {}\n".\
-            format(self.cson_t_plus_dt)
+            format(self.sound_velocity.new_value)
         print message
 
     def incrementVariables(self):
         """
         Incrémentation des variables
         """
-        self._pression_t = self._pression_t_plus_dt
-        self._rho_t = self._rho_t_plus_dt
-        self._cson_t = self._cson_t_plus_dt
-        self._nrj_t = self._nrj_t_plus_dt
+        self._fields_manager.incrementFields()
         self._size_t = self._size_t_plus_dt
     #############################################################
     # DEFINITIONS DES METHODES VIRTUELLES

@@ -60,7 +60,7 @@ class Element1d(Element):
     def __init__(self, proprietes):
         Element.__init__(self, proprietes)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
-        self._solver = NewtonRaphson(self._function_to_vanish, self.nrj_t)
+        self._solver = NewtonRaphson(self._function_to_vanish)
 
     # --------------------------------------------------------
     #            DEFINITION DES PROPRIETES                   #
@@ -69,7 +69,7 @@ class Element1d(Element):
     def masse(self):
         """ Masse de l'élément """
         return self.taille_t * self.proprietes.geometric.section * \
-            self.rho_t
+            self.density.current_value
 
     # --------------------------------------------------------
     #            DEFINITION DES METHODES                     #
@@ -82,14 +82,14 @@ class Element1d(Element):
         """
         try:
             my_variables = {'EquationOfState': self.proprietes.material.eos,
-                            'OldDensity': self.rho_t,
-                            'NewDensity': self.rho_t_plus_dt,
-                            'Pressure': self.pression_t + 2. * self.pseudo,
-                            'OldEnergy': self.nrj_t}
+                            'OldDensity': self.density.current_value,
+                            'NewDensity': self.density.new_value,
+                            'Pressure': self.pressure.current_value + 2. * self.pseudo.current_value,
+                            'OldEnergy': self.energy.current_value}
             self._function_to_vanish.setVariables(my_variables)
-            self._nrj_t_plus_dt = self._solver.computeSolution()
-            self._pression_t_plus_dt, _, self._cson_t_plus_dt = \
-                self.proprietes.material.eos.solveVolumeEnergy(1. / self.rho_t_plus_dt, self.nrj_t_plus_dt)
+            self.energy.new_value = self._solver.computeSolution(self.energy.current_value)
+            self.pressure.new_value, _, self.sound_velocity.new_value = \
+                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_value, self.energy.new_value)
             self._function_to_vanish.eraseVariables()
         except ValueError as err:
             print "Element concerné : {}".format(self)
@@ -114,16 +114,16 @@ class Element1d(Element):
         Calcul de la densité à l'instant t+dt basé sur
         la conservation de la masse
         """
-        self._rho_t_plus_dt = \
-            self.rho_t * self.taille_t / self.taille_t_plus_dt
+        self.density.new_value = \
+            self.density.current_value * self.taille_t / self.taille_t_plus_dt
 
     def computeNewPseudo(self, delta_t):
         """
         Calcul de la nouvelle pseudo
         """
-        self._pseudo_plus_un_demi = \
-            Element1d.computePseudo(delta_t, self.rho_t, self.rho_t_plus_dt,
-                                    self.taille_t_plus_dt, self.cson_t,
+        self.pseudo.new_value = \
+            Element1d.computePseudo(delta_t, self.density.current_value, self.density.new_value,
+                                    self.taille_t_plus_dt, self.sound_velocity.current_value,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
     def computeNewTimeStep(self):
@@ -132,12 +132,12 @@ class Element1d(Element):
         """
         cfl = self.proprietes.numeric.cfl
         self._dt = \
-            Element1d.computeTimeStep(cfl, self.rho_t, self.rho_t_plus_dt,
-                                      self.taille_t_plus_dt, self.cson_t_plus_dt,
-                                      self.pseudo)
+            Element1d.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
+                                      self.taille_t_plus_dt, self.sound_velocity.new_value,
+                                      self.pseudo.current_value)
 
     def imposePressure(self, pression):
         """
         On impose la pression à t+dt (par exemple pour endommagement)
         """
-        self._pression_t_plus_dt = pression
+        self.pressure.new_value = pression
