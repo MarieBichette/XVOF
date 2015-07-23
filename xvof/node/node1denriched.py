@@ -11,7 +11,7 @@ from xvof.node import Node1d
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
+# ###### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Node1dEnriched(Node1d):
     """
@@ -25,8 +25,8 @@ class Node1dEnriched(Node1d):
     # 9 attributs : cela semble raisonnable pour ce cas
     def __init__(self, origin_node):
         Node1d.__init__(self, poz_init=origin_node.coordt,
-                      vit_init=origin_node.umundemi,
-                      section=origin_node.section)
+                        vit_init=origin_node.umundemi,
+                        section=origin_node.section)
 
         self.index = origin_node.index
         self._xt = origin_node.coordt[:]
@@ -46,9 +46,9 @@ class Node1dEnriched(Node1d):
         self._masse = origin_node.masse
         self._invmasse = origin_node.invmasse
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
 
     @property
     def position_relative(self):
@@ -111,9 +111,9 @@ class Node1dEnriched(Node1d):
         """
         return self._force_enrichi
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
 
     def infos(self):
         """
@@ -121,22 +121,22 @@ class Node1dEnriched(Node1d):
         """
         Node1d.infos(self)
         message = "==> vitesse classique à t-1/2 = {}\n".\
-        format(self.umundemi_classique)
+            format(self.umundemi_classique)
         message += "==> vitesse enrichie à t-1/2 = {}\n".\
-        format(self.umundemi_enrichi)
+            format(self.umundemi_enrichi)
         message += "==> vitesse classique à t+1/2 = {}\n".\
-        format(self.upundemi_classique)
+            format(self.upundemi_classique)
         message += "==> vitesse enrichie à t+1/2 = {}\n".\
-        format(self.upundemi_enrichi)
+            format(self.upundemi_enrichi)
         message += "==> force classique = {}\n".\
-        format(self.force_classique)
+            format(self.force_classique)
         message += "==> force enrichie = {}\n".\
-        format(self.force_enrichi)
+            format(self.force_enrichi)
         if(self.position_relative is None):
             message += "==> position relative  = None"
         else:
             message += "==> position relative  = {:2d}".\
-        format(self.position_relative)
+                format(self.position_relative)
         print message
 
     def calculer_nouvo_vitesse(self, delta_t):
@@ -145,10 +145,8 @@ class Node1dEnriched(Node1d):
         """
         self._upundemi_enrichi = \
             self.force_enrichi * self.invmasse * delta_t + self.umundemi_enrichi
-#            self.force_enrichi / self.masse * delta_t + self.umundemi_enrichi
         self._upundemi_classique = \
             self.force_classique * self.invmasse * delta_t + self.umundemi_classique
-#            self.force_classique / self.masse * delta_t + \
         self._upundemi = \
             self.upundemi_classique + \
             self.position_relative * self.upundemi_enrichi
@@ -161,25 +159,25 @@ class Node1dEnriched(Node1d):
         """
         if (self.position_relative == 1):
             # Noeud à droite de la discontinuité
-            pgauche = elements_voisins[0].pression_t_plus_dt + \
-                elements_voisins[0].pseudo
+            pgauche = elements_voisins[0].pressure.classical_part.new_value + \
+                elements_voisins[0].pseudo.classical_part.current_value
             pgauche_enr = \
-                elements_voisins[0]._pression_t_plus_dt_enrichi + \
-                elements_voisins[0]._pseudo_plus_un_demi_enrichi
-            pdroite = elements_voisins[1].pression_t_plus_dt + \
-                elements_voisins[1].pseudo
+                elements_voisins[0].pressure.enriched_part.new_value + \
+                elements_voisins[0].pseudo.enriched_part.current_value
+            pdroite = elements_voisins[1].pressure.new_value + \
+                elements_voisins[1].pseudo.current_value
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
         elif (self.position_relative == -1):
             # Noeud à gauche de la discontinuité
-            pgauche = elements_voisins[0].pression_t_plus_dt + \
-                elements_voisins[0].pseudo
-            pdroite = elements_voisins[1].pression_t_plus_dt + \
-                elements_voisins[1].pseudo
+            pgauche = elements_voisins[0].pressure.new_value + \
+                elements_voisins[0].pseudo.current_value
+            pdroite = elements_voisins[1].pressure.classical_part.new_value + \
+                elements_voisins[1].pseudo.classical_part.current_value
             pdroite_enr = \
-                elements_voisins[1]._pression_t_plus_dt_enrichi + \
-                elements_voisins[1]._pseudo_plus_un_demi_enrichi
+                elements_voisins[1].pressure.enriched_part.new_value + \
+                elements_voisins[1].pseudo.enriched_part.current_value
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (-pgauche - pdroite_enr) * self.section

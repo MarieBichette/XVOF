@@ -56,18 +56,18 @@ class Node1d(Node):
         Calcul de la force agissant sur le noeud
         """
         if isrightboundary:
-            pgauche = elements_voisins[0].pression_t_plus_dt + \
-            elements_voisins[0].pseudo
+            pgauche = elements_voisins[0].pressure.new_value + \
+            elements_voisins[0].pseudo.current_value
             self._force[:] = pgauche * self.section
         elif isleftboundary:
-            pdroite = elements_voisins[0].pression_t_plus_dt + \
-            elements_voisins[0].pseudo
+            pdroite = elements_voisins[0].pressure.new_value + \
+            elements_voisins[0].pseudo.current_value
             self._force[:] = -pdroite * self.section
         else:
-            pgauche = elements_voisins[0].pression_t_plus_dt + \
-                elements_voisins[0].pseudo
-            pdroite = elements_voisins[1].pression_t_plus_dt + \
-                elements_voisins[1].pseudo
+            pgauche = elements_voisins[0].pressure.new_value + \
+                elements_voisins[0].pseudo.current_value
+            pdroite = elements_voisins[1].pressure.new_value + \
+                elements_voisins[1].pseudo.current_value
             self._force[:] = (pgauche - pdroite) * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
