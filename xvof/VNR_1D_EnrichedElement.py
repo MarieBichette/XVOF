@@ -29,7 +29,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
 #                 cell_g = mesh.cells[indice - 1]
 #                 cell_d = mesh.cells[indice + 1]
 #                 cell_g.infos()
-                cell.infos()
+                cell.printInfos()
 #                 cell_d.infos()
                 has_been_enriched = True
     if nodes is not None:
@@ -149,7 +149,7 @@ if __name__ == '__main__':
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_densite_des_elements()
-#         print_infos_about_enrichment(my_mesh, titre="DENSITE DES MAILLES", cells=my_mesh.cells)
+#        print_infos_about_enrichment(my_mesh, titre="DENSITE DES MAILLES", cells=my_mesh.cells)
         # ---------------------------------------------#
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#

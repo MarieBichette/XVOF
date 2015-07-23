@@ -18,21 +18,22 @@ from xvof.rupturetreatment.imposepressure import ImposePressure
 #  =================================================
 #  = PARAMETRES DE LA SIMULATION                   =
 TempsFinal = 15.0e-06
-PasDeTempsInit = 1.0e-09
+PasDeTempsInit = 4.0e-09
 PressionInit = 100149.28
-EnergieInterneInit = 7.7
+EnergieInterneInit = 7.689
 RhoInit = 8129.
 Section = pi * 0.01 ** 2
 EquationEtat = MieGruneisen()
-PChargementGauche = ConstantPressure(-3.5e+09)
-# PChargementGauche = TwoStepsPressure(5.0e+09, -2.5e+09, TempsFinal / 2.0)
-PChargementDroite = ConstantPressure(-3.5e+09)
-CritereRupture = MinimumPressureCriterion(-7e+09)
-TraitementRupture = ImposePressure(0.0)
+# PChargementGauche = ConstantPressure(-3.5e+09)
+PChargementGauche = TwoStepsPressure(15e+09, PressionInit, 2.0e-06)
+PChargementDroite = ConstantPressure(PressionInit)
+# PChargementDroite = ConstantPressure(-3.5e+09)
+CritereRupture = MinimumPressureCriterion(-7.0e+09)
+TraitementRupture = ImposePressure(0.)
 Longueur = 10.0e-03
-NbrElements = 100
-ParamPseudoA = 0.2
-ParamPseudoB = 1.0
+NbrElements = 51
+ParamPseudoA = 1.5
+ParamPseudoB = 0.2
 CFL = 0.35
 
 NbrImages = 150
