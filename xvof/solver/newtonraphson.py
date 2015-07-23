@@ -11,8 +11,8 @@ class NewtonRaphson(NewtonRaphsonBase):
     '''
     Solveur non linéaire de type Newton Raphson
     '''
-    def __init__(self, function_to_vanish, variable):
-        super(NewtonRaphson, self).__init__(function_to_vanish, variable, 10, ClassicalNewtonRaphsonIncrement())
+    def __init__(self, function_to_vanish):
+        super(NewtonRaphson, self).__init__(function_to_vanish, 10, ClassicalNewtonRaphsonIncrement())
 
     def setIncrementMethod(self, increment_method_obj):
         '''
@@ -20,12 +20,12 @@ class NewtonRaphson(NewtonRaphsonBase):
         '''
         self._increment_method = increment_method_obj
 
-    def computeSolution(self):
+    def computeSolution(self, init_variable):
         """
         Algorithme de Newton-Raphson
         """
         # Variable du Newton
-        var_i = self.init_variable
+        var_i = init_variable
         # Critère de convergence
         convergence = False
         # Nombre d'itérations

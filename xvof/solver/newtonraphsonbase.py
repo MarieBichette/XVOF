@@ -15,9 +15,8 @@ class NewtonRaphsonBase(object):
     __metaclass__ = ABCMeta
     #
 
-    def __init__(self, function_to_vanish, variable, nb_iterations_max, increment_method):
+    def __init__(self, function_to_vanish, nb_iterations_max, increment_method):
         self.__function_to_vanish = function_to_vanish
-        self.__variable_init = variable
         self.__nb_iterations_max = nb_iterations_max
         self._increment_method = increment_method
 
@@ -29,13 +28,6 @@ class NewtonRaphsonBase(object):
         return self.__function_to_vanish
 
     @property
-    def init_variable(self):
-        '''
-        Retourne la variable initialisée
-        '''
-        return self.__variable_init
-
-    @property
     def nb_iterations_max(self):
         '''
         Retourne le nombre maximal d'itérations autorisé
@@ -43,7 +35,7 @@ class NewtonRaphsonBase(object):
         return self.__nb_iterations_max
 
     @abstractmethod
-    def computeSolution(self):
+    def computeSolution(self, init_variable):
         '''
         Résolution du solveur
         '''
