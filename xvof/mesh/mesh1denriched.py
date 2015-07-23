@@ -47,6 +47,13 @@ class Mesh1dEnriched(object):
         # Création de la topologie
         self.__topologie = Topology1D(nodes, cells)
 
+    @property
+    def cells(self):
+        '''
+        Renvoie la liste des mailles
+        '''
+        return self.__topologie.cells
+
     @timeit_file('/tmp/timer.txt')
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
@@ -196,10 +203,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('Pressure'))
-                res.append(elem.getRightField('Pressure'))
+                res.append(elem.pressure.current_left_value)
+                res.append(elem.pressure.current_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.pression_t)
+                res.append(elem.pressure.current_value)
         return res
 
     @property
@@ -208,10 +215,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('NewPressure'))
-                res.append(elem.getRightField('NewPressure'))
+                res.append(elem.pressure.new_left_value)
+                res.append(elem.pressure.new_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.pression_t_plus_dt)
+                res.append(elem.pressure.new_value)
         return res
 
     @property
@@ -220,10 +227,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('Density'))
-                res.append(elem.getRightField('Density'))
+                res.append(elem.density.current_left_value)
+                res.append(elem.density.current_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.rho_t)
+                res.append(elem.density.current_value)
         return res
 
     @property
@@ -232,10 +239,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('NewDensity'))
-                res.append(elem.getRightField('NewDensity'))
+                res.append(elem.density.new_left_value)
+                res.append(elem.density.new_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.rho_t_plus_dt)
+                res.append(elem.density.new_value)
         return res
 
     @property
@@ -244,10 +251,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('Energy'))
-                res.append(elem.getRightField('Energy'))
+                res.append(elem.energy.current_left_value)
+                res.append(elem.energy.current_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.nrj_t)
+                res.append(elem.energy.current_value)
         return res
 
     @property
@@ -256,10 +263,10 @@ class Mesh1dEnriched(object):
         res = []
         for elem in self.__topologie.cells:
             if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftField('Pseudo'))
-                res.append(elem.getRightField('Pseudo'))
+                res.append(elem.pseudo.current_left_value)
+                res.append(elem.pseudo.current_right_value)
             elif isinstance(elem, Element1d):
-                res.append(elem.pseudo)
+                res.append(elem.pseudo.current_value)
         return res
 
     def get_ruptured_cells(self, rupture_criterion):

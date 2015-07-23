@@ -174,32 +174,32 @@ class Mesh1d(object):
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        return [elem.pression_t for elem in self.__topologie.cells]
+        return [elem.pressure.current_value for elem in self.__topologie.cells]
 
     @property
     def pressure_t_plus_dt_field(self):
         """ Champ de pression à t+dt"""
-        return [elem.pression_t_plus_dt for elem in self.__topologie.cells]
+        return [elem.pressure.new_value for elem in self.__topologie.cells]
 
     @property
     def rho_t_field(self):
         """ Champ de densité à t"""
-        return [elem.rho_t for elem in self.__topologie.cells]
+        return [elem.density.current_value for elem in self.__topologie.cells]
 
     @property
     def rho_t_plus_dt_field(self):
         """ Champ de densité à t+dt"""
-        return [elem.rho_t_plus_dt for elem in self.__topologie.cells]
+        return [elem.density.new_value for elem in self.__topologie.cells]
 
     @property
     def nrj_t_field(self):
         """ Champ d'énergie interne à t"""
-        return [elem.nrj_t for elem in self.__topologie.cells]
+        return [elem.energy.current_value for elem in self.__topologie.cells]
 
     @property
     def pseudo_field(self):
         """ Champ de pseudo """
-        return [elem.pseudo for elem in self.__topologie.cells]
+        return [elem.pseudo.current_value for elem in self.__topologie.cells]
 
     def get_ruptured_cells(self, rupture_criterion):
         """ Liste des mailles endommagées"""
