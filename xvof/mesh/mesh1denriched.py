@@ -47,13 +47,6 @@ class Mesh1dEnriched(object):
         # Création de la topologie
         self.__topologie = Topology1D(nodes, cells)
 
-    @property
-    def cells(self):
-        '''
-        Renvoie la liste des mailles
-        '''
-        return self.__topologie.cells
-
     @timeit_file('/tmp/timer.txt')
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
