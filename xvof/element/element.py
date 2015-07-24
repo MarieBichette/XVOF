@@ -10,6 +10,7 @@ Classe de base définissant un élément
 from abc import abstractmethod
 import numpy as np
 from xvof.fields.fieldsmanager import FieldManager
+from copy import deepcopy
 
 
 class Element(object):
@@ -122,6 +123,13 @@ class Element(object):
         Champ pseudoviscosité dans l'élément
         """
         return self._fields_manager.getField('Pseudo')
+
+    @property
+    def fields_manager(self):
+        '''
+        Renvoi une copie du gestionnaire de champs
+        '''
+        return deepcopy(self._fields_manager)
 
     # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
