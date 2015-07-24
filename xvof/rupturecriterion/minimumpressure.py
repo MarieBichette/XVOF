@@ -12,7 +12,7 @@ class MinimumPressureCriterion(RuptureCriterion):
     Un critère de rupture basé sur la pression minimale
     """
     def __init__(self, pmin):
-        RuptureCriterion.__init__(self)
+        super(MinimumPressureCriterion, self).__init__()
         self.__minimum_pressure = pmin
 
     def checkCriterion(self, cell, *args, **kwargs):

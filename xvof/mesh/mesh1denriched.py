@@ -9,8 +9,8 @@ from xvof.element.element1d import Element1d
 from xvof.element.element1denriched import Element1dEnriched
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
-
 from xvof.utilities.profilingperso import timeit_file
+
 
 class Mesh1dEnriched(object):
     """
@@ -41,7 +41,7 @@ class Mesh1dEnriched(object):
         ####
         # Création des mailles
         cells = []
-        for c in xrange(nbr_nodes - 1):
+        for _ in xrange(nbr_nodes - 1):
             cells.append(Element1d(properties))
         ####
         # Création de la topologie

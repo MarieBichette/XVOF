@@ -4,7 +4,7 @@
 Classe définissant un noeud enrichi en 1d
 """
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
+# ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.node import Node1d
@@ -62,7 +62,7 @@ class Node1dEnriched(Node1d):
         """
         Setter de la position relative
         """
-        if (pos not in (-1, 1)):
+        if pos not in (-1, 1):
             message = "La position relative du noeud ne peut être que :\n"
             message += " -1 si il est à gauche de la discontinuité\n"
             message += " +1 si il est à droite"
@@ -132,7 +132,7 @@ class Node1dEnriched(Node1d):
             format(self.force_classique)
         message += "==> force enrichie = {}\n".\
             format(self.force_enrichi)
-        if(self.position_relative is None):
+        if self.position_relative is None:
             message += "==> position relative  = None"
         else:
             message += "==> position relative  = {:2d}".\
@@ -157,7 +157,7 @@ class Node1dEnriched(Node1d):
 
         @TODO : prise en compte des CLs
         """
-        if (self.position_relative == 1):
+        if self.position_relative == 1:
             # Noeud à droite de la discontinuité
             pgauche = elements_voisins[0].pressure.classical_part.new_value + \
                 elements_voisins[0].pseudo.classical_part.current_value
@@ -169,7 +169,7 @@ class Node1dEnriched(Node1d):
             #
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
-        elif (self.position_relative == -1):
+        elif self.position_relative == -1:
             # Noeud à gauche de la discontinuité
             pgauche = elements_voisins[0].pressure.new_value + \
                 elements_voisins[0].pseudo.current_value

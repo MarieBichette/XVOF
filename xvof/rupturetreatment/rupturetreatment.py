@@ -6,7 +6,7 @@ Classe de base abstraite (interface) définissant un traitement de rupture
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureTreatment():
+class RuptureTreatment(object):
     """
     Une interface pour les traitements de la rupture
     """

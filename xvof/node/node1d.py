@@ -4,21 +4,21 @@
 Classe définissant un noeud en 1d
 """
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
+# ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.node import Node
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
+# ###### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Node1d(Node):
     """
     Une classe pour les noeuds classiques dans le cas 1d
     """
     def __init__(self, poz_init=np.zeros(1), vit_init=np.zeros(1),
-                section=1.):
+                 section=1.):
 
         Node.__init__(self, dim=1, position_initiale=poz_init,
                       vitesse_initiale=vit_init)
@@ -28,9 +28,9 @@ class Node1d(Node):
         #
         self._upundemi = vit_init
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
 
     @property
     def section(self):
@@ -39,9 +39,9 @@ class Node1d(Node):
         """
         return self._section
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
 
     def infos(self):
         """
@@ -57,11 +57,11 @@ class Node1d(Node):
         """
         if isrightboundary:
             pgauche = elements_voisins[0].pressure.new_value + \
-            elements_voisins[0].pseudo.current_value
+                elements_voisins[0].pseudo.current_value
             self._force[:] = pgauche * self.section
         elif isleftboundary:
             pdroite = elements_voisins[0].pressure.new_value + \
-            elements_voisins[0].pseudo.current_value
+                elements_voisins[0].pseudo.current_value
             self._force[:] = -pdroite * self.section
         else:
             pgauche = elements_voisins[0].pressure.new_value + \

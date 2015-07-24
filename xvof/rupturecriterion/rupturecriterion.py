@@ -6,7 +6,7 @@ Classe de base abstraite (interface) définissant un critère de rupture
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureCriterion():
+class RuptureCriterion(object):
     """
     Une interface pour les critères de rupture
     """

@@ -25,20 +25,20 @@ class Node(object):
         self.__dimension = dim
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
-        if (not isinstance(index, int)):
+        if not isinstance(index, int):
             raise TypeError("L'indice du noeud doit être un entier!")
         self._index = index
         #
-        if (position_initiale is None):
+        if position_initiale is None:
             position_initiale = np.zeros(self.__dimension, dtype=float)
-        elif (np.shape(position_initiale) != (self.__dimension,)):
+        elif np.shape(position_initiale) != (self.__dimension,):
             message = "Node() : La dimension ({}) du vecteur position_initiale "\
                 .format(np.shape(position_initiale))
             message += "est incorrecte!"
             raise SystemExit(message)
-        if (vitesse_initiale is None):
+        if vitesse_initiale is None:
             vitesse_initiale = np.zeros(self.__dimension, dtype=float)
-        elif (np.shape(vitesse_initiale) != (self.__dimension,)):
+        elif np.shape(vitesse_initiale) != (self.__dimension,):
             message = "La dimension du vecteur position_initiale "
             message += "est incorrecte!"
             raise SystemExit(message)

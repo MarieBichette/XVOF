@@ -11,7 +11,7 @@ class ConstantPressure(PressureLaw):
     Une pression constante
     """
     def __init__(self, value):
-        PressureLaw.__init__(self)
+        super(ConstantPressure, self).__init__()
         self.__value = value
 
     def evaluate(self, time, *args, **kwargs):

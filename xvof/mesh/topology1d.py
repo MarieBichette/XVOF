@@ -15,6 +15,9 @@ class Topology1D(Topology):
         self._generateMesh()
 
     def _generateMesh(self):
+        '''
+        Generation du maillage (connectivité mailles <--> noeuds)
+        '''
         # On trie les noeuds selon les x croissants
         self._nodes = sorted(self._nodes, key=lambda m: m.coordt)
         # On affecte l'indice global des noeuds

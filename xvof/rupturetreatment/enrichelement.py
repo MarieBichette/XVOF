@@ -16,12 +16,12 @@ class EnrichElement(RuptureTreatment):
     __never_enriched = True
 
     def __init__(self, position_rupture):
-        RuptureTreatment.__init__(self)
+        super(EnrichElement, self).__init__()
         self.__position_rupture = position_rupture
 
     def applyTreatment(self, cell, *args, **kwargs):
         if EnrichElement.__never_enriched:
-            if (not isinstance(cell, Element1dEnriched)):
+            if not isinstance(cell, Element1dEnriched):
                 topologie = kwargs['TOPOLOGIE']
                 print "<-- Enrichissement de la maille : {} -->".format(cell)
                 print "    |_> Création de l'élément enrichi"

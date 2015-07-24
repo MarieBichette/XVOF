@@ -11,7 +11,7 @@ class ImposePressure(RuptureTreatment):
     Un traitement de rupture qui impose la pression
     """
     def __init__(self, pressure):
-        RuptureTreatment.__init__(self)
+        super(ImposePressure, self).__init__()
         self.__imposed_pressure = pressure
 
     def applyTreatment(self, cell, *args, **kwargs):
