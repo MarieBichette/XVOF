@@ -39,7 +39,7 @@ class Element1dEnriched(Element1d):
         self._taille_droite_t = element_origin.taille_t * (1. - pos_discontin)
         self._taille_droite_t_plus_dt = element_origin.taille_t_plus_dt * (1. - pos_discontin)
         #
-        self._fields_manager = element_origin._fields_manager
+        self._fields_manager = element_origin.fields_manager
         self._fields_manager.moveClassicalToEnrichedFields()
 
     def getLeftPartCoordinates(self, noeuds):
