@@ -7,8 +7,8 @@ Classe définissant un élément en 1d
 #               IMPORTATIONS DIVERSES                    #
 # --------------------------------------------------------
 from xvof.element import Element
-from xvof.solver.newtonraphson import NewtonRaphson
 from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xvof.solver.newtonraphson import NewtonRaphson
 
 
 # --------------------------------------------------------

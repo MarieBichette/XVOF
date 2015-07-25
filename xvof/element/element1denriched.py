@@ -8,9 +8,9 @@ Classe définissant un élément enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.element import Element1d
-from xvof.solver.newtonraphson import NewtonRaphson
-from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.fields.enrichedfield import EnrichedField
+from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xvof.solver.newtonraphson import NewtonRaphson
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
