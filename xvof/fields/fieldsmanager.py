@@ -3,8 +3,8 @@
 """
 Classe définissant le gestionnaire de champ
 """
-from xvof.fields.field import Field
 from xvof.fields.enrichedfield import EnrichedField
+from xvof.fields.field import Field
 
 
 class FieldManager(object):
