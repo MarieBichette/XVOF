@@ -1,0 +1,13 @@
+ALL_PY:
+real    0m48.082s
+user    0m44.980s
+LIB_1_PROC:
+real    0m22.572s
+user    0m19.500s
+LIB_4_PROCS
+real    0m36.849s
+user    1m16.572s
+LIB_2_PROCS
+real    0m25.277s
+user    0m32.152s
+
