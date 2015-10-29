@@ -7,10 +7,13 @@ Classe définissant un élément en 1d
 #               IMPORTATIONS DIVERSES                    #
 # --------------------------------------------------------
 from xvof.element import Element
-from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.solver.newtonraphson import NewtonRaphson
+from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+import ctypes
+import os
 
-
+EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
+#EXTERNAL_LIBRARY = None
 # --------------------------------------------------------
 #        DEFINITION DES CLASSES ET FONCTIONS             #
 # --------------------------------------------------------
@@ -54,13 +57,20 @@ class Element1d(Element):
             delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
                                            (rho_new - rho_old)) ** 0.5)
         else:
-            delta_t = cfl * taille_new / (cson_new)
+            delta_t = cfl * taille_new / cson_new
         return delta_t
 
     def __init__(self, proprietes):
         Element.__init__(self, proprietes)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
+        #
+        if EXTERNAL_LIBRARY is not None :
+            _path = os.path.join(*(os.path.split(__file__)[:-1] + (EXTERNAL_LIBRARY,)))
+            self._mod = ctypes.cdll.LoadLibrary(_path)
+            self._computePressureExternal = self._mod.launch_vnr_resolution
+            self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
+                [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
     # --------------------------------------------------------
     #            DEFINITION DES PROPRIETES                   #
@@ -81,16 +91,40 @@ class Element1d(Element):
         Formulation v-e
         """
         try:
-            my_variables = {'EquationOfState': self.proprietes.material.eos,
-                            'OldDensity': self.density.current_value,
-                            'NewDensity': self.density.new_value,
-                            'Pressure': self.pressure.current_value + 2. * self.pseudo.current_value,
-                            'OldEnergy': self.energy.current_value}
-            self._function_to_vanish.setVariables(my_variables)
-            self.energy.new_value = self._solver.computeSolution(self.energy.current_value)
-            self.pressure.new_value, _, self.sound_velocity.new_value = \
-                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_value, self.energy.new_value)
-            self._function_to_vanish.eraseVariables()
+            if EXTERNAL_LIBRARY is not None:
+                old_density = ctypes.c_double()
+                new_density = ctypes.c_double()
+                pressure = ctypes.c_double()
+                old_energy = ctypes.c_double()
+                pb_size = ctypes.c_int()
+                solution = ctypes.c_double()
+                new_pressure = ctypes.c_double()
+                new_vson = ctypes.c_double()
+                #
+                old_density.value = self.density.current_value
+                new_density.value = self.density.new_value
+                pressure.value = self.pressure.current_value + 2. * self.pseudo.current_value
+                old_energy.value = self.energy.current_value
+                pb_size.value = 1
+                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution, 
+                                              new_pressure, new_vson)
+                self.energy.new_value = solution.value
+                self.pressure.new_value = new_pressure.value
+                self.sound_velocity.new_value = new_vson.value
+#                print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
+            else:
+                my_variables = {'EquationOfState': self.proprietes.material.eos,
+                                'OldDensity': self.density.current_value,
+                                'NewDensity': self.density.new_value,
+                                'Pressure': self.pressure.current_value + 2. * self.pseudo.current_value,
+                                'OldEnergy': self.energy.current_value}
+                self._function_to_vanish.setVariables(my_variables)
+                self.energy.new_value = self._solver.computeSolution(self.energy.current_value)
+                self.pressure.new_value, _, self.sound_velocity.new_value = \
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_value, self.energy.new_value)
+                self._function_to_vanish.eraseVariables()
+#            print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
+#            raw_input()
         except ValueError as err:
             print "Element concerné : {}".format(self)
             raise err

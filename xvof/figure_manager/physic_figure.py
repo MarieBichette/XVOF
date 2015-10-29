@@ -53,5 +53,5 @@ class PhysicFigure(object):
             self._fig_number += 1
             with open(data_path, 'w') as fo:
                 for a, b in zip(X, Y):
-                    fo.write("{:15.9g}{:s}{:15.9g}\n".format(float(a), 4 * " ", float(b)))
+                    fo.write("{:20.18g}{:s}{:20.18g}\n".format(float(a), 4 * " ", float(b)))
 

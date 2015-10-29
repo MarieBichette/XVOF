@@ -36,7 +36,7 @@ ParamPseudoA = 1.5
 ParamPseudoB = 0.2
 CFL = 0.35
 
-NbrImages = 150
+NbrImages = 1
 #  =================================================
 
 if __name__ == '__main__':

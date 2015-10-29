@@ -8,10 +8,9 @@ Classe de base définissant un élément
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
-from copy import deepcopy
-
 import numpy as np
 from xvof.fields.fieldsmanager import FieldManager
+from copy import deepcopy
 
 
 class Element(object):

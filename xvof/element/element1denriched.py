@@ -8,10 +8,14 @@ Classe définissant un élément enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.element import Element1d
-from xvof.fields.enrichedfield import EnrichedField
-from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.solver.newtonraphson import NewtonRaphson
+from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xvof.fields.enrichedfield import EnrichedField
+import ctypes
+import os
 
+EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
+#EXTERNAL_LIBRARY = None
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ###### DEFINITION DES CLASSES & FONCTIONS  ###############
@@ -41,6 +45,13 @@ class Element1dEnriched(Element1d):
         #
         self._fields_manager = element_origin.fields_manager
         self._fields_manager.moveClassicalToEnrichedFields()
+        #
+        if EXTERNAL_LIBRARY is not None :
+            _path = os.path.join(*(os.path.split(__file__)[:-1] + (EXTERNAL_LIBRARY,)))
+            self._mod = ctypes.cdll.LoadLibrary(_path)
+            self._computePressureExternal = self._mod.launch_vnr_resolution
+            self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
+                [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
     def getLeftPartCoordinates(self, noeuds):
         """
@@ -123,29 +134,61 @@ class Element1dEnriched(Element1d):
         au pas de temps suivant
         Formulation v-e
         """
-        # Traitement partie gauche
-        my_variables = {'EquationOfState': self.proprietes.material.eos,
-                        'OldDensity': self.density.current_left_value,
-                        'NewDensity': self.density.new_left_value,
-                        'Pressure': self.pressure.current_left_value + 2. * self.pseudo.current_left_value,
-                        'OldEnergy': self.energy.current_left_value}
-        self._function_to_vanish.setVariables(my_variables)
-        nrj_t_plus_dt_g = self._solver.computeSolution(self.energy.current_left_value)
-        pression_t_plus_dt_g, _, cson_t_plus_dt_g = \
-            self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_left_value, nrj_t_plus_dt_g)
-        self._function_to_vanish.eraseVariables()
-        # Traitement partie droite
-        my_variables = {'EquationOfState': self.proprietes.material.eos,
-                        'OldDensity': self.density.current_right_value,
-                        'NewDensity': self.density.new_right_value,
-                        'Pressure': self.pressure.current_right_value + 2. * self.pseudo.current_right_value,
-                        'OldEnergy': self.energy.current_right_value}
-        self._function_to_vanish.setVariables(my_variables)
-        nrj_t_plus_dt_d = self._solver.computeSolution(self.energy.current_right_value)
-        pression_t_plus_dt_d, _, cson_t_plus_dt_d = \
-            self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_right_value, nrj_t_plus_dt_d)
-        self._function_to_vanish.eraseVariables()
-        #
+        if EXTERNAL_LIBRARY is not None:
+            old_density = ctypes.c_double()
+            new_density = ctypes.c_double()
+            pressure = ctypes.c_double()
+            old_energy = ctypes.c_double()
+            pb_size = ctypes.c_int()
+            solution = ctypes.c_double()
+            new_pressure = ctypes.c_double()
+            new_vson = ctypes.c_double()
+            # PARTIE GAUCHE
+            old_density.value = self.density.current_left_value
+            new_density.value = self.density.new_left_value
+            pressure.value = self.pressure.current_left_value + 2. * self.pseudo.current_left_value
+            old_energy.value = self.energy.current_left_value
+            pb_size.value = 1
+            self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution, 
+                                          new_pressure, new_vson)
+            nrj_t_plus_dt_g = solution.value
+            pression_t_plus_dt_g = new_pressure.value
+            cson_t_plus_dt_g = new_vson.value
+            # PARTIE DROITE
+            old_density.value = self.density.current_right_value
+            new_density.value = self.density.new_right_value
+            pressure.value = self.pressure.current_right_value + 2. * self.pseudo.current_right_value
+            old_energy.value = self.energy.current_right_value
+            pb_size.value = 1
+            self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution, 
+                                          new_pressure, new_vson)
+            nrj_t_plus_dt_d = solution.value
+            pression_t_plus_dt_d = new_pressure.value
+            cson_t_plus_dt_d = new_vson.value
+        else:
+            # Traitement partie gauche
+            my_variables = {'EquationOfState': self.proprietes.material.eos,
+                            'OldDensity': self.density.current_left_value,
+                            'NewDensity': self.density.new_left_value,
+                            'Pressure': self.pressure.current_left_value + 2. * self.pseudo.current_left_value,
+                            'OldEnergy': self.energy.current_left_value}
+            self._function_to_vanish.setVariables(my_variables)
+            nrj_t_plus_dt_g = self._solver.computeSolution(self.energy.current_left_value)
+            pression_t_plus_dt_g, _, cson_t_plus_dt_g = \
+                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_left_value, nrj_t_plus_dt_g)
+            self._function_to_vanish.eraseVariables()
+            # Traitement partie droite
+            my_variables = {'EquationOfState': self.proprietes.material.eos,
+                            'OldDensity': self.density.current_right_value,
+                            'NewDensity': self.density.new_right_value,
+                            'Pressure': self.pressure.current_right_value + 2. * self.pseudo.current_right_value,
+                            'OldEnergy': self.energy.current_right_value}
+            self._function_to_vanish.setVariables(my_variables)
+            nrj_t_plus_dt_d = self._solver.computeSolution(self.energy.current_right_value)
+            pression_t_plus_dt_d, _, cson_t_plus_dt_d = \
+                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_right_value, nrj_t_plus_dt_d)
+            self._function_to_vanish.eraseVariables()
+            #
         self.pressure.classical_part.new_value = \
             EnrichedField.fromGeometryToClassicField(pression_t_plus_dt_g, pression_t_plus_dt_d)
         self.pressure.enriched_part.new_value = \
@@ -169,13 +212,14 @@ class Element1dEnriched(Element1d):
         nod_g = noeuds[0]
         nod_d = noeuds[1]
         self._taille_gauche_t_plus_dt = self._taille_gauche_t + \
-            (0.5 * (nod_d.upundemi_classique - nod_g.upundemi_enrichi) -
-             0.5 * (nod_g.upundemi_classique - nod_g.upundemi_enrichi)) \
+            (0.5 * (nod_d.upundemi_classique[0] - nod_g.upundemi_enrichi[0]) -
+             0.5 * (nod_g.upundemi_classique[0] - nod_g.upundemi_enrichi[0])) \
             * time_step
         self._taille_droite_t_plus_dt = self._taille_droite_t + \
-            (0.5 * (nod_d.upundemi_classique + nod_d.upundemi_enrichi) -
-             0.5 * (nod_g.upundemi_classique + nod_d.upundemi_enrichi)) \
+            (0.5 * (nod_d.upundemi_classique[0] + nod_d.upundemi_enrichi[0]) -
+             0.5 * (nod_g.upundemi_classique[0] + nod_d.upundemi_enrichi[0])) \
             * time_step
+
 
     def computeNewDensity(self):
         """

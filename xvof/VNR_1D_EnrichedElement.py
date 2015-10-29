@@ -76,12 +76,12 @@ PChargementDroite = ConstantPressure(PressionInit)
 CritereRupture = MinimumPressureCriterion(-7.0e+09)
 TraitementRupture = EnrichElement(0.5)
 Longueur = 10.0e-03
-NbrElements = 51
+NbrElements = 101
 ParamPseudoA = 1.5
 ParamPseudoB = 0.2
 CFL = 0.35
 
-NbrImages = 150  # 3750
+NbrImages = 1  # 3750
 #  =================================================
 
 if __name__ == '__main__':
@@ -127,7 +127,7 @@ if __name__ == '__main__':
 #             raise SystemExit("Le pas de temps critique est plus petit que le pas de temps")
         print "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes"\
             .format(step, time, dt)
-#         print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
+#        print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
 #         print_infos_about_enrichment(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
 #         print_infos_about(my_mesh, titre="DEBUT DE CYCLE", cells=my_mesh.cells, nodes=my_mesh.nodes)
         # ---------------------------------------------#
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         my_mesh.incrementer()
 #         print_infos_about_enrichment(my_mesh, titre="INCREMENTATION", cells=my_mesh.cells, nodes=my_mesh.nodes)
-#         dt = min([dt, num_props.cfl * dt_crit])
+        #dt = dt_crit
         time += dt
         step += 1
         # ---------------------------------------------#

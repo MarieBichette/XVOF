@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant une pression constante
+Classe dÃ©finissant une pression constante
 """
 from xvof.pressurelaw.pressurelaw import PressureLaw
 

@@ -9,8 +9,6 @@ from xvof.element.element1d import Element1d
 from xvof.element.element1denriched import Element1dEnriched
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
-from xvof.utilities.profilingperso import timeit_file
-
 
 class Mesh1dEnriched(object):
     """
@@ -47,26 +45,22 @@ class Mesh1dEnriched(object):
         # Création de la topologie
         self.__topologie = Topology1D(nodes, cells)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
         for noeud in self.__topologie.nodes:
             neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
             noeud.calculer_masse_wilkins(neighbours_cells)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_vit_noeuds(self, delta_t):
         """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_vitesse(delta_t)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_coord_noeuds(self, delta_t):
         """ Calcul des nouvelles coordonnées de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
             noeud.calculer_nouvo_coord(delta_t)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_taille_des_elements(self):
         '''
         Calcul de la taille des éléments à t
@@ -75,33 +69,28 @@ class Mesh1dEnriched(object):
             nodes = self.__topologie._getNodesBelongingToCell(cell)
             cell.computeSize(nodes)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             nodes = self.__topologie._getNodesBelongingToCell(cell)
             cell.computeNewSize(nodes, delta_t)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             cell.computeNewDensity()
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         for cell in self.__topologie.cells:
             if cell not in self.__ruptured_cells:
                 cell.computeNewPressure()
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
         for cell in self.__topologie.cells:
             cell.computeNewPseudo(delta_t)
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_force_des_noeuds(self):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         for noeud in self.__topologie.nodes:
@@ -109,7 +98,6 @@ class Mesh1dEnriched(object):
             noeud.calculer_nouvo_force(neighbours_cells, isrightboundary=self.__topologie._isRightBoundary(noeud),
                                        isleftboundary=self.__topologie._isLeftBoundary(noeud))
 
-    @timeit_file('/tmp/timer.txt')
     def incrementer(self):
         """ Passage au pas de temps suivant"""
         for noeud in self.__topologie.nodes:
@@ -117,16 +105,15 @@ class Mesh1dEnriched(object):
         for cell in self.__topologie.cells:
             cell.incrementVariables()
 
-    @timeit_file('/tmp/timer.txt')
     def calculer_nouvo_pdt_critique(self):
         """ Calcul du pas de temps critique """
-        dts = []
+        min_dt = 1.0e+09
         for cell in self.__topologie.cells:
             cell.computeNewTimeStep()
-            dts.append(cell.delta_t)
-        return min(dts)
+            if cell.delta_t < min_dt:
+                min_dt = cell.delta_t
+        return min_dt
 
-    @timeit_file('/tmp/timer.txt')
     def appliquer_pression(self, surface, pression):
         """
         Appliquer une pression donnée sur

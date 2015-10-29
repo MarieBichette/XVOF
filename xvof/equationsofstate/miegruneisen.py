@@ -4,6 +4,8 @@
 Classe définissant une équation d'état de type Mie-Gruneisen
 """
 from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
+import ctypes
+import os
 
 
 # Deactivate pylint warnings due to NotImplementedError
@@ -35,6 +37,12 @@ class MieGruneisen(EquationOfStateBase):
                              'ezero': 0.}
         for (prop, default) in self.__parameters.iteritems():
             self.__parameters[prop] = kwargs.get(prop, default)
+        
+#        _file = 'libMieGruneisen.so'
+#        _path = os.path.join(*(os.path.split(__file__)[:-1] + (_file,)))
+#        self._mod = ctypes.cdll.LoadLibrary(_path)
+#        self._solveVE = self._mod.solveVolumeEnergy
+#        self._solveVE.argtypes = ([ctypes.c_double, ] * 10 + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
     @property
     def czero(self):
@@ -184,6 +192,21 @@ class MieGruneisen(EquationOfStateBase):
             vson = 0.
         #
         return pressure, gampervol, vson
+
+#    def solveVolumeEnergy(self, specific_volume, internal_energy):
+#        """
+#        Fournit le triplet (pression | dérivée de la pression en
+#        fonction de l'énergie | vitesse du son) à partir du couple
+#        ( volume massique | énergie interne ) en passant par une lib C externe
+#        """
+#        pression = ctypes.c_double()
+#        gamma_per_vol = ctypes.c_double()
+#        vitson = ctypes.c_double()
+#        self._solveVE(self.czero, self.coeff_s1, self.coeff_s2, self.coeff_s3,
+#                      self.rhozero, self.grunzero, self.coeff_b, self.ezero,
+#                      specific_volume, internal_energy, pression, gamma_per_vol,
+#                      vitson)
+#        return pression.value, gamma_per_vol.value, vitson.value
 
     def solveVolumePressure(self, specific_volume, pressure):
         raise NotImplementedError

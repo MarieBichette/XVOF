@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un noeud enrichi en 1d
+Classe dÃ©finissant un noeud enrichi en 1d
 """
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ########### IMPORTATIONS DIVERSES  ####################
@@ -18,8 +18,8 @@ class Node1dEnriched(Node1d):
     Une classe pour les noeuds enrichis dans le cas 1d
 
     @todo :
-    - Faut il recalculer la masse associée au noeud en cas d'enrichissement quand
-    la discontinuité n'est pas au milieu de l'élément?
+    - Faut il recalculer la masse associÃ©e au noeud en cas d'enrichissement quand
+    la discontinuitÃ© n'est pas au milieu de l'Ã©lÃ©ment?
     """
     # pylint: disable-msg=R0902
     # 9 attributs : cela semble raisonnable pour ce cas
@@ -37,7 +37,7 @@ class Node1dEnriched(Node1d):
         self._umundemi_classique = origin_node.umundemi[:]
         self._upundemi_classique = origin_node.upundemi[:]
         self._force_classique = origin_node.force[:]
-        # ==> Toutes les variables enrichies sont initialisées à 0
+        # ==> Toutes les variables enrichies sont initialisÃ©es Ã  0
         self._umundemi_enrichi = np.zeros(1, dtype=float)
         self._upundemi_enrichi = np.zeros(1, dtype=float)
         self._force_enrichi = np.zeros(1, dtype=float)
@@ -53,7 +53,7 @@ class Node1dEnriched(Node1d):
     @property
     def position_relative(self):
         """
-        Position du noeud par rapport à la discontinuité
+        Position du noeud par rapport Ã  la discontinuitÃ©
         """
         return self.__position_relative
 
@@ -63,23 +63,23 @@ class Node1dEnriched(Node1d):
         Setter de la position relative
         """
         if pos not in (-1, 1):
-            message = "La position relative du noeud ne peut être que :\n"
-            message += " -1 si il est à gauche de la discontinuité\n"
-            message += " +1 si il est à droite"
+            message = "La position relative du noeud ne peut Ãªtre que :\n"
+            message += " -1 si il est Ã  gauche de la discontinuitÃ©\n"
+            message += " +1 si il est Ã  droite"
             raise SystemExit(message)
         self.__position_relative = pos
 
     @property
     def umundemi_classique(self):
         """
-        Vitesse classique au demi pas de temps précédent
+        Vitesse classique au demi pas de temps prÃ©cÃ©dent
         """
         return self._umundemi_classique
 
     @property
     def umundemi_enrichi(self):
         """
-        Vitesse enrichie au demi pas de temps précédent
+        Vitesse enrichie au demi pas de temps prÃ©cÃ©dent
         """
         return self._umundemi_enrichi
 
@@ -120,13 +120,13 @@ class Node1dEnriched(Node1d):
         Affichage des informations
         """
         Node1d.infos(self)
-        message = "==> vitesse classique à t-1/2 = {}\n".\
+        message = "==> vitesse classique Ã  t-1/2 = {}\n".\
             format(self.umundemi_classique)
-        message += "==> vitesse enrichie à t-1/2 = {}\n".\
+        message += "==> vitesse enrichie Ã  t-1/2 = {}\n".\
             format(self.umundemi_enrichi)
-        message += "==> vitesse classique à t+1/2 = {}\n".\
+        message += "==> vitesse classique Ã  t+1/2 = {}\n".\
             format(self.upundemi_classique)
-        message += "==> vitesse enrichie à t+1/2 = {}\n".\
+        message += "==> vitesse enrichie Ã  t+1/2 = {}\n".\
             format(self.upundemi_enrichi)
         message += "==> force classique = {}\n".\
             format(self.force_classique)
@@ -141,7 +141,7 @@ class Node1dEnriched(Node1d):
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
-        Calcul de la vitesse au demi pas de temps supérieur
+        Calcul de la vitesse au demi pas de temps supÃ©rieur
         """
         self._upundemi_enrichi = \
             self.force_enrichi * self.invmasse * delta_t + self.umundemi_enrichi
@@ -158,7 +158,7 @@ class Node1dEnriched(Node1d):
         @TODO : prise en compte des CLs
         """
         if self.position_relative == 1:
-            # Noeud à droite de la discontinuité
+            # Noeud Ã  droite de la discontinuitÃ©
             pgauche = elements_voisins[0].pressure.classical_part.new_value + \
                 elements_voisins[0].pseudo.classical_part.current_value
             pgauche_enr = \
@@ -170,7 +170,7 @@ class Node1dEnriched(Node1d):
             self._force_classique[:] = (pgauche - pdroite) * self.section
             self._force_enrichi[:] = (pgauche_enr - pdroite) * self.section
         elif self.position_relative == -1:
-            # Noeud à gauche de la discontinuité
+            # Noeud Ã  gauche de la discontinuitÃ©
             pgauche = elements_voisins[0].pressure.new_value + \
                 elements_voisins[0].pseudo.current_value
             pdroite = elements_voisins[1].pressure.classical_part.new_value + \
@@ -185,7 +185,7 @@ class Node1dEnriched(Node1d):
 
     def incrementer(self):
         """
-        Mise à jour de la vitesse et de la coordonnée du noeud
+        Mise Ã  jour de la vitesse et de la coordonnÃ©e du noeud
         pour passer au pas de temps suivant.
         """
         Node1d.incrementer(self)
