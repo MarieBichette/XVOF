@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base définissant l'ensemble des noeuds
+Module définissant la classe Node
 """
 
 from abc import abstractmethod
@@ -13,29 +13,43 @@ import numpy as np
 
 class Node(object):
     """
-    Une classe pour les noeuds
+    Un objet Node représente l'ensemble des noeuds du maillages. Ses différents membres sont
+    essentiellement des vecteurs de nbr_of_nodes lignes. Plusieurs colonnes peuvent être
+    présentes selon la dimension du problème à traiter. 
+
+    L'organisation en mémoire est comme en C/C++ c'est à dire 'row wise'. C'est pour cette raison
+    que les lignes de chacun des vecteurs représentent les noeuds. Ce faisant on a par exemple
+    tous les X des noeuds contigus en mêmoire. (vectorisation, localisation spatiale)
     """
     # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
-    def __init__(self, dim=1, nbr_of_nodes,
-                 position_initiale=None,
-                 vitesse_initiale=None):
-        # __dimension doit rester privé même pour les classes filles
-        # un noeud consacré aux simulations 1d ne peut pas changer sa dimension
-        self.__dimension = dim
-	self.__shape = [dim, nbr_of_nodes]
+    def __init__(self, dim=1, nbr_of_nodes, position_initiale=None, vitesse_initiale=None):
+	"""
+	:param dim: dimension du problème à traiter (par défaut 1)
+	:param nbr_of_nodes: nombre de noeuds du problème
+	:param position_initiale: vecteur des positions initiales
+	:param vitesse_initiale: vecteur des vitesses initiales
+
+	:type dim: int
+	:type nbr_of_nodes: int
+	:type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+	:type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+	"""
+	# Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
+	# les différentes dimensions
+	self.__shape = [nbr_of_nodes, dim]
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if position_initiale is None:
-            position_initiale = np.zeros([self.__dimension, nbr_of_nodes], dtype=np.float64, order='C')
-        elif np.shape(position_initiale) != (self.__dimension, nbr_of_nodes):
+            position_initiale = np.zeros(self.__shape, dtype=np.float64, order='C')
+        elif np.shape(position_initiale) != self.__shape:
             message = "Node() : La dimension ({}) du vecteur position_initiale "\
                 .format(np.shape(position_initiale))
             message += "est incorrecte!"
             raise SystemExit(message)
         if vitesse_initiale is None:
-            vitesse_initiale = np.zeros([self.__dimension, nbr_of_nodes], dtype=np.float64, order='C')
-        elif np.shape(vitesse_initiale) != (self.__dimension,):
+            vitesse_initiale = np.zeros(self.__shape, dtype=np.float64, order='C')
+        elif np.shape(vitesse_initiale) != self.__shape:
             message = "Node() : La dimension ({}) du vecteur vitesse_initiale "\
                 .format(np.shape(vitesse_initiale))
             message += "est incorrecte!"
@@ -43,98 +57,121 @@ class Node(object):
         #
         self._xt = np.array(position_initiale)
         self._umundemi = np.array(vitesse_initiale)
-        self._xtpdt = np.zeros(self.__dimension, dtype=float)
+        self._xtpdt = np.zeros(self.__shape, dtype=np.float64, order='C')
         self._upundemi = np.array(vitesse_initiale)
-        self._masse = 0.
-        self._invmasse = 0.
-        self._force = np.zeros(self.__dimension, dtype=float)
+        self._masse = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
+        self._invmasse = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
+        self._force = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
 
-    @property
-    def index(self):
-        """
-        Indice global du noeud
-        """
-        return self._index
-
-    @index.setter
-    def index(self, index):
-        """
-        Setter de l'indice global du noeud
-        """
-        self._index = index
-
-    @property
+    property
     def coordt(self):
         """
-        Position du noeud au temps t
+        Positions des noeuds au temps t
+
+	:return: positions des noeuds au temps t
+	:rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         return self._xt
 
     @property
     def coordtpdt(self):
         """
-        Position du noeud au temps t + dt
+        Positions des noeuds au temps t + dt
+	
+	:return: positions des noeuds au temps t + dt
+	:rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         return self._xtpdt
 
     @property
     def umundemi(self):
         """
-        Vitesse au demi pas de temps précédent
+        Vitesses au demi pas de temps précédent
+	
+	:return: vitesses des noeuds au demi pas de temps précédent
+	:rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         return self._umundemi
 
     @property
     def upundemi(self):
         """
-        Vitesse au demi pas de temps suivant
+        Vitesses au demi pas de temps suivant
+	
+	:return: vitesses des noeuds au demi pas de temps suivant
+	:rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         return self._upundemi
 
     @property
     def masse(self):
         """
-        Masse nodale
+        Masses nodales
+
+	:return: vecteur des masses nodales
+	:rtype: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
         return self._masse
 
     @property
     def invmasse(self):
         """
-        Inverse de la masse nodale
+        Inverse des masses nodales
+
+	:return: vecteur des inverses des masses nodales
+	:rtype: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
         return self._invmasse
 
     @property
     def force(self):
         """
-        Force nodale
+        Forces nodales
+
+	:return: vecteur des forces nodales
+	:rtype: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
         return self._force
 
     @property
     def dimension(self):
         """
-        Dimension associée
+        Dimension du problème
+        
+	:return: dimension du problème
+	:rtype: int
         """
-        return self.__dimension
+        return self.__shape[1]
+
+    @property:
+    def number_of_nodes(self):
+	"""
+	Nombre de noeuds du problème
+	
+	:return: dimension du problème
+	:rtype: int
+	""" 
+	return self.__shape[0]
 
     def __str__(self):
-        message = "NOEUD {:4d} ".format(self.index)
-        message += "(dimension : {:1d})".format(self.__dimension)
+        message = "Nombre de noeuds {:8d} ".format(self.__shape[0])
+        message += "Dimension du problème : {:1d})".format(self.__shape[1])
         return message
 
-    def infos(self):
+    def infos(self, index):
         """
-        Affichage des informations concernant le noeud
+        Affichage des informations concernant le noeud d'indice index
+
+	:param index: indice du noeud à afficher
+	:type index: int
         """
-        message = "{} {:4d}\n".format(self.__class__, self.index)
-        message += "==> coordonnées à t = {}\n".format(self.coordt)
-        message += "==> coordonnées à t+dt = {}\n".format(self.coordtpdt)
-        message += "==> vitesse à t-1/2 = {}\n".format(self.umundemi)
-        message += "==> vitesse à t+1/2 = {}\n".format(self.upundemi)
-        message += "==> masse = {:5.4g}\n".format(self.masse)
-        message += "==> force = {}".format(self.force)
+        message = "{} {:4d}\n".format(self.__class__, index)
+        message += "==> coordonnées à t = {}\n".format(self.coordt[index])
+        message += "==> coordonnées à t+dt = {}\n".format(self.coordtpdt[index])
+        message += "==> vitesse à t-1/2 = {}\n".format(self.umundemi[index])
+        message += "==> vitesse à t+1/2 = {}\n".format(self.upundemi[index])
+        message += "==> masse = {:5.4g}\n".format(self.masse[index])
+        message += "==> force = {}".format(self.force[index])
         print message
 
     def calculer_masse_wilkins(self, elements_voisins):
