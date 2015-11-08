@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base définissant un noeud
+Classe de base définissant l'ensemble des noeuds
 """
 
 from abc import abstractmethod
@@ -17,29 +17,27 @@ class Node(object):
     """
     # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
-    def __init__(self, dim=1, index=-1,
+    def __init__(self, dim=1, nbr_of_nodes,
                  position_initiale=None,
                  vitesse_initiale=None):
         # __dimension doit rester privé même pour les classes filles
         # un noeud consacré aux simulations 1d ne peut pas changer sa dimension
         self.__dimension = dim
+	self.__shape = [dim, nbr_of_nodes]
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
-        if not isinstance(index, int):
-            raise TypeError("L'indice du noeud doit être un entier!")
-        self._index = index
-        #
         if position_initiale is None:
-            position_initiale = np.zeros(self.__dimension, dtype=float)
-        elif np.shape(position_initiale) != (self.__dimension,):
+            position_initiale = np.zeros([self.__dimension, nbr_of_nodes], dtype=np.float64, order='C')
+        elif np.shape(position_initiale) != (self.__dimension, nbr_of_nodes):
             message = "Node() : La dimension ({}) du vecteur position_initiale "\
                 .format(np.shape(position_initiale))
             message += "est incorrecte!"
             raise SystemExit(message)
         if vitesse_initiale is None:
-            vitesse_initiale = np.zeros(self.__dimension, dtype=float)
+            vitesse_initiale = np.zeros([self.__dimension, nbr_of_nodes], dtype=np.float64, order='C')
         elif np.shape(vitesse_initiale) != (self.__dimension,):
-            message = "La dimension du vecteur position_initiale "
+            message = "Node() : La dimension ({}) du vecteur vitesse_initiale "\
+                .format(np.shape(vitesse_initiale))
             message += "est incorrecte!"
             raise SystemExit(message)
         #
