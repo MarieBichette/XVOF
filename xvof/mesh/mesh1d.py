@@ -25,6 +25,7 @@ class Mesh1d(object):
         self.__ruptured_cells = []
         ####
         # Création des noeuds
+	    nodes = Node1d
         nodes = []
         for n in xrange(np.shape(initial_coordinates)[0]):
             poz = initial_coordinates[n]

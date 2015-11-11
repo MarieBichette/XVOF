@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base définissant un élément
+Module implémentant la classe Element
 """
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -15,13 +15,22 @@ from copy import deepcopy
 
 class Element(object):
     """
-    Une classe pour les éléments
+    Un objet Element représente l'ensemble des éléments du maillage.
+    Ses différents membres sont essentiellement des vecteurs de nbr_of_cells lignes.
+
+    L'organisation en mémoire est comme en C/C++ c'est à dire 'row wise'. C'est pour cette raison
+    que les lignes de chacun des vecteurs représentent les mailles. Ce faisant on a par exemple
+    toutes les pressions des mailles contigues en mêmoire. (vectorisation, localisation spatiale)
     """
     @classmethod
-    def getCoordinates(cls, noeuds):
+    def getCoordinates(cls, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
         """
-        Position du centre de l'élément au temps t
+        Détermine le vecteur position du centre de l'élément au temps t
+
+        :return: les vecteurs des coordonnées du centre de chaque élément au temps t
+        :rtype:
         """
+        
         vec_coord = np.zeros(noeuds[0].dimension)
         for nod in noeuds:
             vec_coord += nod.coordt

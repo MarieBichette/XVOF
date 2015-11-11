@@ -10,16 +10,14 @@ class Topology1D(Topology):
     '''
     Spécialisation 1D de topology
     '''
-    def __init__(self, list_of_nodes, list_of_cells):
-        Topology.__init__(self, list_of_nodes, list_of_cells)
+    def __init__(self, nbr_of_nodes, nbr_of_cells):
+        Topology.__init__(self, nbr_of_nodes, nbr_of_cells)
         self._generateMesh()
 
     def _generateMesh(self):
         '''
         Generation du maillage (connectivité mailles <--> noeuds)
         '''
-        # On trie les noeuds selon les x croissants
-        self._nodes = sorted(self._nodes, key=lambda m: m.coordt)
         # On affecte l'indice global des noeuds
         for ind, node in enumerate(self._nodes):
             node.index = ind
@@ -32,7 +30,7 @@ class Topology1D(Topology):
             self._addCellInContactWithNode(node_right, cell)
             self._setNodesBelongingToCell(cell, [node_left, node_right])
 
-    def _isRightBoundary(self, node):
+    def isRightBoundary(self, node):
         '''
         Renvoie vrai si le noeud 'node' est le noeud frontiere droite
         '''
@@ -41,7 +39,7 @@ class Topology1D(Topology):
         else:
             return False
 
-    def _isLeftBoundary(self, node):
+    def isLeftBoundary(self, node):
         '''
         Renvoie vrai le noeud 'node' est le noeud frontiere gauche
         '''

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un noeud en 1d
+Module définissant la classe Node1d
 """
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ########### IMPORTATIONS DIVERSES  ####################
@@ -15,18 +15,14 @@ from xvof.node import Node
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class Node1d(Node):
     """
-    Une classe pour les noeuds classiques dans le cas 1d
+    Un objet Node1d représente l'ensemble des noeuds 1d du maillage
     """
-    def __init__(self, poz_init=np.zeros(1), vit_init=np.zeros(1),
+    def __init__(self, nbr_of_nodes, poz_init, vit_init,
                  section=1.):
 
-        Node.__init__(self, dim=1, position_initiale=poz_init,
-                      vitesse_initiale=vit_init)
-
-        #
+        Node.__init__(self, nbr_of_nodes, position_initiale=poz_init,
+		      dim=1, vitesse_initiale=vit_init)
         self._section = section
-        #
-        self._upundemi = vit_init
 
     # ------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -43,47 +39,52 @@ class Node1d(Node):
     # DEFINITIONS DES METHODES
     # ------------------------------------------------------------
 
-    def infos(self):
+    def infos(self, index):
         """
-        Affichage des informations
+        Affichage des informations concernant le noeud d'indice index
+
+        :param index: indice du noeud à afficher
+        :type index: int
         """
-        Node.infos(self)
+        Node.infos(self, index)
         message = "==> section = {:5.4g}".format(self.section)
         print message
 
-    def calculer_nouvo_force(self, elements_voisins, isleftboundary=False, isrightboundary=False):
+    def calculer_nouvo_force(self, topologie, vecteur_pression_maille, vecteur_pseudo_maille):
         """
-        Calcul de la force agissant sur le noeud
+        Calcul des forces agissant sur les noeuds
+
+        :param topologie: topologie du calcul
+        :param vecteur_pression_maille: vecteur des pressions de chaque élément + 2 pressions nulles à gauche et à droite
+        :param vecteur_pseudo_maille: vecteur des pseudoviscosite de chaque élément
+
+        :type topologie: Topology
+        :type vecteur_pression_maille: numpy.array([nbr_of_nodes+2, 1], dtype=np.float64, order='C')
+        :type vecteur_pseudo_maille: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
-        if isrightboundary:
-            pgauche = elements_voisins[0].pressure.new_value + \
-                elements_voisins[0].pseudo.current_value
-            self._force[:] = pgauche * self.section
-        elif isleftboundary:
-            pdroite = elements_voisins[0].pressure.new_value + \
-                elements_voisins[0].pseudo.current_value
-            self._force[:] = -pdroite * self.section
-        else:
-            pgauche = elements_voisins[0].pressure.new_value + \
-                elements_voisins[0].pseudo.current_value
-            pdroite = elements_voisins[1].pressure.new_value + \
-                elements_voisins[1].pseudo.current_value
-            self._force[:] = (pgauche - pdroite) * self.section
+        for ind_node in xrange(self.number_of_nodes):
+            elements_voisins = topologie.getCellsInContactWithNode[ind_node]
+            pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
+            self._force[ind_node] = (pressure[0] - pressure[1]) * self.section  # Suppose les éléments voisins triés par position croissante
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
+	
+        :param delta_t: pas de temps
+        :type delta_t: float
         """
-#        self._upundemi = self.force / self.masse * delta_t + self.umundemi
         self._upundemi = self.umundemi + self.force * self.invmasse * delta_t
 
-    def appliquer_pression(self, pression):
+    def appliquer_pression(self, ind_node, pression):
         """
-        Appliquer une pression sur le noeud
+        Appliquer une pression sur le noeud d'indice "ind_node"
+
+        :param ind_node: indice du noeud sur lequel appliquer la pression
+        :param pression: pression à appliquer
+
+        :type ind_node: int
+        :type pression: float
         """
-        self._force[:] += pression * self.section
+        self._force[ind_node] += pression * self.section
 
-
-if __name__ == "__main__":
-    MY_NODE = Node1d(123, section=1.0e-06)
-    MY_NODE.infos()
