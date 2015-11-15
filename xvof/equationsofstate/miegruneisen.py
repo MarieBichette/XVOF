@@ -3,9 +3,10 @@
 """
 Classe définissant une équation d'état de type Mie-Gruneisen
 """
-from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
 import ctypes
 import os
+
+from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
 
 
 # Deactivate pylint warnings due to NotImplementedError
@@ -37,7 +38,7 @@ class MieGruneisen(EquationOfStateBase):
                              'ezero': 0.}
         for (prop, default) in self.__parameters.iteritems():
             self.__parameters[prop] = kwargs.get(prop, default)
-        
+
 #        _file = 'libMieGruneisen.so'
 #        _path = os.path.join(*(os.path.split(__file__)[:-1] + (_file,)))
 #        self._mod = ctypes.cdll.LoadLibrary(_path)

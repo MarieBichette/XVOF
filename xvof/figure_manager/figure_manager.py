@@ -42,7 +42,7 @@ class FigureManager(object):
     def update_fields(self):
         """ MAJ des champs par appel des propriétés du maillage"""
         self.__champs_mailles = \
-            {CellPositionField: self.__mesh_instance.coord_elements_field,
+            {CellPositionField: self.__mesh_instance.coord_elements_field[:],
              PressureField: self.__mesh_instance.pressure_t_field,
              DensityField: self.__mesh_instance.rho_t_field,
              InternalEnergyField: self.__mesh_instance.nrj_t_field,
@@ -50,7 +50,7 @@ class FigureManager(object):
             }
         self.__champs_noeuds = \
             {
-             NodePositionField: self.__mesh_instance.coord_t_plus_dt_field,
+             NodePositionField: self.__mesh_instance.coord_t_plus_dt_field[:],
              NodeVelocityField: self.__mesh_instance.velocity_t_plus_half_field
              }
 
@@ -60,12 +60,12 @@ class FigureManager(object):
         (l'axe des X est donc l'abscisse des mailles)
         """
         try:
-            X = np.array(self.__champs_mailles[field_X])
+            X = self.__champs_mailles[field_X]
         except ValueError as ve:
             print "Le champ {} est inconnu!".format(field_X)
             raise ve
         try:
-            Y = np.array(self.__champs_mailles[field_Y])
+            Y = self.__champs_mailles[field_Y]
         except ValueError as ve:
             print "Le champ {} est inconnu!".format(field_Y)
             raise ve

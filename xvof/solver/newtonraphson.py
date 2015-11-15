@@ -3,8 +3,9 @@
 """
 Classe définissant un solveur non linéaire de type Newton Raphson
 """
-from xvof.solver.newtonraphsonbase import NewtonRaphsonBase
 from xvof.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
+from xvof.solver.newtonraphsonbase import NewtonRaphsonBase
+
 
 EPSILON = 1.0e-08
 PRECISION = 1.0e-9
@@ -39,7 +40,7 @@ class NewtonRaphson(NewtonRaphsonBase):
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
             var_iplus1 = var_i + delta
             nit += 1
-            if abs(func_i) < EPSILON * abs(delta) + PRECISION:
+            if (abs(func_i) < EPSILON * abs(delta) + PRECISION).all():
                 convergence = True
                 res = var_i
                 break

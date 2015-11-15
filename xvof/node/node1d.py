@@ -62,15 +62,23 @@ class Node1d(Node):
         :type vecteur_pression_maille: numpy.array([nbr_of_nodes+2, 1], dtype=np.float64, order='C')
         :type vecteur_pseudo_maille: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
-        for ind_node in xrange(self.number_of_nodes):
-            elements_voisins = topologie.getCellsInContactWithNode[ind_node]
+        for ind_node in xrange(1, self.number_of_nodes - 1):
+            elements_voisins = topologie.getCellsInContactWithNode(ind_node)
             pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
             self._force[ind_node] = (pressure[0] - pressure[1]) * self.section  # Suppose les éléments voisins triés par position croissante
+        ind_node = 1
+        elements_voisins = topologie.getCellsInContactWithNode(ind_node)
+        pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
+        self._force[ind_node] = pressure[0] * self.section
+        ind_node = self.number_of_nodes - 1
+        elements_voisins = topologie.getCellsInContactWithNode(ind_node)
+        pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
+        self._force[ind_node] = -pressure[0] * self.section
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
-	
+
         :param delta_t: pas de temps
         :type delta_t: float
         """

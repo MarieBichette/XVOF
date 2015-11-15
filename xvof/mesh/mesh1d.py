@@ -40,7 +40,7 @@ class Mesh1d(object):
 
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
-        vecteur_nb_noeuds_par_element = np.zeros([nbr_cells, ], type=np.int, order='C')
+        vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
         vecteur_nb_noeuds_par_element[:] = 2
         self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
 
@@ -148,7 +148,7 @@ class Mesh1d(object):
     @property
     def pressure_t_field(self):
         """ Champ de pression à t"""
-        self.cells.pressure.current_value
+        return self.cells.pressure.current_value
 
     @property
     def pressure_t_plus_dt_field(self):

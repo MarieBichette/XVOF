@@ -16,8 +16,8 @@ from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrE
 from xvof.solver.newtonraphson import NewtonRaphson
 
 
-EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
-# EXTERNAL_LIBRARY = None
+# EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
+EXTERNAL_LIBRARY = None
 # --------------------------------------------------------
 #        DEFINITION DES CLASSES ET FONCTIONS             #
 # --------------------------------------------------------
@@ -40,12 +40,13 @@ class Element1d(Element):
         vnplusundemi = 0.5 * (vnt + vnplusun)
         vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
         divu = vpointnplusundemi / vnplusundemi
-        pseudo = 0.
-        if divu < 0.:
-            pseudo = 1. / vnplusundemi * \
-                (a_pseudo * size_new ** 2 * vpointnplusundemi ** 2 / vnplusundemi ** 2 +
-                 b_pseudo * size_new * cel_son *
-                 abs(vpointnplusundemi) / vnplusundemi)
+        pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
+        for icell in xrange(rho_old.shape[0]):
+            if divu[icell] < 0.:
+                pseudo[icell] = 1. / vnplusundemi[icell] * \
+                    (a_pseudo * size_new[icell] ** 2 * vpointnplusundemi[icell] ** 2 / vnplusundemi[icell] ** 2 +
+                     b_pseudo * size_new[icell] * cel_son[icell] *
+                     abs(vpointnplusundemi[icell]) / vnplusundemi[icell])
         return pseudo
 
     @classmethod
@@ -56,16 +57,17 @@ class Element1d(Element):
         """
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette méthode cela semble ok
-        delta_t = 0.
-        if (rho_new - rho_old) > 0.1:
-            delta_t = cfl * taille_new / ((cson_new ** 2 + 2. * pseudo /
-                                           (rho_new - rho_old)) ** 0.5)
-        else:
-            delta_t = cfl * taille_new / cson_new
+        delta_t = np.zeros(rho_old.shape, dtype=np.float64, order='C')
+        for icell in xrange(rho_old.shape[0]):
+            if (rho_new[icell] - rho_old[icell]) > 0.1:
+                delta_t[icell] = cfl * taille_new[icell] / ((cson_new[icell] ** 2 + 2. * pseudo[icell] /
+                                               (rho_new[icell] - rho_old[icell])) ** 0.5)
+            else:
+                delta_t[icell] = cfl * taille_new[icell] / cson_new[icell]
         return delta_t
 
     def __init__(self, number_of_elements, proprietes):
-        Element.__init__(self, number_of_elements, proprietes, pressure_offset=2)
+        Element.__init__(self, number_of_elements, proprietes)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
         #
@@ -82,7 +84,7 @@ class Element1d(Element):
     @property
     def masse(self):
         """ Masse de l'élément """
-        return self.taille_t * self.proprietes.geometric.section * \
+        return self.size_t * self.proprietes.geometric.section * \
             self.density.current_value
 
     # --------------------------------------------------------
@@ -108,14 +110,14 @@ class Element1d(Element):
             energy_current_value[mask] = ma.masked
         try:
             if EXTERNAL_LIBRARY is not None:
-                old_density = ctypes.c_double()
-                new_density = ctypes.c_double()
-                pressure = ctypes.c_double()
-                old_energy = ctypes.c_double()
+                old_density = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+                new_density = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+                pressure = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+                old_energy = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
                 pb_size = ctypes.c_int()
-                solution = ctypes.c_double()
-                new_pressure = ctypes.c_double()
-                new_vson = ctypes.c_double()
+                solution = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+                new_pressure = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
+                new_vson = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
                 #
                 old_density.value = density_current_value
                 new_density.value = density_new_value
@@ -136,13 +138,13 @@ class Element1d(Element):
                                 'OldEnergy': energy_current_value}
                 self._function_to_vanish.setVariables(my_variables)
                 self.energy.new_value = self._solver.computeSolution(energy_current_value)
-                self.pressure.new_value, _, self.sound_velocity.new_value = \
-                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, energy_new_value)
+                for icell in xrange(self.number_of_cells):
+                    self.pressure.new_value[icell], _, self.sound_velocity.new_value[icell] = \
+                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value[icell], energy_new_value[icell])
                 self._function_to_vanish.eraseVariables()
 #            print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
 #            raw_input()
         except ValueError as err:
-            print "Element concerné : {}".format(self)
             raise err
 
     def computeSize(self, topologie, vecteur_coord_noeuds):
@@ -177,7 +179,7 @@ class Element1d(Element):
         """
         self.pseudo.new_value = \
             Element1d.computePseudo(delta_t, self.density.current_value, self.density.new_value,
-                                    self.taille_t_plus_dt, self.sound_velocity.current_value,
+                                    self.size_t_plus_dt, self.sound_velocity.current_value,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
     def computeNewTimeStep(self):
@@ -187,7 +189,7 @@ class Element1d(Element):
         cfl = self.proprietes.numeric.cfl
         self._dt = \
             Element1d.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
-                                      self.taille_t_plus_dt, self.sound_velocity.new_value,
+                                      self.size_t_plus_dt, self.sound_velocity.new_value,
                                       self.pseudo.current_value)
 
     def imposePressure(self, ind_cell, pression):

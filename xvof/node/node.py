@@ -57,7 +57,7 @@ class Node(object):
         self._invmasse = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
         self._force = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
 
-    property
+    @property
     def xt(self):
         """
         Positions des noeuds au temps t
@@ -181,7 +181,7 @@ class Node(object):
         :type vecteur_masse_elements: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         :type vecteur_nb_noeuds_par_element: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
-        for ind_node in xrange(self.nbr_noeuds):
+        for ind_node in xrange(self.number_of_nodes):
             elements_voisins = topologie.getCellsInContactWithNode(ind_node)
             self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] / vecteur_nb_noeuds_par_element[elements_voisins])
             self._invmasse[ind_node] = 1. / self._masse[ind_node]
@@ -201,7 +201,7 @@ class Node(object):
         pour passer au pas de temps suivant.
         """
         self._umundemi[:] = self.upundemi[:]
-        self._xt[:] = self.xpdt[:]
+        self._xt[:] = self.xtpdt[:]
 
     @abstractmethod
     def calculer_nouvo_force(self, *args, **kwargs):

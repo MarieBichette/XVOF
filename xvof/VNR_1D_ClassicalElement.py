@@ -107,8 +107,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-        my_mesh.get_ruptured_cells(CritereRupture)
-        my_mesh.apply_rupture_treatment(TraitementRupture)
+#         my_mesh.get_ruptured_cells(CritereRupture)
+#         my_mesh.apply_rupture_treatment(TraitementRupture)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#

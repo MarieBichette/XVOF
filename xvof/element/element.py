@@ -50,7 +50,7 @@ class Element(object):
                 vec_coord[ielem][2] = vecteur_z_node[nodes.index].mean()
         return vec_coord
 
-    def __init__(self, number_of_elements, proprietes, pressure_offset=0):
+    def __init__(self, number_of_elements, proprietes):
         self._shape = [number_of_elements, ]
         self._dt = np.zeros(self._shape, dtype=np.float64, order='C')
         self._size_t = np.zeros(self._shape, dtype=np.float64, order='C')
@@ -60,7 +60,7 @@ class Element(object):
         self._fields_manager.addClassicalField('Density', self._shape[0],
                                                proprietes.material.rho_init,
                                                proprietes.material.rho_init)
-        self._fields_manager.addClassicalField('Pressure', self._shape[0] + pressure_offset,
+        self._fields_manager.addClassicalField('Pressure', self._shape[0],
                                                proprietes.material.pression_init,
                                                proprietes.material.pression_init)
         self._fields_manager.addClassicalField('Pseudo', self._shape[0])

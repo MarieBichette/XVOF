@@ -42,7 +42,10 @@ class Topology(object):
         :param ind_cell: indice de la maille à laquelle attribuer l'indice du noeud
         :param ind_node: indice du noeud à attribuer à la maille
         '''
-        self._nodes_belonging_to_cell[ind_cell] = np.append(self._nodes_belonging_to_cell[ind_cell], ind_node)
+        if self._nodes_belonging_to_cell[ind_cell] is not None:
+            self._nodes_belonging_to_cell[ind_cell] = np.append(self._nodes_belonging_to_cell[ind_cell], ind_node)
+        else:
+            self._nodes_belonging_to_cell[ind_cell] = np.array([ind_node])
 
     def setCellsInContactWithNode(self, ind_node, ind_cell_list):
         '''
@@ -62,7 +65,10 @@ class Topology(object):
         Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
         avec le noeud d'indice 'ind_node'
         '''
-        self._cells_in_contact_with_node[ind_node] = np.append(self._cells_in_contact_with_node[ind_node], ind_cell)
+        if self._cells_in_contact_with_node[ind_node] is not None:
+            self._cells_in_contact_with_node[ind_node] = np.append(self._cells_in_contact_with_node[ind_node], ind_cell)
+        else:
+            self._cells_in_contact_with_node[ind_node] = np.array([ind_cell])
 
     def getNodesBelongingToCell(self, ind_cell):
         '''
