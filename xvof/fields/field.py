@@ -23,14 +23,8 @@ class Field(object):
         """
         self.__values = {'current': np.empty([size], dtype=np.float64, order='C'),
                          'new': np.empty([size], dtype=np.float64, order='C')}
-        if isinstance(current_value, float):
-            self.__values['current'].fill(current_value)
-        else:
-            self.__values['current'][:] = current_value[:] 
-        if isinstance(new_value, float):
-            self.__values['new'].fill(new_value)
-        else:
-            self.__values['new'][:] = new_value[:] 
+        self.__values['current'][:] = current_value
+        self.__values['new'][:] = new_value
 
     def incrementValues(self):
         '''
@@ -66,7 +60,4 @@ class Field(object):
         :param value: nouvelle valeur du champ à fixer
         :type value: float ou numpy.array
         '''
-        if isinstance(value, float):
-            self.__values['new'].fill(value)
-        else:
-            self.__values['new'][:] = value[:]
+        self.__values['new'][:] = value

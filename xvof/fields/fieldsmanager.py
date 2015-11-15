@@ -3,8 +3,8 @@
 """
 Classe définissant le gestionnaire de champ
 """
-from xvof.fields.field import Field
 from xvof.fields.enrichedfield import EnrichedField
+from xvof.fields.field import Field
 
 
 class FieldManager(object):
@@ -14,12 +14,12 @@ class FieldManager(object):
     def __init__(self):
         self.__fields = {}
 
-    def addClassicalField(self, name, current_value=0., new_value=0.):
+    def addClassicalField(self, name, size, current_value=0., new_value=0.):
         '''
         Ajoute un champ au gestionnaire
         '''
         if name not in self.__fields.keys():
-            self.__fields[name] = Field(current_value, new_value)
+            self.__fields[name] = Field(size, current_value, new_value)
         else:
             raise KeyError('Le champ {:s} existe déjà dans le gestionnaire!'.format(name))
 

@@ -8,9 +8,10 @@ Module implémentant la classe Element
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from abc import abstractmethod
+from copy import deepcopy
+
 import numpy as np
 from xvof.fields.fieldsmanager import FieldManager
-from copy import deepcopy
 
 
 class Element(object):
@@ -23,69 +24,70 @@ class Element(object):
     toutes les pressions des mailles contigues en mêmoire. (vectorisation, localisation spatiale)
     """
     @classmethod
-    def getCoordinates(cls, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
+    def getCoordinates(cls, nbr_cells, topologie, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
         """
         Détermine le vecteur position du centre de l'élément au temps t
 
+        :param topologie: topologie du calcul
+        :param vecteur_x_node: vecteur des coordonnées x des noeuds
+        :param vecteur_y_node: vecteur des coordonnées y des noeuds
+        :param vecteur_z_node: vecteur des coordonnées z des noeuds
+
+        :type topologie: Topology
+        :type vecteur_x_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
+        :type vecteur_y_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
+        :type vecteur_z_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         :return: les vecteurs des coordonnées du centre de chaque élément au temps t
         :rtype:
         """
-        
-        vec_coord = np.zeros(noeuds[0].dimension)
-        for nod in noeuds:
-            vec_coord += nod.coordt
-        return vec_coord / len(noeuds)
+        vec_coord = np.zeros([nbr_cells, topologie.dimension])
+        for ielem in xrange(nbr_cells):
+            nodes_index = topologie.getNodesBelongingToCell(ielem)
+            vec_coord[ielem][0] = vecteur_x_node[nodes_index].mean()
+            if topologie.dimension == 2:
+                vec_coord[ielem][1] = vecteur_y_node[nodes_index].mean()
+            if topologie.dimension == 3:
+                vec_coord[ielem][2] = vecteur_z_node[nodes.index].mean()
+        return vec_coord
 
-    def __init__(self, proprietes):
-        self._index = -1
-        self._dt = 0.
-        self._size_t = 0.
-        self._size_t_plus_dt = 0.
+    def __init__(self, number_of_elements, proprietes, pressure_offset=0):
+        self._shape = [number_of_elements, ]
+        self._dt = np.zeros(self._shape, dtype=np.float64, order='C')
+        self._size_t = np.zeros(self._shape, dtype=np.float64, order='C')
+        self._size_t_plus_dt = np.zeros(self._shape, dtype=np.float64, order='C')
         self._properties = proprietes
         self._fields_manager = FieldManager()
-        self._fields_manager.addClassicalField('Density', proprietes.material.rho_init,
+        self._fields_manager.addClassicalField('Density', self._shape[0],
+                                               proprietes.material.rho_init,
                                                proprietes.material.rho_init)
-        self._fields_manager.addClassicalField('Pressure', proprietes.material.pression_init,
+        self._fields_manager.addClassicalField('Pressure', self._shape[0] + pressure_offset,
+                                               proprietes.material.pression_init,
                                                proprietes.material.pression_init)
-        self._fields_manager.addClassicalField('Pseudo')
-        self._fields_manager.addClassicalField('SoundVelocity')
-        self._fields_manager.addClassicalField('Energy', proprietes.material.energie_init,
+        self._fields_manager.addClassicalField('Pseudo', self._shape[0])
+        self._fields_manager.addClassicalField('SoundVelocity', self._shape[0])
+        self._fields_manager.addClassicalField('Energy', self._shape[0],
+                                               proprietes.material.energie_init,
                                                proprietes.material.energie_init)
     ##############################################################
     # DEFINITIONS DES PROPRIETES
     ##############################################################
     #
-
     @property
-    def index(self):
-        """
-        Indice global de l'élément
-        """
-        return self._index
-
-    @index.setter
-    def index(self, index):
-        """
-        Setter de l'indice global de l'élément
-        """
-        self._index = index
-
-    @property
-    def delta_t(self):
+    def dt(self):
         '''
         Pas de temps critique de la maille
         '''
         return self._dt
 
     @property
-    def taille_t(self):
+    def size_t(self):
         """
         Taille (longueur, aire, volume) de l'élément à l'instant t
         """
         return self._size_t
 
     @property
-    def taille_t_plus_dt(self):
+    def size_t_plus_dt(self):
         """
         Taille (longueur, aire, volume) de l'élément à l'instant t + dt
         """
@@ -140,32 +142,35 @@ class Element(object):
         '''
         return deepcopy(self._fields_manager)
 
+    @property
+    def number_of_cells(self):
+        return self._shape[0]
     # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
     # ------------------------------------------------------------
     def __str__(self):
-        message = "ELEMENT {:4d} ".format(self._index)
+        message = "Nombre d'éléments : {:d}".format(self._shape[0])
         return message
 
-    def printInfos(self):
+    def printInfos(self, index):
         """
-        Affichage des informations concernant l'élément
+        Affichage des informations concernant l'élément d'indice index
         """
-        message = "{} {:4d}\n".format(self.__class__, self._index)
-        message += "==> taille à t = {}\n".format(self.taille_t)
-        message += "==> taille à t+dt = {}\n".format(self.taille_t_plus_dt)
-        message += "==> masse volumique à t = {}\n".format(self.density.current_value)
+        message = "{} {:4d}\n".format(self.__class__, index)
+        message += "==> taille à t = {}\n".format(self.size_t[index])
+        message += "==> taille à t+dt = {}\n".format(self.size_t_plus_dt[index])
+        message += "==> masse volumique à t = {}\n".format(self.density.current_value[index])
         message += "==> masse volumique à t+dt = {}\n".\
-            format(self.density.new_value)
-        message += "==> pression à t = {}\n".format(self.pressure.current_value)
+            format(self.density.new_value[index])
+        message += "==> pression à t = {}\n".format(self.pressure.current_value[index])
         message += "==> pression à t+dt = {}\n".\
-            format(self.pressure.new_value)
-        message += "==> énergie interne à t = {}\n".format(self.energy.current_value)
+            format(self.pressure.new_value[index])
+        message += "==> énergie interne à t = {}\n".format(self.energy.current_value[index])
         message += "==> énergie interne à t+dt = {}\n".\
-            format(self.energy.new_value)
-        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value)
+            format(self.energy.new_value[index])
+        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value[index])
         message += "==> vitesse du son à t+dt = {}\n".\
-            format(self.sound_velocity.new_value)
+            format(self.sound_velocity.new_value[index])
         print message
 
     def incrementVariables(self):
@@ -173,7 +178,7 @@ class Element(object):
         Incrémentation des variables
         """
         self._fields_manager.incrementFields()
-        self._size_t = self._size_t_plus_dt
+        self._size_t[:] = self._size_t_plus_dt[:]
     #############################################################
     # DEFINITIONS DES METHODES VIRTUELLES
     #############################################################
@@ -187,13 +192,13 @@ class Element(object):
         """
 
     @abstractmethod
-    def computeSize(self, nodes):
+    def computeSize(self, topologie):
         """
         Calcul de la taille (longueur, aire, volume) au temps t de l'élément
         """
 
     @abstractmethod
-    def computeNewSize(self, nodes, time_step=None):
+    def computeNewSize(self, topologie, time_step=None):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
         """
@@ -216,12 +221,3 @@ class Element(object):
         """
         Calcul du nouveau pas de temps
         """
-
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# ######          PROGRAMME PRINCIPAL        ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-if __name__ == "__main__":
-    import doctest
-    TESTRES = doctest.testmod(verbose=0)
-    if TESTRES[0] == 0:
-        print "TESTS UNITAIRES : OK"

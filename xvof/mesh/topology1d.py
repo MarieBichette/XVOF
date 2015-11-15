@@ -12,23 +12,18 @@ class Topology1D(Topology):
     '''
     def __init__(self, nbr_of_nodes, nbr_of_cells):
         Topology.__init__(self, nbr_of_nodes, nbr_of_cells)
-        self._generateMesh()
+        self._generateMesh(nbr_of_cells)
 
-    def _generateMesh(self):
+    def _generateMesh(self, nbr_of_cells):
         '''
         Generation du maillage (connectivité mailles <--> noeuds)
         '''
-        # On affecte l'indice global des noeuds
-        for ind, node in enumerate(self._nodes):
-            node.index = ind
-        #
-        for ind, cell in enumerate(self._cells):
-            cell.index = ind
-            node_left = self._nodes[ind]
-            node_right = self._nodes[ind + 1]
-            self._addCellInContactWithNode(node_left, cell)
-            self._addCellInContactWithNode(node_right, cell)
-            self._setNodesBelongingToCell(cell, [node_left, node_right])
+        for ind_cell in xrange(nbr_of_cells):
+            ind_node_left = ind_cell
+            ind_node_right = ind_cell + 1
+            self.addCellInContactWithNode(ind_node_left, ind_cell)
+            self.addCellInContactWithNode(ind_node_right, ind_cell)
+            self.setNodesBelongingToCell(ind_cell, [ind_node_left, ind_node_right])
 
     def isRightBoundary(self, node):
         '''

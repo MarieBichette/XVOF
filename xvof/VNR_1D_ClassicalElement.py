@@ -55,8 +55,9 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     #         CREATION DU MAILLAGE                 #
     # ---------------------------------------------#
-    coord_init = np.linspace(0, Longueur, NbrElements + 1)
-    vit_init = np.zeros(NbrElements + 1)
+    coord_init = np.zeros([NbrElements + 1, 1], order='C')
+    coord_init[:, 0] = np.linspace(0, Longueur, NbrElements + 1)
+    vit_init = np.zeros([NbrElements + 1, 1], order='C')
     my_mesh = Mesh1d(props, initial_coordinates=coord_init,
                      initial_velocities=vit_init)
     # ---------------------------------------------#

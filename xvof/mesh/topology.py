@@ -9,11 +9,17 @@ class Topology(object):
     '''
     Une classe gérant la topologie et les connectivités d'un maillage
     '''
-    def __init__(self, nbr_of_nodes, nbr_of_cells):
+    def __init__(self, nbr_of_nodes, nbr_of_cells, dim=1):
+        #
+        self._dim = dim
         # Array dont chaque item est un array des indices des noeuds appartenant à la maille
         self._nodes_belonging_to_cell = [None for _ in xrange(nbr_of_cells)]
         # Array dont chaque item est un array des indices des mailles en contact avec le noeud
         self._cells_in_contact_with_node = [None for _ in xrange(nbr_of_nodes)]
+
+    @property
+    def dimension(self):
+        return self._dim
 
     def setNodesBelongingToCell(self, ind_cell, ind_node_list):
         '''
@@ -76,7 +82,7 @@ class Topology(object):
 
         :param ind_node: indice du noeud dont on veut connaitre les mailles connexes
         :return: un tableau des mailles en contact avec le noeud
-        
+
         :type ind_node: int
         :rtype: numpy.array
         '''

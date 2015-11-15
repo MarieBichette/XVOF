@@ -11,7 +11,7 @@ class Node(object):
     """
     Un objet Node représente l'ensemble des noeuds du maillages. Ses différents membres sont
     essentiellement des vecteurs de nbr_of_nodes lignes. Plusieurs colonnes peuvent être
-    présentes selon la dimension du problème à traiter. 
+    présentes selon la dimension du problème à traiter.
 
     L'organisation en mémoire est comme en C/C++ c'est à dire 'row wise'. C'est pour cette raison
     que les lignes de chacun des vecteurs représentent les noeuds. Ce faisant on a par exemple
@@ -33,20 +33,20 @@ class Node(object):
 	"""
 	# Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
 	# les différentes dimensions
-	self.__shape = [nbr_of_nodes, dim]
+	self.__shape = (nbr_of_nodes, dim)
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
-        if np.shape(position_initiale) != self.__shape:
+        if position_initiale.shape != self.__shape:
             message = "Node() : La dimension ({}) du vecteur position_initiale "\
                 .format(np.shape(position_initiale))
-            message += "est incorrecte!"
+            message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
         if vitesse_initiale is None:
             vitesse_initiale = np.zeros(self.__shape, dtype=np.float64, order='C')
         elif np.shape(vitesse_initiale) != self.__shape:
             message = "Node() : La dimension ({}) du vecteur vitesse_initiale "\
                 .format(np.shape(vitesse_initiale))
-            message += "est incorrecte!"
+            message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
         #
         self._xt = np.array(position_initiale)
@@ -71,7 +71,7 @@ class Node(object):
     def xtpdt(self):
         """
         Positions des noeuds au temps t + dt
-	
+
         :return: positions des noeuds au temps t + dt
         :rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
@@ -81,7 +81,7 @@ class Node(object):
     def umundemi(self):
         """
         Vitesses au demi pas de temps précédent
-	
+
         :return: vitesses des noeuds au demi pas de temps précédent
         :rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
@@ -91,7 +91,7 @@ class Node(object):
     def upundemi(self):
         """
         Vitesses au demi pas de temps suivant
-	
+
         :return: vitesses des noeuds au demi pas de temps suivant
         :rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
@@ -131,20 +131,20 @@ class Node(object):
     def dimension(self):
         """
         Dimension du problème
-        
+
         :return: dimension du problème
         :rtype: int
         """
         return self.__shape[1]
 
-    @property:
+    @property
     def number_of_nodes(self):
         """
         Nombre de noeuds du problème
-        
+
         :return: dimension du problème
         :rtype: int
-        """ 
+        """
         return self.__shape[0]
 
     def __str__(self):
@@ -183,7 +183,7 @@ class Node(object):
         """
         for ind_node in xrange(self.nbr_noeuds):
             elements_voisins = topologie.getCellsInContactWithNode(ind_node)
-            self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] ./ vecteur_nb_noeuds_par_element[elements_voisins])
+            self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] / vecteur_nb_noeuds_par_element[elements_voisins])
             self._invmasse[ind_node] = 1. / self._masse[ind_node]
 
     def calculer_nouvo_coord(self, delta_t=1.0):
