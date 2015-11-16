@@ -181,12 +181,12 @@ class MieGruneisen(EquationOfStateBase):
         # ======================================
         vson2 = specific_volume ** 2 * (pressure * gampervol - dpdv)
         if vson2 < 0:
-            print "Carré de la vitesse du son < 0"
-            print "specific_volume = {:15.9g}".format(specific_volume)
-            print "pressure = {:15.9g}".format(pressure)
-            print "dpsurde = {:15.9g}".format(gampervol)
-            print "dpdv = {:15.9g}".format(dpdv)
-            raise SystemExit
+            msg = "Carré de la vitesse du son < 0\n"
+            msg += "specific_volume = {:15.9g}\n".format(specific_volume)
+            msg += "pressure = {:15.9g}\n".format(pressure)
+            msg += "dpsurde = {:15.9g}\n".format(gampervol)
+            msg += "dpdv = {:15.9g}\n".format(dpdv)
+            raise ValueError(msg)
         vson = vson2 ** 0.5
         #
         if not ((vson > 0.) and (vson < 10000.)):

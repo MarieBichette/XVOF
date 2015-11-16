@@ -26,7 +26,8 @@ class Mesh1d(object):
         ####
         # Création des noeuds
         nbr_nodes = np.shape(initial_coordinates)[0]
-        self.nodes = Node1d(nbr_nodes, initial_coordinates, initial_velocities)
+        self.nodes = Node1d(nbr_nodes, initial_coordinates, initial_velocities,
+                            section=properties.geometric.section)
 
         ####
         # Création des mailles

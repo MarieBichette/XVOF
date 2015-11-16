@@ -19,12 +19,14 @@ from xvof.rupturetreatment.imposepressure import ImposePressure
 #  = PARAMETRES DE LA SIMULATION                   =
 TempsFinal = 15.0e-06
 PasDeTempsInit = 4.0e-09
-PressionInit = 100149.28
+# PressionInit = 100149.28
+PressionInit = 100006.2096
 EnergieInterneInit = 7.689
 RhoInit = 8129.
 Section = pi * 0.01 ** 2
 EquationEtat = MieGruneisen()
-# PChargementGauche = ConstantPressure(-3.5e+09)
+# PChargementGauche = ConstantPressure(3.5e+09)
+# PChargementGauche = ConstantPressure(PressionInit)
 PChargementGauche = TwoStepsPressure(15e+09, PressionInit, 2.0e-06)
 PChargementDroite = ConstantPressure(PressionInit)
 # PChargementDroite = ConstantPressure(-3.5e+09)
@@ -36,10 +38,12 @@ ParamPseudoA = 1.5
 ParamPseudoB = 0.2
 CFL = 0.35
 
-NbrImages = 1
+# NbrImages = 3750
+NbrImages = 15
 #  =================================================
 
 if __name__ == '__main__':
+    np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
     #
     time = 0.
     step = 0
@@ -76,6 +80,8 @@ if __name__ == '__main__':
     print "Calcul de la masse des noeuds :"
     my_mesh.calculer_taille_des_elements()
     my_mesh.calculer_masse_des_noeuds()
+#     print my_mesh.nodes.masse.transpose()
+#     raw_input('Masses')
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
     while (time < TempsFinal):
@@ -88,22 +94,32 @@ if __name__ == '__main__':
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_vit_noeuds(dt)
+#         print my_mesh.nodes.upundemi[:, 0].transpose()
+#         raw_input('Nouvelles vitesses')
         # ---------------------------------------------#
         #         CALCUL DES COORDONNEES NODALES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_coord_noeuds(dt)
+#         print my_mesh.nodes.xtpdt[:, 0].transpose()
+#         raw_input('Nouvelles coord')
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_taille_des_elements(dt)
+#         print my_mesh.cells.size_t_plus_dt.transpose()
+#         raw_input('Nouvelle taille')
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_densite_des_elements()
+#         print my_mesh.cells.density.new_value.transpose()
+#         raw_input('Densite')
         # ---------------------------------------------#
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_pression_des_elements()
+#         print my_mesh.cells.pressure.new_value.transpose()
+#         raw_input('Pression')
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
@@ -118,6 +134,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         my_mesh.appliquer_pression('gauche', PChargementGauche.evaluate(time))
         my_mesh.appliquer_pression('droite', PChargementDroite.evaluate(time))
+#         print my_mesh.nodes.force.transpose()
+#         raw_input('Force Nodale')
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
@@ -126,6 +144,8 @@ if __name__ == '__main__':
         #         CALCUL DE LA PSEUDOVISCOSITE         #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_pseudo_des_elements(dt)
+#         print my_mesh.cells.pseudo.new_value.transpose()
+#         raw_input('Pseudo')
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#

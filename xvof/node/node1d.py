@@ -65,15 +65,15 @@ class Node1d(Node):
         for ind_node in xrange(1, self.number_of_nodes - 1):
             elements_voisins = topologie.getCellsInContactWithNode(ind_node)
             pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
-            self._force[ind_node] = (pressure[0] - pressure[1]) * self.section  # Suppose les éléments voisins triés par position croissante
-        ind_node = 1
+            self._force[ind_node] = (pressure[0] - pressure[1])  # Suppose les éléments voisins triés par position croissante
+        ind_node = 0
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
-        self._force[ind_node] = pressure[0] * self.section
+        self._force[ind_node] = -pressure[0]
         ind_node = self.number_of_nodes - 1
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
-        self._force[ind_node] = -pressure[0] * self.section
+        self._force[ind_node] = pressure[0]
 
     def calculer_nouvo_vitesse(self, delta_t):
         """
