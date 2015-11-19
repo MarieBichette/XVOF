@@ -16,8 +16,8 @@ from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrE
 from xvof.solver.newtonraphson import NewtonRaphson
 
 
-# EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
-EXTERNAL_LIBRARY = None
+EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
+# EXTERNAL_LIBRARY = None
 # --------------------------------------------------------
 #        DEFINITION DES CLASSES ET FONCTIONS             #
 # --------------------------------------------------------
@@ -102,6 +102,10 @@ class Element1d(Element):
         pseudo_current_value = ma.masked_array(self.pseudo.current_value)
         energy_current_value = ma.masked_array(self.energy.current_value)
         energy_new_value = ma.masked_array(self.energy.new_value)
+        shape = self.energy.new_value.shape
+        solution_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
+        new_pressure_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
+        new_vson_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
         if mask is not None:
             density_current_value[mask] = ma.masked
             density_new_value[mask] = ma.masked
@@ -110,25 +114,22 @@ class Element1d(Element):
             energy_current_value[mask] = ma.masked
         try:
             if EXTERNAL_LIBRARY is not None:
-                old_density = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
-                new_density = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
-                pressure = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
-                old_energy = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
                 pb_size = ctypes.c_int()
-                solution = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
-                new_pressure = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
-                new_vson = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags='C_CONTIGUOUS')
                 #
-                old_density.value = density_current_value
-                new_density.value = density_new_value
-                pressure.value = pressure_current_value + 2. * pseudo_current_value
-                old_energy.value = energy_current_value
-                pb_size.value = 1
-                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution,
-                                              new_pressure, new_vson)
-                self.energy.new_value = solution.value
-                self.pressure.new_value = new_pressure.value
-                self.sound_velocity.new_value = new_vson.value
+                old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                tmp = (pressure_current_value + 2. * pseudo_current_value)
+                pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                pb_size.value = self.number_of_cells
+                solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
+                                              solution, new_pressure, new_vson)
+                self.energy.new_value = solution[0:self.number_of_cells]
+                self.pressure.new_value = new_pressure[0:self.number_of_cells]
+                self.sound_velocity.new_value = new_vson[0:self.number_of_cells]
 #                print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
             else:
                 my_variables = {'EquationOfState': self.proprietes.material.eos,
