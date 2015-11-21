@@ -7,6 +7,7 @@ import numpy as np
 from xvof.element.element1d import Element1d
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
+from xvof.utilities.profilingperso import timeit_file
 
 
 class Mesh1d(object):
@@ -45,50 +46,61 @@ class Mesh1d(object):
         vecteur_nb_noeuds_par_element[:] = 2
         self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_vit_noeuds(self, delta_t):
         """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
         self.nodes.calculer_nouvo_vitesse(delta_t)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_coord_noeuds(self, delta_t):
         """ Calcul des nouvelles coordonnées de chaque noeud à t+dt"""
         self.nodes.calculer_nouvo_coord(delta_t)
 
+    @timeit_file('profil.txt')
     def calculer_taille_des_elements(self):
         '''
         Calcul de la taille des éléments à t
         '''
         self.cells.computeSize(self.__topologie, self.nodes.xt)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_taille_des_elements(self, delta_t):
         """ Calcul de la nouvelle taille de chaque élément à t+dt"""
         self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, delta_t)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_densite_des_elements(self):
         """ Calcul des nouvelles densités de chaque élément à t+dt"""
         self.cells.computeNewDensity()
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
         self.cells.computeNewPressure(mask=self.__ruptured_cells)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
         """ Calcul de la nouvelle pseudo à t+dt"""
         self.cells.computeNewPseudo(delta_t)
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_force_des_noeuds(self):
         """ Calcul des nouvelles forces de chaque noeud à t+dt"""
         self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value)
 
+    @timeit_file('profil.txt')
     def incrementer(self):
         """ Passage au pas de temps suivant"""
         self.nodes.incrementer()
         self.cells.incrementVariables()
 
+    @timeit_file('profil.txt')
     def calculer_nouvo_pdt_critique(self):
         """ Calcul du pas de temps critique """
         self.cells.computeNewTimeStep()
         return self.cells.dt.min()
 
+    @timeit_file('profil.txt')
     def appliquer_pression(self, surface, pression):
         """
         Appliquer une pression donnée sur

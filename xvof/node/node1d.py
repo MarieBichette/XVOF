@@ -62,10 +62,10 @@ class Node1d(Node):
         :type vecteur_pression_maille: numpy.array([nbr_of_nodes+2, 1], dtype=np.float64, order='C')
         :type vecteur_pseudo_maille: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
-        for ind_node in xrange(1, self.number_of_nodes - 1):
-            elements_voisins = topologie.getCellsInContactWithNode(ind_node)
-            pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
-            self._force[ind_node] = (pressure[0] - pressure[1])  # Suppose les éléments voisins triés par position croissante
+        # Suppose les éléments voisins triés par position croissante
+        connectivity = np.array(topologie._cells_in_contact_with_node[1 : self.number_of_nodes - 1])
+        pressure = self.section * (vecteur_pression_maille[connectivity] + vecteur_pseudo_maille[connectivity])
+        self._force[1:self.number_of_nodes - 1][:, 0] = (pressure[:, 0] - pressure[:, 1]).reshape(self.number_of_nodes - 2)
         ind_node = 0
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])

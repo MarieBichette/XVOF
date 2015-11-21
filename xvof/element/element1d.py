@@ -58,12 +58,17 @@ class Element1d(Element):
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette méthode cela semble ok
         delta_t = np.zeros(rho_old.shape, dtype=np.float64, order='C')
-        for icell in xrange(rho_old.shape[0]):
-            if (rho_new[icell] - rho_old[icell]) > 0.1:
-                delta_t[icell] = cfl * taille_new[icell] / ((cson_new[icell] ** 2 + 2. * pseudo[icell] /
-                                               (rho_new[icell] - rho_old[icell])) ** 0.5)
-            else:
-                delta_t[icell] = cfl * taille_new[icell] / cson_new[icell]
+        drho = rho_new - rho_old
+        mask = drho > 0.1
+        delta_t[mask] = cfl * taille_new[mask] / (cson_new[mask] ** 2 + 2. * pseudo[mask] / drho[mask]) ** 0.5
+        mask = drho <= 0.1
+        delta_t[mask] = cfl * taille_new[mask] / cson_new[mask]
+#         for icell in xrange(rho_old.shape[0]):
+#             if (rho_new[icell] - rho_old[icell]) > 0.1:
+#                 delta_t[icell] = cfl * taille_new[icell] / ((cson_new[icell] ** 2 + 2. * pseudo[icell] /
+#                                                (rho_new[icell] - rho_old[icell])) ** 0.5)
+#             else:
+#                 delta_t[icell] = cfl * taille_new[icell] / cson_new[icell]
         return delta_t
 
     def __init__(self, number_of_elements, proprietes):
@@ -161,10 +166,9 @@ class Element1d(Element):
         """
         Calcul de la nouvelle longueur de l'élément (à t+dt)
         """
-        for ielem in xrange(self._shape[0]):
-            ind_nodes = topologie.getNodesBelongingToCell(ielem)
-            self._size_t_plus_dt[ielem] = abs(vecteur_coord_noeuds[ind_nodes[0]] -
-                                              vecteur_coord_noeuds[ind_nodes[1]])
+        connectivity = np.array(topologie._nodes_belonging_to_cell)
+        self._size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] -
+                                   vecteur_coord_noeuds[connectivity[:, 1]]).reshape(self.number_of_cells)
 
     def computeNewDensity(self):
         """
