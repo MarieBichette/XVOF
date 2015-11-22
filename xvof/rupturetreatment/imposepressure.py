@@ -14,5 +14,5 @@ class ImposePressure(RuptureTreatment):
         super(ImposePressure, self).__init__()
         self.__imposed_pressure = pressure
 
-    def applyTreatment(self, cell, *args, **kwargs):
-        cell.imposePressure(self.__imposed_pressure)
+    def applyTreatment(self, cells, ruptured_cells, *args, **kwargs):
+        cells.imposePressure(ruptured_cells, self.__imposed_pressure)

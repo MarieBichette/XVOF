@@ -18,9 +18,9 @@ class RuptureTreatment(object):
         pass
 
     @abstractmethod
-    def applyTreatment(self, cell, *args, **kwargs):
+    def applyTreatment(self, cells, *args, **kwargs):
         """
-        Application du traitement de rupture sur la maille
-        passée en argument
+        Application du traitement de rupture sur les mailles
+        passées en argument
         """
         pass

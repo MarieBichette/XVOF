@@ -18,9 +18,9 @@ class RuptureCriterion(object):
         pass
 
     @abstractmethod
-    def checkCriterion(self, cell, *args, **kwargs):
+    def checkCriterion(self, cells, *args, **kwargs):
         """
-        Vérification du critère de rupture sur la maille
-        passée en argument
+        Vérification du critère de rupture sur les mailles
+        passées en argument
         """
         pass
