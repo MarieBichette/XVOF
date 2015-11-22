@@ -38,7 +38,7 @@ class Mesh1d(object):
         # Création de la topologie
         self.__topologie = Topology1D(nbr_nodes, nbr_cells)
         ####
-        self.__ruptured_cells = []
+        self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
     def calculer_masse_des_noeuds(self):
         """ Calcul de la masse de chaque noeud"""
@@ -76,7 +76,7 @@ class Mesh1d(object):
     # @timeit_file('profil.txt')
     def calculer_nouvo_pression_des_elements(self):
         """ Calcul des nouvelles pressions de chaque élément à t+dt"""
-        self.cells.computeNewPressure(mask=self.__ruptured_cells)
+        self.cells.computeNewPressure(mask=~self.__ruptured_cells)
 
     # @timeit_file('profil.txt')
     def calculer_nouvo_pseudo_des_elements(self, delta_t):
@@ -190,14 +190,11 @@ class Mesh1d(object):
 
     def get_ruptured_cells(self, rupture_criterion):
         """ Liste des mailles endommagées"""
-        for ielem in xrange(self.cells.number_of_cells):
-            if rupture_criterion.checkCriterion(ielem):
-                self.__ruptured_cells.append(ielem)
+        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
     def apply_rupture_treatment(self, treatment):
         """
         Application du traitement de rupture sur la liste
         de cells passée en arguments
         """
-        for ielem in self.__ruptured_cells:
-            treatment.applyTreatment(ielem)
+        treatment.applyTreatment(self.cells, self.__ruptured_cells)
