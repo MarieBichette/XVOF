@@ -41,12 +41,17 @@ class Element1d(Element):
         vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
         divu = vpointnplusundemi / vnplusundemi
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
-        for icell in xrange(rho_old.shape[0]):
-            if divu[icell] < 0.:
-                pseudo[icell] = 1. / vnplusundemi[icell] * \
-                    (a_pseudo * size_new[icell] ** 2 * vpointnplusundemi[icell] ** 2 / vnplusundemi[icell] ** 2 +
-                     b_pseudo * size_new[icell] * cel_son[icell] *
-                     abs(vpointnplusundemi[icell]) / vnplusundemi[icell])
+        mask = divu < 0.
+        pseudo[mask] = 1. / vnplusundemi[mask] * \
+            (a_pseudo * size_new[mask] ** 2 * vpointnplusundemi[mask] ** 2 / vnplusundemi[mask] ** 2 +
+             b_pseudo * size_new[mask] * cel_son[mask] *
+             abs(vpointnplusundemi[mask]) / vnplusundemi[mask])
+#         for icell in xrange(rho_old.shape[0]):
+#             if divu[icell] < 0.:
+#                 pseudo[icell] = 1. / vnplusundemi[icell] * \
+#                     (a_pseudo * size_new[icell] ** 2 * vpointnplusundemi[icell] ** 2 / vnplusundemi[icell] ** 2 +
+#                      b_pseudo * size_new[icell] * cel_son[icell] *
+#                      abs(vpointnplusundemi[icell]) / vnplusundemi[icell])
         return pseudo
 
     @classmethod
@@ -95,22 +100,17 @@ class Element1d(Element):
         au pas de temps suivant
         Formulation v-e
         """
-        density_current_value = ma.masked_array(self.density.current_value)
-        density_new_value = ma.masked_array(self.density.new_value)
-        pressure_current_value = ma.masked_array(self.pressure.current_value)
-        pseudo_current_value = ma.masked_array(self.pseudo.current_value)
-        energy_current_value = ma.masked_array(self.energy.current_value)
-        energy_new_value = ma.masked_array(self.energy.new_value)
-        shape = self.energy.new_value.shape
-        solution_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
-        new_pressure_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
-        new_vson_value = ma.masked_array(np.zeros(shape, dtype=np.float64, order='C'))
-        if mask is not None:
-            density_current_value[mask] = ma.masked
-            density_new_value[mask] = ma.masked
-            pressure_current_value[mask] = ma.masked
-            pseudo_current_value[mask] = ma.masked
-            energy_current_value[mask] = ma.masked
+        density_current_value = self.density.current_value[mask]
+        density_new_value = self.density.new_value[mask]
+        pressure_current_value = self.pressure.current_value[mask]
+        pseudo_current_value = self.pseudo.current_value[mask]
+        energy_current_value = self.energy.current_value[mask]
+        energy_new_value = self.energy.new_value[mask]
+        shape = energy_new_value.shape
+        nbr_cells_to_solve = shape[0]
+        solution_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
         try:
             if EXTERNAL_LIBRARY is not None:
                 pb_size = ctypes.c_int()
@@ -120,15 +120,17 @@ class Element1d(Element):
                 tmp = (pressure_current_value + 2. * pseudo_current_value)
                 pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                pb_size.value = self.number_of_cells
+                pb_size.value = nbr_cells_to_solve
                 solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+#                 if nbr_cells_to_solve != 1001:
+#                     import ipdb; ipdb.set_trace()
                 self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
                                               solution, new_pressure, new_vson)
-                self.energy.new_value = solution[0:self.number_of_cells]
-                self.pressure.new_value = new_pressure[0:self.number_of_cells]
-                self.sound_velocity.new_value = new_vson[0:self.number_of_cells]
+                self.energy.new_value[mask] = solution[0:nbr_cells_to_solve]
+                self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
+                self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
 #                print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
             else:
                 my_variables = {'EquationOfState': self.proprietes.material.eos,
