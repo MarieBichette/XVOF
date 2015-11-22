@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un élément en 1d
+Classe dï¿½finissant un ï¿½lï¿½ment en 1d
 """
 # --------------------------------------------------------
 #               IMPORTATIONS DIVERSES                    #
@@ -23,7 +23,7 @@ EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
 # --------------------------------------------------------
 class Element1d(Element):
     """
-    Une classe pour les éléments en 1D
+    Une classe pour les ï¿½lï¿½ments en 1D
     """
     nbr_noeuds = 2
 
@@ -34,7 +34,7 @@ class Element1d(Element):
         Calcul de la pseudo
         """
         # pylint: disable=too-many-arguments
-        # 8 arguments semblent nécessaires...
+        # 8 arguments semblent nï¿½cessaires...
         vnt = 1. / rho_old
         vnplusun = 1. / rho_new
         vnplusundemi = 0.5 * (vnt + vnplusun)
@@ -56,19 +56,13 @@ class Element1d(Element):
         Calcul du pas de temps
         """
         # pylint: disable=too-many-arguments
-        # 7 arguments pour cette méthode cela semble ok
+        # 7 arguments pour cette mï¿½thode cela semble ok
         delta_t = np.zeros(rho_old.shape, dtype=np.float64, order='C')
         drho = rho_new - rho_old
         mask = drho > 0.1
         delta_t[mask] = cfl * taille_new[mask] / (cson_new[mask] ** 2 + 2. * pseudo[mask] / drho[mask]) ** 0.5
         mask = drho <= 0.1
         delta_t[mask] = cfl * taille_new[mask] / cson_new[mask]
-#         for icell in xrange(rho_old.shape[0]):
-#             if (rho_new[icell] - rho_old[icell]) > 0.1:
-#                 delta_t[icell] = cfl * taille_new[icell] / ((cson_new[icell] ** 2 + 2. * pseudo[icell] /
-#                                                (rho_new[icell] - rho_old[icell])) ** 0.5)
-#             else:
-#                 delta_t[icell] = cfl * taille_new[icell] / cson_new[icell]
         return delta_t
 
     def __init__(self, number_of_elements, proprietes):
@@ -88,7 +82,7 @@ class Element1d(Element):
     # --------------------------------------------------------
     @property
     def masse(self):
-        """ Masse de l'élément """
+        """ Masse de l'ï¿½lï¿½ment """
         return self.size_t * self.proprietes.geometric.section * \
             self.density.current_value
 
@@ -155,7 +149,7 @@ class Element1d(Element):
 
     def computeSize(self, topologie, vecteur_coord_noeuds):
         """
-        Calcul de la longueur de l'élément (à t)
+        Calcul de la longueur de l'ï¿½lï¿½ment (ï¿½ t)
         """
         for ielem in xrange(self._shape[0]):
             ind_nodes = topologie.getNodesBelongingToCell(ielem)
@@ -164,7 +158,7 @@ class Element1d(Element):
 
     def computeNewSize(self, topologie, vecteur_coord_noeuds, time_step=None):
         """
-        Calcul de la nouvelle longueur de l'élément (à t+dt)
+        Calcul de la nouvelle longueur de l'ï¿½lï¿½ment (ï¿½ t+dt)
         """
         connectivity = np.array(topologie._nodes_belonging_to_cell)
         self._size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] -
@@ -172,7 +166,7 @@ class Element1d(Element):
 
     def computeNewDensity(self):
         """
-        Calcul de la densité à l'instant t+dt basé sur
+        Calcul de la densitï¿½ ï¿½ l'instant t+dt basï¿½ sur
         la conservation de la masse
         """
         self.density.new_value = \
@@ -189,7 +183,7 @@ class Element1d(Element):
 
     def computeNewTimeStep(self):
         """
-        Calcul du pas de temps dans l'élément
+        Calcul du pas de temps dans l'ï¿½lï¿½ment
         """
         cfl = self.proprietes.numeric.cfl
         self._dt = \
@@ -199,6 +193,6 @@ class Element1d(Element):
 
     def imposePressure(self, ind_cell, pression):
         """
-        On impose la pression à t+dt (par exemple pour endommagement)
+        On impose la pression ï¿½ t+dt (par exemple pour endommagement)
         """
         self.pressure.new_value[ind_cell] = pression
