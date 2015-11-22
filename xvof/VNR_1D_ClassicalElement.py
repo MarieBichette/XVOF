@@ -36,7 +36,7 @@ Longueur = 25.0e-03
 NbrElements = 1001
 ParamPseudoA = 1.5
 ParamPseudoB = 0.2
-CFL = 0.35
+CFL = 0.95
 
 # NbrImages = 3750
 NbrImages = 1
@@ -80,51 +80,38 @@ if __name__ == '__main__':
     print "Calcul de la masse des noeuds :"
     my_mesh.calculer_taille_des_elements()
     my_mesh.calculer_masse_des_noeuds()
-#     print my_mesh.nodes.masse.transpose()
-#     raw_input('Masses')
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
     while (time < TempsFinal):
-#         if(dt_crit < dt):
-#             raise SystemExit("Le pas de temps critique est plus petit que le pas de temps")
-        print "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes"\
-            .format(step, time, dt)
-        print "   <- Pas de temps critique = {:15.9g} ->".format(dt_crit)
+        if step % 1000 == 0:
+            msg = "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes\n"\
+                .format(step, time, dt)
+            print msg
         # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_vit_noeuds(dt)
-#         print my_mesh.nodes.upundemi[:, 0].transpose()
-#         raw_input('Nouvelles vitesses')
         # ---------------------------------------------#
         #         CALCUL DES COORDONNEES NODALES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_coord_noeuds(dt)
-#         print my_mesh.nodes.xtpdt[:, 0].transpose()
-#         raw_input('Nouvelles coord')
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_taille_des_elements(dt)
-#         print my_mesh.cells.size_t_plus_dt.transpose()
-#         raw_input('Nouvelle taille')
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_densite_des_elements()
-#         print my_mesh.cells.density.new_value.transpose()
-#         raw_input('Densite')
         # ---------------------------------------------#
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_pression_des_elements()
-#         print my_mesh.cells.pressure.new_value.transpose()
-#         raw_input('Pression')
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-#         my_mesh.get_ruptured_cells(CritereRupture)
-#         my_mesh.apply_rupture_treatment(TraitementRupture)
+        my_mesh.get_ruptured_cells(CritereRupture)
+        my_mesh.apply_rupture_treatment(TraitementRupture)
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#
@@ -134,8 +121,6 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         my_mesh.appliquer_pression('gauche', PChargementGauche.evaluate(time))
         my_mesh.appliquer_pression('droite', PChargementDroite.evaluate(time))
-#         print my_mesh.nodes.force.transpose()
-#         raw_input('Force Nodale')
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
@@ -144,22 +129,18 @@ if __name__ == '__main__':
         #         CALCUL DE LA PSEUDOVISCOSITE         #
         # ---------------------------------------------#
         my_mesh.calculer_nouvo_pseudo_des_elements(dt)
-#         print my_mesh.cells.pseudo.new_value.transpose()
-#         raw_input('Pseudo')
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
         my_mesh.incrementer()
-#         dt = min([dt, num_props.cfl * dt_crit])
+#         dt = dt_crit
         time += dt
         step += 1
         # ---------------------------------------------#
         #                GESTION DES SORTIES           #
         # ---------------------------------------------#
         if (time > t_next_image):
-            print "Affichage des images"
             my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))
             t_next_image += delta_t_images
-            print "=>OK"
 
     plt.show()
