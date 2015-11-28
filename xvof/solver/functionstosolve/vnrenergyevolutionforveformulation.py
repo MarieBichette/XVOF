@@ -24,14 +24,11 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         pressure = self._variables['Pressure']
         old_nrj = self._variables['OldEnergy']
         p_i = np.zeros(old_rho.shape, dtype=np.float64, order='C')
+#         import ipdb; ipdb.set_trace()
         dpsurde = np.zeros(old_rho.shape, dtype=np.float64, order='C')
         for icell in xrange(old_rho.shape[0]):
             try:
-#                 print 'new_rho[{:d}] = {:25.23g}\n'.format(icell, new_rho[icell])
-#                 print 'nrj[{:d}] = {:25.23g}\n'.format(icell, nrj[icell])
                 (p_i[icell], dpsurde[icell], dummy) = eos.solveVolumeEnergy(1. / new_rho[icell], nrj[icell])
-#                 print 'p_i[{:d}] = {:25.23g}\n'.format(icell, p_i[icell])
-#                 print 'dpsuirde[{:d}] = {:25.23g}\n'.format(icell, dpsurde[icell])
             except ValueError as ve:
                 print "Pb dans la maille d'indice : {:d}!\n".format(icell)
                 raise ve

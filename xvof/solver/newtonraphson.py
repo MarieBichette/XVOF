@@ -34,7 +34,7 @@ class NewtonRaphson(NewtonRaphsonBase):
         # Nombre d'itérations
         nit = 0
         #
-        while not convergence and (nit < self.nb_iterations_max):
+        while not convergence and nit < self.nb_iterations_max:
             (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i)
             # Correction
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)

@@ -46,12 +46,6 @@ class Element1d(Element):
             (a_pseudo * size_new[mask] ** 2 * vpointnplusundemi[mask] ** 2 / vnplusundemi[mask] ** 2 +
              b_pseudo * size_new[mask] * cel_son[mask] *
              abs(vpointnplusundemi[mask]) / vnplusundemi[mask])
-#         for icell in xrange(rho_old.shape[0]):
-#             if divu[icell] < 0.:
-#                 pseudo[icell] = 1. / vnplusundemi[icell] * \
-#                     (a_pseudo * size_new[icell] ** 2 * vpointnplusundemi[icell] ** 2 / vnplusundemi[icell] ** 2 +
-#                      b_pseudo * size_new[icell] * cel_son[icell] *
-#                      abs(vpointnplusundemi[icell]) / vnplusundemi[icell])
         return pseudo
 
     @classmethod
@@ -124,14 +118,11 @@ class Element1d(Element):
                 solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-#                 if nbr_cells_to_solve != 1001:
-#                     import ipdb; ipdb.set_trace()
                 self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
                                               solution, new_pressure, new_vson)
                 self.energy.new_value[mask] = solution[0:nbr_cells_to_solve]
                 self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
                 self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
-#                print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
             else:
                 my_variables = {'EquationOfState': self.proprietes.material.eos,
                                 'OldDensity': density_current_value,
@@ -139,13 +130,14 @@ class Element1d(Element):
                                 'Pressure': pressure_current_value + 2. * pseudo_current_value,
                                 'OldEnergy': energy_current_value}
                 self._function_to_vanish.setVariables(my_variables)
-                self.energy.new_value = self._solver.computeSolution(energy_current_value)
-                for icell in xrange(self.number_of_cells):
-                    self.pressure.new_value[icell], _, self.sound_velocity.new_value[icell] = \
-                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value[icell], energy_new_value[icell])
+                solution = self._solver.computeSolution(energy_current_value)[0:nbr_cells_to_solve]
+                for icell in xrange(nbr_cells_to_solve):
+                    new_pressure_value[icell], _, new_vson_value[icell] = \
+                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value[icell], solution[icell])
+                self.energy.new_value[mask] = solution
+                self.pressure.new_value[mask] = new_pressure_value
+                self.sound_velocity.new_value[mask] = new_vson_value
                 self._function_to_vanish.eraseVariables()
-#            print "{:15.9g} | {:15.9g} | {:15.9g}".format(self.energy.new_value, self.pressure.new_value, self.sound_velocity.new_value)
-#            raw_input()
         except ValueError as err:
             raise err
 
