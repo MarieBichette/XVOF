@@ -5,6 +5,7 @@ Classe définissant une équation d'état de type Mie-Gruneisen
 """
 import ctypes
 import os
+import numpy as np
 
 from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
 
@@ -135,43 +136,53 @@ class MieGruneisen(EquationOfStateBase):
         # Définition de variable locales redondantes
         # -------------------------------------------------
         redond_a = self.coeff_s1 + 2. * self.coeff_s2 * epsv + 3. * self.coeff_s3 * epsv2
-        if epsv > 0:
-            # ============================================================
-            # si epsv > 0, la pression depend de einth et phi.
-            # einth : energie interne specifique sur l hugoniot
-            # phi : pression sur l hugoniot
-            # denom : racine du denominateur de phi
-            # dphi : derivee de ph par rapport a
-            # deinth : derivee de einth par rapport a v
-            # dpdv : dp/dv
-            # ============================================================
-            denom = (1. - (self.coeff_s1 + self.coeff_s2 * epsv + self.coeff_s3 * epsv2) * epsv)
-            phi = rhozero * czero2 * epsv / denom ** 2
-            einth = self.ezero + phi * epsv / (2. * rhozero)
+        #
+#         denom = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        phi = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        einth = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        dphi = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        deinth = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        dpdv = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
+        targets = epsv > 0
+        #
+#         if epsv > 0:
+        # ============================================================
+        # si epsv > 0, la pression depend de einth et phi.
+        # einth : energie interne specifique sur l hugoniot
+        # phi : pression sur l hugoniot
+        # denom : racine du denominateur de phi
+        # dphi : derivee de ph par rapport a
+        # deinth : derivee de einth par rapport a v
+        # dpdv : dp/dv
+        # ============================================================
+        denom = (1. - (self.coeff_s1 + self.coeff_s2 * epsv[targets] + self.coeff_s3 * epsv2[targets]) * epsv[targets])
+        phi[targets] = rhozero * czero2 * epsv[targets] / denom ** 2
+        einth[targets] = self.ezero + phi[targets] * epsv[targets] / (2. * rhozero)
+        #
+        dphi[targets] = phi[targets] * rhozero * (-1. / epsv[targets] - 2. * redond_a[targets] / denom)
+        #
+        deinth[targets] = phi[targets] * (-1. - epsv[targets] * redond_a[targets] / denom)
+        #
+        dpdv[targets] = dphi[targets] + (dgam - gampervol[targets]) * \
+            (internal_energy[targets] - einth[targets]) / specific_volume[targets] - \
+            gampervol[targets] * deinth[targets]
             #
-            dphi = phi * rhozero * (-1. / epsv - 2. * redond_a / denom)
-            #
-            deinth = phi * (-1. - epsv * redond_a / denom)
-            #
-            dpdv = dphi + (dgam - gampervol) * \
-                (internal_energy - einth) / specific_volume - \
-                gampervol * deinth
-            #
-        elif epsv <= 0:
-            # ============================================================
-            # traitement en tension : epsv < 0
-            # la pression depend d une fonction de v : phi
-            # et
-            # de e0 appelee einth
-            # ============================================================
-            phi = rhozero * czero2 * epsv / (1. - epsv)
-            # einth ---> e0
-            einth = self.ezero
-            #
-            dphi = -czero2 / specific_volume ** 2
-            #
-            dpdv = dphi + (dgam - gampervol) * \
-                (internal_energy - einth) / specific_volume
+#         elif epsv <= 0:
+        targets = epsv <= 0
+        # ============================================================
+        # traitement en tension : epsv < 0
+        # la pression depend d une fonction de v : phi
+        # et
+        # de e0 appelee einth
+        # ============================================================
+        phi[targets] = rhozero * czero2 * epsv[targets] / (1. - epsv[targets])
+        # einth ---> e0
+        einth[targets] = self.ezero
+        #
+        dphi[targets] = -czero2 / specific_volume[targets] ** 2
+        #
+        dpdv[targets] = dphi[targets] + (dgam - gampervol[targets]) * \
+            (internal_energy[targets] - einth[targets]) / specific_volume[targets]
         # ****************************
         # Pression :
         # ****************************
@@ -180,7 +191,8 @@ class MieGruneisen(EquationOfStateBase):
         # Carre de la vitesse du son :
         # ======================================
         vson2 = specific_volume ** 2 * (pressure * gampervol - dpdv)
-        if vson2 < 0:
+        pb = vson2 < 0
+        if pb.any():
             msg = "Carré de la vitesse du son < 0\n"
             msg += "specific_volume = {:15.9g}\n".format(specific_volume)
             msg += "pressure = {:15.9g}\n".format(pressure)
@@ -189,8 +201,8 @@ class MieGruneisen(EquationOfStateBase):
             raise ValueError(msg)
         vson = vson2 ** 0.5
         #
-        if not ((vson > 0.) and (vson < 10000.)):
-            vson = 0.
+        pb = np.logical_and((vson > 0.), (vson < 10000.))
+        vson[~pb] = 0.
         #
         return pressure, gampervol, vson
 

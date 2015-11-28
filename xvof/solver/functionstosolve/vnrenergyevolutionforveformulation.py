@@ -24,14 +24,13 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         pressure = self._variables['Pressure']
         old_nrj = self._variables['OldEnergy']
         p_i = np.zeros(old_rho.shape, dtype=np.float64, order='C')
-#         import ipdb; ipdb.set_trace()
         dpsurde = np.zeros(old_rho.shape, dtype=np.float64, order='C')
-        for icell in xrange(old_rho.shape[0]):
-            try:
-                (p_i[icell], dpsurde[icell], dummy) = eos.solveVolumeEnergy(1. / new_rho[icell], nrj[icell])
-            except ValueError as ve:
-                print "Pb dans la maille d'indice : {:d}!\n".format(icell)
-                raise ve
+#         for icell in xrange(old_rho.shape[0]):
+#         try:
+        (p_i, dpsurde, dummy) = eos.solveVolumeEnergy(1. / new_rho, nrj)
+#         except ValueError as ve:
+#             print "Pb dans le calcul de la fonction et de sa dérivée!\n"
+#             raise ve
         # Fonction à annuler
         delta_v = 1. / new_rho - 1. / old_rho
         func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj

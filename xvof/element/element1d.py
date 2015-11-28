@@ -16,8 +16,8 @@ from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrE
 from xvof.solver.newtonraphson import NewtonRaphson
 
 
-EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
-# EXTERNAL_LIBRARY = None
+# EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
+EXTERNAL_LIBRARY = None
 # --------------------------------------------------------
 #        DEFINITION DES CLASSES ET FONCTIONS             #
 # --------------------------------------------------------
@@ -130,10 +130,9 @@ class Element1d(Element):
                                 'Pressure': pressure_current_value + 2. * pseudo_current_value,
                                 'OldEnergy': energy_current_value}
                 self._function_to_vanish.setVariables(my_variables)
-                solution = self._solver.computeSolution(energy_current_value)[0:nbr_cells_to_solve]
-                for icell in xrange(nbr_cells_to_solve):
-                    new_pressure_value[icell], _, new_vson_value[icell] = \
-                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value[icell], solution[icell])
+                solution = self._solver.computeSolution(energy_current_value)
+                new_pressure_value, _, new_vson_value = \
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
                 self.energy.new_value[mask] = solution
                 self.pressure.new_value[mask] = new_pressure_value
                 self.sound_velocity.new_value[mask] = new_vson_value
