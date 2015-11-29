@@ -2,6 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 from math import pi
 
+import lxml.etree as et
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.equationsofstate.miegruneisen import MieGruneisen
@@ -16,30 +17,26 @@ from xvof.rupturetreatment.imposepressure import ImposePressure
 
 
 #  =================================================
-#  = PARAMETRES DE LA SIMULATION                   =
-TempsFinal = 15.0e-06
-PasDeTempsInit = 2.0e-09
-# PressionInit = 100149.28
-PressionInit = 100006.2096
-EnergieInterneInit = 7.689
-RhoInit = 8129.
+#  SIMULATION PARAMETERS                           =
+#  =================================================
+FinalTime = 15.0e-06
+InitialTimeStep = 2.0e-09
+InitialPressure = 100006.2096
+InitialInternalEnergy = 7.689
+InitialDensity = 8129.
 Section = pi * 0.01 ** 2
-EquationEtat = MieGruneisen()
-# PChargementGauche = ConstantPressure(3.5e+09)
-# PChargementGauche = ConstantPressure(PressionInit)
-PChargementGauche = TwoStepsPressure(15e+09, PressionInit, 2.0e-06)
-PChargementDroite = ConstantPressure(PressionInit)
-# PChargementDroite = ConstantPressure(-3.5e+09)
-CritereRupture = MinimumPressureCriterion(-7.0e+09)
-TraitementRupture = ImposePressure(0.)
-Longueur = 25.0e-03
-NbrElements = 1001
-ParamPseudoA = 1.5
-ParamPseudoB = 0.2
+EquationOfState = MieGruneisen()
+LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
+RightBoundaryPressure = ConstantPressure(InitialPressure)
+RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
+RuptureTreatment = ImposePressure(0.)
+Length = 25.0e-03
+NumberOfElements = 1001
+QuadraticPseudoParameter = 1.5
+LinearPseudoParameter = 0.2
 CFL = 0.95
 
-# NbrImages = 3750
-NbrImages = 150
+ImagesNumber = 150
 #  =================================================
 
 if __name__ == '__main__':
@@ -47,97 +44,94 @@ if __name__ == '__main__':
     #
     time = 0.
     step = 0
-    dt = PasDeTempsInit
+    dt = InitialTimeStep
     dt_crit = 2 * dt
     # ---------------------------------------------#
-    #         CREATION DES PROPRIETES              #
+    #         PROPERTIES CREATION                  #
     # ---------------------------------------------#
-    num_props = numerical_props(ParamPseudoA, ParamPseudoB, CFL)
-    mat_props = material_props(PressionInit, EnergieInterneInit, RhoInit, EquationEtat)
+    num_props = numerical_props(QuadraticPseudoParameter, LinearPseudoParameter, CFL)
+    mat_props = material_props(InitialPressure, InitialInternalEnergy, InitialDensity, EquationOfState)
     geom_props = geometrical_props(Section)
     props = properties(num_props, mat_props, geom_props)
     # ---------------------------------------------#
-    #         CREATION DU MAILLAGE                 #
+    #         MESH CREATION                        #
     # ---------------------------------------------#
-    coord_init = np.zeros([NbrElements + 1, 1], order='C')
-    coord_init[:, 0] = np.linspace(0, Longueur, NbrElements + 1)
-    vit_init = np.zeros([NbrElements + 1, 1], order='C')
-    my_mesh = Mesh1d(props, initial_coordinates=coord_init,
-                     initial_velocities=vit_init)
+    coord_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
+    coord_init[:, 0] = np.linspace(0, Length, NumberOfElements + 1)
+    vit_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
+    my_mesh = Mesh1d(props, initial_coordinates=coord_init, initial_velocities=vit_init)
     # ---------------------------------------------#
-    #  MISE EN PLACE DU GESTIONNAIRE DE FIGURES    #
+    #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
-    if (NbrImages != 0):
-        delta_t_images = TempsFinal / NbrImages
+    if (ImagesNumber != 0):
+        delta_t_images = FinalTime / ImagesNumber
         my_fig_manager = FigureManager(my_mesh, dump=True, show=True)
         my_fig_manager.populate_figs()
     else:
-        delta_t_images = TempsFinal * 2.0
+        delta_t_images = FinalTime * 2.0
     t_next_image = delta_t_images
     # ---------------------------------------------#
-    #         CALCUL DES MASSES NODALES            #
+    #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
-    print "Calcul de la masse des noeuds :"
-    my_mesh.calculer_taille_des_elements()
-    my_mesh.calculer_masse_des_noeuds()
-    print "=> OK"
-    print "LANCEMENT DU CALCUL!"
-    while (time < TempsFinal):
+    my_mesh.computeCellsSizes()
+    my_mesh.computeNodesMasses()
+    print "CALCULUS LAUNCHED!"
+    while (time < FinalTime):
         if step % 1000 == 0:
-            msg = "Itération N°{:<4d} -- Calcul du temps {:15.9g} secondes avec un pas de temps de {:15.9g} secondes\n"\
-                .format(step, time, dt)
+            msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
+                   """ a time step of {:15.9g} seconds\n""").format(step, time, dt)
             print msg
         # ---------------------------------------------#
-        #         CALCUL DES VITESSES NODALES          #
+        #         NODES VELOCITIES COMPUTATION         #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_vit_noeuds(dt)
+        my_mesh.computeNewNodesVelocities(dt)
         # ---------------------------------------------#
-        #         CALCUL DES COORDONNEES NODALES       #
+        #         NODES COORDINATES COMPUTATION        #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_coord_noeuds(dt)
+        my_mesh.computeNewNodesCoordinates(dt)
         # ---------------------------------------------#
-        #         CALCUL DES VOLUMES DES MAILLES       #
+        #         CELLS VOLUMES COMPUTATION            #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_taille_des_elements(dt)
+        my_mesh.computeNewCellsSizes(dt)
         # ---------------------------------------------#
-        #         CALCUL DES DENSITES DES MAILLES      #
+        #         CELLS DENSITIES COMPUTATION          #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_densite_des_elements()
+        my_mesh.computeNewCellsDensities()
         # ---------------------------------------------#
-        #         CALCUL DES PRESSIONS                 #
+        #         CELLS PRESSURES COMPUTATION          #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_pression_des_elements()
+        my_mesh.computeNewCellsPressures()
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-        my_mesh.get_ruptured_cells(CritereRupture)
-        my_mesh.apply_rupture_treatment(TraitementRupture)
+        my_mesh.getRupturedCells(RuptureCriterion)
+        my_mesh.applyRuptureTreatment(RuptureTreatment)
         # ---------------------------------------------#
-        #         CALCUL DES FORCES NODALES            #
+        #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_force_des_noeuds()
+        my_mesh.computeNewNodesForces()
         # ---------------------------------------------#
-        #         APPLICATION DU CHARGEMENT            #
+        #         LOADING                              #
         # ---------------------------------------------#
-        my_mesh.appliquer_pression('gauche', PChargementGauche.evaluate(time))
-        my_mesh.appliquer_pression('droite', PChargementDroite.evaluate(time))
+        my_mesh.applyPressure('left', LeftBoundaryPressure.evaluate(time))
+        my_mesh.applyPressure('right', RightBoundaryPressure.evaluate(time))
         # ---------------------------------------------#
-        #         CALCUL DU PAS DE TEMPS CRITIQUE      #
+        #         TIME STEP COMPUTATION                #
         # ---------------------------------------------#
-        dt_crit = my_mesh.calculer_nouvo_pdt_critique()
+        dt_crit = my_mesh.computeNewTimeStep()
         # ---------------------------------------------#
-        #         CALCUL DE LA PSEUDOVISCOSITE         #
+        #         PSEUDOVISCOSITY COMPUTATION          #
         # ---------------------------------------------#
-        my_mesh.calculer_nouvo_pseudo_des_elements(dt)
+        my_mesh.computeNewCellsPseudoViscosities(dt)
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
-        my_mesh.incrementer()
+        my_mesh.increment()
 #         dt = dt_crit
         time += dt
         step += 1
         # ---------------------------------------------#
-        #                GESTION DES SORTIES           #
+        #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         if (time > t_next_image):
             my_fig_manager.update_figs("t={:5.4g} us".format(time / 1.e-06))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base définissant un maillage 1d
+Base class for one dimensional mesh
 """
 import numpy as np
 from xvof.element.element1d import Element1d
@@ -12,189 +12,194 @@ from xvof.utilities.profilingperso import timeit_file
 
 class Mesh1d(object):
     """
-    Une classe définissant un maillage 1d
+    This class defines a one dimensional mesh
     """
-    def __init__(self, properties, initial_coordinates=np.linspace(0, 1, 11),
-                 initial_velocities=np.zeros(11)):
+    def __init__(self, properties, initial_coordinates, initial_velocities):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
-            message = "Les vecteurs initiaux de vitesse et coordonnées"
-            message += " n'ont pas la même taille"
+            message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
         if np.shape(initial_coordinates)[1] != 1:
-            message = "Il s'agit d'un maillage 1D à initialiser avec des"
-            message += " vecteurs à une dimension!"
+            message = ("""A 1D mesh must have one dimensional vector which is not the case"""
+                       """ for initial coordinates vector!""")
             raise ValueError(message)
-        ####
-        # Création des noeuds
+        # ---------------------------------------------
+        # Nodes creation
+        # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = Node1d(nbr_nodes, initial_coordinates, initial_velocities,
                             section=properties.geometric.section)
-
-        ####
-        # Création des mailles
+        # ---------------------------------------------
+        # Cells creation
+        # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
         self.cells = Element1d(nbr_cells, properties)
-        ####
-        # Création de la topologie
+        # ---------------------------------------------
+        # Topology creation
+        # ---------------------------------------------
         self.__topologie = Topology1D(nbr_nodes, nbr_cells)
-        ####
+        # ---------------------------------------------
+        # Ruptured cells vector
+        # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
-    def calculer_masse_des_noeuds(self):
-        """ Calcul de la masse de chaque noeud"""
+    def computeNodesMasses(self):
+        """ Nodal mass computation """
         vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
         vecteur_nb_noeuds_par_element[:] = 2
         self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_vit_noeuds(self, delta_t):
-        """ Calcul de la nouvelle vitesse de chaque noeud à t+dt"""
+    def computeNewNodesVelocities(self, delta_t):
+        """
+        Computation of nodes velocities at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
         self.nodes.calculer_nouvo_vitesse(delta_t)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_coord_noeuds(self, delta_t):
-        """ Calcul des nouvelles coordonnées de chaque noeud à t+dt"""
+    def computeNewNodesCoordinates(self, delta_t):
+        """
+        Computation of nodes coordinates at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
         self.nodes.calculer_nouvo_coord(delta_t)
 
-    # @timeit_file('profil.txt')
-    def calculer_taille_des_elements(self):
-        '''
-        Calcul de la taille des éléments à t
-        '''
+    def computeCellsSizes(self):
+        """
+        Computation of cells sizes at t
+        """
         self.cells.computeSize(self.__topologie, self.nodes.xt)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_taille_des_elements(self, delta_t):
-        """ Calcul de la nouvelle taille de chaque élément à t+dt"""
+    def computeNewCellsSizes(self, delta_t):
+        """
+        Computation of cells sizes at t+dt
+        """
         self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, delta_t)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_densite_des_elements(self):
-        """ Calcul des nouvelles densités de chaque élément à t+dt"""
+    def computeNewCellsDensities(self):
+        """
+        Computation of cells densities at t+dt
+        """
         self.cells.computeNewDensity()
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_pression_des_elements(self):
-        """ Calcul des nouvelles pressions de chaque élément à t+dt"""
+    def computeNewCellsPressures(self):
+        """
+        Computation of cells pressure at t+dt
+        """
         self.cells.computeNewPressure(mask=~self.__ruptured_cells)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_pseudo_des_elements(self, delta_t):
-        """ Calcul de la nouvelle pseudo à t+dt"""
+    def computeNewCellsPseudoViscosities(self, delta_t):
+        """
+        Computation of cells pseudoviscosities at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
         self.cells.computeNewPseudo(delta_t)
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_force_des_noeuds(self):
-        """ Calcul des nouvelles forces de chaque noeud à t+dt"""
+    def computeNewNodesForces(self):
+        """
+        Computation of nodes forces at t+dt
+        """
         self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value)
 
-    # @timeit_file('profil.txt')
-    def incrementer(self):
-        """ Passage au pas de temps suivant"""
+    def increment(self):
+        """
+        Moving to next time step
+        """
         self.nodes.incrementer()
         self.cells.incrementVariables()
 
-    # @timeit_file('profil.txt')
-    def calculer_nouvo_pdt_critique(self):
-        """ Calcul du pas de temps critique """
+    def computeNewTimeStep(self):
+        """
+        Computation of new time step
+        """
         self.cells.computeNewTimeStep()
         return self.cells.dt.min()
 
-    # @timeit_file('profil.txt')
-    def appliquer_pression(self, surface, pression):
+    def applyPressure(self, surface, pressure):
         """
-        Appliquer une pression donnée sur
-        les frontieres gauche ou droite
+        Apply a given pressure on left or right boundary
+
+        :var surface: name of the surface where pressure has to be imposed
+        :var pressure: value of the pressure to impose
+        :type surface: str ('left' | 'right')
+        :type pressure: float
         """
-        if surface.lower() not in ("gauche", "droite"):
-            raise(ValueError("Sur la surface <gauche> ou <droite> est possible en 1d!"))
-        if (surface.lower() == 'gauche'):
-            self.nodes.appliquer_pression(0, pression)
-#             self.cells.pressure.new_value[0] = pression
+        if surface.lower() not in ("left", "right"):
+            raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+        if (surface.lower() == 'left'):
+            self.nodes.applyPressure(0, pressure)
         else:
-            self.nodes.appliquer_pression(-1, -pression)
-#             self.cells.pressure.new_value[-1] = pression
+            self.nodes.applyPressure(-1, -pressure)
+
+    def getRupturedCells(self, rupture_criterion):
+        """
+        Find the cells where the rupture criterion is checked and store them
+
+        :var rupture_criterion: rupture criterion
+        :type rupture_criterion: RuptureCriterion
+        """
+        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
+
+    def applyRuptureTreatment(self, treatment):
+        """
+        Apply the rupture treatment on the cells enforcing the rupture criterion
+
+        :var treatment: rupture treatment
+        :type treatment: RuptureTreatment
+        """
+        treatment.applyTreatment(self.cells, self.__ruptured_cells)
 
     @property
-    def velocity_t_minus_half_field(self):
-        """ Champ de vitesse à t-1/2"""
-        return self.nodes.umundemi
-
-    @property
-    def velocity_t_plus_half_field(self):
-        """ Champ de vitesse à t+1/2"""
+    def velocity_field(self):
+        """
+        Node velocity field
+        """
         return self.nodes.upundemi
 
     @property
-    def coord_t_field(self):
-        """ Champ de position à t"""
-        return self.nodes.xt
-
-    @property
-    def coord_t_plus_dt_field(self):
-        """ Champ de position à t+dt"""
+    def nodes_coordinates(self):
+        """
+        Nodes coordinates
+        """
         return self.nodes.xtpdt
 
     @property
-    def coord_elements_field(self):
+    def cells_coordinates(self):
         """
-        Champ de position des éléments à t
-        (Moyenne des champs de position à t des noeuds)
+        Cells coordinates (coordinates of cells centers)
         """
         return self.cells.getCoordinates(self.cells.number_of_cells, self.__topologie, self.nodes.xt)
 
     @property
-    def force_field(self):
-        """ Champ de force nodale"""
-        return self.nodes.force
-
-    @property
-    def size_t_field(self):
-        """ Tailles des éléments à t"""
-        return self.cells.size_t
-
-    @property
-    def size_t_plus_dt_field(self):
-        """ Tailles des éléments à t"""
-        return self.cells.size_t_plus_dt
-
-    @property
-    def pressure_t_field(self):
-        """ Champ de pression à t"""
+    def pressure_field(self):
+        """
+        Pressure field
+        """
         return self.cells.pressure.current_value
 
     @property
-    def pressure_t_plus_dt_field(self):
-        """ Champ de pression à t+dt"""
-        return self.cells.pressure.new_value
-
-    @property
-    def rho_t_field(self):
-        """ Champ de densité à t"""
+    def density_field(self):
+        """
+        Density field
+        """
         return self.cells.density.current_value
 
     @property
-    def rho_t_plus_dt_field(self):
-        """ Champ de densité à t+dt"""
-        return self.cells.density.new_value
-
-    @property
-    def nrj_t_field(self):
-        """ Champ d'énergie interne à t"""
+    def energy_field(self):
+        """
+        Internal energy field
+        """
         return self.cells.energy.current_value
 
     @property
-    def pseudo_field(self):
-        """ Champ de pseudo """
+    def pseudoviscosity_field(self):
+        """
+        Pseudoviscosity field
+        """
         return self.cells.pseudo.current_value
 
-    def get_ruptured_cells(self, rupture_criterion):
-        """ Liste des mailles endommagées"""
-        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
-    def apply_rupture_treatment(self, treatment):
-        """
-        Application du traitement de rupture sur la liste
-        de cells passée en arguments
-        """
-        treatment.applyTreatment(self.cells, self.__ruptured_cells)

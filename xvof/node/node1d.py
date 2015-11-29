@@ -84,15 +84,15 @@ class Node1d(Node):
         """
         self._upundemi = self.umundemi + self.force * self.invmasse * delta_t
 
-    def appliquer_pression(self, ind_node, pression):
+    def applyPressure(self, ind_node, pressure):
         """
-        Appliquer une pression sur le noeud d'indice "ind_node"
+        Appliquer une pressure sur le noeud d'indice "ind_node"
 
-        :param ind_node: indice du noeud sur lequel appliquer la pression
-        :param pression: pression à appliquer
+        :param ind_node: indice du noeud sur lequel appliquer la pressure
+        :param pressure: pressure à appliquer
 
         :type ind_node: int
-        :type pression: float
+        :type pressure: float
         """
-        self._force[ind_node] += pression * self.section
+        self._force[ind_node] += pressure * self.section
 

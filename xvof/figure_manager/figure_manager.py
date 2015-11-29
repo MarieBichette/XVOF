@@ -42,16 +42,16 @@ class FigureManager(object):
     def update_fields(self):
         """ MAJ des champs par appel des propriétés du maillage"""
         self.__champs_mailles = \
-            {CellPositionField: self.__mesh_instance.coord_elements_field[:],
-             PressureField: self.__mesh_instance.pressure_t_field,
-             DensityField: self.__mesh_instance.rho_t_field,
-             InternalEnergyField: self.__mesh_instance.nrj_t_field,
-             PseudoViscosityField: self.__mesh_instance.pseudo_field
+            {CellPositionField: self.__mesh_instance.cells_coordinates[:],
+             PressureField: self.__mesh_instance.pressure_field,
+             DensityField: self.__mesh_instance.density_field,
+             InternalEnergyField: self.__mesh_instance.energy_field,
+             PseudoViscosityField: self.__mesh_instance.pseudoviscosity_field
             }
         self.__champs_noeuds = \
             {
-             NodePositionField: self.__mesh_instance.coord_t_plus_dt_field[:],
-             NodeVelocityField: self.__mesh_instance.velocity_t_plus_half_field
+             NodePositionField: self.__mesh_instance.nodes_coordinates[:],
+             NodeVelocityField: self.__mesh_instance.velocity_field
              }
 
     def create_figure_for_cell_field(self, field_X, field_Y):
