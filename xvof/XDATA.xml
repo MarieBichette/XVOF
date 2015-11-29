@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  <time-management>
+    <final-time>15.0e-06</final-time>
+    <initial-time-step>2.0e-09</initial-time-step>
+  </time-management>
+  <geometry>
+    <length>25.0e-03</length>
+    <section>0.0003141592653589793</section>
+  </geometry>
+  <matter>
+    <equation-of-state>Mie-Gruneisen</equation-of-state>
+    <initialization>
+      <initial-pressure>100006.2096</initial-pressure>
+      <initial-density>8129.</initial-density>
+      <initial-temperature>300.</initial-temperature>
+      <initial-internal-energy>7.689</initial-internal-energy>
+    </initialization>
+  </matter>
+  <numeric-parameters>
+    <number-of-elements>1001</number-of-elements>
+    <linear-pseudo>0.2</linear-pseudo>
+    <quadratic-pseudo>1.5</quadratic-pseudo>
+    <cfl>0.95</cfl>
+    <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
+  </numeric-parameters>
+  <output>
+    <number-of-images>150</number-of-images>
+    <dump-images>true</dump-images>
+    <show-images>true</show-images>
+  </output>
+</data>

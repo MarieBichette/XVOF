@@ -9,15 +9,12 @@ Classe d�finissant un �l�ment en 1d
 import ctypes
 import os
 import numpy as np
-import numpy.ma as ma
 
 from xvof.element import Element
 from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.solver.newtonraphson import NewtonRaphson
+from xvof.data.data_container import DataContainer
 
-
-# EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
-EXTERNAL_LIBRARY = None
 # --------------------------------------------------------
 #        DEFINITION DES CLASSES ET FONCTIONS             #
 # --------------------------------------------------------
@@ -69,8 +66,12 @@ class Element1d(Element):
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
         #
-        if EXTERNAL_LIBRARY is not None :
-            _path = os.path.join(*(os.path.split(__file__)[:-1] + (EXTERNAL_LIBRARY,)))
+        if DataContainer().hasExternalSolver():
+            self.__external_library = DataContainer().getExternalSolverPath()
+        else:
+            self.__external_library = None
+        if self.__external_library is not None :
+            _path = os.path.join(*(os.path.split(__file__)[:-1] + (self.__external_library,)))
             self._mod = ctypes.cdll.LoadLibrary(_path)
             self._computePressureExternal = self._mod.launch_vnr_resolution
             self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
@@ -106,7 +107,7 @@ class Element1d(Element):
         new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
         new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
         try:
-            if EXTERNAL_LIBRARY is not None:
+            if self.__external_library is not None:
                 pb_size = ctypes.c_int()
                 #
                 old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))

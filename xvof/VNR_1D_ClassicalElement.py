@@ -1,8 +1,5 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
-from math import pi
-
-import lxml.etree as et
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.equationsofstate.miegruneisen import MieGruneisen
@@ -14,29 +11,41 @@ from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.rupturetreatment.imposepressure import ImposePressure
+from xvof.data.data_container import DataContainer
 
 
 #  =================================================
 #  SIMULATION PARAMETERS                           =
 #  =================================================
-FinalTime = 15.0e-06
-InitialTimeStep = 2.0e-09
-InitialPressure = 100006.2096
-InitialInternalEnergy = 7.689
-InitialDensity = 8129.
-Section = pi * 0.01 ** 2
-EquationOfState = MieGruneisen()
+data = DataContainer()
+# TIME MANAGEMENT
+FinalTime = data.getFinalTime()
+InitialTimeStep = data.getInitialTimeStep()
+# GEOMETRY
+Length = data.getLength()
+Section = data.getSection()
+# MATTER
+if data.getEquationOfState() == 'Mie-Gruneisen':
+    EquationOfState = MieGruneisen()
+else:
+    raise ValueError("Only MieGruneisen's equation of state is available")
+InitialPressure = data.getInitialPressure()
+InitialInternalEnergy = data.getInitialInternalEnergy()
+InitialDensity = data.getInitialDensity()
+# NUMERIC
+NumberOfElements = data.getNumberOfElements()
+QuadraticPseudoParameter = data.getQuadraticPseudoParameter()
+LinearPseudoParameter = data.getLinearPseudoParameter()
+CFL = data.getCFL()
+# LOADING
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
 RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
 RuptureTreatment = ImposePressure(0.)
-Length = 25.0e-03
-NumberOfElements = 1001
-QuadraticPseudoParameter = 1.5
-LinearPseudoParameter = 0.2
-CFL = 0.95
-
-ImagesNumber = 150
+# OUTPUT
+ImagesNumber = data.getNumerOfImages()
+Dump = data.hasImagesDump()
+Show = data.hasImagesShow()
 #  =================================================
 
 if __name__ == '__main__':
@@ -65,7 +74,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (ImagesNumber != 0):
         delta_t_images = FinalTime / ImagesNumber
-        my_fig_manager = FigureManager(my_mesh, dump=True, show=True)
+        my_fig_manager = FigureManager(my_mesh, dump=Dump, show=Show)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = FinalTime * 2.0
