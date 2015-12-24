@@ -23,12 +23,12 @@ class FieldManager(object):
         else:
             raise KeyError('Le champ {:s} existe déjà dans le gestionnaire!'.format(name))
 
-    def moveClassicalToEnrichedFields(self):
+    def moveClassicalToEnrichedFields(self, size):
         '''
         Transforme un champ classique en un champ enrichi
         '''
         for name, field in self.__fields.items():
-            self.__fields[name] = EnrichedField(field.current_value, field.new_value)
+            self.__fields[name] = EnrichedField(size, field.current_value, field.new_value)
 
     def getField(self, name):
         '''

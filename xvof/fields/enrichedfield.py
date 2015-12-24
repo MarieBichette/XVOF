@@ -11,6 +11,32 @@ class EnrichedField(object):
     '''
     Champ physique = champ physique classique + enrichi
     '''
+    def __init__(self, size, current, new):
+
+        self.__classical = Field(size, current, new)
+        self.__enriched = Field(size, 0., 0.)
+
+    def incrementValues(self):
+        '''
+        Incrémente les valeurs du champ
+        '''
+        self.__classical.incrementValues()
+        self.__enriched.incrementValues()
+
+    @property
+    def classical_part(self):
+        '''
+        Renvoie le champ classique
+        '''
+        return self.__classical
+
+    @property
+    def enriched_part(self):
+        '''
+        Renvoie le champ enrichi
+        '''
+        return self.__enriched  
+    
     @classmethod
     def fromGeometryToEnrichField(cls, champ_gauche, champ_droite):
         """
@@ -38,18 +64,6 @@ class EnrichedField(object):
         Renvoi le champ à droite d'après les champs classsique et enrichis
         """
         return champ_classic + champ_enrich
-
-    def __init__(self, current, new):
-
-        self.__classical = Field(current, new)
-        self.__enriched = Field(0., 0.)
-
-    def incrementValues(self):
-        '''
-        Incrémente les valeurs du champ
-        '''
-        self.__classical.incrementValues()
-        self.__enriched.incrementValues()
 
     @property
     def current_left_value(self):
@@ -79,16 +93,4 @@ class EnrichedField(object):
         '''
         return EnrichedField.fromEnrichToRightPartField(self.__classical.new_value, self.__enriched.new_value)
 
-    @property
-    def classical_part(self):
-        '''
-        Renvoie le champ classique
-        '''
-        return self.__classical
 
-    @property
-    def enriched_part(self):
-        '''
-        Renvoie le champ enrichi
-        '''
-        return self.__enriched

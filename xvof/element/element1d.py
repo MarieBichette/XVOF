@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe dï¿½finissant un ï¿½lï¿½ment en 1d
+Classe définissant un élément en 1d
 """
 # --------------------------------------------------------
 #               IMPORTATIONS DIVERSES                    #

@@ -24,49 +24,43 @@ class Element1dEnriched(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
     """
-    def __init__(self, element_origin, pos_discontin):
-        Element1d.__init__(self, element_origin.proprietes)
-        self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
-        self._solver = NewtonRaphson(self._function_to_vanish)
+    def __init__(self, number_of_elements, properties, mask, old_element, pos_discontin=0.5):
+        super(Element1dEnriched, self).__init__(number_of_elements, properties)
         #
-        if(pos_discontin < 0.) or (pos_discontin > 1.):
-            message = "La position de la discontinuité dans"
-            message += " l'élément enrichi doit être comprise entre 0 et 1!"
-            raise SystemExit(message)
-        #
-        self._index = element_origin.index
-        self._size_t = element_origin.taille_t
-        self._size_t_plus_dt = element_origin.taille_t_plus_dt
-        #
-        self._taille_gauche_t = element_origin.taille_t * pos_discontin
-        self._taille_gauche_t_plus_dt = element_origin.taille_t_plus_dt * pos_discontin
-        self._taille_droite_t = element_origin.taille_t * (1. - pos_discontin)
-        self._taille_droite_t_plus_dt = element_origin.taille_t_plus_dt * (1. - pos_discontin)
-        #
-        self._fields_manager = element_origin.fields_manager
         self._fields_manager.moveClassicalToEnrichedFields()
         #
-        if EXTERNAL_LIBRARY is not None :
-            _path = os.path.join(*(os.path.split(__file__)[:-1] + (EXTERNAL_LIBRARY,)))
-            self._mod = ctypes.cdll.LoadLibrary(_path)
-            self._computePressureExternal = self._mod.launch_vnr_resolution
-            self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
-                [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
+        self._fields_manager.addClassicalField('taille_gauche', number_of_elements,
+                                               old_element.size_t * pos_discontin,
+                                               old_element.size_t_plus_dt * pos_discontin)
+        self._fields_manager.addClassicalField('taille_droite', number_of_elements,
+                                               old_element.size_t * (1. - pos_discontin),
+                                               old_element.size_t_plus_dt * (1. - pos_discontin))
+        self._mask = mask
 
-    def getLeftPartCoordinates(self, noeuds):
+    @property
+    def taille_gauche(self):
+        return self._fields_manager.getField('taille_gauche')
+    
+    @property
+    def taille_droite(self):
+        return self._fields_manager.getField('taille_droite')
+
+    def getLeftPartCoordinates(self, topologie, vec_coord_noeuds):
         """
         Position du centre de l'élément au temps t
         """
-        vec_coord = np.zeros(noeuds[0].dimension)
-        vec_coord = noeuds[0].coordt[:] + self._taille_gauche_t / 2.0
+        connectivity = np.array(topologie._nodes_belonging_to_cell)
+        vec_min = min(vec_coord_noeuds[connectivity[self.mask]])
+        vec_coord =  vec_min + self.taille_gauche[self.mask] / 2.
         return vec_coord
 
-    def getRightPartCoordinates(self, noeuds):
+    def getRightPartCoordinates(self, topologie, vec_coord_noeuds):
         """
         Position du centre de l'élément au temps t
         """
-        vec_coord = np.zeros(noeuds[0].dimension)
-        vec_coord = noeuds[1].coordt[:] - self._taille_droite_t / 2.0
+        connectivity = np.array(topologie._nodes_belonging_to_cell)
+        vec_max = max(vec_coord_noeuds[connectivity[self.mask]])
+        vec_coord =  vec_max - self.taille_droite[self.mask] / 2.
         return vec_coord
 
     def __str__(self):
@@ -134,6 +128,58 @@ class Element1dEnriched(Element1d):
         au pas de temps suivant
         Formulation v-e
         """
+        # Pression partie gauche
+        density_current_value = self.density.current_left_value[self.mask]
+        density_new_value = self.density.new_left_value[self.mask]
+        pressure_current_value = self.pressure.current_left_value[self.mask]
+        pseudo_current_value = self.pseudo.current_left_value[self.mask]
+        energy_current_value = self.energy.current_left_value[self.mask]
+        energy_new_value = self.energy.new_left_value[self.mask]
+        shape = energy_new_value.shape
+        nbr_cells_to_solve = shape[0]
+        solution_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+        try:
+            if self.__external_library is not None:
+                pb_size = ctypes.c_int()
+                #
+                old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                tmp = (pressure_current_value + 2. * pseudo_current_value)
+                pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                pb_size.value = nbr_cells_to_solve
+                solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
+                                              solution, new_pressure, new_vson)
+                self.energy.new_value[mask] = solution[0:nbr_cells_to_solve]
+                self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
+                self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
+            else:
+                my_variables = {'EquationOfState': self.proprietes.material.eos,
+                                'OldDensity': density_current_value,
+                                'NewDensity': density_new_value,
+                                'Pressure': pressure_current_value + 2. * pseudo_current_value,
+                                'OldEnergy': energy_current_value}
+                self._function_to_vanish.setVariables(my_variables)
+                solution = self._solver.computeSolution(energy_current_value)
+                new_pressure_value, _, new_vson_value = \
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                self.energy.new_value[mask] = solution
+                self.pressure.new_value[mask] = new_pressure_value
+                self.sound_velocity.new_value[mask] = new_vson_value
+                self._function_to_vanish.eraseVariables()
+        except ValueError as err:
+            raise err        
+        
+        
+        
+        
+        
+        
         if EXTERNAL_LIBRARY is not None:
             old_density = ctypes.c_double()
             new_density = ctypes.c_double()
