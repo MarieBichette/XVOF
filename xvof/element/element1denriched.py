@@ -40,7 +40,7 @@ class Element1dEnriched(Element1d):
     @property
     def taille_gauche(self):
         return self._fields_manager.getField('taille_gauche')
-    
+
     @property
     def taille_droite(self):
         return self._fields_manager.getField('taille_droite')
@@ -155,9 +155,9 @@ class Element1dEnriched(Element1d):
                 new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                 self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
                                               solution, new_pressure, new_vson)
-                self.energy.new_value[mask] = solution[0:nbr_cells_to_solve]
-                self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
-                self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
+                energy_left_new = solution[0:nbr_cells_to_solve]
+                pressure_left_new = new_pressure[0:nbr_cells_to_solve]
+                sound_velocity_left_new = new_vson[0:nbr_cells_to_solve]
             else:
                 my_variables = {'EquationOfState': self.proprietes.material.eos,
                                 'OldDensity': density_current_value,
@@ -168,89 +168,75 @@ class Element1dEnriched(Element1d):
                 solution = self._solver.computeSolution(energy_current_value)
                 new_pressure_value, _, new_vson_value = \
                     self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
-                self.energy.new_value[mask] = solution
-                self.pressure.new_value[mask] = new_pressure_value
-                self.sound_velocity.new_value[mask] = new_vson_value
+                energy_left_new = solution
+                pressure_left_new = new_pressure_value
+                sound_velocity_left_new = new_vson_value
                 self._function_to_vanish.eraseVariables()
         except ValueError as err:
-            raise err        
-        
-        
-        
-        
-        
-        
-        if EXTERNAL_LIBRARY is not None:
-            old_density = ctypes.c_double()
-            new_density = ctypes.c_double()
-            pressure = ctypes.c_double()
-            old_energy = ctypes.c_double()
-            pb_size = ctypes.c_int()
-            solution = ctypes.c_double()
-            new_pressure = ctypes.c_double()
-            new_vson = ctypes.c_double()
-            # PARTIE GAUCHE
-            old_density.value = self.density.current_left_value
-            new_density.value = self.density.new_left_value
-            pressure.value = self.pressure.current_left_value + 2. * self.pseudo.current_left_value
-            old_energy.value = self.energy.current_left_value
-            pb_size.value = 1
-            self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution, 
-                                          new_pressure, new_vson)
-            nrj_t_plus_dt_g = solution.value
-            pression_t_plus_dt_g = new_pressure.value
-            cson_t_plus_dt_g = new_vson.value
-            # PARTIE DROITE
-            old_density.value = self.density.current_right_value
-            new_density.value = self.density.new_right_value
-            pressure.value = self.pressure.current_right_value + 2. * self.pseudo.current_right_value
-            old_energy.value = self.energy.current_right_value
-            pb_size.value = 1
-            self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size, solution, 
-                                          new_pressure, new_vson)
-            nrj_t_plus_dt_d = solution.value
-            pression_t_plus_dt_d = new_pressure.value
-            cson_t_plus_dt_d = new_vson.value
-        else:
-            # Traitement partie gauche
-            my_variables = {'EquationOfState': self.proprietes.material.eos,
-                            'OldDensity': self.density.current_left_value,
-                            'NewDensity': self.density.new_left_value,
-                            'Pressure': self.pressure.current_left_value + 2. * self.pseudo.current_left_value,
-                            'OldEnergy': self.energy.current_left_value}
-            self._function_to_vanish.setVariables(my_variables)
-            nrj_t_plus_dt_g = self._solver.computeSolution(self.energy.current_left_value)
-            pression_t_plus_dt_g, _, cson_t_plus_dt_g = \
-                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_left_value, nrj_t_plus_dt_g)
-            self._function_to_vanish.eraseVariables()
-            # Traitement partie droite
-            my_variables = {'EquationOfState': self.proprietes.material.eos,
-                            'OldDensity': self.density.current_right_value,
-                            'NewDensity': self.density.new_right_value,
-                            'Pressure': self.pressure.current_right_value + 2. * self.pseudo.current_right_value,
-                            'OldEnergy': self.energy.current_right_value}
-            self._function_to_vanish.setVariables(my_variables)
-            nrj_t_plus_dt_d = self._solver.computeSolution(self.energy.current_right_value)
-            pression_t_plus_dt_d, _, cson_t_plus_dt_d = \
-                self.proprietes.material.eos.solveVolumeEnergy(1. / self.density.new_right_value, nrj_t_plus_dt_d)
-            self._function_to_vanish.eraseVariables()
-            #
-        self.pressure.classical_part.new_value = \
-            EnrichedField.fromGeometryToClassicField(pression_t_plus_dt_g, pression_t_plus_dt_d)
-        self.pressure.enriched_part.new_value = \
-            EnrichedField.fromGeometryToEnrichField(pression_t_plus_dt_g, pression_t_plus_dt_d)
+            raise err
+        # Pression partie droite
+        density_current_value = self.density.current_right_value[self.mask]
+        density_new_value = self.density.new_right_value[self.mask]
+        pressure_current_value = self.pressure.current_right_value[self.mask]
+        pseudo_current_value = self.pseudo.current_right_value[self.mask]
+        energy_current_value = self.energy.current_right_value[self.mask]
+        energy_new_value = self.energy.new_right_value[self.mask]
+        shape = energy_new_value.shape
+        nbr_cells_to_solve = shape[0]
+        solution_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+        try:
+            if self.__external_library is not None:
+                pb_size = ctypes.c_int()
+                #
+                old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                tmp = (pressure_current_value + 2. * pseudo_current_value)
+                pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                pb_size.value = nbr_cells_to_solve
+                solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
+                                              solution, new_pressure, new_vson)
+                energy_right_new = solution[0:nbr_cells_to_solve]
+                pressure_right_new = new_pressure[0:nbr_cells_to_solve]
+                sound_velocity_right_new = new_vson[0:nbr_cells_to_solve]
+            else:
+                my_variables = {'EquationOfState': self.proprietes.material.eos,
+                                'OldDensity': density_current_value,
+                                'NewDensity': density_new_value,
+                                'Pressure': pressure_current_value + 2. * pseudo_current_value,
+                                'OldEnergy': energy_current_value}
+                self._function_to_vanish.setVariables(my_variables)
+                solution = self._solver.computeSolution(energy_current_value)
+                new_pressure_value, _, new_vson_value = \
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                energy_right_new = solution
+                pressure_right_new = new_pressure_value
+                sound_velocity_right_new = new_vson_value
+                self._function_to_vanish.eraseVariables()
+        except ValueError as err:
+            raise err
+        self.pressure.classical_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToClassicField(pressure_left_new, pressure_right_new)
+        self.pressure.enriched_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToEnrichField(pressure_left_new, pressure_right_new)
         #
-        self.energy.classical_part.new_value = \
-            EnrichedField.fromGeometryToClassicField(nrj_t_plus_dt_g, nrj_t_plus_dt_d)
-        self.energy.enriched_part.new_value = \
-            EnrichedField.fromGeometryToEnrichField(nrj_t_plus_dt_g, nrj_t_plus_dt_d)
+        self.energy.classical_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToClassicField(energy_left_new, energy_right_new)
+        self.energy.enriched_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToEnrichField(energy_left_new, energy_right_new)
         #
-        self.sound_velocity.classical_part.new_value = \
-            EnrichedField.fromGeometryToClassicField(cson_t_plus_dt_g, cson_t_plus_dt_d)
-        self.sound_velocity.enriched_part.new_value = \
-            EnrichedField.fromGeometryToEnrichField(cson_t_plus_dt_g, cson_t_plus_dt_d)
+        self.sound_velocity.classical_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToClassicField(sound_velocity_left_new, sound_velocity_right_new)
+        self.sound_velocity.enriched_part.new_value[self.mask] = \
+            EnrichedField.fromGeometryToEnrichField(sound_velocity_left_new, sound_velocity_right_new)
 
-    def computeNewSize(self, noeuds, time_step=None):
+#    def computeSize(self, topologie, vecteur_coord_noeuds):
+    def computeNewSize(self, topologie, vecteur_coord_noeuds, time_step=None):
         """
         Calcul des nouvelles longueurs de l'élément
         """
@@ -271,42 +257,42 @@ class Element1dEnriched(Element1d):
         """
         Calcul des nouvelles densités
         """
-        densite_gauche_t_plus_dt = self.density.current_left_value * \
-            self._taille_gauche_t / self._taille_gauche_t_plus_dt
-        densite_droite_t_plus_dt = self.density.current_right_value * \
-            self._taille_droite_t / self._taille_droite_t_plus_dt
-        self.density.classical_part.new_value = \
+        densite_gauche_t_plus_dt = self.density.current_left_value[self.mask] * \
+            self._taille_gauche_t[self.mask] / self._taille_gauche_t_plus_dt[self.mask]
+        densite_droite_t_plus_dt = self.density.current_right_value[self.mask] * \
+            self._taille_droite_t[self.mask] / self._taille_droite_t_plus_dt[self.mask]
+        self.density.classical_part.new_value[self.mask] = \
             EnrichedField.fromGeometryToClassicField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
-        self.density.enriched_part.new_value = \
+        self.density.enriched_part.new_value[self.mask] = \
             EnrichedField.fromGeometryToEnrichField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
 
     def computeNewPseudo(self, delta_t):
         """
         Calcul de la nouvelle pseudo
         """
-        rho_t_gauche = self.density.current_left_value
-        rho_t_plus_dt_gauche = self.density.new_left_value
-        cson_t_gauche = self.sound_velocity.current_left_value
+        rho_t_gauche = self.density.current_left_value[self.mask]
+        rho_t_plus_dt_gauche = self.density.new_left_value[self.mask]
+        cson_t_gauche = self.sound_velocity.current_left_value[self.mask]
         pseudo_gauche = \
             Element1d.computePseudo(delta_t, rho_t_gauche,
                                     rho_t_plus_dt_gauche,
-                                    self._taille_gauche_t_plus_dt,
+                                    self._taille_gauche_t_plus_dt[self.mask],
                                     cson_t_gauche,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
-        rho_t_droite = self.density.current_right_value
-        rho_t_plus_dt_droite = self.density.new_right_value
-        cson_t_droite = self.sound_velocity.current_right_value
+        rho_t_droite = self.density.current_right_value[self.mask]
+        rho_t_plus_dt_droite = self.density.new_right_value[self.mask]
+        cson_t_droite = self.sound_velocity.current_right_value[self.mask]
         pseudo_droite = \
             Element1d.computePseudo(delta_t, rho_t_droite,
                                     rho_t_plus_dt_droite,
-                                    self._taille_droite_t_plus_dt,
+                                    self._taille_droite_t_plus_dt[self.mask],
                                     cson_t_droite,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
-        self.pseudo.classical_part.new_value = \
+        self.pseudo.classical_part.new_value[self.mask] = \
             EnrichedField.fromGeometryToClassicField(pseudo_gauche, pseudo_droite)
-        self.pseudo.enriched_part.new_value = \
+        self.pseudo.enriched_part.new_value[self.mask] = \
             EnrichedField.fromGeometryToEnrichField(pseudo_gauche, pseudo_droite)
 
     def computeNewTimeStep(self):
@@ -314,34 +300,26 @@ class Element1dEnriched(Element1d):
         Calcul du pas de temps
         """
         cfl = self.proprietes.numeric.cfl
-        rho_t_gauche = self.density.current_left_value
-        rho_t_plus_dt_gauche = self.density.new_left_value
-        cson_t_plus_dt_gauche = self.sound_velocity.new_left_value
-        pseudo_gauche = self.pseudo.current_left_value
+        rho_t_gauche = self.density.current_left_value[self.mask]
+        rho_t_plus_dt_gauche = self.density.new_left_value[self.mask]
+        cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self.mask]
+        pseudo_gauche = self.pseudo.current_left_value[self.mask]
         dt_g = \
             Element1d.computeTimeStep(cfl, rho_t_gauche,
                                       rho_t_plus_dt_gauche,
-                                      self._taille_gauche_t_plus_dt,
+                                      self._taille_gauche_t_plus_dt[self.mask],
                                       cson_t_plus_dt_gauche,
                                       pseudo_gauche)
 
-        rho_t_droite = self.density.current_right_value
-        rho_t_plus_dt_droite = self.density.new_right_value
-        cson_t_plus_dt_droite = self.sound_velocity.new_right_value
-        pseudo_droite = self.pseudo.current_right_value
+        rho_t_droite = self.density.current_right_value[self.mask]
+        rho_t_plus_dt_droite = self.density.new_right_value[self.mask]
+        cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self.mask]
+        pseudo_droite = self.pseudo.current_right_value[self.mask]
         dt_d = \
             Element1d.computeTimeStep(cfl, rho_t_droite,
                                       rho_t_plus_dt_droite,
-                                      self._taille_droite_t_plus_dt,
+                                      self._taille_droite_t_plus_dt[self.mask],
                                       cson_t_plus_dt_droite,
                                       pseudo_droite)
 
         self._dt = dt_g + dt_d  # Bizarre --> A vérifier
-
-    def incrementVariables(self):
-        """
-        Incrémentation des variables
-        """
-        super(Element1dEnriched, self).incrementVariables()
-        self._taille_gauche_t = self._taille_gauche_t_plus_dt
-        self._taille_droite_t = self._taille_droite_t_plus_dt
