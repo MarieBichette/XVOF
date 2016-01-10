@@ -47,7 +47,7 @@ class Element(object):
             if topologie.dimension == 2:
                 vec_coord[ielem][1] = vecteur_y_node[nodes_index].mean()
             if topologie.dimension == 3:
-                vec_coord[ielem][2] = vecteur_z_node[nodes.index].mean()
+                vec_coord[ielem][2] = vecteur_z_node[nodes_index].mean()
         return vec_coord
 
     def __init__(self, number_of_elements, proprietes):
@@ -68,6 +68,7 @@ class Element(object):
         self._fields_manager.addClassicalField('Energy', self._shape[0],
                                                proprietes.material.energie_init,
                                                proprietes.material.energie_init)
+ 
     ##############################################################
     # DEFINITIONS DES PROPRIETES
     ##############################################################
@@ -184,7 +185,7 @@ class Element(object):
     #############################################################
 
     @abstractmethod
-    def computeNewPressure(self):
+    def computeNewPressure(self, mask):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
@@ -198,26 +199,26 @@ class Element(object):
         """
 
     @abstractmethod
-    def computeNewSize(self, topologie, time_step=None):
+    def computeNewSize(self, topologie, mask, time_step=None):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
         """
 
     @abstractmethod
-    def computeNewDensity(self):
+    def computeNewDensity(self, mask):
         """
         Calcul de la densité à l'instant t+dt basé sur
         la conservation de la masse
         """
 
     @abstractmethod
-    def computeNewPseudo(self, time_step):
+    def computeNewPseudo(self, time_step, mask):
         """
         Calcul de la nouvelle pseudo
         """
 
     @abstractmethod
-    def computeNewTimeStep(self):
+    def computeNewTimeStep(self, mask):
         """
         Calcul du nouveau pas de temps
         """
