@@ -20,20 +20,20 @@ class Node(object):
     # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
     def __init__(self, nbr_of_nodes, position_initiale, dim=1, vitesse_initiale=None):
-	"""
-	:param dim: dimension du problème à traiter (par défaut 1)
-	:param nbr_of_nodes: nombre de noeuds du problème
-	:param position_initiale: vecteur des positions initiales
-	:param vitesse_initiale: vecteur des vitesses initiales
-
-	:type dim: int
-	:type nbr_of_nodes: int
-	:type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
-	:type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
-	"""
-	# Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
-	# les différentes dimensions
-	self.__shape = (nbr_of_nodes, dim)
+        """
+    	:param dim: dimension du problème à traiter (par défaut 1)
+    	:param nbr_of_nodes: nombre de noeuds du problème
+    	:param position_initiale: vecteur des positions initiales
+    	:param vitesse_initiale: vecteur des vitesses initiales
+    
+    	:type dim: int
+    	:type nbr_of_nodes: int
+    	:type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+    	:type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+    	"""
+        # Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
+        # les différentes dimensions
+        self.__shape = (nbr_of_nodes, dim)
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if position_initiale.shape != self.__shape:
@@ -186,7 +186,7 @@ class Node(object):
             self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] / vecteur_nb_noeuds_par_element[elements_voisins])
             self._invmasse[ind_node] = 1. / self._masse[ind_node]
 
-    def calculer_nouvo_coord(self, delta_t=1.0):
+    def calculer_nouvo_coord(self, delta_t):
         """
         Calcul de la coordonnée au temps t+dt
 

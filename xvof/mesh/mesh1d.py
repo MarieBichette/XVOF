@@ -33,6 +33,8 @@ class Mesh1d(object):
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
         self.cells = Element1d(nbr_cells, properties)
+        self._all_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
+        self._all_cells[:] = True
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------
@@ -76,13 +78,13 @@ class Mesh1d(object):
         """
         Computation of cells sizes at t+dt
         """
-        self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, delta_t)
+        self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, self._all_cells, time_step=delta_t)
 
     def computeNewCellsDensities(self):
         """
         Computation of cells densities at t+dt
         """
-        self.cells.computeNewDensity()
+        self.cells.computeNewDensity(mask=self._all_cells)
 
     def computeNewCellsPressures(self):
         """
@@ -97,7 +99,7 @@ class Mesh1d(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        self.cells.computeNewPseudo(delta_t)
+        self.cells.computeNewPseudo(delta_t, mask=self._all_cells)
 
     def computeNewNodesForces(self):
         """
@@ -116,7 +118,7 @@ class Mesh1d(object):
         """
         Computation of new time step
         """
-        self.cells.computeNewTimeStep()
+        self.cells.computeNewTimeStep(mask=self._all_cells)
         return self.cells.dt.min()
 
     def applyPressure(self, surface, pressure):
@@ -179,27 +181,27 @@ class Mesh1d(object):
         """
         Pressure field
         """
-        return self.cells.pressure.current_value
+        return self.cells.pressure_field
 
     @property
     def density_field(self):
         """
         Density field
         """
-        return self.cells.density.current_value
+        return self.cells.density_field
 
     @property
     def energy_field(self):
         """
         Internal energy field
         """
-        return self.cells.energy.current_value
+        return self.cells.energy_field
 
     @property
     def pseudoviscosity_field(self):
         """
         Pseudoviscosity field
         """
-        return self.cells.pseudo.current_value
+        return self.cells.pseudoviscosity_field
 
 

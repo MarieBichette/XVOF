@@ -8,14 +8,8 @@ Classe définissant un élément enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 from xvof.element import Element1d
-from xvof.solver.newtonraphson import NewtonRaphson
-from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.fields.enrichedfield import EnrichedField
 import ctypes
-import os
-
-EXTERNAL_LIBRARY = 'vnr_internal_energy_evolution.so'
-#EXTERNAL_LIBRARY = None
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ###### DEFINITION DES CLASSES & FONCTIONS  ###############
@@ -24,19 +18,24 @@ class Element1dEnriched(Element1d):
     """
     Une classe pour les éléments enrichis dans le cas 1d
     """
-    def __init__(self, number_of_elements, properties, mask, old_element, pos_discontin=0.5):
+    def __init__(self, number_of_elements, properties):
         super(Element1dEnriched, self).__init__(number_of_elements, properties)
         #
-        self._fields_manager.moveClassicalToEnrichedFields()
+        self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
         #
+        self._pos_disc = 0.5 # La rupture est au milieu de l'élément
         self._fields_manager.addClassicalField('taille_gauche', number_of_elements,
-                                               old_element.size_t * pos_discontin,
-                                               old_element.size_t_plus_dt * pos_discontin)
+                                               self.size_t * self._pos_disc,
+                                               self.size_t_plus_dt * self._pos_disc)
         self._fields_manager.addClassicalField('taille_droite', number_of_elements,
-                                               old_element.size_t * (1. - pos_discontin),
-                                               old_element.size_t_plus_dt * (1. - pos_discontin))
-        self._mask = mask
+                                               self.size_t * (1. - self._pos_disc),
+                                               self.size_t_plus_dt * (1. - self._pos_disc))
+        self._classiques = np.empty(self._shape, dtype=np.bool, order='C')
+        self._classiques[:] = True
 
+    # --------------------------------------------------------
+    #            DEFINITION DES PROPRIETES                   #
+    # --------------------------------------------------------
     @property
     def taille_gauche(self):
         return self._fields_manager.getField('taille_gauche')
@@ -44,14 +43,83 @@ class Element1dEnriched(Element1d):
     @property
     def taille_droite(self):
         return self._fields_manager.getField('taille_droite')
+    
+    @property
+    def _enriched(self):
+        '''
+        Retourne les éléments enrichis sous forme de masque
+        '''
+        return ~self._classiques
+
+    @property
+    def masse(self):
+        """ Masse de l'ï¿½lï¿½ment """
+        return self.size_t * self.proprietes.geometric.section * \
+            self.density.current_value
+
+    @property
+    def pressure_field(self):
+        """
+        Pressure field
+        """
+        p = []
+        for i in xrange(self.number_of_cells):
+            if self._classiques[i]:
+                p.append(self.pressure.current_value[i])
+            elif self._enriched[i]:
+                p.append(self.pressure.current_left_value[i])
+                p.append(self.pressure.current_right_value[i])
+        return p
+
+    @property
+    def density_field(self):
+        """
+        Density field
+        """
+        p = []
+        for i in xrange(self.number_of_cells):
+            if self._classiques[i]:
+                p.append(self.density.current_value[i])
+            elif self._enriched[i]:
+                p.append(self.density.current_left_value[i])
+                p.append(self.density.current_right_value[i])
+        return p
+
+    @property
+    def energy_field(self):
+        """
+        Internal energy field
+        """
+        p = []
+        for i in xrange(self.number_of_cells):
+            if self._classiques[i]:
+                p.append(self.energy.current_value[i])
+            elif self._enriched[i]:
+                p.append(self.energy.current_left_value[i])
+                p.append(self.energy.current_right_value[i])
+        return p
+
+    @property
+    def pseudoviscosity_field(self):
+        """
+        Pseudoviscosity field
+        """
+        p = []
+        for i in xrange(self.number_of_cells):
+            if self._classiques[i]:
+                p.append(self.pseudo.current_value[i])
+            elif self._enriched[i]:
+                p.append(self.pseudo.current_left_value[i])
+                p.append(self.pseudo.current_right_value[i])
+        return p
 
     def getLeftPartCoordinates(self, topologie, vec_coord_noeuds):
         """
         Position du centre de l'élément au temps t
         """
         connectivity = np.array(topologie._nodes_belonging_to_cell)
-        vec_min = min(vec_coord_noeuds[connectivity[self.mask]])
-        vec_coord =  vec_min + self.taille_gauche[self.mask] / 2.
+        vec_min = min(vec_coord_noeuds[connectivity[self._enriched]])
+        vec_coord =  vec_min + self.taille_gauche[self._enriched] / 2.
         return vec_coord
 
     def getRightPartCoordinates(self, topologie, vec_coord_noeuds):
@@ -59,8 +127,8 @@ class Element1dEnriched(Element1d):
         Position du centre de l'élément au temps t
         """
         connectivity = np.array(topologie._nodes_belonging_to_cell)
-        vec_max = max(vec_coord_noeuds[connectivity[self.mask]])
-        vec_coord =  vec_max - self.taille_droite[self.mask] / 2.
+        vec_max = max(vec_coord_noeuds[connectivity[self._enriched]])
+        vec_coord =  vec_max - self.taille_droite[self._enriched] / 2.
         return vec_coord
 
     def __str__(self):
@@ -128,20 +196,26 @@ class Element1dEnriched(Element1d):
         au pas de temps suivant
         Formulation v-e
         """
+        # -----------------------------
+        # Pression éléments classiques
+        # -----------------------------
+        super(Element1dEnriched, self).computeNewPressure(mask=self._classiques)
+        # -----------------------------
         # Pression partie gauche
-        density_current_value = self.density.current_left_value[self.mask]
-        density_new_value = self.density.new_left_value[self.mask]
-        pressure_current_value = self.pressure.current_left_value[self.mask]
-        pseudo_current_value = self.pseudo.current_left_value[self.mask]
-        energy_current_value = self.energy.current_left_value[self.mask]
-        energy_new_value = self.energy.new_left_value[self.mask]
+        # -----------------------------
+        density_current_value = self.density.current_left_value[self._enriched]
+        density_new_value = self.density.new_left_value[self._enriched]
+        pressure_current_value = self.pressure.current_left_value[self._enriched]
+        pseudo_current_value = self.pseudo.current_left_value[self._enriched]
+        energy_current_value = self.energy.current_left_value[self._enriched]
+        energy_new_value = self.energy.new_left_value[self._enriched]
         shape = energy_new_value.shape
         nbr_cells_to_solve = shape[0]
         solution_value = np.zeros(shape, dtype=np.float64, order='C')
         new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
         new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
         try:
-            if self.__external_library is not None:
+            if self._external_library is not None:
                 pb_size = ctypes.c_int()
                 #
                 old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
@@ -174,20 +248,22 @@ class Element1dEnriched(Element1d):
                 self._function_to_vanish.eraseVariables()
         except ValueError as err:
             raise err
+        # -----------------------------
         # Pression partie droite
-        density_current_value = self.density.current_right_value[self.mask]
-        density_new_value = self.density.new_right_value[self.mask]
-        pressure_current_value = self.pressure.current_right_value[self.mask]
-        pseudo_current_value = self.pseudo.current_right_value[self.mask]
-        energy_current_value = self.energy.current_right_value[self.mask]
-        energy_new_value = self.energy.new_right_value[self.mask]
+        # -----------------------------
+        density_current_value = self.density.current_right_value[self._enriched]
+        density_new_value = self.density.new_right_value[self._enriched]
+        pressure_current_value = self.pressure.current_right_value[self._enriched]
+        pseudo_current_value = self.pseudo.current_right_value[self._enriched]
+        energy_current_value = self.energy.current_right_value[self._enriched]
+        energy_new_value = self.energy.new_right_value[self._enriched]
         shape = energy_new_value.shape
         nbr_cells_to_solve = shape[0]
         solution_value = np.zeros(shape, dtype=np.float64, order='C')
         new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
         new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
         try:
-            if self.__external_library is not None:
+            if self._external_library is not None:
                 pb_size = ctypes.c_int()
                 #
                 old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
@@ -220,106 +296,116 @@ class Element1dEnriched(Element1d):
                 self._function_to_vanish.eraseVariables()
         except ValueError as err:
             raise err
-        self.pressure.classical_part.new_value[self.mask] = \
+        self.pressure.new_value[self._enriched] = \
             EnrichedField.fromGeometryToClassicField(pressure_left_new, pressure_right_new)
-        self.pressure.enriched_part.new_value[self.mask] = \
+        self.pressure.new_enr_value[self._enriched] = \
             EnrichedField.fromGeometryToEnrichField(pressure_left_new, pressure_right_new)
         #
-        self.energy.classical_part.new_value[self.mask] = \
+        self.energy.new_value[self._enriched] = \
             EnrichedField.fromGeometryToClassicField(energy_left_new, energy_right_new)
-        self.energy.enriched_part.new_value[self.mask] = \
+        self.energy.new_enr_value[self._enriched] = \
             EnrichedField.fromGeometryToEnrichField(energy_left_new, energy_right_new)
         #
-        self.sound_velocity.classical_part.new_value[self.mask] = \
+        self.sound_velocity.new_value[self._enriched] = \
             EnrichedField.fromGeometryToClassicField(sound_velocity_left_new, sound_velocity_right_new)
-        self.sound_velocity.enriched_part.new_value[self.mask] = \
+        self.sound_velocity.new_enr_value[self._enriched] = \
             EnrichedField.fromGeometryToEnrichField(sound_velocity_left_new, sound_velocity_right_new)
 
-#    def computeSize(self, topologie, vecteur_coord_noeuds):
-    def computeNewSize(self, topologie, vecteur_coord_noeuds, time_step=None):
+    def computeNewSize(self, topologie, vecteur_coord_noeuds, vecteur_vitesse_noeuds,
+                       vecteur_vitesse_enr_noeud, time_step = None):
         """
         Calcul des nouvelles longueurs de l'élément
         """
-        # Les noeuds sont classés par coord croissante
-        nod_g = noeuds[0]
-        nod_d = noeuds[1]
-        self._taille_gauche_t_plus_dt = self._taille_gauche_t + \
-            (0.5 * (nod_d.upundemi_classique[0] - nod_g.upundemi_enrichi[0]) -
-             0.5 * (nod_g.upundemi_classique[0] - nod_g.upundemi_enrichi[0])) \
-            * time_step
-        self._taille_droite_t_plus_dt = self._taille_droite_t + \
-            (0.5 * (nod_d.upundemi_classique[0] + nod_d.upundemi_enrichi[0]) -
-             0.5 * (nod_g.upundemi_classique[0] + nod_d.upundemi_enrichi[0])) \
-            * time_step
-
+        # Calcul des tailles des éléments classiques
+        super(Element1dEnriched, self).computeNewSize(topologie, vecteur_coord_noeuds, mask=self._classiques,
+                                                      time_step=time_step)
+        # Calcul des tailles des parties gauches des éléments enrichis
+        connectivity = np.array(topologie._nodes_belonging_to_cell)[self._enriched]
+        self.taille_gauche.new_value[self._enriched] = self.taille_gauche.current_value[self._enriched] +\
+            (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]) -
+             0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]))\
+             * time_step
+        self.taille_droite.new_value[self._enriched] = self.taille_droite.current_value[self._enriched] +\
+            (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]) -
+             0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]))\
+             * time_step
 
     def computeNewDensity(self):
         """
         Calcul des nouvelles densités
         """
-        densite_gauche_t_plus_dt = self.density.current_left_value[self.mask] * \
-            self._taille_gauche_t[self.mask] / self._taille_gauche_t_plus_dt[self.mask]
-        densite_droite_t_plus_dt = self.density.current_right_value[self.mask] * \
-            self._taille_droite_t[self.mask] / self._taille_droite_t_plus_dt[self.mask]
-        self.density.classical_part.new_value[self.mask] = \
+        # Calcul des densités des éléments classiques
+        super(Element1dEnriched, self).computeNewDensity(mask=self._classiques)
+        #
+        densite_gauche_t_plus_dt = self.density.current_left_value[self._enriched] * \
+            self.taille_gauche.current_value[self._enriched] / self.taille_gauche.new_value[self._enriched]
+        densite_droite_t_plus_dt = self.density.current_right_value[self._enriched] * \
+            self.taille_droite.current_value[self._enriched] / self.taille_droite.new_value[self._enriched]
+        self.density.new_value[self._enriched] = \
             EnrichedField.fromGeometryToClassicField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
-        self.density.enriched_part.new_value[self.mask] = \
+        self.density.new_enr_value[self._enriched] = \
             EnrichedField.fromGeometryToEnrichField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
 
     def computeNewPseudo(self, delta_t):
         """
         Calcul de la nouvelle pseudo
         """
-        rho_t_gauche = self.density.current_left_value[self.mask]
-        rho_t_plus_dt_gauche = self.density.new_left_value[self.mask]
-        cson_t_gauche = self.sound_velocity.current_left_value[self.mask]
+        # calcul de la pseudo des éléments classique
+        super(Element1dEnriched, self).computeNewPseudo(delta_t, mask=self._classiques)
+        #
+        rho_t_gauche = self.density.current_left_value[self._enriched]
+        rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
+        cson_t_gauche = self.sound_velocity.current_left_value[self._enriched]
         pseudo_gauche = \
             Element1d.computePseudo(delta_t, rho_t_gauche,
                                     rho_t_plus_dt_gauche,
-                                    self._taille_gauche_t_plus_dt[self.mask],
+                                    self.taille_gauche.new_value[self._enriched],
                                     cson_t_gauche,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
-        rho_t_droite = self.density.current_right_value[self.mask]
-        rho_t_plus_dt_droite = self.density.new_right_value[self.mask]
-        cson_t_droite = self.sound_velocity.current_right_value[self.mask]
+        rho_t_droite = self.density.current_right_value[self._enriched]
+        rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
+        cson_t_droite = self.sound_velocity.current_right_value[self._enriched]
         pseudo_droite = \
             Element1d.computePseudo(delta_t, rho_t_droite,
                                     rho_t_plus_dt_droite,
-                                    self._taille_droite_t_plus_dt[self.mask],
+                                    self.taille_droite.new_value[self._enriched],
                                     cson_t_droite,
                                     self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
-        self.pseudo.classical_part.new_value[self.mask] = \
+        self.pseudo.new_value[self._enriched] = \
             EnrichedField.fromGeometryToClassicField(pseudo_gauche, pseudo_droite)
-        self.pseudo.enriched_part.new_value[self.mask] = \
+        self.pseudo.new_enr_value[self._enriched] = \
             EnrichedField.fromGeometryToEnrichField(pseudo_gauche, pseudo_droite)
 
     def computeNewTimeStep(self):
         """
         Calcul du pas de temps
         """
+        # calcul du pas de temps pour les éléments classiques
+        super(Element1dEnriched, self).computeNewTimeStep(mask=self._classiques)
+        #
         cfl = self.proprietes.numeric.cfl
-        rho_t_gauche = self.density.current_left_value[self.mask]
-        rho_t_plus_dt_gauche = self.density.new_left_value[self.mask]
-        cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self.mask]
-        pseudo_gauche = self.pseudo.current_left_value[self.mask]
+        rho_t_gauche = self.density.current_left_value[self._enriched]
+        rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
+        cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self._enriched]
+        pseudo_gauche = self.pseudo.current_left_value[self._enriched]
         dt_g = \
             Element1d.computeTimeStep(cfl, rho_t_gauche,
                                       rho_t_plus_dt_gauche,
-                                      self._taille_gauche_t_plus_dt[self.mask],
+                                      self.taille_gauche.new_value[self._enriched],
                                       cson_t_plus_dt_gauche,
                                       pseudo_gauche)
 
-        rho_t_droite = self.density.current_right_value[self.mask]
-        rho_t_plus_dt_droite = self.density.new_right_value[self.mask]
-        cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self.mask]
-        pseudo_droite = self.pseudo.current_right_value[self.mask]
+        rho_t_droite = self.density.current_right_value[self._enriched]
+        rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
+        cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self._enriched]
+        pseudo_droite = self.pseudo.current_right_value[self._enriched]
         dt_d = \
             Element1d.computeTimeStep(cfl, rho_t_droite,
                                       rho_t_plus_dt_droite,
-                                      self._taille_droite_t_plus_dt[self.mask],
+                                      self.taille_droite.new_value[self._enriched],
                                       cson_t_plus_dt_droite,
                                       pseudo_droite)
 
-        self._dt = dt_g + dt_d  # Bizarre --> A vérifier
+        self._dt[self._enriched] = dt_g + dt_d  # Bizarre --> A vérifier

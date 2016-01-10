@@ -3,7 +3,6 @@
 """
 Classe définissant un critère de rupture basé sur la pression minimum
 """
-from xvof.element.element1denriched import Element1dEnriched
 from xvof.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
@@ -16,5 +15,4 @@ class MinimumPressureCriterion(RuptureCriterion):
         self.__minimum_pressure = pmin
 
     def checkCriterion(self, cells, *args, **kwargs):
-        if not isinstance(cells, Element1dEnriched):
-            return cells.pressure.new_value < self.__minimum_pressure
+        return cells.pressure.new_value < self.__minimum_pressure

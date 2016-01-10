@@ -5,38 +5,58 @@ Classe définissant un champ enrichi comme
 composition de deux champs classiques
 """
 from xvof.fields.field import Field
+import numpy as np
 
 
-class EnrichedField(object):
+class EnrichedField(Field):
     '''
     Champ physique = champ physique classique + enrichi
     '''
-    def __init__(self, size, current, new):
-
-        self.__classical = Field(size, current, new)
-        self.__enriched = Field(size, 0., 0.)
+    def __init__(self, size, current_value, new_value):
+        super(EnrichedField, self).__init__(size, current_value, new_value)
+        self.__enr_values = {'current': np.empty([size], dtype=np.float64, order='C'),
+                         'new': np.empty([size], dtype=np.float64, order='C')}
+        self.__enr_values['current'][:] = 0.
+        self.__enr_values['new'][:] = 0.
 
     def incrementValues(self):
         '''
         Incrémente les valeurs du champ
         '''
-        self.__classical.incrementValues()
-        self.__enriched.incrementValues()
+        super(EnrichedField, self).incrementValues()
+        self.__enr_values['current'][:] = self.__enr_values['new'][:]
+        
+        
+    @property
+    def current_enr_value(self):
+        '''
+        Valeur actuelle (au temps t) du champ
+
+        :return: une copie des valeurs du champs au temps courant
+        :rtype: numpy.array
+        '''
+        return self.__enr_values['current'][:]
 
     @property
-    def classical_part(self):
+    def new_enr_value(self):
         '''
-        Renvoie le champ classique
-        '''
-        return self.__classical
+        Nouvelle valeur (au temps t+dt) du champ
 
-    @property
-    def enriched_part(self):
+        :return: une copie des valeurs du champs au temps futur
+        :rtype: numpy.array
         '''
-        Renvoie le champ enrichi
+        return self.__enr_values['new'][:]
+
+    @new_enr_value.setter
+    def new_enr_value(self, value):
         '''
-        return self.__enriched  
-    
+        Setter de la nouvelle valeur du champ
+
+        :param value: nouvelle valeur du champ à fixer
+        :type value: float ou numpy.array
+        '''
+        self.__enr_values['new'][:] = value
+
     @classmethod
     def fromGeometryToEnrichField(cls, champ_gauche, champ_droite):
         """
@@ -70,27 +90,27 @@ class EnrichedField(object):
         '''
         Renvoie la valeur courante du champ à gauche dans l'élément enrichi
         '''
-        return EnrichedField.fromEnrichToLeftPartField(self.__classical.current_value, self.__enriched.current_value)
+        return EnrichedField.fromEnrichToLeftPartField(self.current_value, self.current_enr_value)
 
     @property
     def current_right_value(self):
         '''
         Renvoie la valeur courante du champ à droite dans l'élément enrichi
         '''
-        return EnrichedField.fromEnrichToRightPartField(self.__classical.current_value, self.__enriched.current_value)
+        return EnrichedField.fromEnrichToRightPartField(self.current_value, self.current_enr_value)
 
     @property
     def new_left_value(self):
         '''
         Renvoie la nouvelle valeur du champ à gauche dans l'élément enrichi
         '''
-        return EnrichedField.fromEnrichToLeftPartField(self.__classical.new_value, self.__enriched.new_value)
+        return EnrichedField.fromEnrichToLeftPartField(self.new_value, self.new_enr_value)
 
     @property
     def new_right_value(self):
         '''
         Renvoie la nouvelle valeur du  champ à droite dans l'élément enrichi
         '''
-        return EnrichedField.fromEnrichToRightPartField(self.__classical.new_value, self.__enriched.new_value)
+        return EnrichedField.fromEnrichToRightPartField(self.new_value, self.new_enr_value)
 
 

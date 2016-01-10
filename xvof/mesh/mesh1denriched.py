@@ -1,266 +1,218 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base dï¿½finissant un maillage 1d
+Base class for one dimensional mesh
 """
 
 import numpy as np
-from xvof.element.element1d import Element1d
 from xvof.element.element1denriched import Element1dEnriched
 from xvof.mesh.topology1d import Topology1D
-from xvof.node.node1d import Node1d
+from xvof.node.node1denriched import Node1dEnriched
 
 class Mesh1dEnriched(object):
     """
-    Une classe dï¿½finissant un maillage 1d
+    This class defines a one dimensional mesh with potential enrichment
     """
-    def __init__(self, properties, initial_coordinates=np.linspace(0, 1, 11),
-                 initial_velocities=np.zeros(11)):
+    def __init__(self, properties, initial_coordinates, initial_velocities):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
-            message = "Les vecteurs initiaux de vitesse et coordonnï¿½es"
-            message += " n'ont pas la mï¿½me taille"
+            message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
-        if len(np.shape(initial_coordinates)) != 1:
-            message = "Il s'agit d'un maillage 1D ï¿½ initialiser avec des"
-            message += " vecteurs ï¿½ une dimension!"
+        if np.shape(initial_coordinates)[1] != 1:
+            message = ("""A 1D mesh must have one dimensional vector which is not the case"""
+                       """ for initial coordinates vector!""")
             raise ValueError(message)
-        self.__ruptured_cells = []
-        ####
-        # Crï¿½ation des noeuds
-        nodes = []
-        for n in xrange(np.shape(initial_coordinates)[0]):
-            poz = initial_coordinates[n]
-            vit = initial_velocities[n]
-            nod = Node1d(poz_init=np.array([poz]),
-                         vit_init=np.array([vit]),
-                         section=properties.geometric.section)
-            nodes.append(nod)
-        nbr_nodes = len(nodes)
-        ####
-        # Crï¿½ation des mailles
-        cells = []
-        for _ in xrange(nbr_nodes - 1):
-            cells.append(Element1d(properties))
-        ####
-        # Crï¿½ation de la topologie
-        self.__topologie = Topology1D(nodes, cells)
+        # ---------------------------------------------
+        # Nodes creation
+        # ---------------------------------------------
+        nbr_nodes = np.shape(initial_coordinates)[0]
+        self.nodes = Node1dEnriched(nbr_nodes, initial_coordinates, initial_velocities,
+                            section=properties.geometric.section)
+        # ---------------------------------------------
+        # Cells creation
+        # ---------------------------------------------
+        nbr_cells = nbr_nodes - 1
+        self.cells = Element1dEnriched(nbr_cells, properties)
+        # ---------------------------------------------
+        # Topology creation
+        # ---------------------------------------------
+        self.__topologie = Topology1D(nbr_nodes, nbr_cells)
+        # ---------------------------------------------
+        # Ruptured cells vector
+        # ---------------------------------------------
+        self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
     def computeNodesMasses(self):
-        """ Calcul de la masse de chaque noeud"""
-        for noeud in self.__topologie.nodes:
-            neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
-            noeud.calculer_masse_wilkins(neighbours_cells)
+        """ Nodal mass computation """
+        vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
+        vecteur_nb_noeuds_par_element[:] = 2
+        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
 
     def computeNewNodesVelocities(self, delta_t):
-        """ Calcul de la nouvelle vitesse de chaque noeud ï¿½ t+dt"""
-        for noeud in self.__topologie.nodes:
-            noeud.calculer_nouvo_vitesse(delta_t)
+        """
+        Computation of nodes velocities at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
+        self.nodes.calculer_nouvo_vitesse(delta_t)
 
     def computeNewNodesCoordinates(self, delta_t):
-        """ Calcul des nouvelles coordonnï¿½es de chaque noeud ï¿½ t+dt"""
-        for noeud in self.__topologie.nodes:
-            noeud.calculer_nouvo_coord(delta_t)
+        """
+        Computation of nodes coordinates at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
+        self.nodes.calculer_nouvo_coord(delta_t)
 
     def computeCellsSizes(self):
-        '''
-        Calcul de la taille des ï¿½lï¿½ments ï¿½ t
-        '''
-        for cell in self.__topologie.cells:
-            nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.computeSize(nodes)
+        """
+        Computation of cells sizes at t
+        """
+        self.cells.computeSize(self.__topologie, self.nodes.xt)
 
     def computeNewCellsSizes(self, delta_t):
-        """ Calcul de la nouvelle taille de chaque ï¿½lï¿½ment ï¿½ t+dt"""
-        for cell in self.__topologie.cells:
-            nodes = self.__topologie._getNodesBelongingToCell(cell)
-            cell.computeNewSize(nodes, delta_t)
+        """
+        Computation of cells sizes at t+dt
+        """
+        self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, self.nodes.upundemi, self.nodes.upundemi_enrichi,
+                                  time_step=delta_t)
 
     def computeNewCellsDensities(self):
-        """ Calcul des nouvelles densitï¿½s de chaque ï¿½lï¿½ment ï¿½ t+dt"""
-        for cell in self.__topologie.cells:
-            cell.computeNewDensity()
+        """
+        Computation of cells densities at t+dt
+        """
+        self.cells.computeNewDensity()
 
     def computeNewCellsPressures(self):
-        """ Calcul des nouvelles pressions de chaque ï¿½lï¿½ment ï¿½ t+dt"""
-        for cell in self.__topologie.cells:
-            if cell not in self.__ruptured_cells:
-                cell.computeNewPressure()
+        """
+        Computation of cells pressure at t+dt
+        """
+        self.cells.computeNewPressure()
 
     def computeNewCellsPseudoViscosities(self, delta_t):
-        """ Calcul de la nouvelle pseudo ï¿½ t+dt"""
-        for cell in self.__topologie.cells:
-            cell.computeNewPseudo(delta_t)
+        """
+        Computation of cells pseudoviscosities at t+dt
+
+        :var delta_t: time step
+        :type delta_t: float
+        """
+        self.cells.computeNewPseudo(delta_t)
 
     def computeNewNodesForces(self):
-        """ Calcul des nouvelles forces de chaque noeud ï¿½ t+dt"""
-        for noeud in self.__topologie.nodes:
-            neighbours_cells = self.__topologie._getCellsInContactWithNode(noeud)
-            noeud.calculer_nouvo_force(neighbours_cells, isrightboundary=self.__topologie._isRightBoundary(noeud),
-                                       isleftboundary=self.__topologie._isLeftBoundary(noeud))
+        """
+        Computation of nodes forces at t+dt
+        """
+        self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value,
+                                        self.cells.pressure.new_enr_value, self.cells.pseudo.new_enr_value)
 
     def increment(self):
-        """ Passage au pas de temps suivant"""
-        for noeud in self.__topologie.nodes:
-            noeud.incrementer()
-        for cell in self.__topologie.cells:
-            cell.incrementVariables()
+        """
+        Moving to next time step
+        """
+        self.nodes.incrementer()
+        self.cells.incrementVariables()
 
     def computeNewTimeStep(self):
-        """ Calcul du pas de temps critique """
-        min_dt = 1.0e+09
-        for cell in self.__topologie.cells:
-            cell.computeNewTimeStep()
-            if cell.delta_t < min_dt:
-                min_dt = cell.delta_t
-        return min_dt
+        """
+        Computation of new time step
+        """
+        self.cells.computeNewTimeStep()
+        return self.cells.dt.min()
 
     def applyPressure(self, surface, pressure):
         """
-        Appliquer une pressure donnï¿½e sur
-        les frontieres gauche ou droite
-        """
-        if surface.lower() not in ("gauche", "droite"):
-            raise(ValueError("Sur la surface <gauche> ou <droite> est possible en 1d!"))
-        if (surface.lower() == 'gauche'):
-            self.__topologie.nodes[0].applyPressure(pressure)
-        else:
-            self.__topologie.nodes[-1].applyPressure(-pressure)
+        Apply a given pressure on left or right boundary
 
-    @property
-    def velocity_t_minus_half_field(self):
-        """ Champ de vitesse ï¿½ t-1/2"""
-        return [node.umundemi for node in self.__topologie.nodes]
+        :var surface: name of the surface where pressure has to be imposed
+        :var pressure: value of the pressure to impose
+        :type surface: str ('left' | 'right')
+        :type pressure: float
+        """
+        if surface.lower() not in ("left", "right"):
+            raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+        if (surface.lower() == 'left'):
+            self.nodes.applyPressure(0, pressure)
+        else:
+            self.nodes.applyPressure(-1, -pressure)
+
+    def getRupturedCells(self, rupture_criterion):
+        """
+        Find the cells where the rupture criterion is checked and store them
+
+        :var rupture_criterion: rupture criterion
+        :type rupture_criterion: RuptureCriterion
+        """
+        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
+
+    def applyRuptureTreatment(self, treatment):
+        """
+        Apply the rupture treatment on the cells enforcing the rupture criterion
+
+        :var treatment: rupture treatment
+        :type treatment: RuptureTreatment
+        """
+        if self.__ruptured_cells.any() and not self.cells._enriched.any(): # On enrichi qu'une fois
+            cells_to_be_enr = self.__ruptured_cells
+            nodes_to_be_enr = np.array(self.__topologie._nodes_belonging_to_cell)[self.__ruptured_cells]
+            print "==> ENRICHISSEMENT DES ELEMENTS : ", cells_to_be_enr
+            print "==> ENRICHISSEMENT DES NOEUDS : ", nodes_to_be_enr
+            self.cells._classiques[cells_to_be_enr] = False
+            self.nodes._classiques[nodes_to_be_enr] = False
+            self.cells.taille_droite.new_value = 0.5 * self.cells.size_t_plus_dt
+            self.cells.taille_gauche.new_value = 0.5 * self.cells.size_t_plus_dt
 
     @property
     def velocity_field(self):
-        """ Champ de vitesse ï¿½ t+1/2"""
-        return [node.upundemi for node in self.__topologie.nodes]
-
-    @property
-    def coord_t_field(self):
-        """ Champ de position ï¿½ t"""
-        return [node.coordt for node in self.__topologie.nodes]
+        """
+        Node velocity field
+        """
+        return self.nodes.upundemi
 
     @property
     def nodes_coordinates(self):
-        """ Champ de position ï¿½ t+dt"""
-        return [node.coordtpdt for node in self.__topologie.nodes]
+        """
+        Nodes coordinates
+        """
+        return self.nodes.xtpdt
 
     @property
     def cells_coordinates(self):
         """
-        Champ de position des ï¿½lï¿½ments ï¿½ t
-        (Moyenne des champs de position ï¿½ t des noeuds)
+        Cells coordinates (coordinates of cells centers)
         """
-        res = []
-        for elem in self.__topologie.cells:
-            nodes = self.__topologie._getNodesBelongingToCell(elem)
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.getLeftPartCoordinates(nodes))
-                res.append(elem.getRightPartCoordinates(nodes))
-            elif isinstance(elem, Element1d):
-                res.append(elem.getCoordinates(nodes))
-        return res
-
-    @property
-    def force_field(self):
-        """ Champ de force nodale"""
-        return [node.force for node in self.__topologie.nodes]
-
-    @property
-    def size_t_field(self):
-        """ Tailles des ï¿½lï¿½ments ï¿½ t"""
-        return [elem.taille_t for elem in self.__topologie.cells]
-
-    @property
-    def size_t_plus_dt_field(self):
-        """ Tailles des ï¿½lï¿½ments ï¿½ t"""
-        return [elem.taille_t_plus_dt for elem in self.__topologie.cells]
+        res = self.cells.getCoordinates(self.cells.number_of_cells, self.__topologie, self.nodes.xt)
+        for i in xrange(self.cells.number_of_cells):
+            if self.cells._enriched[i]:
+                nodes_index = self.__topologie.getNodesBelongingToCell(i)
+                res[i] = self.nodes.xt[nodes_index][0] + self.cells.taille_gauche.current_value[i] / 2.
+                res = np.insert(res, i + 1, self.nodes.xt[nodes_index][1] - self.cells.taille_droite.current_value[i] / 2., axis=0)
+        return res 
 
     @property
     def pressure_field(self):
-        """ Champ de pression ï¿½ t"""
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.pressure.current_left_value)
-                res.append(elem.pressure.current_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.pressure.current_value)
-        return res
-
-    @property
-    def pressure_t_plus_dt_field(self):
-        """ Champ de pression ï¿½ t+dt"""
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.pressure.new_left_value)
-                res.append(elem.pressure.new_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.pressure.new_value)
-        return res
+        """
+        Pressure field
+        """
+        return self.cells.pressure_field
 
     @property
     def density_field(self):
-        """ Champ de densitï¿½ ï¿½ t"""
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.density.current_left_value)
-                res.append(elem.density.current_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.density.current_value)
-        return res
-
-    @property
-    def rho_t_plus_dt_field(self):
-        """ Champ de densitï¿½ ï¿½ t+dt"""
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.density.new_left_value)
-                res.append(elem.density.new_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.density.new_value)
-        return res
+        """
+        Density field
+        """
+        return self.cells.density_field
 
     @property
     def energy_field(self):
-        """ Champ d'ï¿½nergie interne ï¿½ t"""
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.energy.current_left_value)
-                res.append(elem.energy.current_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.energy.current_value)
-        return res
+        """
+        Internal energy field
+        """
+        return self.cells.energy_field
 
     @property
     def pseudoviscosity_field(self):
-        """ Champ de pseudo """
-        res = []
-        for elem in self.__topologie.cells:
-            if isinstance(elem, Element1dEnriched):
-                res.append(elem.pseudo.current_left_value)
-                res.append(elem.pseudo.current_right_value)
-            elif isinstance(elem, Element1d):
-                res.append(elem.pseudo.current_value)
-        return res
-
-    def getRupturedCells(self, rupture_criterion):
-        """ Liste des mailles endommagï¿½es"""
-        for elem in self.__topologie.cells:
-            if rupture_criterion.checkCriterion(elem):
-                self.__ruptured_cells.append(elem)
-
-    def applyRuptureTreatment(self, treatment):
         """
-        Application du traitement de rupture sur la liste
-        de cells passï¿½e en arguments
+        Pseudoviscosity field
         """
-        ruptured_cells = self.__ruptured_cells[:]
-        for cell in ruptured_cells:
-            treatment.applyTreatment(cell, TOPOLOGIE=self.__topologie,
-                                     MAILLES_ROMPUES=self.__ruptured_cells)
+        return self.cells.pseudoviscosity_field
