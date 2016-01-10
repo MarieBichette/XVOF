@@ -194,10 +194,10 @@ class MieGruneisen(EquationOfStateBase):
         pb = vson2 < 0
         if pb.any():
             msg = "Carré de la vitesse du son < 0\n"
-            msg += "specific_volume = {:15.9g}\n".format(specific_volume)
-            msg += "pressure = {:15.9g}\n".format(pressure)
-            msg += "dpsurde = {:15.9g}\n".format(gampervol)
-            msg += "dpdv = {:15.9g}\n".format(dpdv)
+            msg += "specific_volume = {}\n".format(specific_volume[pb])
+            msg += "pressure = {}\n".format(pressure[pb])
+            msg += "dpsurde = {}\n".format(gampervol[pb])
+            msg += "dpdv = {}\n".format(dpdv[pb])
             raise ValueError(msg)
         vson = vson2 ** 0.5
         #
