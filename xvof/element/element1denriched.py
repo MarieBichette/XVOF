@@ -200,116 +200,117 @@ class Element1dEnriched(Element1d):
         # Pression éléments classiques
         # -----------------------------
         super(Element1dEnriched, self).computeNewPressure(mask=self._classiques)
-        # -----------------------------
-        # Pression partie gauche
-        # -----------------------------
-        density_current_value = self.density.current_left_value[self._enriched]
-        density_new_value = self.density.new_left_value[self._enriched]
-        pressure_current_value = self.pressure.current_left_value[self._enriched]
-        pseudo_current_value = self.pseudo.current_left_value[self._enriched]
-        energy_current_value = self.energy.current_left_value[self._enriched]
-        energy_new_value = self.energy.new_left_value[self._enriched]
-        shape = energy_new_value.shape
-        nbr_cells_to_solve = shape[0]
-        solution_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
-        try:
-            if self._external_library is not None:
-                pb_size = ctypes.c_int()
-                #
-                old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                tmp = (pressure_current_value + 2. * pseudo_current_value)
-                pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                pb_size.value = nbr_cells_to_solve
-                solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
-                                              solution, new_pressure, new_vson)
-                energy_left_new = solution[0:nbr_cells_to_solve]
-                pressure_left_new = new_pressure[0:nbr_cells_to_solve]
-                sound_velocity_left_new = new_vson[0:nbr_cells_to_solve]
-            else:
-                my_variables = {'EquationOfState': self.proprietes.material.eos,
-                                'OldDensity': density_current_value,
-                                'NewDensity': density_new_value,
-                                'Pressure': pressure_current_value + 2. * pseudo_current_value,
-                                'OldEnergy': energy_current_value}
-                self._function_to_vanish.setVariables(my_variables)
-                solution = self._solver.computeSolution(energy_current_value)
-                new_pressure_value, _, new_vson_value = \
-                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
-                energy_left_new = solution
-                pressure_left_new = new_pressure_value
-                sound_velocity_left_new = new_vson_value
-                self._function_to_vanish.eraseVariables()
-        except ValueError as err:
-            raise err
-        # -----------------------------
-        # Pression partie droite
-        # -----------------------------
-        density_current_value = self.density.current_right_value[self._enriched]
-        density_new_value = self.density.new_right_value[self._enriched]
-        pressure_current_value = self.pressure.current_right_value[self._enriched]
-        pseudo_current_value = self.pseudo.current_right_value[self._enriched]
-        energy_current_value = self.energy.current_right_value[self._enriched]
-        energy_new_value = self.energy.new_right_value[self._enriched]
-        shape = energy_new_value.shape
-        nbr_cells_to_solve = shape[0]
-        solution_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
-        try:
-            if self._external_library is not None:
-                pb_size = ctypes.c_int()
-                #
-                old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                tmp = (pressure_current_value + 2. * pseudo_current_value)
-                pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                pb_size.value = nbr_cells_to_solve
-                solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-                self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
-                                              solution, new_pressure, new_vson)
-                energy_right_new = solution[0:nbr_cells_to_solve]
-                pressure_right_new = new_pressure[0:nbr_cells_to_solve]
-                sound_velocity_right_new = new_vson[0:nbr_cells_to_solve]
-            else:
-                my_variables = {'EquationOfState': self.proprietes.material.eos,
-                                'OldDensity': density_current_value,
-                                'NewDensity': density_new_value,
-                                'Pressure': pressure_current_value + 2. * pseudo_current_value,
-                                'OldEnergy': energy_current_value}
-                self._function_to_vanish.setVariables(my_variables)
-                solution = self._solver.computeSolution(energy_current_value)
-                new_pressure_value, _, new_vson_value = \
-                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
-                energy_right_new = solution
-                pressure_right_new = new_pressure_value
-                sound_velocity_right_new = new_vson_value
-                self._function_to_vanish.eraseVariables()
-        except ValueError as err:
-            raise err
-        self.pressure.new_value[self._enriched] = \
-            EnrichedField.fromGeometryToClassicField(pressure_left_new, pressure_right_new)
-        self.pressure.new_enr_value[self._enriched] = \
-            EnrichedField.fromGeometryToEnrichField(pressure_left_new, pressure_right_new)
-        #
-        self.energy.new_value[self._enriched] = \
-            EnrichedField.fromGeometryToClassicField(energy_left_new, energy_right_new)
-        self.energy.new_enr_value[self._enriched] = \
-            EnrichedField.fromGeometryToEnrichField(energy_left_new, energy_right_new)
-        #
-        self.sound_velocity.new_value[self._enriched] = \
-            EnrichedField.fromGeometryToClassicField(sound_velocity_left_new, sound_velocity_right_new)
-        self.sound_velocity.new_enr_value[self._enriched] = \
-            EnrichedField.fromGeometryToEnrichField(sound_velocity_left_new, sound_velocity_right_new)
+        if self._enriched.any():
+            # -----------------------------
+            # Pression partie gauche
+            # -----------------------------
+            density_current_value = self.density.current_left_value[self._enriched]
+            density_new_value = self.density.new_left_value[self._enriched]
+            pressure_current_value = self.pressure.current_left_value[self._enriched]
+            pseudo_current_value = self.pseudo.current_left_value[self._enriched]
+            energy_current_value = self.energy.current_left_value[self._enriched]
+            energy_new_value = self.energy.new_left_value[self._enriched]
+            shape = energy_new_value.shape
+            nbr_cells_to_solve = shape[0]
+            solution_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            try:
+                if self._external_library is not None:
+                    pb_size = ctypes.c_int()
+                    #
+                    old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    tmp = (pressure_current_value + 2. * pseudo_current_value)
+                    pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    pb_size.value = nbr_cells_to_solve
+                    solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
+                                                  solution, new_pressure, new_vson)
+                    energy_left_new = solution[0:nbr_cells_to_solve]
+                    pressure_left_new = new_pressure[0:nbr_cells_to_solve]
+                    sound_velocity_left_new = new_vson[0:nbr_cells_to_solve]
+                else:
+                    my_variables = {'EquationOfState': self.proprietes.material.eos,
+                                    'OldDensity': density_current_value,
+                                    'NewDensity': density_new_value,
+                                    'Pressure': pressure_current_value + 2. * pseudo_current_value,
+                                    'OldEnergy': energy_current_value}
+                    self._function_to_vanish.setVariables(my_variables)
+                    solution = self._solver.computeSolution(energy_current_value)
+                    new_pressure_value, _, new_vson_value = \
+                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                    energy_left_new = solution
+                    pressure_left_new = new_pressure_value
+                    sound_velocity_left_new = new_vson_value
+                    self._function_to_vanish.eraseVariables()
+            except ValueError as err:
+                raise err
+            # -----------------------------
+            # Pression partie droite
+            # -----------------------------
+            density_current_value = self.density.current_right_value[self._enriched]
+            density_new_value = self.density.new_right_value[self._enriched]
+            pressure_current_value = self.pressure.current_right_value[self._enriched]
+            pseudo_current_value = self.pseudo.current_right_value[self._enriched]
+            energy_current_value = self.energy.current_right_value[self._enriched]
+            energy_new_value = self.energy.new_right_value[self._enriched]
+            shape = energy_new_value.shape
+            nbr_cells_to_solve = shape[0]
+            solution_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            try:
+                if self._external_library is not None:
+                    pb_size = ctypes.c_int()
+                    #
+                    old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    tmp = (pressure_current_value + 2. * pseudo_current_value)
+                    pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    pb_size.value = nbr_cells_to_solve
+                    solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+                    self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
+                                                  solution, new_pressure, new_vson)
+                    energy_right_new = solution[0:nbr_cells_to_solve]
+                    pressure_right_new = new_pressure[0:nbr_cells_to_solve]
+                    sound_velocity_right_new = new_vson[0:nbr_cells_to_solve]
+                else:
+                    my_variables = {'EquationOfState': self.proprietes.material.eos,
+                                    'OldDensity': density_current_value,
+                                    'NewDensity': density_new_value,
+                                    'Pressure': pressure_current_value + 2. * pseudo_current_value,
+                                    'OldEnergy': energy_current_value}
+                    self._function_to_vanish.setVariables(my_variables)
+                    solution = self._solver.computeSolution(energy_current_value)
+                    new_pressure_value, _, new_vson_value = \
+                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                    energy_right_new = solution
+                    pressure_right_new = new_pressure_value
+                    sound_velocity_right_new = new_vson_value
+                    self._function_to_vanish.eraseVariables()
+            except ValueError as err:
+                raise err
+            self.pressure.new_value[self._enriched] = \
+                EnrichedField.fromGeometryToClassicField(pressure_left_new, pressure_right_new)
+            self.pressure.new_enr_value[self._enriched] = \
+                EnrichedField.fromGeometryToEnrichField(pressure_left_new, pressure_right_new)
+            #
+            self.energy.new_value[self._enriched] = \
+                EnrichedField.fromGeometryToClassicField(energy_left_new, energy_right_new)
+            self.energy.new_enr_value[self._enriched] = \
+                EnrichedField.fromGeometryToEnrichField(energy_left_new, energy_right_new)
+            #
+            self.sound_velocity.new_value[self._enriched] = \
+                EnrichedField.fromGeometryToClassicField(sound_velocity_left_new, sound_velocity_right_new)
+            self.sound_velocity.new_enr_value[self._enriched] = \
+                EnrichedField.fromGeometryToEnrichField(sound_velocity_left_new, sound_velocity_right_new)
 
     def computeNewSize(self, topologie, vecteur_coord_noeuds, vecteur_vitesse_noeuds,
                        vecteur_vitesse_enr_noeud, time_step = None):
@@ -319,16 +320,17 @@ class Element1dEnriched(Element1d):
         # Calcul des tailles des éléments classiques
         super(Element1dEnriched, self).computeNewSize(topologie, vecteur_coord_noeuds, mask=self._classiques,
                                                       time_step=time_step)
-        # Calcul des tailles des parties gauches des éléments enrichis
-        connectivity = np.array(topologie._nodes_belonging_to_cell)[self._enriched]
-        self.taille_gauche.new_value[self._enriched] = self.taille_gauche.current_value[self._enriched] +\
-            (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]) -
-             0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]))\
-             * time_step
-        self.taille_droite.new_value[self._enriched] = self.taille_droite.current_value[self._enriched] +\
-            (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]) -
-             0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]))\
-             * time_step
+        if self._enriched.any():
+            # Calcul des tailles des parties gauches des éléments enrichis
+            connectivity = np.array(topologie._nodes_belonging_to_cell)[self._enriched]
+            self.taille_gauche.new_value[self._enriched] = self.taille_gauche.current_value[self._enriched] +\
+                (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]) -
+                 0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,0]]))\
+                 * time_step
+            self.taille_droite.new_value[self._enriched] = self.taille_droite.current_value[self._enriched] +\
+                (0.5 * (vecteur_vitesse_noeuds[connectivity[:,1]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]) -
+                 0.5 * (vecteur_vitesse_noeuds[connectivity[:,0]] - vecteur_vitesse_enr_noeud[connectivity[:,1]]))\
+                 * time_step
 
     def computeNewDensity(self):
         """
@@ -337,14 +339,15 @@ class Element1dEnriched(Element1d):
         # Calcul des densités des éléments classiques
         super(Element1dEnriched, self).computeNewDensity(mask=self._classiques)
         #
-        densite_gauche_t_plus_dt = self.density.current_left_value[self._enriched] * \
-            self.taille_gauche.current_value[self._enriched] / self.taille_gauche.new_value[self._enriched]
-        densite_droite_t_plus_dt = self.density.current_right_value[self._enriched] * \
-            self.taille_droite.current_value[self._enriched] / self.taille_droite.new_value[self._enriched]
-        self.density.new_value[self._enriched] = \
-            EnrichedField.fromGeometryToClassicField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
-        self.density.new_enr_value[self._enriched] = \
-            EnrichedField.fromGeometryToEnrichField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
+        if self._enriched.any():
+            densite_gauche_t_plus_dt = self.density.current_left_value[self._enriched] * \
+                self.taille_gauche.current_value[self._enriched] / self.taille_gauche.new_value[self._enriched]
+            densite_droite_t_plus_dt = self.density.current_right_value[self._enriched] * \
+                self.taille_droite.current_value[self._enriched] / self.taille_droite.new_value[self._enriched]
+            self.density.new_value[self._enriched] = \
+                EnrichedField.fromGeometryToClassicField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
+            self.density.new_enr_value[self._enriched] = \
+                EnrichedField.fromGeometryToEnrichField(densite_gauche_t_plus_dt, densite_droite_t_plus_dt)
 
     def computeNewPseudo(self, delta_t):
         """
@@ -353,30 +356,31 @@ class Element1dEnriched(Element1d):
         # calcul de la pseudo des éléments classique
         super(Element1dEnriched, self).computeNewPseudo(delta_t, mask=self._classiques)
         #
-        rho_t_gauche = self.density.current_left_value[self._enriched]
-        rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
-        cson_t_gauche = self.sound_velocity.current_left_value[self._enriched]
-        pseudo_gauche = \
-            Element1d.computePseudo(delta_t, rho_t_gauche,
-                                    rho_t_plus_dt_gauche,
-                                    self.taille_gauche.new_value[self._enriched],
-                                    cson_t_gauche,
-                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
-
-        rho_t_droite = self.density.current_right_value[self._enriched]
-        rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
-        cson_t_droite = self.sound_velocity.current_right_value[self._enriched]
-        pseudo_droite = \
-            Element1d.computePseudo(delta_t, rho_t_droite,
-                                    rho_t_plus_dt_droite,
-                                    self.taille_droite.new_value[self._enriched],
-                                    cson_t_droite,
-                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
-
-        self.pseudo.new_value[self._enriched] = \
-            EnrichedField.fromGeometryToClassicField(pseudo_gauche, pseudo_droite)
-        self.pseudo.new_enr_value[self._enriched] = \
-            EnrichedField.fromGeometryToEnrichField(pseudo_gauche, pseudo_droite)
+        if self._enriched.any():
+            rho_t_gauche = self.density.current_left_value[self._enriched]
+            rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
+            cson_t_gauche = self.sound_velocity.current_left_value[self._enriched]
+            pseudo_gauche = \
+                Element1d.computePseudo(delta_t, rho_t_gauche,
+                                        rho_t_plus_dt_gauche,
+                                        self.taille_gauche.new_value[self._enriched],
+                                        cson_t_gauche,
+                                        self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+    
+            rho_t_droite = self.density.current_right_value[self._enriched]
+            rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
+            cson_t_droite = self.sound_velocity.current_right_value[self._enriched]
+            pseudo_droite = \
+                Element1d.computePseudo(delta_t, rho_t_droite,
+                                        rho_t_plus_dt_droite,
+                                        self.taille_droite.new_value[self._enriched],
+                                        cson_t_droite,
+                                        self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+    
+            self.pseudo.new_value[self._enriched] = \
+                EnrichedField.fromGeometryToClassicField(pseudo_gauche, pseudo_droite)
+            self.pseudo.new_enr_value[self._enriched] = \
+                EnrichedField.fromGeometryToEnrichField(pseudo_gauche, pseudo_droite)
 
     def computeNewTimeStep(self):
         """
@@ -385,27 +389,28 @@ class Element1dEnriched(Element1d):
         # calcul du pas de temps pour les éléments classiques
         super(Element1dEnriched, self).computeNewTimeStep(mask=self._classiques)
         #
-        cfl = self.proprietes.numeric.cfl
-        rho_t_gauche = self.density.current_left_value[self._enriched]
-        rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
-        cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self._enriched]
-        pseudo_gauche = self.pseudo.current_left_value[self._enriched]
-        dt_g = \
-            Element1d.computeTimeStep(cfl, rho_t_gauche,
-                                      rho_t_plus_dt_gauche,
-                                      self.taille_gauche.new_value[self._enriched],
-                                      cson_t_plus_dt_gauche,
-                                      pseudo_gauche)
-
-        rho_t_droite = self.density.current_right_value[self._enriched]
-        rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
-        cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self._enriched]
-        pseudo_droite = self.pseudo.current_right_value[self._enriched]
-        dt_d = \
-            Element1d.computeTimeStep(cfl, rho_t_droite,
-                                      rho_t_plus_dt_droite,
-                                      self.taille_droite.new_value[self._enriched],
-                                      cson_t_plus_dt_droite,
-                                      pseudo_droite)
-
-        self._dt[self._enriched] = dt_g + dt_d  # Bizarre --> A vérifier
+        if self._enriched.any():
+            cfl = self.proprietes.numeric.cfl
+            rho_t_gauche = self.density.current_left_value[self._enriched]
+            rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
+            cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self._enriched]
+            pseudo_gauche = self.pseudo.current_left_value[self._enriched]
+            dt_g = \
+                Element1d.computeTimeStep(cfl, rho_t_gauche,
+                                          rho_t_plus_dt_gauche,
+                                          self.taille_gauche.new_value[self._enriched],
+                                          cson_t_plus_dt_gauche,
+                                          pseudo_gauche)
+    
+            rho_t_droite = self.density.current_right_value[self._enriched]
+            rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
+            cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self._enriched]
+            pseudo_droite = self.pseudo.current_right_value[self._enriched]
+            dt_d = \
+                Element1d.computeTimeStep(cfl, rho_t_droite,
+                                          rho_t_plus_dt_droite,
+                                          self.taille_droite.new_value[self._enriched],
+                                          cson_t_plus_dt_droite,
+                                          pseudo_droite)
+    
+            self._dt[self._enriched] = dt_g + dt_d  # Bizarre --> A vérifier
