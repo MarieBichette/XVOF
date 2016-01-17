@@ -21,8 +21,8 @@ PressureField = Field("Pression [Pa]", "Champ de pression", -20e+09, 20e+09, "./
 DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 6500.0, 9500.0, "./RESULTATS/DensityField")
 InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 100000.0, "./RESULTATS/InternalEnergyField")
 PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.5e+09, "./RESULTATS/PseudoViscosityField")
-CellPositionField = Field("Position [m]", "Champ de position", 0.0, 0.03, "./RESULTATS/CellPositionField")
-NodePositionField = Field("Position [m]", "Champ de position", 0.0 , 0.03, "./RESULTATS/NodePositionField")
+CellPositionField = Field("Position [m]", "Champ de position", 0.0, 0.04, "./RESULTATS/CellPositionField")
+NodePositionField = Field("Position [m]", "Champ de position", 0.0 , 0.04, "./RESULTATS/NodePositionField")
 NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -1000.0 , 1000.0, "./RESULTATS/NodeVelocityField")
 
 class FigureManager(object):
