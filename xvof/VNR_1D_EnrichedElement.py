@@ -13,7 +13,6 @@ from xvof.rupturetreatment.imposepressure import ImposePressure
 from xvof.data.data_container import DataContainer
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
 
-
 #  =================================================
 #  SIMULATION PARAMETERS                           =
 #  =================================================
@@ -41,7 +40,6 @@ CFL = data.getCFL()
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
 RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
-RuptureTreatment = ImposePressure(0.)
 # OUTPUT
 ImagesNumber = data.getNumerOfImages()
 Dump = data.hasImagesDump()
@@ -114,7 +112,7 @@ if __name__ == '__main__':
         #              RUPTURE                         #
         # ---------------------------------------------#
         my_mesh.getRupturedCells(RuptureCriterion)
-        my_mesh.applyRuptureTreatment(RuptureTreatment)
+        my_mesh.applyRuptureTreatment(None)
         # ---------------------------------------------#
         #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
