@@ -173,7 +173,7 @@ class Mesh1dEnriched(object):
             # On ne garde qu'une seule cell à enrichir pour l'instant
             indices_cells_to_be_enr = np.where(cells_to_be_enr == True)
             cells_to_be_enr[:] = False
-            cells_to_be_enr[indices_cells_to_be_enr[0]] = True
+            cells_to_be_enr[indices_cells_to_be_enr[0][0]] = True
             #
             nodes_to_be_enr = np.array(self.__topologie._nodes_belonging_to_cell)[self.__ruptured_cells]
             print "==> ENRICHISSEMENT DES NOEUDS : ", nodes_to_be_enr
