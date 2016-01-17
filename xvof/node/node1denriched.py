@@ -34,12 +34,16 @@ class Node1dEnriched(Node1d):
         '''
         super(Node1dEnriched, self).__init__(nbr_of_nodes, poz_init, vit_init, section=section)
         # self._classiques indique quels noeuds sont classiques (non enrichis)
-        self._classiques = np.empty([self.number_of_nodes, self.dimension], dtype=np.bool, order='C')
-        self._classiques[:,:] = True
+        self._classiques = np.empty([self.number_of_nodes,], dtype=np.bool, order='C')
+        self._classiques[:] = True
         # ==> Toutes les variables enrichies sont initialisÃ©es Ã  0
         self._umundemi_enrichi = np.zeros([self.number_of_nodes, self.dimension], dtype=np.float64, order='C')
         self._upundemi_enrichi = np.zeros([self.number_of_nodes, self.dimension], dtype=np.float64, order='C')
         self._force_enrichi = np.zeros([self.number_of_nodes, 1], dtype=np.float64, order='C')
+        # 
+        # Un dictionnaire associant à chaque position de discontinuité, les masques des
+        # noeuds qui sont in et out
+        self._pos_disc = {}
 
     # ------------------------------------------------------------
     # DEFINITIONS DES PROPRIETES
@@ -72,32 +76,36 @@ class Node1dEnriched(Node1d):
         '''
         return ~self._classiques
 
+    @property
+    def velocity_field(self):
+        '''
+        Champ de vitesse vraie
+        '''
+        res = self.upundemi
+        if self._pos_disc != {}:
+            for pos_disc in self.pos_disc.keys():
+            # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
+            # des noeuds enrichis
+                mask_in_nodes = self.pos_disc[pos_disc]["inside"]
+                mask_out_nodes = self.pos_disc[pos_disc]["outside"]
+                res[mask_in_nodes] -= self.upundemi_enrichi[mask_in_nodes]
+                res[mask_out_nodes] += self.upundemi_enrichi[mask_out_nodes]
+        return res
     # ------------------------------------------------------------
     # DEFINITIONS DES METHODES
     # ------------------------------------------------------------
-    def get_inner_nodes(self, pos_disc):
-        """
-        Retourne les noeuds à l'intérieur de la rupture, c'est à dire les noeuds dont
-        les coordonnées sont plus petites que celles de la rupture
-        
-        :param pos_disc: position de la discontinuité
-        :type pos_disc: float
-        :return: un tableau de booléen marquant les noeuds à l'intérieur de la rupture 
-        :rtype: np.array([nbr_of_nodes, dim], dtype=np.bool, order='C')
-        """
-        return self._xt[self._enrichis] - pos_disc < 0  # Noeuds à gauche de la rupture (in)
-
-    def get_outer_nodes(self, pos_disc):
-        """
-        Retourne les noeuds à l'extérieur de la rupture, c'est à dire les noeuds dont
-        les coordonnées sont plus grandes que celles de la rupture
-        
-        :param pos_disc: position de la discontinuité
-        :type pos_disc: float
-        :return: un tableau de booléen marquant les noeuds à l'extérieur de la rupture 
-        :rtype: np.array([nbr_of_nodes, dim], dtype=np.bool, order='C')
-        """
-        return self._xt[self._enrichis] - pos_disc > 0  # Noeuds à droite de la rupture (in)
+    @property
+    def pos_disc(self):
+        return self._pos_disc
+    
+    @pos_disc.setter
+    def pos_disc(self, pos):
+        if not self._pos_disc.has_key(pos):
+            self._pos_disc[pos] = {}
+            mask_in = np.logical_and(self._enrichis, self._xt[:,0] - pos < 0)
+            mask_out = np.logical_and(self._enrichis, self._xt[:, 0] - pos > 0)
+            self._pos_disc[pos]["inside"] = mask_in
+            self._pos_disc[pos]["outside"] = mask_out
 
     def infos(self, index):
         """
@@ -130,7 +138,7 @@ class Node1dEnriched(Node1d):
             self.force_enrichi[self._enrichis] * self.invmasse[self._enrichis] * delta_t +\
             self.umundemi_enrichi[self._enrichis]
 
-    def calculer_nouvo_coord(self, delta_t, pos_disc=None):
+    def calculer_nouvo_coord(self, delta_t):
         """
         Calcul de la coordonnée au temps t+dt
 
@@ -140,16 +148,17 @@ class Node1dEnriched(Node1d):
         # Calcul des nouvelles coordonnées pour les noeuds non enrichis et calcul
         # des nouvelles coordoonées classiques des noeuds enrichis
         super(Node1dEnriched, self).calculer_nouvo_coord(delta_t)
-        if pos_disc is not None:
+        if self._pos_disc != {}:
+            for pos_disc in self.pos_disc.keys():
             # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
             # des noeuds enrichis
-            mask_in_nodes = self.get_inner_nodes(pos_disc)
-            mask_out_nodes = self.get_outer_nodes(pos_disc)
-            self._xtpdt[mask_in_nodes] -= self.upundemi_enrichi[mask_in_nodes] * delta_t
-            self._xtpdt[mask_out_nodes] += self.upundemi_enrichi[mask_out_nodes] * delta_t
+                mask_in_nodes = self.pos_disc[pos_disc]["inside"]
+                mask_out_nodes = self.pos_disc[pos_disc]["outside"]
+                self._xtpdt[mask_in_nodes] -= self.upundemi_enrichi[mask_in_nodes] * delta_t
+                self._xtpdt[mask_out_nodes] += self.upundemi_enrichi[mask_out_nodes] * delta_t
 
     def calculer_nouvo_force(self, topologie, vecteur_pression_classique, vecteur_pseudo_classique,
-                             vecteur_pression_enrichie, vecteur_pseudo_enrichie, pos_disc=None):
+                             vecteur_pression_enrichie, vecteur_pseudo_enrichie):
         """
         Calcul des forces agissant sur les noeuds
 
@@ -164,20 +173,22 @@ class Node1dEnriched(Node1d):
         # Calcul de la force pour les noeuds classiques et de la force classique pour les noeuds
         # enrichis
         super(Node1dEnriched, self).calculer_nouvo_force(topologie, vecteur_pression_classique, vecteur_pseudo_classique)
-        if pos_disc is not None:
-            # Suppose les éléments voisins triés par position croissante
-            connectivity = np.array(topologie._cells_in_contact_with_node[1:self.number_of_nodes - 1])
-            mask_in_nodes = self.get_inner_nodes(pos_disc)
-            mask_out_nodes = self.get_outer_nodes(pos_disc)
-            # Restriction sur les éléments concernés par l'enrichissement
-            connectivity_out = connectivity[mask_out_nodes] # Noeuds à droite
-            p_classic = vecteur_pression_classique[connectivity_out] + vecteur_pseudo_classique[connectivity_out]
-            p_enr = vecteur_pression_enrichie[connectivity_out] + vecteur_pseudo_enrichie[connectivity_out]
-            self._force_enrichi[connectivity_out][:, 0] = (p_enr[:,0] - p_classic[:,1]) * self.section
-            connectivity_in = connectivity[mask_in_nodes] # Noeuds à gauche
-            p_classic = vecteur_pression_classique[connectivity_in] + vecteur_pseudo_classique[connectivity_in]
-            p_enr = vecteur_pression_enrichie[connectivity_in] + vecteur_pseudo_enrichie[connectivity_in]
-            self._force_enrichi[connectivity_in][:, 0] = (- p_classic[:,0] - p_enr[:,1]) * self.section
+        if self._pos_disc != {}:
+            # Boucle sur les discontinuités
+            for pos_disc in self.pos_disc.keys():
+                # Suppose les éléments voisins triés par position croissante
+                connectivity = np.array(topologie._cells_in_contact_with_node[1:self.number_of_nodes - 1])
+                mask_in_nodes = self.pos_disc[pos_disc]["inside"]
+                mask_out_nodes = self.pos_disc[pos_disc]["outside"]
+                # Restriction sur les éléments concernés par l'enrichissement
+                connectivity_out = connectivity[mask_out_nodes][0] 
+                p_classic = vecteur_pression_classique[connectivity_out] + vecteur_pseudo_classique[connectivity_out]
+                p_enr = vecteur_pression_enrichie[connectivity_out] + vecteur_pseudo_enrichie[connectivity_out]
+                self._force_enrichi[mask_out_nodes] = (p_enr[0] - p_classic[1]) * self.section
+                connectivity_in = connectivity[mask_in_nodes][0]
+                p_classic = vecteur_pression_classique[connectivity_in] + vecteur_pseudo_classique[connectivity_in]
+                p_enr = vecteur_pression_enrichie[connectivity_in] + vecteur_pseudo_enrichie[connectivity_in]
+                self._force_enrichi[mask_in_nodes] = (- p_classic[0] - p_enr[1]) * self.section
 
     def incrementer(self):
         """
