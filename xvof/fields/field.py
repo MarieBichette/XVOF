@@ -1,25 +1,23 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un champ
+Implementing the Field class
 """
 import numpy as np
 
 
 class Field(object):
-    '''
-    Champ physique classique. Il est définit par une valeur actuelle et une valeur
-    future. Il s'agit en fait de deux tableaux numpy.
-    '''
+    """
+    Classical physical field on cells or nodes. Owning current and future values in numpy.arrays
+    """
     def __init__(self, size, current_value, new_value):
         """
-        :param size: taille des tableaux
-        :param current_value: valeur actuelle à fixer
-        :param new_value: valeur future à fixer
+        :param size: size of arrays (i.e nodes or cells number)
+        :param current_value: current field value
+        :param new_value: future field value
 
         :type size: int
-        :type current_value: float ou numpy.array
-        :type new_value: float ou numpy.array
+        :type current_value: float or numpy.array
+        :type new_value: float or numpy.array
         """
         self.__values = {'current': np.empty([size], dtype=np.float64, order='C'),
                          'new': np.empty([size], dtype=np.float64, order='C')}
@@ -27,37 +25,33 @@ class Field(object):
         self.__values['new'][:] = new_value
 
     def incrementValues(self):
-        '''
-        Incrémente les valeurs du champ
-        '''
+        """
+        Increment field values
+        """
         self.__values['current'][:] = self.__values['new'][:]
 
     @property
     def current_value(self):
-        '''
-        Valeur actuelle (au temps t) du champ
-
-        :return: une copie des valeurs du champs au temps courant
+        """
+        :return: a copy of current field value
         :rtype: numpy.array
-        '''
+        """
         return self.__values['current'][:]
 
     @property
     def new_value(self):
-        '''
-        Nouvelle valeur (au temps t+dt) du champ
-
-        :return: une copie des valeurs du champs au temps futur
+        """
+        :return: a copy of the future field value
         :rtype: numpy.array
-        '''
+        """
         return self.__values['new'][:]
 
     @new_value.setter
     def new_value(self, value):
-        '''
-        Setter de la nouvelle valeur du champ
+        """
+        Set value as the future value of the field
 
-        :param value: nouvelle valeur du champ à fixer
-        :type value: float ou numpy.array
-        '''
+        :param value: new field value to set
+        :type value: float or numpy.array
+        """
         self.__values['new'][:] = value
