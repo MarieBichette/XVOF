@@ -1,24 +1,18 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 Classe définissant un élément en 1d
 """
-# --------------------------------------------------------
-#               IMPORTATIONS DIVERSES                    #
-# --------------------------------------------------------
 import ctypes
-import os
 import numpy as np
+import os
 
+from xvof.data.data_container import DataContainer
 from xvof.element import Element
 from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.solver.newtonraphson import NewtonRaphson
-from xvof.data.data_container import DataContainer
 
-# --------------------------------------------------------
-#        DEFINITION DES CLASSES ET FONCTIONS             #
-# --------------------------------------------------------
-class Element1d(Element):
+
+class OneDimensionElement(Element):
     """
     Une classe pour les ï¿½lï¿½ments en 1D
     """
@@ -81,7 +75,7 @@ class Element1d(Element):
     #            DEFINITION DES PROPRIETES                   #
     # --------------------------------------------------------
     @property
-    def masse(self):
+    def mass(self):
         """ Masse de l'ï¿½lï¿½ment """
         return self.size_t * self.proprietes.geometric.section * \
             self.density.current_value
@@ -199,9 +193,9 @@ class Element1d(Element):
         Calcul de la nouvelle pseudo
         """
         self.pseudo.new_value[mask] = \
-            Element1d.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
-                                    self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-                                    self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+            OneDimensionElement.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
+                                              self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
+                                              self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
 
     def computeNewTimeStep(self, mask):
         """
@@ -209,9 +203,9 @@ class Element1d(Element):
         """
         cfl = self.proprietes.numeric.cfl
         dt = \
-            Element1d.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
-                                      self.size_t_plus_dt, self.sound_velocity.new_value,
-                                      self.pseudo.current_value)
+            OneDimensionElement.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
+                                                self.size_t_plus_dt, self.sound_velocity.new_value,
+                                                self.pseudo.current_value)
         self._dt[mask] = dt[mask]
 
     def imposePressure(self, ind_cell, pression):
