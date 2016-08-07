@@ -9,7 +9,8 @@ class Field(object):
     """
     Classical physical field on cells or nodes. Owning current and future values in numpy.arrays
     """
-    def __init__(self, size, current_value, new_value):
+
+    def __init__(self, size, current_value=0., new_value=0.):
         """
         :param size: size of arrays (i.e nodes or cells number)
         :param current_value: current field value
@@ -19,16 +20,24 @@ class Field(object):
         :type current_value: float or numpy.array
         :type new_value: float or numpy.array
         """
-        self.__values = {'current': np.empty([size], dtype=np.float64, order='C'),
-                         'new': np.empty([size], dtype=np.float64, order='C')}
-        self.__values['current'][:] = current_value
-        self.__values['new'][:] = new_value
+        self.__size = size
+        self.__current = np.empty([size], dtype=np.float64, order='C')
+        self.__future = np.empty([size], dtype=np.float64, order='C')
+        self.__current[:] = current_value
+        self.__future[:] = new_value
 
-    def incrementValues(self):
+    def __str__(self):
         """
-        Increment field values
+        :return: informations about the field
         """
-        self.__values['current'][:] = self.__values['new'][:]
+        return "{:s} of size {:d}".format(self.__class__.__name__, self.size)
+
+    @property
+    def size(self):
+        """
+        :return: the size of the field (i.e number of cells or nodes on which the field is defined)
+        """
+        return self.__size
 
     @property
     def current_value(self):
@@ -36,7 +45,7 @@ class Field(object):
         :return: a copy of current field value
         :rtype: numpy.array
         """
-        return self.__values['current'][:]
+        return self.__current[:]
 
     @property
     def new_value(self):
@@ -44,7 +53,7 @@ class Field(object):
         :return: a copy of the future field value
         :rtype: numpy.array
         """
-        return self.__values['new'][:]
+        return self.__future[:]
 
     @new_value.setter
     def new_value(self, value):
@@ -54,4 +63,10 @@ class Field(object):
         :param value: new field value to set
         :type value: float or numpy.array
         """
-        self.__values['new'][:] = value
+        self.__future[:] = value
+
+    def incrementValues(self):
+        """
+        Increment field values
+        """
+        self.__current[:] = self.__future[:]
