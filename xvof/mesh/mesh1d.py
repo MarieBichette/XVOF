@@ -4,10 +4,10 @@
 Base class for one dimensional mesh
 """
 import numpy as np
-from xvof.element.element1d import Element1d
+
+from xvof.element.one_dimension_element import OneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
-from xvof.utilities.profilingperso import timeit_file
 
 
 class Mesh1d(object):
@@ -32,7 +32,7 @@ class Mesh1d(object):
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = Element1d(nbr_cells, properties)
+        self.cells = OneDimensionElement(nbr_cells, properties)
         self._all_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
         self._all_cells[:] = True
         # ---------------------------------------------
@@ -48,7 +48,7 @@ class Mesh1d(object):
         """ Nodal mass computation """
         vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
         vecteur_nb_noeuds_par_element[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
+        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.mass, vecteur_nb_noeuds_par_element)
 
     def computeNewNodesVelocities(self, delta_t):
         """

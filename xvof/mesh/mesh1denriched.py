@@ -1,14 +1,14 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 Base class for one dimensional mesh
 """
-
 import numpy as np
-from xvof.element.element1denriched import Element1dEnriched
+
+from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1denriched import Node1dEnriched
 from xvof.utilities.profilingperso import timeit_file
+
 
 class Mesh1dEnriched(object):
     """
@@ -32,7 +32,7 @@ class Mesh1dEnriched(object):
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = Element1dEnriched(nbr_cells, properties)
+        self.cells = OneDimensionEnrichedOneDimensionElement(nbr_cells, properties)
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------
@@ -46,7 +46,7 @@ class Mesh1dEnriched(object):
         """ Nodal mass computation """
         vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
         vecteur_nb_noeuds_par_element[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.masse, vecteur_nb_noeuds_par_element)
+        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.mass, vecteur_nb_noeuds_par_element)
 
     @timeit_file("/tmp/profil.txt")
     def computeNewNodesVelocities(self, delta_t):
@@ -182,9 +182,9 @@ class Mesh1dEnriched(object):
             for pos in self.cells_coordinates[cells_to_be_enr]:
                 self.nodes.pos_disc = pos[0]
             print "==> ENRICHISSEMENT DES ELEMENTS : ", np.where(cells_to_be_enr == True)
-            self.cells._classiques[cells_to_be_enr] = False
-            self.cells.taille_droite.new_value = 0.5 * self.cells.size_t_plus_dt
-            self.cells.taille_gauche.new_value = 0.5 * self.cells.size_t_plus_dt
+            self.cells._classical[cells_to_be_enr] = False
+            self.cells.right_size.new_value = 0.5 * self.cells.size_t_plus_dt
+            self.cells.left_size.new_value = 0.5 * self.cells.size_t_plus_dt
 
     @property
     def velocity_field(self):
@@ -209,8 +209,9 @@ class Mesh1dEnriched(object):
         for i in xrange(self.cells.number_of_cells):
             if self.cells._enriched[i]:
                 nodes_index = self.__topologie.getNodesBelongingToCell(i)
-                res[i] = self.nodes.xtpdt[nodes_index][0] + self.cells.taille_gauche.new_value[i] / 2.
-                res = np.insert(res, i + 1, self.nodes.xtpdt[nodes_index][1] - self.cells.taille_droite.new_value[i] / 2., axis=0)
+                res[i] = self.nodes.xtpdt[nodes_index][0] + self.cells.left_size.new_value[i] / 2.
+                res = np.insert(res, i + 1, self.nodes.xtpdt[nodes_index][1] - self.cells.right_size.new_value[i] / 2.,
+                                axis=0)
         return res 
 
     @property

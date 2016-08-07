@@ -1,3 +1,3 @@
 from .element import Element
-from .element1d import Element1d
-from .element1denriched import Element1dEnriched
+from .one_dimension_element import OneDimensionElement
+from .one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement

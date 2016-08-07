@@ -1,15 +1,14 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 
+import numpy as np
 from os import system
 
-import numpy as np
-from xvof.element.element1d import Element1d
+from xvof.element.one_dimension_element import OneDimensionElement
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.miscellaneous import *
 from xvof.node.node1d import Node1d
 from xvof.utilities import timeit_file
-
 
 if __name__ == '__main__':
     #
@@ -27,13 +26,13 @@ if __name__ == '__main__':
         nodb = Node1d(2, np.array([7.0e-03]))
         noda._xtpdt = np.array([5.0e-03])
         nodb._xtpdt = np.array([6.25e-03])
-        my_elem = Element1d(props, 1, [noda, nodb])
+        my_elem = OneDimensionElement(props, 1, [noda, nodb])
         while(it < nit):
             my_elem.calculer_nouvo_pression()
             it += 1
 
     EE = MieGruneisen()
     NBR_ITER = 375000
-    print "Lancement profiling sur {:6d} itÃ©rations".format(NBR_ITER)
+    print "Lancement profiling sur {:6d} itérations".format(NBR_ITER)
     profil_calculer_nouvo_pression(NBR_ITER)
     system('cat /tmp/nouvo_pression.profil')

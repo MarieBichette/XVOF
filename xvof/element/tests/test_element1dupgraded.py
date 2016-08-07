@@ -3,11 +3,12 @@
 """
 Classe de test du module element1dupgraded
 """
-import unittest
 import numpy as np
+import unittest
 
-import xvof.element.element1d as el1d
 import xvof.element.element1dupgraded as el1dup
+
+import xvof.element.one_dimension_element as el1d
 from xvof.equationsofstate import MieGruneisen
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
@@ -25,7 +26,7 @@ class Element1dUpgradedTest(unittest.TestCase):
         props = properties(num_props, mat_props, geom_props)
         noda = Node1d(1, poz_init=np.array([0.6]), section=1.0e-06)
         nodb = Node1d(1, poz_init=np.array([-0.2]), section=1.0e-06)
-        my_elem = el1d.Element1d(props, 123, [noda, nodb])
+        my_elem = el1d.OneDimensionElement(props, 123, [noda, nodb])
         self.my_elem_up = el1dup.Element1dUpgraded(my_elem, 0.5)
 
     def tearDown(self):
