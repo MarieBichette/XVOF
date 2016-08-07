@@ -1,16 +1,13 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Module implémentant la classe Element
+Implementing class element
 """
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# ########### IMPORTATIONS DIVERSES  ####################
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+import numpy as np
 from abc import abstractmethod
 from copy import deepcopy
 
-import numpy as np
+from xvof.fields.field import Field
 from xvof.fields.fieldsmanager import FieldManager
 
 
@@ -57,27 +54,20 @@ class Element(object):
         self._size_t_plus_dt = np.zeros(self._shape, dtype=np.float64, order='C')
         self._properties = proprietes
         self._fields_manager = FieldManager()
-        self._fields_manager.addClassicalField('Density', self._shape[0],
-                                               proprietes.material.rho_init,
-                                               proprietes.material.rho_init)
-        self._fields_manager.addClassicalField('Pressure', self._shape[0],
-                                               proprietes.material.pression_init,
-                                               proprietes.material.pression_init)
-        self._fields_manager.addClassicalField('Pseudo', self._shape[0])
-        self._fields_manager.addClassicalField('SoundVelocity', self._shape[0])
-        self._fields_manager.addClassicalField('Energy', self._shape[0],
-                                               proprietes.material.energie_init,
+        self._fields_manager["Density"] = Field(self._shape[0], proprietes.material.rho_init,
+                                                proprietes.material.rho_init)
+        self._fields_manager["Pressure"] = Field(self._shape[0], proprietes.material.pression_init,
+                                                 proprietes.material.pression_init)
+        self._fields_manager["Energy"] = Field(self._shape[0], proprietes.material.energie_init,
                                                proprietes.material.energie_init)
- 
-    ##############################################################
-    # DEFINITIONS DES PROPRIETES
-    ##############################################################
-    #
+        self._fields_manager["Pseudo"] = Field(self._shape[0])
+        self._fields_manager["SoundVelocity"] = Field(self._shape[0])
+        
     @property
     def dt(self):
-        '''
+        """
         Pas de temps critique de la maille
-        '''
+        """
         return self._dt
 
     @property
@@ -106,41 +96,41 @@ class Element(object):
         """
         Champ masse volumique de l'élément
         """
-        return self._fields_manager.getField('Density')
+        return self._fields_manager['Density']
 
     @property
     def pressure(self):
         """
         Champ pression dans l'élément
         """
-        return self._fields_manager.getField('Pressure')
+        return self._fields_manager['Pressure']
 
     @property
     def sound_velocity(self):
         """
         Champ vitesse du son dans l'élément
         """
-        return self._fields_manager.getField('SoundVelocity')
+        return self._fields_manager['SoundVelocity']
 
     @property
     def energy(self):
         """
         Champ énergie interne de l'élément
         """
-        return self._fields_manager.getField('Energy')
+        return self._fields_manager['Energy']
 
     @property
     def pseudo(self):
         """
         Champ pseudoviscosité dans l'élément
         """
-        return self._fields_manager.getField('Pseudo')
+        return self._fields_manager['Pseudo']
 
     @property
     def fields_manager(self):
-        '''
+        """
         Renvoi une copie du gestionnaire de champs
-        '''
+        """
         return deepcopy(self._fields_manager)
 
     @property
