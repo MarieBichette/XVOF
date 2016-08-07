@@ -1,51 +1,55 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant le gestionnaire de champ
+Implementing field manager class
+
+:todo: Use Singleton metaclass
 """
+import os
+from collections import OrderedDict
+
 from xvof.fields.enrichedfield import EnrichedField
-from xvof.fields.field import Field
+from xvof.utilities.singleton import Singleton
 
 
-class FieldManager(object):
-    '''
-    Gestionnaire de champ
-    '''
+class FieldManager(OrderedDict):
+    """
+    Field manager class
+    """
+    __metaclass__ = Singleton
+
     def __init__(self):
-        self.__fields = {}
+        super(FieldManager, self).__init__()
 
-    def addClassicalField(self, name, size, current_value=0., new_value=0.):
-        '''
-        Ajoute un champ au gestionnaire
-        '''
-        if name not in self.__fields.keys():
-            self.__fields[name] = Field(size, current_value, new_value)
+    def __setitem__(self, key, value):
+        """
+        Set a field in the manager if the field doesn't yey exist or if it is an enriched field
+
+        :param key: name of the field
+        :param value: Field object
+        """
+        if key not in self.keys() or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
+            super(FieldManager, self).__setitem__(key, value)
         else:
-            raise KeyError('Le champ {:s} existe déjà dans le gestionnaire!'.format(name))
+            raise KeyError("Le champ {:s} existe déjà dans le gestionnaire!".format(key))
+
+    def __str__(self):
+        """
+        :return: informations about the contents of the manager
+        """
+        msg = "FieldManager contents :" + os.linesep
+        msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
+        return msg
 
     def moveClassicalToEnrichedFields(self, size):
-        '''
-        Transforme un champ classique en un champ enrichi
-        '''
-        for name, field in self.__fields.items():
-            self.__fields[name] = EnrichedField(size, field.current_value, field.new_value)
-
-    def getField(self, name):
-        '''
-        Retourne le champ demandé
-        '''
-        return self.__fields[name]
+        """
+        Turn all classical fields into enriched ones
+        """
+        for name, field in self.items():
+            self[name] = EnrichedField(size, field.current_value, field.new_value)
 
     def incrementFields(self):
-        '''
-        Incrémente tous les champs
-        '''
-        for field in self.__fields.values():
+        """
+        Increment all the fields registered in the manager
+        """
+        for field in self.values():
             field.incrementValues()
-
-    def printInfos(self):
-        '''
-        Quelques infos
-        '''
-        for name, field in self.__fields.items():
-            print "<-- Champ {:s} de type {}-->".format(name, type(field))
