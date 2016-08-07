@@ -6,14 +6,14 @@ Classe d√©finissant le gestionnaire d'images
 @todo: HÈriter de la classe Figure
 @todo: Transformer la classe Field en NamedTuple (cf. properties)
 """
+import matplotlib.pyplot as plt
+import numpy as np
 from collections import namedtuple
 from os import makedirs
 from os.path import exists
 
-import matplotlib.pyplot as plt
-import numpy as np
 from physic_figure import PhysicFigure
-
+from xvof.utilities.singleton import Singleton
 
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
@@ -29,6 +29,8 @@ class FigureManager(object):
     """
     Gestionnaire de figures
     """
+    __metaclass__ = Singleton
+
     def __init__(self, mesh_instance, dump=False, show=True):
         self.__mesh_instance = mesh_instance
         self.__figures_mailles = []
