@@ -14,7 +14,7 @@ from xvof.solver.newtonraphson import NewtonRaphson
 
 class OneDimensionElement(Element):
     """
-    Une classe pour les ï¿½lï¿½ments en 1D
+    Une classe pour les éléments en 1D
     """
     nbr_noeuds = 2
 
@@ -25,7 +25,7 @@ class OneDimensionElement(Element):
         Calcul de la pseudo
         """
         # pylint: disable=too-many-arguments
-        # 8 arguments semblent nï¿½cessaires...
+        # 8 arguments semblent nécessaires
         vnt = 1. / rho_old
         vnplusun = 1. / rho_new
         vnplusundemi = 0.5 * (vnt + vnplusun)
