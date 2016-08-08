@@ -4,16 +4,12 @@
 Module simpliste pour du profiling simpliste
 """
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-############ IMPORTATIONS DIVERSES  ####################
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-from time import clock, time, sleep
+import os
 import sys
+from collections import OrderedDict
+from time import clock, time, sleep
 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-####### DEFINITION DES CLASSES & FONCTIONS  ###############
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
+cumul_times = OrderedDict()
 
 def timeit_file(filename=None):
     """
@@ -41,13 +37,16 @@ def timeit_file(filename=None):
             print >> file_desc, "=" * 80
             print >> file_desc, "Appel de {:s}".format(func.__name__)
             fonction = func(*args, **kwargs)
-            end_cpu_time = clock()
-            end_real_time = time()
-            print >> file_desc, "\t Durée CPU : {:4f}s".\
-            format(end_cpu_time - begin_cpu_time)
-            print >> file_desc, "\t Durée réelle : {:4f}s".\
-            format(end_real_time - begin_real_time)
-            print >> file_desc, "=" * 80 + "\n"
+            cpu_duration = clock() - begin_cpu_time
+            real_duration = time() - begin_real_time
+            record = cumul_times.setdefault(func.__name__, [0., 0.])
+            record[0] += cpu_duration
+            record[1] += real_duration
+            print >> file_desc, "\t Durée CPU instantanée/cumulée : {:4f}/{:4f}s".format(cpu_duration, record[0])
+            print >> file_desc, "\t Durée réelle instantanée/cumulée : {:4f}/{:4f}s".format(real_duration, record[1])
+            print >> file_desc, "\t Durée CPU/réelle totale : {:4f}/{:4f}" \
+                .format(sum([rec[0] for rec in cumul_times.values()]), sum([rec[1] for rec in cumul_times.values()]))
+            print >> file_desc, "=" * 80 + os.linesep
             if filename is not None:
                 file_desc.close()
             return fonction
@@ -73,9 +72,6 @@ def logit(func):
         return fonction
     return wrapper
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if __name__ == "__main__":
     @timeit_file('toto.log')
