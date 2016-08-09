@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
+import matplotlib
+
+matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.equationsofstate.miegruneisen import MieGruneisen
@@ -9,7 +12,6 @@ from xvof.miscellaneous import numerical_props, properties
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xvof.rupturetreatment.imposepressure import ImposePressure
 from xvof.data.data_container import DataContainer
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
 

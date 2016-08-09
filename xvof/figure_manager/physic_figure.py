@@ -3,9 +3,8 @@
 """
 Classe définissant une figure
 """
+import matplotlib
 from os import sep
-
-import matplotlib.pyplot as plt
 
 
 class PhysicFigure(object):
@@ -13,8 +12,7 @@ class PhysicFigure(object):
     Figure
     """
     def __init__(self, X, Y, xlabel="X", ylabel="Y", titre="titre", save_path=None):
-        self._fig = plt.figure()
-        self._ax = self._fig.add_subplot(111)
+        self._fig, self._ax = matplotlib.pyplot.subplots()
         self._line, = self._ax.plot(X, Y, '-+')
         self._ax.set_xlabel(xlabel)
         self._ax.set_ylabel(ylabel)
@@ -22,6 +20,7 @@ class PhysicFigure(object):
         self._save_path = save_path
         self._fig_number = 1
         self._title = titre
+        matplotlib.pyplot.show(block=False)
 
     def set_y_limit(self, val_min=0., val_max=1.0):
         """ Fixation des limites en y"""
@@ -42,7 +41,10 @@ class PhysicFigure(object):
             self._line.set_ydata(Y)
         if(title_comp is not None):
             self._ax.set_title(self._title + ' ' + title_comp)
-        self._fig.canvas.draw()
+        self._ax.draw_artist(self._ax.patch)
+        self._ax.draw_artist(self._line)
+        self._fig.canvas.update()
+        self._fig.canvas.flush_events()
         if (self._save_path is not None):
             rac_path = self._save_path + sep + self._title
             fig_path = rac_path + "_{:04d}.png".format(self._fig_number)

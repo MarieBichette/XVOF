@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe dÃ©finissant le gestionnaire d'images
+Classe définissant le gestionnaire d'images
 
 @todo: Hériter de la classe Figure
 @todo: Transformer la classe Field en NamedTuple (cf. properties)
