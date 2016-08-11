@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
+import matplotlib
+
+matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from xvof.equationsofstate.miegruneisen import MieGruneisen
