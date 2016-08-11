@@ -85,7 +85,8 @@ class MieGruneisen(UserDict, EquationOfStateBase):
         :type gampervol: numpy.array
         """
         epsv = 1 - self["rhozero"] * specific_volume
-        gampervol[:] = (self["grunzero"] * (1 - epsv) + self["b"] * epsv) / specific_volume
+        gampervol[:] = 1. / specific_volume
+        gampervol *= (self["grunzero"] * (1 - epsv) + self["b"] * epsv)
         #
         targets = epsv > 0  #  Cells in compression (~targets are cells in release)
         self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
