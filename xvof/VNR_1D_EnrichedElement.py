@@ -17,22 +17,20 @@ from xvof.mesh.mesh1denriched import Mesh1dEnriched
 #  =================================================
 data = DataContainer()
 # TIME MANAGEMENT
-FinalTime = data.getFinalTime()
-InitialTimeStep = data.getInitialTimeStep()
+FinalTime = data.time.final_time
+InitialTimeStep = data.time.initial_time_step
 # GEOMETRY
 Length = data.geometric.length
 # MATTER
 InitialPressure = data.material.pression_init
 # NUMERIC
-NumberOfElements = data.getNumberOfElements()
+NumberOfElements = data.numeric.cells_number
 # LOADING
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
 RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
 # OUTPUT
-ImagesNumber = data.getNumerOfImages()
-Dump = data.hasImagesDump()
-Show = data.hasImagesShow()
+ImagesNumber = data.output.number_of_images
 #  =================================================
 
 if __name__ == '__main__':
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     if (ImagesNumber != 0):
         delta_t_images = FinalTime / ImagesNumber
-        my_fig_manager = FigureManager(my_mesh, dump=Dump, show=Show)
+        my_fig_manager = FigureManager(my_mesh, dump=data.output.images_dump, show=data.output.images_show)
         my_fig_manager.populate_figs()
     else:
         delta_t_images = FinalTime * 2.0
@@ -65,7 +63,7 @@ if __name__ == '__main__':
     my_mesh.computeCellsSizes()
     my_mesh.computeNodesMasses()
     print "CALCULUS LAUNCHED!"
-    while (time < FinalTime):
+    while time < FinalTime:
         if step % 1000 == 0:
             msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
                    """ a time step of {:15.9g} seconds\n""").format(step, time, dt)
