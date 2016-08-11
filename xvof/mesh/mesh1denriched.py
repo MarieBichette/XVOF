@@ -7,7 +7,6 @@ import numpy as np
 from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1denriched import Node1dEnriched
-from xvof.utilities.profilingperso import timeit_file
 
 
 class Mesh1dEnriched(object):
@@ -48,7 +47,6 @@ class Mesh1dEnriched(object):
         vecteur_nb_noeuds_par_element[:] = 2
         self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.mass, vecteur_nb_noeuds_par_element)
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewNodesVelocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
@@ -58,7 +56,6 @@ class Mesh1dEnriched(object):
         """
         self.nodes.calculer_nouvo_vitesse(delta_t)
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewNodesCoordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
@@ -68,14 +65,12 @@ class Mesh1dEnriched(object):
         """
         self.nodes.calculer_nouvo_coord(delta_t)
 
-    @timeit_file("/tmp/profil.txt")
     def computeCellsSizes(self):
         """
         Computation of cells sizes at t
         """
         self.cells.computeSize(self.__topologie, self.nodes.xt)
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewCellsSizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
@@ -83,21 +78,18 @@ class Mesh1dEnriched(object):
         self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, self.nodes.upundemi, self.nodes.upundemi_enrichi,
                                   time_step=delta_t)
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewCellsDensities(self):
         """
         Computation of cells densities at t+dt
         """
         self.cells.computeNewDensity()
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewCellsPressures(self):
         """
         Computation of cells pressure at t+dt
         """
         self.cells.computeNewPressure()
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewCellsPseudoViscosities(self, delta_t):
         """
         Computation of cells pseudoviscosities at t+dt
@@ -107,7 +99,6 @@ class Mesh1dEnriched(object):
         """
         self.cells.computeNewPseudo(delta_t)
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewNodesForces(self):
         """
         Computation of nodes forces at t+dt
@@ -115,7 +106,6 @@ class Mesh1dEnriched(object):
         self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value,
                                         self.cells.pressure.new_enr_value, self.cells.pseudo.new_enr_value)
 
-    @timeit_file("/tmp/profil.txt")
     def increment(self):
         """
         Moving to next time step
@@ -123,7 +113,6 @@ class Mesh1dEnriched(object):
         self.nodes.incrementer()
         self.cells.incrementVariables()
 
-    @timeit_file("/tmp/profil.txt")
     def computeNewTimeStep(self):
         """
         Computation of new time step
@@ -131,7 +120,6 @@ class Mesh1dEnriched(object):
         self.cells.computeNewTimeStep()
         return self.cells.dt.min()
 
-    @timeit_file("/tmp/profil.txt")
     def applyPressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
@@ -148,7 +136,6 @@ class Mesh1dEnriched(object):
         else:
             self.nodes.applyPressure(-1, -pressure)
 
-    @timeit_file("/tmp/profil.txt")
     def getRupturedCells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
@@ -158,7 +145,6 @@ class Mesh1dEnriched(object):
         """
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
-    @timeit_file("/tmp/profil.txt")
     def applyRuptureTreatment(self, treatment):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
