@@ -8,19 +8,17 @@ Implementing MieGruneisen class
 >>> print my_eos # doctest:+NORMALIZE_WHITESPACE
 EquationOfState : MieGruneisen
 Parameters :
+ --                czero :      3980
  --                   S1 :      1.58
  --                   S2 :         0
  --                   S3 :         0
- --                    b :       0.5
- --                czero :      3980
- --               czero2 :  15840400
- --                 dgam :    8941.9
- --                ezero :         0
- --             grunzero :       1.6
  --              rhozero :      8129
+ --             grunzero :       1.6
+ --                    b :       0.5
+ --                ezero :         0
  >>> my_eos # doctest:+NORMALIZE_WHITESPACE
- MieGruneisen(S1=1.580000, S2=0.000000, S3=0.000000, b=0.500000, czero=3980.000000, czero2=15840400.000000,
- dgam=8941.900000, ezero=0.000000, grunzero=1.600000, rhozero=8129.000000)
+ MieGruneisen(czero=3980.000000, S1=1.580000, S2=0.000000, S3=0.000000, rhozero=8129.000000, grunzero=1.600000,
+ b=0.500000, ezero=0.000000)
  >>> density = np.array([9000., 8500., 9500.], dtype=np.float64, order='C')
  >>> specific_volume = 1. / density
  >>> internal_energy = np.array([1.0e+04, 1.0e+03, 1.0e+05], dtype=np.float64, order='C')
@@ -37,35 +35,39 @@ Parameters :
  [ 13441.9  13191.9  13691.9]
 """
 import numpy as np
-from UserDict import UserDict
-from operator import getitem
+import os
+from collections import namedtuple
 
 from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
-
 
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
 
+MieGruneisenParameters = namedtuple('MieGruneisenParameters', ['czero', 'S1', 'S2', 'S3',
+                                                               'rhozero', 'grunzero', 'b', 'ezero'])
 
-class MieGruneisen(UserDict, EquationOfStateBase):
+
+class MieGruneisen(EquationOfStateBase):
     """
     Mie Gruneisen equation of state
     """
 
     def __init__(self, czero=3980.0, S1=1.58, S2=0., S3=0., rhozero=8129.0, grunzero=1.6, b=0.5, ezero=0.):
         #
-        super(MieGruneisen, self).__init__(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero, b=b,
-                                           ezero=ezero, czero2=czero ** 2, dgam=rhozero * (grunzero - b))
+        self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero,
+                                              b=b, ezero=ezero)
+        self.__czero2 = self.__param.czero ** 2
+        self.__dgam = self.__param.rhozero * (self.__param.grunzero - self.__param.b)
 
     def __str__(self):
-        message = "EquationOfState : {:s}".format(self.__class__.__name__)
-        message += "\nParameters : "
-        for key, val in sorted(self.iteritems(), key=lambda m: getitem(m, 0)):
-            message += "\n -- {:>20s} : {:>9.8g}".format(key, val)
+        message = "EquationOfState : {:s}".format(self.__class__.__name__) + os.linesep
+        message += "Parameters : "
+        for key, val in zip(self.__param._fields, self.__param):
+            message += os.linesep + " -- {:>20s} : {:>9.8g}".format(key, val)
         return message
 
     def __repr__(self):
-        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in sorted(self.iteritems(), key=lambda m: getitem(m, 0))])
+        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in zip(self.__param._fields, self.__param)])
         return "MieGruneisen({:s})".format(msg)
 
     def solveVolumeEnergy(self, specific_volume, internal_energy, pressure, vson, gampervol):
@@ -84,9 +86,9 @@ class MieGruneisen(UserDict, EquationOfStateBase):
         :param gampervol: derivative of pressure with respect to the internal energy (out)
         :type gampervol: numpy.array
         """
-        epsv = 1 - self["rhozero"] * specific_volume
+        epsv = 1 - self.__param.rhozero * specific_volume
         gampervol[:] = 1. / specific_volume
-        gampervol *= (self["grunzero"] * (1 - epsv) + self["b"] * epsv)
+        gampervol *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
         #
         targets = epsv > 0  #  Cells in compression (~targets are cells in release)
         self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
@@ -118,13 +120,13 @@ class MieGruneisen(UserDict, EquationOfStateBase):
         loc_epsv = epsv[targets]
         loc_gampervol = gampervol[targets]
         #
-        phi = self["rhozero"] * self["czero2"] * loc_epsv / (1. - loc_epsv)
+        phi = self.__param.rhozero * self.__czero2 * loc_epsv / (1. - loc_epsv)
         # einth ---> e0
-        einth = self["ezero"]
+        einth = self.__param.ezero
         #
-        dphi = -self["czero2"] / specific_volume[targets] ** 2
+        dphi = -self.__czero2 / specific_volume[targets] ** 2
         #
-        dpdv = dphi + (self["dgam"] - loc_gampervol) * \
+        dpdv = dphi + (self.__dgam - loc_gampervol) * \
                       (internal_energy[targets] - einth) / specific_volume[targets]
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
@@ -160,16 +162,16 @@ class MieGruneisen(UserDict, EquationOfStateBase):
         loc_epsv2 = loc_epsv ** 2
         # Coefficient de gruneisen
         loc_gampervol = gampervol[targets]
-        redond_a = self["S1"] + 2. * self["S2"] * loc_epsv + 3. * self["S3"] * loc_epsv2
-        denom = (1. - (self["S1"] + self["S2"] * loc_epsv + self["S3"] * loc_epsv2) * loc_epsv)
-        phi = self["rhozero"] * self["czero2"] * loc_epsv / denom ** 2
-        einth = self["ezero"] + phi * loc_epsv / (2. * self["rhozero"])
+        redond_a = self.__param.S1 + 2. * self.__param.S2 * loc_epsv + 3. * self.__param.S3 * loc_epsv2
+        denom = (1. - (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2) * loc_epsv)
+        phi = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
+        einth = self.__param.ezero + phi * loc_epsv / (2. * self.__param.rhozero)
         #
-        dphi = phi * self["rhozero"] * (-1. / loc_epsv - 2. * redond_a / denom)
+        dphi = phi * self.__param.rhozero * (-1. / loc_epsv - 2. * redond_a / denom)
         #
         deinth = phi * (-1. - loc_epsv * redond_a / denom)
         #
-        dpdv = dphi + (self["dgam"] - loc_gampervol) * \
+        dpdv = dphi + (self.__dgam - loc_gampervol) * \
                       (internal_energy[targets] - einth) / specific_volume[targets] - loc_gampervol * deinth
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
