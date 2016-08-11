@@ -5,6 +5,7 @@ Classe définissant la fonction d'évolution de l'énergie interne à annuler dans l
 Formulation V-E
 """
 import numpy as np
+
 from xvof.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
 
 
@@ -25,9 +26,10 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         old_nrj = self._variables['OldEnergy']
         p_i = np.zeros(old_rho.shape, dtype=np.float64, order='C')
         dpsurde = np.zeros(old_rho.shape, dtype=np.float64, order='C')
+        dummy = np.zeros(old_rho.shape, dtype=np.float64, order='C')
 #         for icell in xrange(old_rho.shape[0]):
 #         try:
-        (p_i, dpsurde, dummy) = eos.solveVolumeEnergy(1. / new_rho, nrj)
+        eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
 #         except ValueError as ve:
 #             print "Pb dans le calcul de la fonction et de sa dérivée!\n"
 #             raise ve
