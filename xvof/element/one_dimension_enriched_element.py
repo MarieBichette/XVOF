@@ -224,6 +224,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
             solution_value = np.zeros(shape, dtype=np.float64, order='C')
             new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
             new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            dummy = np.zeros(shape, dtype=np.float64, order='C')
             try:
                 if self._external_library is not None:
                     pb_size = ctypes.c_int()
@@ -250,8 +251,8 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                                     'OldEnergy': energy_current_value}
                     self._function_to_vanish.setVariables(my_variables)
                     solution = self._solver.computeSolution(energy_current_value)
-                    new_pressure_value, _, new_vson_value = \
-                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
+                                                                   new_vson_value, dummy)
                     energy_left_new = solution
                     pressure_left_new = new_pressure_value
                     sound_velocity_left_new = new_vson_value
@@ -272,6 +273,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
             solution_value = np.zeros(shape, dtype=np.float64, order='C')
             new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
             new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            dummy = np.zeros(shape, dtype=np.float64, order='C')
             try:
                 if self._external_library is not None:
                     pb_size = ctypes.c_int()
@@ -298,8 +300,8 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                                     'OldEnergy': energy_current_value}
                     self._function_to_vanish.setVariables(my_variables)
                     solution = self._solver.computeSolution(energy_current_value)
-                    new_pressure_value, _, new_vson_value = \
-                        self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution)
+                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
+                                                                   new_vson_value, dummy)
                     energy_right_new = solution
                     pressure_right_new = new_pressure_value
                     sound_velocity_right_new = new_vson_value
