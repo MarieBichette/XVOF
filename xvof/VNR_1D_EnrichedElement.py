@@ -5,10 +5,7 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
-from xvof.miscellaneous import geometrical_props, material_props
-from xvof.miscellaneous import numerical_props, properties
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
@@ -23,21 +20,11 @@ data = DataContainer()
 FinalTime = data.getFinalTime()
 InitialTimeStep = data.getInitialTimeStep()
 # GEOMETRY
-Length = data.getLength()
-Section = data.getSection()
+Length = data.geometric.length
 # MATTER
-if data.getEquationOfState() == 'Mie-Gruneisen':
-    EquationOfState = MieGruneisen()
-else:
-    raise ValueError("Only MieGruneisen's equation of state is available")
-InitialPressure = data.getInitialPressure()
-InitialInternalEnergy = data.getInitialInternalEnergy()
-InitialDensity = data.getInitialDensity()
+InitialPressure = data.material.pression_init
 # NUMERIC
 NumberOfElements = data.getNumberOfElements()
-QuadraticPseudoParameter = data.getQuadraticPseudoParameter()
-LinearPseudoParameter = data.getLinearPseudoParameter()
-CFL = data.getCFL()
 # LOADING
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
@@ -56,19 +43,12 @@ if __name__ == '__main__':
     dt = InitialTimeStep
     dt_crit = 2 * dt
     # ---------------------------------------------#
-    #         PROPERTIES CREATION                  #
-    # ---------------------------------------------#
-    num_props = numerical_props(QuadraticPseudoParameter, LinearPseudoParameter, CFL)
-    mat_props = material_props(InitialPressure, InitialInternalEnergy, InitialDensity, EquationOfState)
-    geom_props = geometrical_props(Section)
-    props = properties(num_props, mat_props, geom_props)
-    # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
     coord_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
     coord_init[:, 0] = np.linspace(0, Length, NumberOfElements + 1)
     vit_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
-    my_mesh = Mesh1dEnriched(props, initial_coordinates=coord_init, initial_velocities=vit_init)
+    my_mesh = Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init)
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#

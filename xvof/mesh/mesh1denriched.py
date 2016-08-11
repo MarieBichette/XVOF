@@ -4,6 +4,7 @@ Base class for one dimensional mesh
 """
 import numpy as np
 
+from xvof.data.data_container import DataContainer
 from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1denriched import Node1dEnriched
@@ -13,7 +14,8 @@ class Mesh1dEnriched(object):
     """
     This class defines a one dimensional mesh with potential enrichment
     """
-    def __init__(self, properties, initial_coordinates, initial_velocities):
+
+    def __init__(self, initial_coordinates, initial_velocities):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
@@ -26,12 +28,12 @@ class Mesh1dEnriched(object):
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = Node1dEnriched(nbr_nodes, initial_coordinates, initial_velocities,
-                            section=properties.geometric.section)
+                                    section=DataContainer().geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = OneDimensionEnrichedOneDimensionElement(nbr_cells, properties)
+        self.cells = OneDimensionEnrichedOneDimensionElement(nbr_cells)
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------

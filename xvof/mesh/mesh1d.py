@@ -5,16 +5,17 @@ Base class for one dimensional mesh
 """
 import numpy as np
 
+from xvof.data.data_container import DataContainer
 from xvof.element.one_dimension_element import OneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
-
 
 class Mesh1d(object):
     """
     This class defines a one dimensional mesh
     """
-    def __init__(self, properties, initial_coordinates, initial_velocities):
+
+    def __init__(self, initial_coordinates, initial_velocities):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
@@ -27,12 +28,12 @@ class Mesh1d(object):
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = Node1d(nbr_nodes, initial_coordinates, initial_velocities,
-                            section=properties.geometric.section)
+                            section=DataContainer().geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = OneDimensionElement(nbr_cells, properties)
+        self.cells = OneDimensionElement(nbr_cells)
         self._all_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
         self._all_cells[:] = True
         # ---------------------------------------------

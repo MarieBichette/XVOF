@@ -55,8 +55,8 @@ class OneDimensionElement(Element):
         delta_t[mask] = cfl * taille_new[mask] / cson_new[mask]
         return delta_t
 
-    def __init__(self, number_of_elements, proprietes):
-        Element.__init__(self, number_of_elements, proprietes)
+    def __init__(self, number_of_elements):
+        Element.__init__(self, number_of_elements)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
         #
@@ -71,14 +71,11 @@ class OneDimensionElement(Element):
             self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
                 [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
-    # --------------------------------------------------------
-    #            DEFINITION DES PROPRIETES                   #
-    # --------------------------------------------------------
     @property
     def mass(self):
-        """ Masse de l'ï¿½lï¿½ment """
-        return self.size_t * self.proprietes.geometric.section * \
-            self.density.current_value
+        """ Masse de l'élément """
+        return self.size_t * DataContainer().geometric.section * \
+               self.density.current_value
 
     @property
     def pressure_field(self):
@@ -147,14 +144,14 @@ class OneDimensionElement(Element):
             self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
             self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
         else:
-            my_variables = {'EquationOfState': self.proprietes.material.eos,
+            my_variables = {'EquationOfState': DataContainer().material.eos,
                             'OldDensity': density_current_value,
                             'NewDensity': density_new_value,
                             'Pressure': pressure_current_value + 2. * pseudo_current_value,
                             'OldEnergy': energy_current_value}
             self._function_to_vanish.setVariables(my_variables)
             solution = self._solver.computeSolution(energy_current_value)
-            self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
+            DataContainer().material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
                                                            new_vson_value, dummy)
             self.energy.new_value[mask] = solution
             self.pressure.new_value[mask] = new_pressure_value
@@ -196,13 +193,13 @@ class OneDimensionElement(Element):
         self.pseudo.new_value[mask] = \
             OneDimensionElement.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
                                               self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-                                              self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+                                              DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
 
     def computeNewTimeStep(self, mask):
         """
         Calcul du pas de temps dans l'ï¿½lï¿½ment
         """
-        cfl = self.proprietes.numeric.cfl
+        cfl = DataContainer().numeric.cfl
         dt = \
             OneDimensionElement.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
                                                 self.size_t_plus_dt, self.sound_velocity.new_value,

@@ -7,6 +7,7 @@ import numpy as np
 from abc import abstractmethod
 from copy import deepcopy
 
+from xvof.data.data_container import DataContainer
 from xvof.fields.field import Field
 from xvof.fields.fieldsmanager import FieldManager
 
@@ -47,19 +48,18 @@ class Element(object):
                 vec_coord[ielem][2] = vecteur_z_node[nodes_index].mean()
         return vec_coord
 
-    def __init__(self, number_of_elements, proprietes):
+    def __init__(self, number_of_elements):
         self._shape = [number_of_elements, ]
         self._dt = np.zeros(self._shape, dtype=np.float64, order='C')
         self._size_t = np.zeros(self._shape, dtype=np.float64, order='C')
         self._size_t_plus_dt = np.zeros(self._shape, dtype=np.float64, order='C')
-        self._properties = proprietes
         self._fields_manager = FieldManager()
-        self._fields_manager["Density"] = Field(self._shape[0], proprietes.material.rho_init,
-                                                proprietes.material.rho_init)
-        self._fields_manager["Pressure"] = Field(self._shape[0], proprietes.material.pression_init,
-                                                 proprietes.material.pression_init)
-        self._fields_manager["Energy"] = Field(self._shape[0], proprietes.material.energie_init,
-                                               proprietes.material.energie_init)
+        self._fields_manager["Density"] = Field(self._shape[0], DataContainer().material.rho_init,
+                                                DataContainer().material.rho_init)
+        self._fields_manager["Pressure"] = Field(self._shape[0], DataContainer().material.pression_init,
+                                                 DataContainer().material.pression_init)
+        self._fields_manager["Energy"] = Field(self._shape[0], DataContainer().material.energie_init,
+                                               DataContainer().material.energie_init)
         self._fields_manager["Pseudo"] = Field(self._shape[0])
         self._fields_manager["SoundVelocity"] = Field(self._shape[0])
         
@@ -83,13 +83,6 @@ class Element(object):
         Taille (longueur, aire, volume) de l'élément à l'instant t + dt
         """
         return self._size_t_plus_dt
-
-    @property
-    def proprietes(self):
-        """
-        Proprietes de l'élément
-        """
-        return self._properties
 
     @property
     def density(self):

@@ -5,6 +5,7 @@ Implementing the Element1dEnriched class
 import ctypes
 import numpy as np
 
+from xvof.data.data_container import DataContainer
 from xvof.element import OneDimensionElement
 from xvof.fields.enrichedfield import from_geometry_to_classic_field, from_geometry_to_enrich_field
 from xvof.fields.field import Field
@@ -14,8 +15,9 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
     """
     A collection of 1d enriched elements
     """
-    def __init__(self, number_of_elements, properties):
-        super(OneDimensionEnrichedOneDimensionElement, self).__init__(number_of_elements, properties)
+
+    def __init__(self, number_of_elements):
+        super(OneDimensionEnrichedOneDimensionElement, self).__init__(number_of_elements)
         #
         self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
         #
@@ -54,7 +56,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         """
         :return: Mass of the elements
         """
-        return self.size_t * self.proprietes.geometric.section * self.density.current_value
+        return self.size_t * DataContainer().geometric.section * self.density.current_value
 
     @property
     def pressure_field(self):
@@ -244,14 +246,14 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                     pressure_left_new = new_pressure[0:nbr_cells_to_solve]
                     sound_velocity_left_new = new_vson[0:nbr_cells_to_solve]
                 else:
-                    my_variables = {'EquationOfState': self.proprietes.material.eos,
+                    my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': density_current_value,
                                     'NewDensity': density_new_value,
                                     'Pressure': pressure_current_value + 2. * pseudo_current_value,
                                     'OldEnergy': energy_current_value}
                     self._function_to_vanish.setVariables(my_variables)
                     solution = self._solver.computeSolution(energy_current_value)
-                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
+                    DataContainer().material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
                                                                    new_vson_value, dummy)
                     energy_left_new = solution
                     pressure_left_new = new_pressure_value
@@ -293,14 +295,14 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                     pressure_right_new = new_pressure[0:nbr_cells_to_solve]
                     sound_velocity_right_new = new_vson[0:nbr_cells_to_solve]
                 else:
-                    my_variables = {'EquationOfState': self.proprietes.material.eos,
+                    my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': density_current_value,
                                     'NewDensity': density_new_value,
                                     'Pressure': pressure_current_value + 2. * pseudo_current_value,
                                     'OldEnergy': energy_current_value}
                     self._function_to_vanish.setVariables(my_variables)
                     solution = self._solver.computeSolution(energy_current_value)
-                    self.proprietes.material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
+                    DataContainer().material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
                                                                    new_vson_value, dummy)
                     energy_right_new = solution
                     pressure_right_new = new_pressure_value
@@ -379,7 +381,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                                                   rho_t_plus_dt_gauche,
                                                   self.left_size.new_value[self._enriched],
                                                   cson_t_gauche,
-                                                  self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+                                                  DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
     
             rho_t_droite = self.density.current_right_value[self._enriched]
             rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
@@ -389,7 +391,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
                                                   rho_t_plus_dt_droite,
                                                   self.right_size.new_value[self._enriched],
                                                   cson_t_droite,
-                                                  self.proprietes.numeric.a_pseudo, self.proprietes.numeric.b_pseudo)
+                                                  DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
     
             self.pseudo.new_value[self._enriched] = \
                 from_geometry_to_classic_field(pseudo_gauche, pseudo_droite)
@@ -404,7 +406,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         super(OneDimensionEnrichedOneDimensionElement, self).computeNewTimeStep(mask=self._classical)
         #
         if self._enriched.any():
-            cfl = self.proprietes.numeric.cfl
+            cfl = DataContainer().numeric.cfl
             rho_t_gauche = self.density.current_left_value[self._enriched]
             rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
             cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self._enriched]
