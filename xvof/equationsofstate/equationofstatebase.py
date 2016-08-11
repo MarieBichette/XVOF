@@ -1,39 +1,33 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base abstraite (interface) définissant une équation d'état
+Definition of EquationOfStateBase interface
 """
 from abc import ABCMeta, abstractmethod
 
 
 class EquationOfStateBase(object):
     """
-    Une interface pour les équations d'état
+    An interface for all equation of states
     """
-    # Nécessaire pour spécifier l'interface
     __metaclass__ = ABCMeta
-    #
-
-    def __init__(self):
-        pass
 
     @abstractmethod
     def solveVolumeEnergy(self, specific_volume, internal_energy):
         """
-        Résolution en formulation V-E
+        Solve the eos with [v, e] formulation
         """
         pass
 
     @abstractmethod
     def solveVolumeTemperature(self, specific_volume, temperature):
         """
-        Résolution en formulation V-T
+        Solve the eos with [v, T] formulation
         """
         pass
 
     @abstractmethod
     def solveVolumePressure(self, specific_volume, pressure):
         """
-        Résolution en formulation V-P
+        Solve the eos with [v, P] formulation
         """
         pass

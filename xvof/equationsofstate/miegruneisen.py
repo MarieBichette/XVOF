@@ -1,225 +1,185 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant une équation d'état de type Mie-Gruneisen
+Implementing MieGruneisen class
+
+>>> import numpy as np
+>>> from xvof.equationsofstate.miegruneisen import MieGruneisen
+>>> my_eos = MieGruneisen()
+>>> print my_eos # doctest:+NORMALIZE_WHITESPACE
+EquationOfState : MieGruneisen
+Parameters :
+ --                   S1 :      1.58
+ --                   S2 :         0
+ --                   S3 :         0
+ --                    b :       0.5
+ --                czero :      3980
+ --               czero2 :  15840400
+ --                 dgam :    8941.9
+ --                ezero :         0
+ --             grunzero :       1.6
+ --              rhozero :      8129
+ >>> my_eos # doctest:+NORMALIZE_WHITESPACE
+ MieGruneisen(S1=1.580000, S2=0.000000, S3=0.000000, b=0.500000, czero=3980.000000, czero2=15840400.000000,
+ dgam=8941.900000, ezero=0.000000, grunzero=1.600000, rhozero=8129.000000)
+ >>> density = np.array([9000., 8500., 9500.], dtype=np.float64, order='C')
+ >>> specific_volume = 1. / density
+ >>> internal_energy = np.array([1.0e+04, 1.0e+03, 1.0e+05], dtype=np.float64, order='C')
+ >>> the_shape = internal_energy.shape
+ >>> pressure = np.zeros(the_shape, dtype=np.float64, order='C')
+ >>> sound_speed = np.zeros(the_shape, dtype=np.float64, order='C')
+ >>> dpde = np.zeros(the_shape, dtype=np.float64, order='C')
+ >>> my_eos.solveVolumeEnergy(specific_volume, internal_energy, pressure, sound_speed, dpde)
+ >>> print pressure
+ [  1.61115797e+10   6.26727977e+09   2.87613980e+10]
+ >>> print sound_speed
+ [ 4871.9323597   4365.09703163  5394.94930993]
+ >>> print dpde
+ [ 13441.9  13191.9  13691.9]
 """
-import ctypes
-import os
 import numpy as np
+from UserDict import UserDict
+from operator import getitem
 
 from xvof.equationsofstate.equationofstatebase import EquationOfStateBase
 
 
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921
-class MieGruneisen(EquationOfStateBase):
+
+
+class MieGruneisen(UserDict, EquationOfStateBase):
     """
-    Un objet décrivant l'équation d'état de type Mie_Gruneisen
+    Mie Gruneisen equation of state
     """
-    def __init__(self, **kwargs):
-        """
-        self.czero    : paramètre czero
-        self.coeff_s1       : paramètre S1
-        self.coeff_s2       : paramètre S2
-        self.coeff_s3       : paramètre S3
-        self.rhozeo   : paramètre rhozero
-        self.grunzero : paramètre grunzero
-        self.coeff_b        : paramètre b
-        self.ezero    : paramètre ezero
-        """
-        super(MieGruneisen, self).__init__()
+
+    def __init__(self, czero=3980.0, S1=1.58, S2=0., S3=0., rhozero=8129.0, grunzero=1.6, b=0.5, ezero=0.):
         #
-        self.__parameters = {'czero': 3980.0,
-                             'S1': 1.58,
-                             'S2': 0.,
-                             'S3': 0.,
-                             'rhozero': 8129.0,
-                             'grunzero': 1.6,
-                             'b': 0.5,
-                             'ezero': 0.}
-        for (prop, default) in self.__parameters.iteritems():
-            self.__parameters[prop] = kwargs.get(prop, default)
-
-#        _file = 'libMieGruneisen.so'
-#        _path = os.path.join(*(os.path.split(__file__)[:-1] + (_file,)))
-#        self._mod = ctypes.cdll.LoadLibrary(_path)
-#        self._solveVE = self._mod.solveVolumeEnergy
-#        self._solveVE.argtypes = ([ctypes.c_double, ] * 10 + [ctypes.POINTER(ctypes.c_double), ] * 3)
-
-    @property
-    def czero(self):
-        """
-        Vitesse du son standard
-        """
-        return self.__parameters['czero']
-
-    @property
-    def coeff_s1(self):
-        """
-        Paramètre S1
-        """
-        return self.__parameters['S1']
-
-    @property
-    def coeff_s2(self):
-        """
-        Paramètre S2
-        """
-        return self.__parameters['S2']
-
-    @property
-    def coeff_s3(self):
-        """
-        Paramètre S3
-        """
-        return self.__parameters['S3']
-
-    @property
-    def rhozero(self):
-        """
-        Masse volumique standard
-        """
-        return self.__parameters['rhozero']
-
-    @property
-    def grunzero(self):
-        """
-        Coefficient de Gruneisen standard
-        """
-        return self.__parameters['grunzero']
-
-    @property
-    def coeff_b(self):
-        """
-        Paramètre b
-        """
-        return self.__parameters['b']
-
-    @property
-    def ezero(self):
-        """
-        Energie interne standard
-        """
-        return self.__parameters['ezero']
+        super(MieGruneisen, self).__init__(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero, b=b,
+                                           ezero=ezero, czero2=czero ** 2, dgam=rhozero * (grunzero - b))
 
     def __str__(self):
-        message = "EquationOfState : {}".format(self.__class__)
+        message = "EquationOfState : {:s}".format(self.__class__.__name__)
         message += "\nParameters : "
-        for key, val in sorted(self.__parameters.items(), key=lambda m: m[0]):
+        for key, val in sorted(self.iteritems(), key=lambda m: getitem(m, 0)):
             message += "\n -- {:>20s} : {:>9.8g}".format(key, val)
         return message
 
     def __repr__(self):
-        return self.__str__()
+        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in sorted(self.iteritems(), key=lambda m: getitem(m, 0))])
+        return "MieGruneisen({:s})".format(msg)
 
-    def solveVolumeEnergy(self, specific_volume, internal_energy):
+    def solveVolumeEnergy(self, specific_volume, internal_energy, pressure, vson, gampervol):
         """
-        Fournit le triplet (pression | dérivée de la pression en
-        fonction de l'énergie | vitesse du son) à partir du couple
-        ( volume massique | énergie interne )
+        Given the specific volume and internal energy computes the pressure, sound speed and
+        derivative of the pressure with respect to the internal energy
+
+        :param specific_volume: specific volume (in)
+        :type specific_volume: numpy.array
+        :param internal_energy: internal energy (in)
+        :type internal_energy: numpy.array
+        :param pressure: pressure (out)
+        :type pressure: numpy.array
+        :param vson: sound speed (out)
+        :type vson: numpy.array
+        :param gampervol: derivative of pressure with respect to the internal energy (out)
+        :type gampervol: numpy.array
         """
-        # -------------------------------------------------
-        # Définition de variable locales pour eviter de
-        # multiples recherche (gain de temps)
-        # -------------------------------------------------
-        rhozero = self.rhozero
-        czero2 = self.czero ** 2
-        # Dérivee du coefficient de gruneisen
-        dgam = rhozero * (self.grunzero - self.coeff_b)
+        epsv = 1 - self["rhozero"] * specific_volume
+        gampervol[:] = (self["grunzero"] * (1 - epsv) + self["b"] * epsv) / specific_volume
         #
-        epsv = 1 - rhozero * specific_volume
+        targets = epsv > 0  #  Cells in compression (~targets are cells in release)
+        self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
+        self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, ~targets)
+        vson[:] = np.sqrt(vson)
         #
-        epsv2 = epsv ** 2
-        # Coefficient de gruneisen
-        gampervol = (self.grunzero * (1 - epsv) + self.coeff_b * epsv) / specific_volume
-        # -------------------------------------------------
-        # Définition de variable locales redondantes
-        # -------------------------------------------------
-        redond_a = self.coeff_s1 + 2. * self.coeff_s2 * epsv + 3. * self.coeff_s3 * epsv2
+        pb = vson >= 10000.
+        vson[pb] = 0.
+
+    def __release_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+        """
+        Compute the equation of state for cells under release conditions.
+
+        :param specific_volume: specific volume (in)
+        :type specific_volume: numpy.array
+        :param internal_energy: internal energy (in)
+        :type internal_energy: numpy.array
+        :param pressure: pressure (out)
+        :type pressure: numpy.array
+        :param vson2: sound speed square (out)
+        :type vson2: numpy.array
+        :param gampervol: derivative of pressure with respect to the internal energy (out)
+        :type gampervol: numpy.array
+        :param epsv: compression of the material
+        :type epsv: numpy.array
+        :param targets: Mask representing the cells in release state
+        :type targets: numpy.array (bool)
+        """
+        loc_epsv = epsv[targets]
+        loc_gampervol = gampervol[targets]
         #
-#         denom = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        phi = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        einth = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        dphi = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        deinth = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        dpdv = np.zeros(specific_volume.shape, dtype=np.float64, order='C')
-        targets = epsv > 0
-        #
-#         if epsv > 0:
-        # ============================================================
-        # si epsv > 0, la pression depend de einth et phi.
-        # einth : energie interne specifique sur l hugoniot
-        # phi : pression sur l hugoniot
-        # denom : racine du denominateur de phi
-        # dphi : derivee de ph par rapport a
-        # deinth : derivee de einth par rapport a v
-        # dpdv : dp/dv
-        # ============================================================
-        denom = (1. - (self.coeff_s1 + self.coeff_s2 * epsv[targets] + self.coeff_s3 * epsv2[targets]) * epsv[targets])
-        phi[targets] = rhozero * czero2 * epsv[targets] / denom ** 2
-        einth[targets] = self.ezero + phi[targets] * epsv[targets] / (2. * rhozero)
-        #
-        dphi[targets] = phi[targets] * rhozero * (-1. / epsv[targets] - 2. * redond_a[targets] / denom)
-        #
-        deinth[targets] = phi[targets] * (-1. - epsv[targets] * redond_a[targets] / denom)
-        #
-        dpdv[targets] = dphi[targets] + (dgam - gampervol[targets]) * \
-            (internal_energy[targets] - einth[targets]) / specific_volume[targets] - \
-            gampervol[targets] * deinth[targets]
-            #
-#         elif epsv <= 0:
-        targets = epsv <= 0
-        # ============================================================
-        # traitement en tension : epsv < 0
-        # la pression depend d une fonction de v : phi
-        # et
-        # de e0 appelee einth
-        # ============================================================
-        phi[targets] = rhozero * czero2 * epsv[targets] / (1. - epsv[targets])
+        phi = self["rhozero"] * self["czero2"] * loc_epsv / (1. - loc_epsv)
         # einth ---> e0
-        einth[targets] = self.ezero
+        einth = self["ezero"]
         #
-        dphi[targets] = -czero2 / specific_volume[targets] ** 2
+        dphi = -self["czero2"] / specific_volume[targets] ** 2
         #
-        dpdv[targets] = dphi[targets] + (dgam - gampervol[targets]) * \
-            (internal_energy[targets] - einth[targets]) / specific_volume[targets]
-        # ****************************
-        # Pression :
-        # ****************************
-        pressure = phi + (gampervol) * (internal_energy - einth)
-        # ======================================
-        # Carre de la vitesse du son :
-        # ======================================
-        vson2 = specific_volume ** 2 * (pressure * gampervol - dpdv)
+        dpdv = dphi + (self["dgam"] - loc_gampervol) * \
+                      (internal_energy[targets] - einth) / specific_volume[targets]
+        pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
+        vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
         pb = vson2 < 0
         if pb.any():
-            msg = "Carré de la vitesse du son < 0\n"
+            msg = "Sound speed square < 0\n"
             msg += "specific_volume = {}\n".format(specific_volume[pb])
             msg += "pressure = {}\n".format(pressure[pb])
             msg += "dpsurde = {}\n".format(gampervol[pb])
-            msg += "dpdv = {}\n".format(dpdv[pb])
+            msg += "dpdv = {}\n".format(dpdv)
             raise ValueError(msg)
-        vson = vson2 ** 0.5
-        #
-        pb = np.logical_and((vson > 0.), (vson < 10000.))
-        vson[~pb] = 0.
-        #
-        return pressure, gampervol, vson
 
-#    def solveVolumeEnergy(self, specific_volume, internal_energy):
-#        """
-#        Fournit le triplet (pression | dérivée de la pression en
-#        fonction de l'énergie | vitesse du son) à partir du couple
-#        ( volume massique | énergie interne ) en passant par une lib C externe
-#        """
-#        pression = ctypes.c_double()
-#        gamma_per_vol = ctypes.c_double()
-#        vitson = ctypes.c_double()
-#        self._solveVE(self.czero, self.coeff_s1, self.coeff_s2, self.coeff_s3,
-#                      self.rhozero, self.grunzero, self.coeff_b, self.ezero,
-#                      specific_volume, internal_energy, pression, gamma_per_vol,
-#                      vitson)
-#        return pression.value, gamma_per_vol.value, vitson.value
+    def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+        """
+        Compute the equation of state for cells under compressive conditions.
+
+        :param specific_volume: specific volume (in)
+        :type specific_volume: numpy.array
+        :param internal_energy: internal energy (in)
+        :type internal_energy: numpy.array
+        :param pressure: pressure (out)
+        :type pressure: numpy.array
+        :param vson2: sound speed square (out)
+        :type vson2: numpy.array
+        :param gampervol: derivative of pressure with respect to the internal energy (out)
+        :type gampervol: numpy.array
+        :param epsv: compression of the material
+        :type epsv: numpy.array
+        :param targets: Mask representing the cells in compressive state
+        :type targets: numpy.array (bool)
+        """
+        loc_epsv = epsv[targets]
+        loc_epsv2 = loc_epsv ** 2
+        # Coefficient de gruneisen
+        loc_gampervol = gampervol[targets]
+        redond_a = self["S1"] + 2. * self["S2"] * loc_epsv + 3. * self["S3"] * loc_epsv2
+        denom = (1. - (self["S1"] + self["S2"] * loc_epsv + self["S3"] * loc_epsv2) * loc_epsv)
+        phi = self["rhozero"] * self["czero2"] * loc_epsv / denom ** 2
+        einth = self["ezero"] + phi * loc_epsv / (2. * self["rhozero"])
+        #
+        dphi = phi * self["rhozero"] * (-1. / loc_epsv - 2. * redond_a / denom)
+        #
+        deinth = phi * (-1. - loc_epsv * redond_a / denom)
+        #
+        dpdv = dphi + (self["dgam"] - loc_gampervol) * \
+                      (internal_energy[targets] - einth) / specific_volume[targets] - loc_gampervol * deinth
+        pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
+        vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
+        pb = vson2 < 0
+        if pb.any():
+            msg = "Sound speed square < 0\n"
+            msg += "specific_volume = {}\n".format(specific_volume[pb])
+            msg += "pressure = {}\n".format(pressure[pb])
+            msg += "dpsurde = {}\n".format(gampervol[pb])
+            msg += "dpdv = {}\n".format(dpdv)
+            raise ValueError(msg)
 
     def solveVolumePressure(self, specific_volume, pressure):
         raise NotImplementedError
