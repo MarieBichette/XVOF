@@ -10,7 +10,7 @@ from xvof.mesh.mesh1d import Mesh1d
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xvof.rupturetreatment.imposepressure import ImposePressure
+from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.data.data_container import DataContainer
 
 
@@ -31,7 +31,7 @@ NumberOfElements = data.numeric.cells_number
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
 RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
-RuptureTreatment = ImposePressure(0.)
+RuptureTreatment = ImposedPressure(0.)
 # OUTPUT
 ImagesNumber = data.output.number_of_images
 #  =================================================

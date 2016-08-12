@@ -7,6 +7,7 @@ Classe définissant un noeud enrichi en 1d
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
+
 from xvof.node import Node1d
 
 
@@ -102,7 +103,7 @@ class Node1dEnriched(Node1d):
     def pos_disc(self, pos):
         if not self._pos_disc.has_key(pos):
             self._pos_disc[pos] = {}
-            mask_in = np.logical_and(self._enrichis, self._xt[:,0] - pos < 0)
+            mask_in = np.logical_and(self._enrichis, self._xt[:, 0] - pos < 0)
             mask_out = np.logical_and(self._enrichis, self._xt[:, 0] - pos > 0)
             self._pos_disc[pos]["inside"] = mask_in
             self._pos_disc[pos]["outside"] = mask_out
