@@ -6,10 +6,11 @@ Classe de test du module element1d
 import numpy as np
 import unittest
 
-import xvof.element.one_dimension_element as el1d
-from xvof.equationsofstate import MieGruneisen
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
+
+import xvof.cell.one_dimension_cell as el1d
+from xvof.equationsofstate import MieGruneisen
 from xvof.node import Node1d
 
 
@@ -26,7 +27,7 @@ class Element1dTest(unittest.TestCase):
         nodb = Node1d(2, np.array([7.0e-03]))
         noda._xtpdt = np.array([5.0e-03])
         nodb._xtpdt = np.array([6.25e-03])
-        self.my_elem = el1d.OneDimensionElement(props, 1, [noda, nodb])
+        self.my_elem = el1d.OneDimensionCell(props, 1, [noda, nodb])
 
     def tearDown(self):
         pass

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
-Implementing class element
+Implementing class cell
 """
 
 import numpy as np
@@ -12,7 +12,7 @@ from xvof.fields.field import Field
 from xvof.fields.fieldsmanager import FieldManager
 
 
-class Element(object):
+class Cell(object):
     """
     Un objet Element représente l'ensemble des éléments du maillage.
     Ses différents membres sont essentiellement des vecteurs de nbr_of_cells lignes.
@@ -144,16 +144,16 @@ class Element(object):
         message += "==> taille à t = {}\n".format(self.size_t[index])
         message += "==> taille à t+dt = {}\n".format(self.size_t_plus_dt[index])
         message += "==> masse volumique à t = {}\n".format(self.density.current_value[index])
-        message += "==> masse volumique à t+dt = {}\n".\
+        message += "==> masse volumique à t+dt = {}\n". \
             format(self.density.new_value[index])
         message += "==> pression à t = {}\n".format(self.pressure.current_value[index])
-        message += "==> pression à t+dt = {}\n".\
+        message += "==> pression à t+dt = {}\n". \
             format(self.pressure.new_value[index])
         message += "==> énergie interne à t = {}\n".format(self.energy.current_value[index])
-        message += "==> énergie interne à t+dt = {}\n".\
+        message += "==> énergie interne à t+dt = {}\n". \
             format(self.energy.new_value[index])
         message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value[index])
-        message += "==> vitesse du son à t+dt = {}\n".\
+        message += "==> vitesse du son à t+dt = {}\n". \
             format(self.sound_velocity.new_value[index])
         print message
 

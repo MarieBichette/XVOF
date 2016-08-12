@@ -5,8 +5,8 @@ Base class for one dimensional mesh
 """
 import numpy as np
 
+from xvof.cell.one_dimension_cell import OneDimensionCell
 from xvof.data.data_container import DataContainer
-from xvof.element.one_dimension_element import OneDimensionElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1d import Node1d
 
@@ -33,7 +33,7 @@ class Mesh1d(object):
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = OneDimensionElement(nbr_cells)
+        self.cells = OneDimensionCell(nbr_cells)
         self._all_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
         self._all_cells[:] = True
         # ---------------------------------------------

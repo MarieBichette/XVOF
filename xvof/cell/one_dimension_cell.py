@@ -6,13 +6,13 @@ import ctypes
 import numpy as np
 import os
 
+from xvof.cell import Cell
 from xvof.data.data_container import DataContainer
-from xvof.element import Element
 from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xvof.solver.newtonraphson import NewtonRaphson
 
 
-class OneDimensionElement(Element):
+class OneDimensionCell(Cell):
     """
     Une classe pour les éléments en 1D
     """
@@ -56,7 +56,7 @@ class OneDimensionElement(Element):
         return delta_t
 
     def __init__(self, number_of_elements):
-        Element.__init__(self, number_of_elements)
+        Cell.__init__(self, number_of_elements)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
         #
@@ -191,9 +191,9 @@ class OneDimensionElement(Element):
         Calcul de la nouvelle pseudo
         """
         self.pseudo.new_value[mask] = \
-            OneDimensionElement.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
-                                              self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-                                              DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+            OneDimensionCell.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
+                                           self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
+                                           DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
 
     def computeNewTimeStep(self, mask):
         """
@@ -201,9 +201,9 @@ class OneDimensionElement(Element):
         """
         cfl = DataContainer().numeric.cfl
         dt = \
-            OneDimensionElement.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
-                                                self.size_t_plus_dt, self.sound_velocity.new_value,
-                                                self.pseudo.current_value)
+            OneDimensionCell.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
+                                             self.size_t_plus_dt, self.sound_velocity.new_value,
+                                             self.pseudo.current_value)
         self._dt[mask] = dt[mask]
 
     def imposePressure(self, ind_cell, pression):

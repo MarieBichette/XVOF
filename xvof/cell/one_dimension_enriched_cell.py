@@ -5,19 +5,19 @@ Implementing the Element1dEnriched class
 import ctypes
 import numpy as np
 
+from xvof.cell import OneDimensionCell
 from xvof.data.data_container import DataContainer
-from xvof.element import OneDimensionElement
 from xvof.fields.enrichedfield import from_geometry_to_classic_field, from_geometry_to_enrich_field
 from xvof.fields.field import Field
 
 
-class OneDimensionEnrichedElement(OneDimensionElement):
+class OneDimensionEnrichedCell(OneDimensionCell):
     """
     A collection of 1d enriched elements
     """
 
     def __init__(self, number_of_elements):
-        super(OneDimensionEnrichedElement, self).__init__(number_of_elements)
+        super(OneDimensionEnrichedCell, self).__init__(number_of_elements)
         #
         self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
         #
@@ -210,7 +210,7 @@ class OneDimensionEnrichedElement(OneDimensionElement):
         # -----------------------------
         # Pression éléments classiques
         # -----------------------------
-        super(OneDimensionEnrichedElement, self).computeNewPressure(mask=self._classical)
+        super(OneDimensionEnrichedCell, self).computeNewPressure(mask=self._classical)
         if self._enriched.any():
             # -----------------------------
             # Pression partie gauche
@@ -331,9 +331,9 @@ class OneDimensionEnrichedElement(OneDimensionElement):
         Calcul des nouvelles longueurs de l'élément
         """
         # Calcul des tailles des éléments classiques
-        super(OneDimensionEnrichedElement, self).computeNewSize(topologie, vecteur_coord_noeuds,
-                                                                mask=self._classical,
-                                                                time_step=time_step)
+        super(OneDimensionEnrichedCell, self).computeNewSize(topologie, vecteur_coord_noeuds,
+                                                             mask=self._classical,
+                                                             time_step=time_step)
         if self._enriched.any():
             # Calcul des tailles des parties gauches des éléments enrichis
             connectivity = np.array(topologie._nodes_belonging_to_cell)[self._enriched]
@@ -351,7 +351,7 @@ class OneDimensionEnrichedElement(OneDimensionElement):
         Calcul des nouvelles densités
         """
         #  Calcul des densités des éléments classiques
-        super(OneDimensionEnrichedElement, self).computeNewDensity(mask=self._classical)
+        super(OneDimensionEnrichedCell, self).computeNewDensity(mask=self._classical)
         #
         if self._enriched.any():
             densite_gauche_t_plus_dt = self.density.current_left_value[self._enriched] * \
@@ -370,28 +370,28 @@ class OneDimensionEnrichedElement(OneDimensionElement):
         Calcul de la nouvelle pseudo
         """
         # calcul de la pseudo des éléments classique
-        super(OneDimensionEnrichedElement, self).computeNewPseudo(delta_t, mask=self._classical)
+        super(OneDimensionEnrichedCell, self).computeNewPseudo(delta_t, mask=self._classical)
         #
         if self._enriched.any():
             rho_t_gauche = self.density.current_left_value[self._enriched]
             rho_t_plus_dt_gauche = self.density.new_left_value[self._enriched]
             cson_t_gauche = self.sound_velocity.current_left_value[self._enriched]
             pseudo_gauche = \
-                OneDimensionElement.computePseudo(delta_t, rho_t_gauche,
-                                                  rho_t_plus_dt_gauche,
-                                                  self.left_size.new_value[self._enriched],
-                                                  cson_t_gauche,
-                                                  DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+                OneDimensionCell.computePseudo(delta_t, rho_t_gauche,
+                                               rho_t_plus_dt_gauche,
+                                               self.left_size.new_value[self._enriched],
+                                               cson_t_gauche,
+                                               DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
     
             rho_t_droite = self.density.current_right_value[self._enriched]
             rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
             cson_t_droite = self.sound_velocity.current_right_value[self._enriched]
             pseudo_droite = \
-                OneDimensionElement.computePseudo(delta_t, rho_t_droite,
-                                                  rho_t_plus_dt_droite,
-                                                  self.right_size.new_value[self._enriched],
-                                                  cson_t_droite,
-                                                  DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+                OneDimensionCell.computePseudo(delta_t, rho_t_droite,
+                                               rho_t_plus_dt_droite,
+                                               self.right_size.new_value[self._enriched],
+                                               cson_t_droite,
+                                               DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
     
             self.pseudo.new_value[self._enriched] = \
                 from_geometry_to_classic_field(pseudo_gauche, pseudo_droite)
@@ -403,7 +403,7 @@ class OneDimensionEnrichedElement(OneDimensionElement):
         Calcul du pas de temps
         """
         # calcul du pas de temps pour les éléments classiques
-        super(OneDimensionEnrichedElement, self).computeNewTimeStep(mask=self._classical)
+        super(OneDimensionEnrichedCell, self).computeNewTimeStep(mask=self._classical)
         #
         if self._enriched.any():
             cfl = DataContainer().numeric.cfl
@@ -412,21 +412,21 @@ class OneDimensionEnrichedElement(OneDimensionElement):
             cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self._enriched]
             pseudo_gauche = self.pseudo.current_left_value[self._enriched]
             dt_g = \
-                OneDimensionElement.computeTimeStep(cfl, rho_t_gauche,
-                                                    rho_t_plus_dt_gauche,
-                                                    self.left_size.new_value[self._enriched],
-                                                    cson_t_plus_dt_gauche,
-                                                    pseudo_gauche)
+                OneDimensionCell.computeTimeStep(cfl, rho_t_gauche,
+                                                 rho_t_plus_dt_gauche,
+                                                 self.left_size.new_value[self._enriched],
+                                                 cson_t_plus_dt_gauche,
+                                                 pseudo_gauche)
     
             rho_t_droite = self.density.current_right_value[self._enriched]
             rho_t_plus_dt_droite = self.density.new_right_value[self._enriched]
             cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self._enriched]
             pseudo_droite = self.pseudo.current_right_value[self._enriched]
             dt_d = \
-                OneDimensionElement.computeTimeStep(cfl, rho_t_droite,
-                                                    rho_t_plus_dt_droite,
-                                                    self.right_size.new_value[self._enriched],
-                                                    cson_t_plus_dt_droite,
-                                                    pseudo_droite)
+                OneDimensionCell.computeTimeStep(cfl, rho_t_droite,
+                                                 rho_t_plus_dt_droite,
+                                                 self.right_size.new_value[self._enriched],
+                                                 cson_t_plus_dt_droite,
+                                                 pseudo_droite)
 
             self._dt[self._enriched] = dt_g + dt_d  # Bizarre --> A vérifier

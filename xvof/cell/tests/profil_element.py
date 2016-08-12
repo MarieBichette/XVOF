@@ -3,7 +3,7 @@
 
 from os import system
 
-from xvof.element.one_dimension_element import OneDimensionElement
+from xvof.cell.one_dimension_cell import OneDimensionCell
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.utilities import timeit_file
 
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     def profil_newton_raphson(eos, rho_old, rho_new, p_old, pseudo_old, nrj_old, nit=100):
         it = 0
         while(it < nit):
-            OneDimensionElement.newton_raphson_for_ve(eos, rho_old, rho_new, p_old, pseudo_old, nrj_old)
+            OneDimensionCell.newton_raphson_for_ve(eos, rho_old, rho_new, p_old, pseudo_old, nrj_old)
             it += 1
 
     EE = MieGruneisen()

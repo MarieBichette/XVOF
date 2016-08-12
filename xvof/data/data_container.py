@@ -54,7 +54,7 @@ class DataContainer(object):
     def __fillInGeometricalProperties(self):
         """
         :return: the geometric properties:
-            - area of the element;
+            - area of the cell;
             - length of the rod
         :rtype: tuple(float, float)
         """

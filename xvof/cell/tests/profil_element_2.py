@@ -4,9 +4,10 @@
 import numpy as np
 from os import system
 
-from xvof.element.one_dimension_element import OneDimensionElement
-from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.miscellaneous import *
+
+from xvof.cell.one_dimension_cell import OneDimensionCell
+from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.node.node1d import Node1d
 from xvof.utilities import timeit_file
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
         nodb = Node1d(2, np.array([7.0e-03]))
         noda._xtpdt = np.array([5.0e-03])
         nodb._xtpdt = np.array([6.25e-03])
-        my_elem = OneDimensionElement(props, 1, [noda, nodb])
+        my_elem = OneDimensionCell(props, 1, [noda, nodb])
         while(it < nit):
             my_elem.calculer_nouvo_pression()
             it += 1

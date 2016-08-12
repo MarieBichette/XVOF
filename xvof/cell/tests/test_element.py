@@ -1,15 +1,16 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de test du module element
+Classe de test du module cell
 """
-import unittest
 import numpy as np
+import unittest
 
-import xvof.element.element as el
-from xvof.equationsofstate import MieGruneisen
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
+
+import xvof.cell.cell as el
+from xvof.equationsofstate import MieGruneisen
 from xvof.node import Node1d
 
 
@@ -24,7 +25,7 @@ class ElementTest(unittest.TestCase):
         props = properties(num_props, mat_props, geom_props)
         noda = Node1d(1, np.array([-0.5]))
         nodb = Node1d(2, np.array([0.1]))
-        self.my_elem = el.Element(props, 1, [noda, nodb])
+        self.my_elem = el.Cell(props, 1, [noda, nodb])
 
     def tearDown(self):
         pass

@@ -8,7 +8,7 @@ from math import pi
 from xvof.miscellaneous import geometrical_props, material_props
 from xvof.miscellaneous import numerical_props, properties
 
-from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedElement
+from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
@@ -24,7 +24,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     if cells is not None:
         print " Nombre de mailles : {:d}".format(len(cells))
         for cell in cells:
-            if isinstance(cell, OneDimensionEnrichedElement):
+            if isinstance(cell, OneDimensionEnrichedCell):
 #                 indice = cell.indice
 #                 cell_g = mesh.cells[indice - 1]
 #                 cell_d = mesh.cells[indice + 1]
