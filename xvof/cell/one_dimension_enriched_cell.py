@@ -201,6 +201,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
         Formulation v-e
+        :todo: factoriser/splitter tout ça
         """
         # -----------------------------
         # Pression éléments classiques

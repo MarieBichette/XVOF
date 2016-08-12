@@ -1,5 +1,9 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
+"""
+:todo: merge avec VNR_1D_ClassicalElement
+:todo: retravailler perf de la lib externe de solver
+"""
 import matplotlib
 
 matplotlib.use('Qt4Agg')
