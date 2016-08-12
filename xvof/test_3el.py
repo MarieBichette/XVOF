@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import pi
 
-from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
+from xvof.miscellaneous import geometrical_props, material_props
+from xvof.miscellaneous import numerical_props, properties
+
+from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedElement
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
-from xvof.miscellaneous import geometrical_props, material_props
-from xvof.miscellaneous import numerical_props, properties
 from xvof.node.node1denriched import Node1dEnriched
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
@@ -23,7 +24,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     if cells is not None:
         print " Nombre de mailles : {:d}".format(len(cells))
         for cell in cells:
-            if isinstance(cell, OneDimensionEnrichedOneDimensionElement):
+            if isinstance(cell, OneDimensionEnrichedElement):
 #                 indice = cell.indice
 #                 cell_g = mesh.cells[indice - 1]
 #                 cell_d = mesh.cells[indice + 1]

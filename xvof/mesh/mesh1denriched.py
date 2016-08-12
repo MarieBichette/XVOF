@@ -5,7 +5,7 @@ Base class for one dimensional mesh
 import numpy as np
 
 from xvof.data.data_container import DataContainer
-from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
+from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedElement
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.node1denriched import Node1dEnriched
 
@@ -33,7 +33,7 @@ class Mesh1dEnriched(object):
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        self.cells = OneDimensionEnrichedOneDimensionElement(nbr_cells)
+        self.cells = OneDimensionEnrichedElement(nbr_cells)
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------

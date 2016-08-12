@@ -11,13 +11,13 @@ from xvof.fields.enrichedfield import from_geometry_to_classic_field, from_geome
 from xvof.fields.field import Field
 
 
-class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
+class OneDimensionEnrichedElement(OneDimensionElement):
     """
     A collection of 1d enriched elements
     """
 
     def __init__(self, number_of_elements):
-        super(OneDimensionEnrichedOneDimensionElement, self).__init__(number_of_elements)
+        super(OneDimensionEnrichedElement, self).__init__(number_of_elements)
         #
         self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
         #
@@ -210,7 +210,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         # -----------------------------
         # Pression éléments classiques
         # -----------------------------
-        super(OneDimensionEnrichedOneDimensionElement, self).computeNewPressure(mask=self._classical)
+        super(OneDimensionEnrichedElement, self).computeNewPressure(mask=self._classical)
         if self._enriched.any():
             # -----------------------------
             # Pression partie gauche
@@ -331,9 +331,9 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         Calcul des nouvelles longueurs de l'élément
         """
         # Calcul des tailles des éléments classiques
-        super(OneDimensionEnrichedOneDimensionElement, self).computeNewSize(topologie, vecteur_coord_noeuds,
-                                                                            mask=self._classical,
-                                                                            time_step=time_step)
+        super(OneDimensionEnrichedElement, self).computeNewSize(topologie, vecteur_coord_noeuds,
+                                                                mask=self._classical,
+                                                                time_step=time_step)
         if self._enriched.any():
             # Calcul des tailles des parties gauches des éléments enrichis
             connectivity = np.array(topologie._nodes_belonging_to_cell)[self._enriched]
@@ -351,7 +351,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         Calcul des nouvelles densités
         """
         #  Calcul des densités des éléments classiques
-        super(OneDimensionEnrichedOneDimensionElement, self).computeNewDensity(mask=self._classical)
+        super(OneDimensionEnrichedElement, self).computeNewDensity(mask=self._classical)
         #
         if self._enriched.any():
             densite_gauche_t_plus_dt = self.density.current_left_value[self._enriched] * \
@@ -370,7 +370,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         Calcul de la nouvelle pseudo
         """
         # calcul de la pseudo des éléments classique
-        super(OneDimensionEnrichedOneDimensionElement, self).computeNewPseudo(delta_t, mask=self._classical)
+        super(OneDimensionEnrichedElement, self).computeNewPseudo(delta_t, mask=self._classical)
         #
         if self._enriched.any():
             rho_t_gauche = self.density.current_left_value[self._enriched]
@@ -403,7 +403,7 @@ class OneDimensionEnrichedOneDimensionElement(OneDimensionElement):
         Calcul du pas de temps
         """
         # calcul du pas de temps pour les éléments classiques
-        super(OneDimensionEnrichedOneDimensionElement, self).computeNewTimeStep(mask=self._classical)
+        super(OneDimensionEnrichedElement, self).computeNewTimeStep(mask=self._classical)
         #
         if self._enriched.any():
             cfl = DataContainer().numeric.cfl
