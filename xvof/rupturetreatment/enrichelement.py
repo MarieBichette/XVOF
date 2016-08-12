@@ -40,5 +40,6 @@ class EnrichElement(RuptureTreatment):
             nodes.pos_disc = pos[0]
         print "==> Enrichement of cells : ", np.where(cells_to_be_enr == True)
         cells._classical[cells_to_be_enr] = False
+        cells._enriched[cells_to_be_enr] = True
         cells.right_size.new_value = self.__position_rupture * cells.size_t_plus_dt
         cells.left_size.new_value = self.__position_rupture * cells.size_t_plus_dt

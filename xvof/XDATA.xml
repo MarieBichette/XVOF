@@ -2,7 +2,7 @@
 <data>
   <time-management>
     <final-time>15.0e-06</final-time>
-    <initial-time-step>2.0e-09</initial-time-step>
+    <initial-time-step>2e-09</initial-time-step>
   </time-management>
   <geometry>
     <length>25.0e-03</length>
@@ -25,7 +25,7 @@
     <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
   </numeric-parameters>
   <output>
-      <number-of-images>300</number-of-images>
+    <number-of-images>300</number-of-images>
     <dump-images>false</dump-images>
     <show-images>true</show-images>
   </output>

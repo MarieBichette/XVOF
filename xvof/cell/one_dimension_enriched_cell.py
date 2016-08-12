@@ -29,6 +29,8 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         print self._fields_manager
         self._classical = np.empty(self._shape, dtype=np.bool, order='C')
         self._classical[:] = True
+        self._enriched = np.empty(self._shape, dtype=np.bool, order='C')
+        self._enriched[:] = False
 
     @property
     def left_size(self):
@@ -43,13 +45,6 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         :return: Right sizes of the enriched elements
         """
         return self._fields_manager['taille_droite']
-    
-    @property
-    def _enriched(self):
-        """
-        :return: Boolean mask of the enriched elements
-        """
-        return ~self._classical
 
     @property
     def mass(self):
@@ -242,9 +237,9 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                     new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                     self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
                                                   solution, new_pressure, new_vson)
-                    energy_left_new = solution[0:nbr_cells_to_solve]
-                    pressure_left_new = new_pressure[0:nbr_cells_to_solve]
-                    sound_velocity_left_new = new_vson[0:nbr_cells_to_solve]
+                    energy_left_new = np.array(solution[0:nbr_cells_to_solve])
+                    pressure_left_new = np.array(new_pressure[0:nbr_cells_to_solve])
+                    sound_velocity_left_new = np.array(new_vson[0:nbr_cells_to_solve])
                 else:
                     my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': density_current_value,
@@ -291,9 +286,9 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                     new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
                     self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
                                                   solution, new_pressure, new_vson)
-                    energy_right_new = solution[0:nbr_cells_to_solve]
-                    pressure_right_new = new_pressure[0:nbr_cells_to_solve]
-                    sound_velocity_right_new = new_vson[0:nbr_cells_to_solve]
+                    energy_right_new = np.array(solution[0:nbr_cells_to_solve])
+                    pressure_right_new = np.array(new_pressure[0:nbr_cells_to_solve])
+                    sound_velocity_right_new = np.array(new_vson[0:nbr_cells_to_solve])
                 else:
                     my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': density_current_value,
