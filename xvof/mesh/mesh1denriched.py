@@ -156,23 +156,9 @@ class Mesh1dEnriched(object):
         :todo: Revoir la façon de calculer la position de la rupture sans passer par
         self.cells_coordinates (dépendance à self._enriched)
         """
-        if self.__ruptured_cells.any() and not self.cells._enriched.any(): # On enrichi qu'une fois
-            cells_to_be_enr = self.__ruptured_cells
-            # On ne garde qu'une seule cell à enrichir pour l'instant
-            indices_cells_to_be_enr = np.where(cells_to_be_enr == True)
-            cells_to_be_enr[:] = False
-            cells_to_be_enr[indices_cells_to_be_enr[0][0]] = True
-            #
-            nodes_to_be_enr = np.array(self.__topologie._nodes_belonging_to_cell)[self.__ruptured_cells]
-            print "==> ENRICHISSEMENT DES NOEUDS : ", nodes_to_be_enr
-            self.nodes._classiques[nodes_to_be_enr] = False
-            print "==> FIXATION DES INS ET OUTS"
-            for pos in self.cells_coordinates[cells_to_be_enr]:
-                self.nodes.pos_disc = pos[0]
-            print "==> ENRICHISSEMENT DES ELEMENTS : ", np.where(cells_to_be_enr == True)
-            self.cells._classical[cells_to_be_enr] = False
-            self.cells.right_size.new_value = 0.5 * self.cells.size_t_plus_dt
-            self.cells.left_size.new_value = 0.5 * self.cells.size_t_plus_dt
+        if self.__ruptured_cells.any() and not self.cells._enriched.any():  # Enrichment is made once for all
+            treatment.applyTreatment(self.cells, self.__ruptured_cells,
+                                     self.nodes, self.__topologie, self.cells_coordinates)
 
     @property
     def velocity_field(self):

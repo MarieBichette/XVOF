@@ -1,26 +1,23 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base abstraite (interface) définissant un traitement de rupture
+Defining an interface for rupture treatments
 """
 from abc import ABCMeta, abstractmethod
 
 
 class RuptureTreatment(object):
     """
-    Une interface pour les traitements de la rupture
+    An interface for rupture treatments
     """
     # Nécessaire pour spécifier l'interface
     __metaclass__ = ABCMeta
-    #
-
-    def __init__(self):
-        pass
 
     @abstractmethod
-    def applyTreatment(self, cells, *args, **kwargs):
+    def applyTreatment(self, cells, ruptured_cells, *args, **kwargs):
         """
-        Application du traitement de rupture sur les mailles
-        passées en argument
+        Application of the treatment on the ruptured cells
+
+        :param cells: array of all cells
+        :param ruptured_cells: boolean array marking the ruptured cells
         """
         pass

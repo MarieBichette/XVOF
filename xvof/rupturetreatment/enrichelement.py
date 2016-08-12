@@ -1,17 +1,15 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un traitement de la rupture en
-enrichissant l'élément et les noeuds concernés
+Implementing EnrichElement class
 """
-from xvof.element.one_dimension_enriched_element import OneDimensionEnrichedOneDimensionElement
-from xvof.node.node1denriched import Node1dEnriched
+import numpy as np
+
 from xvof.rupturetreatment.rupturetreatment import RuptureTreatment
 
 
 class EnrichElement(RuptureTreatment):
     """
-    Un traitement de rupture qui enrichit l'élément rompu
+    A treatment that enrich one of the ruptured cells
     """
     __never_enriched = True
 
@@ -19,23 +17,28 @@ class EnrichElement(RuptureTreatment):
         super(EnrichElement, self).__init__()
         self.__position_rupture = position_rupture
 
-    def applyTreatment(self, cell, *args, **kwargs):
-        if EnrichElement.__never_enriched:
-            if not isinstance(cell, OneDimensionEnrichedOneDimensionElement):
-                topologie = kwargs['TOPOLOGIE']
-                print "<-- Enrichissement de la maille : {} -->".format(cell)
-                print "    |_> Création de l'élément enrichi"
-                enrich_element = OneDimensionEnrichedOneDimensionElement(cell, self.__position_rupture)
-                print "    |_> Création des noeuds enrichis"
-                enrich_nodes = [Node1dEnriched(nod) for nod in
-                                topologie._getNodesBelongingToCell(enrich_element)]
-                enrich_nodes = sorted(enrich_nodes, key=lambda m: m.coordt)
-                enrich_nodes[0].position_relative = -1
-                enrich_nodes[1].position_relative = +1
-                print "    |_> Remplacement de l'élément concerné dans la topologie: {}".format(enrich_element)
-                topologie._changeCellType(enrich_element)
-                print "    |_> Remplacement des noeuds concernés dans la topologie: {}".format(enrich_nodes)
-                for nod in enrich_nodes:
-                    topologie._changeNodeType(nod)
-                EnrichElement.__never_enriched = False
-        kwargs["MAILLES_ROMPUES"].remove(cell)
+    def applyTreatment(self, cells, ruptured_cells, nodes, topology, cells_coordinates):
+        """
+        Apply the rupture treatment by enriching one of the cells that is marked as ruptured cells
+
+        :param cells: array of all cells
+        :param ruptured_cells: boolean array marking the ruptured cells
+        :param nodes: array of all nodes
+        :param topology: topology of the problem
+        :param cells_coordinates: coordinates of the cells
+        """
+        cells_to_be_enr = ruptured_cells
+        # We keep only one cell to be enriched
+        indices_cells_to_be_enr = np.where(cells_to_be_enr == True)
+        cells_to_be_enr[:] = False
+        cells_to_be_enr[indices_cells_to_be_enr[0][0]] = True
+        #
+        nodes_to_be_enr = np.array(topology._nodes_belonging_to_cell)[ruptured_cells]
+        print "==> Enrichment of nodes : ", nodes_to_be_enr
+        nodes._classiques[nodes_to_be_enr] = False
+        for pos in cells_coordinates[cells_to_be_enr]:
+            nodes.pos_disc = pos[0]
+        print "==> Enrichement of cells : ", np.where(cells_to_be_enr == True)
+        cells._classical[cells_to_be_enr] = False
+        cells.right_size.new_value = self.__position_rupture * cells.size_t_plus_dt
+        cells.left_size.new_value = self.__position_rupture * cells.size_t_plus_dt
