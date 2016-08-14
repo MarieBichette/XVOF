@@ -149,12 +149,12 @@ class OneDimensionCell(Cell):
                             'OldDensity': self.density.current_value[mask],
                             'NewDensity': self.density.new_value[mask],
                             'Pressure': self.pressure.current_value[mask] + 2. * self.pseudo.current_value[mask],
-                            'OldEnergy': self.energy.current_value[mask]}
+                            'OldEnergy': self.energy.current_value[mask],
+                            'NewPressure': new_pressure_value,
+                            'NewSoundSpeed': new_vson_value,
+                            'NewDpOverDe': dummy}
             self._function_to_vanish.setVariables(my_variables)
             self.energy.new_value[mask] = self._solver.computeSolution(self.energy.current_value[mask])
-            DataContainer().material.eos.solveVolumeEnergy(1. / self.density.new_value[mask],
-                                                           self.energy.new_value[mask],
-                                                           new_pressure_value, new_vson_value, dummy)
             self.pressure.new_value[mask] = new_pressure_value
             self.sound_velocity.new_value[mask] = new_vson_value
             self._function_to_vanish.eraseVariables()

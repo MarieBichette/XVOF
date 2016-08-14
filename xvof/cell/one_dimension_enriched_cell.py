@@ -207,41 +207,18 @@ class OneDimensionEnrichedCell(OneDimensionCell):
             mask = self._enriched
             try:
                 if self._external_library is not None:
-                    energy_left_new, pressure_left_new, sound_velocity_left_new = (np.array(x) for x in
-                                                                                   self._computeNewPressureWithExternalLib(
-                                                                                       self.density.current_left_value[
-                                                                                           mask],
-                                                                                       self.density.new_left_value[
-                                                                                           mask],
-                                                                                       self.pressure.current_left_value[
-                                                                                           mask],
-                                                                                       self.pseudo.current_left_value[
-                                                                                           mask],
-                                                                                       self.energy.current_left_value[
-                                                                                           mask],
-                                                                                       self.energy.new_left_value[mask],
-                                                                                       self.pressure.new_left_value[
-                                                                                           mask],
-                                                                                       self.sound_velocity.new_left_value[
-                                                                                           mask]))
-                    energy_right_new, pressure_right_new, sound_velocity_right_new = (np.array(x) for x in
-                                                                                      self._computeNewPressureWithExternalLib(
-                                                                                          self.density.current_right_value[
-                                                                                              mask],
-                                                                                          self.density.new_right_value[
-                                                                                              mask],
-                                                                                          self.pressure.current_right_value[
-                                                                                              mask],
-                                                                                          self.pseudo.current_right_value[
-                                                                                              mask],
-                                                                                          self.energy.current_right_value[
-                                                                                              mask],
-                                                                                          self.energy.new_right_value[
-                                                                                              mask],
-                                                                                          self.pressure.new_right_value[
-                                                                                              mask],
-                                                                                          self.sound_velocity.new_right_value[
-                                                                                              mask]))
+                    energy_left_new, pressure_left_new, sound_velocity_left_new = \
+                        (np.array(x) for x in self._computeNewPressureWithExternalLib(
+                            self.density.current_left_value[mask], self.density.new_left_value[mask],
+                            self.pressure.current_left_value[mask], self.pseudo.current_left_value[mask],
+                            self.energy.current_left_value[mask], self.energy.new_left_value[mask],
+                            self.pressure.new_left_value[mask], self.sound_velocity.new_left_value[mask]))
+                    energy_right_new, pressure_right_new, sound_velocity_right_new = \
+                        (np.array(x) for x in self._computeNewPressureWithExternalLib(
+                            self.density.current_right_value[mask], self.density.new_right_value[mask],
+                            self.pressure.current_right_value[mask], self.pseudo.current_right_value[mask],
+                            self.energy.current_right_value[mask], self.energy.new_right_value[mask],
+                            self.pressure.new_right_value[mask], self.sound_velocity.new_right_value[mask]))
                 else:
                     shape = self.energy.new_left_value[mask].shape
                     pressure_left_new = np.zeros(shape, dtype=np.float64, order='C')
@@ -252,12 +229,12 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                     'NewDensity': self.density.new_left_value[mask],
                                     'Pressure': (self.pressure.current_left_value[mask] +
                                                  2. * self.pseudo.current_left_value[mask]),
-                                    'OldEnergy': self.energy.current_left_value[mask]}
+                                    'OldEnergy': self.energy.current_left_value[mask],
+                                    'NewPressure': pressure_left_new,
+                                    'NewSoundSpeed': sound_velocity_left_new,
+                                    'NewDpOverDe': dummy}
                     self._function_to_vanish.setVariables(my_variables)
                     energy_left_new = self._solver.computeSolution(self.energy.current_left_value[mask])
-                    DataContainer().material.eos.solveVolumeEnergy(1. / self.density.new_left_value[mask],
-                                                                   energy_left_new, pressure_left_new,
-                                                                   sound_velocity_left_new, dummy)
                     self._function_to_vanish.eraseVariables()
                     shape = self.energy.new_right_value[mask].shape
                     pressure_right_new = np.zeros(shape, dtype=np.float64, order='C')
@@ -268,12 +245,12 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                     'NewDensity': self.density.new_right_value[mask],
                                     'Pressure': (self.pressure.current_right_value[mask] +
                                                  2. * self.pseudo.current_right_value[mask]),
-                                    'OldEnergy': self.energy.current_right_value[mask]}
+                                    'OldEnergy': self.energy.current_right_value[mask],
+                                    'NewPressure': pressure_right_new,
+                                    'NewSoundSpeed': sound_velocity_right_new,
+                                    'NewDpOverDe': dummy}
                     self._function_to_vanish.setVariables(my_variables)
                     energy_right_new = self._solver.computeSolution(self.energy.current_right_value[mask])
-                    DataContainer().material.eos.solveVolumeEnergy(1. / self.density.new_right_value[mask],
-                                                                   energy_right_new, pressure_right_new,
-                                                                   sound_velocity_right_new, dummy)
                     self._function_to_vanish.eraseVariables()
             except ValueError as err:
                 raise err

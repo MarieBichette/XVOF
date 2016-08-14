@@ -2,7 +2,6 @@
 """
 Implementing VnrEnergyEvolutionForVolumeEnergyFormulation class
 """
-import numpy as np
 
 from xvof.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
 
@@ -22,9 +21,9 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         new_rho = self._variables['NewDensity']
         pressure = self._variables['Pressure']
         old_nrj = self._variables['OldEnergy']
-        p_i = np.zeros(old_rho.shape, dtype=np.float64, order='C')
-        dpsurde = np.zeros(old_rho.shape, dtype=np.float64, order='C')
-        dummy = np.zeros(old_rho.shape, dtype=np.float64, order='C')
+        p_i = self._variables['NewPressure']
+        dpsurde = self._variables['NewDpOverDe']
+        dummy = self._variables['NewSoundSpeed']
         eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
         # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
