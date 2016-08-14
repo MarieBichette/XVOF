@@ -117,7 +117,7 @@ if __name__ == '__main__':
         #                INCREMENTATION                #
         # ---------------------------------------------#
         my_mesh.increment()
-#         dt = dt_crit
+        # dt = dt_crit
         time += dt
         step += 1
         # ---------------------------------------------#

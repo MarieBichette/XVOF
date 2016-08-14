@@ -3,6 +3,7 @@
 """
 :todo: merge avec VNR_1D_ClassicalElement
 :todo: retravailler perf de la lib externe de solver
+:todo: revoir calcul du pas de temps critique
 """
 import matplotlib
 
