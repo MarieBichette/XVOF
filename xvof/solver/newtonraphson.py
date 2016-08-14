@@ -2,6 +2,8 @@
 # -*- coding: iso-8859-1 -*-
 """
 Classe définissant un solveur non linéaire de type Newton Raphson
+
+:todo: Mettre les critères de convergence dans le XML des données
 """
 from xvof.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
 from xvof.solver.newtonraphsonbase import NewtonRaphsonBase
