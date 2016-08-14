@@ -1,8 +1,6 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant la fonction d'évolution de l'énergie interne à annuler dans le schéma VNR
-Formulation V-E
+Implementing VnrEnergyEvolutionForVolumeEnergyFormulation class
 """
 import numpy as np
 
@@ -10,10 +8,10 @@ from xvof.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
 
 
 class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
-    '''
-    Classe définissant la fonction d'évolution de l'énergie interne à annuler dans le schéma VNR
-    Formulation V-E
-    '''
+    """
+    Defines the evolution function of the internal energy that must vanish in VNR scheme
+    [v, e] formulation
+    """
     def __init__(self):
         super(VnrEnergyEvolutionForVolumeEnergyFormulation, self).__init__()
 
@@ -27,15 +25,10 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         p_i = np.zeros(old_rho.shape, dtype=np.float64, order='C')
         dpsurde = np.zeros(old_rho.shape, dtype=np.float64, order='C')
         dummy = np.zeros(old_rho.shape, dtype=np.float64, order='C')
-#         for icell in xrange(old_rho.shape[0]):
-#         try:
         eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
-#         except ValueError as ve:
-#             print "Pb dans le calcul de la fonction et de sa dérivée!\n"
-#             raise ve
-        # Fonction à annuler
+        # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
         func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj
-        # Dérivée de la fonction à annuler
+        # Derivative of the function with respect to internal energy
         dfunc = 1 + dpsurde * delta_v / 2.
         return (func, dfunc)
