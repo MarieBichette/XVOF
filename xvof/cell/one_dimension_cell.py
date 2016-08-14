@@ -107,58 +107,57 @@ class OneDimensionCell(Cell):
     # --------------------------------------------------------
     #            DEFINITION DES METHODES                     #
     # --------------------------------------------------------
+    def _computeNewPressureWithExternalLib(self, density_current, density_new, pressure_current, pseudo_current,
+                                           energy_current, energy_new, pressure_new, vson_new):
+        pb_size = ctypes.c_int()
+        pb_size.value = energy_new.shape[0]
+        c_density = density_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_density = density_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        true_pressure = (pressure_current + 2. * pseudo_current)
+        c_pressure = true_pressure.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        c_energy = energy_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_energy = energy_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_pressure = pressure_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        self._computePressureExternal(c_density, n_density, c_pressure, c_energy, pb_size,
+                                      n_energy, n_pressure, n_sound_speed)
+        energy_n = n_energy[0:pb_size.value]
+        pressure_n = n_pressure[0:pb_size.value]
+        vson_n = n_sound_speed[0:pb_size.value]
+        return energy_n, pressure_n, vson_n
+
     def computeNewPressure(self, mask):
         """
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
         Formulation v-e
         """
-        density_current_value = self.density.current_value[mask]
-        density_new_value = self.density.new_value[mask]
-        pressure_current_value = self.pressure.current_value[mask]
-        pseudo_current_value = self.pseudo.current_value[mask]
-        energy_current_value = self.energy.current_value[mask]
-        energy_new_value = self.energy.new_value[mask]
-        shape = energy_new_value.shape
-        nbr_cells_to_solve = shape[0]
-        solution_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
-        new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
-        dummy = np.zeros(shape, dtype=np.float64, order='C')
-#         try:
         if self._external_library is not None:
-            pb_size = ctypes.c_int()
-            #
-            old_density = density_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            new_density = density_new_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            tmp = (pressure_current_value + 2. * pseudo_current_value)
-            pressure = tmp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            old_energy = energy_current_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            pb_size.value = nbr_cells_to_solve
-            solution = solution_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            new_pressure = new_pressure_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            new_vson = new_vson_value.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-            self._computePressureExternal(old_density, new_density, pressure, old_energy, pb_size,
-                                          solution, new_pressure, new_vson)
-            self.energy.new_value[mask] = solution[0:nbr_cells_to_solve]
-            self.pressure.new_value[mask] = new_pressure[0:nbr_cells_to_solve]
-            self.sound_velocity.new_value[mask] = new_vson[0:nbr_cells_to_solve]
+            self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
+                self._computeNewPressureWithExternalLib(self.density.current_value[mask], self.density.new_value[mask],
+                                                        self.pressure.current_value[mask],
+                                                        self.pseudo.current_value[mask],
+                                                        self.energy.current_value[mask], self.energy.new_value[mask],
+                                                        self.pressure.new_value[mask],
+                                                        self.sound_velocity.new_value[mask])
         else:
+            shape = self.energy.new_value[mask].shape
+            new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables = {'EquationOfState': DataContainer().material.eos,
-                            'OldDensity': density_current_value,
-                            'NewDensity': density_new_value,
-                            'Pressure': pressure_current_value + 2. * pseudo_current_value,
-                            'OldEnergy': energy_current_value}
+                            'OldDensity': self.density.current_value[mask],
+                            'NewDensity': self.density.new_value[mask],
+                            'Pressure': self.pressure.current_value[mask] + 2. * self.pseudo.current_value[mask],
+                            'OldEnergy': self.energy.current_value[mask]}
             self._function_to_vanish.setVariables(my_variables)
-            solution = self._solver.computeSolution(energy_current_value)
-            DataContainer().material.eos.solveVolumeEnergy(1. / density_new_value, solution, new_pressure_value,
-                                                           new_vson_value, dummy)
-            self.energy.new_value[mask] = solution
+            self.energy.new_value[mask] = self._solver.computeSolution(self.energy.current_value[mask])
+            DataContainer().material.eos.solveVolumeEnergy(1. / self.density.new_value[mask],
+                                                           self.energy.new_value[mask],
+                                                           new_pressure_value, new_vson_value, dummy)
             self.pressure.new_value[mask] = new_pressure_value
             self.sound_velocity.new_value[mask] = new_vson_value
             self._function_to_vanish.eraseVariables()
-#         except ValueError as err:
-#             raise err
 
     def computeSize(self, topologie, vecteur_coord_noeuds):
         """
