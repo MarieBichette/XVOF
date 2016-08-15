@@ -1,6 +1,8 @@
 # -*- coding: iso-8859-1 -*-
 """
 Classe définissant un élément en 1d
+
+:todo: essayer de supprimer les lignes 146-149 et passer directement les tableaux de pression, vitesse du son, dpde
 """
 import ctypes
 import numpy as np
