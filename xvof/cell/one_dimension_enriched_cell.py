@@ -195,14 +195,14 @@ class OneDimensionEnrichedCell(OneDimensionCell):
             format(self.pseudo.current_right_value)
         print message
 
-    def computeNewPressure(self):
+    def computeNewPressure(self, excep):
         """
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
         Formulation v-e
         :todo: factoriser/splitter tout ça
         """
-        super(OneDimensionEnrichedCell, self).computeNewPressure(mask=self._classical)
+        super(OneDimensionEnrichedCell, self).computeNewPressure(mask=np.logical_and(self._classical, ~excep))
         if self._enriched.any():
             mask = self._enriched
             try:

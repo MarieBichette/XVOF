@@ -90,7 +90,7 @@ class Mesh1dEnriched(object):
         """
         Computation of cells pressure at t+dt
         """
-        self.cells.computeNewPressure()
+        self.cells.computeNewPressure(excep=self.__ruptured_cells)
 
     def computeNewCellsPseudoViscosities(self, delta_t):
         """
@@ -156,9 +156,7 @@ class Mesh1dEnriched(object):
         :todo: Revoir la façon de calculer la position de la rupture sans passer par
         self.cells_coordinates (dépendance à self._enriched)
         """
-        if self.__ruptured_cells.any() and not self.cells._enriched.any():  # Enrichment is made once for all
-            treatment.applyTreatment(self.cells, self.__ruptured_cells,
-                                     self.nodes, self.__topologie, self.cells_coordinates)
+        treatment.applyTreatment(self.cells, self.__ruptured_cells, self.nodes, self.__topologie)
 
     @property
     def velocity_field(self):

@@ -16,6 +16,10 @@
       <initial-temperature>300.</initial-temperature>
       <initial-internal-energy>7.689</initial-internal-energy>
     </initialization>
+    <damage-treatment>
+      <name>Enrichment</name>
+      <value>0.5</value>
+    </damage-treatment>
   </matter>
   <numeric-parameters>
     <number-of-elements>1001</number-of-elements>
@@ -25,8 +29,8 @@
     <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
   </numeric-parameters>
   <output>
-    <number-of-images>300</number-of-images>
-    <dump-images>false</dump-images>
+    <number-of-images>150</number-of-images>
+    <dump-images>true</dump-images>
     <show-images>true</show-images>
   </output>
 </data>

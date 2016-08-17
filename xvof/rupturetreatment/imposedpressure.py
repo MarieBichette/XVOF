@@ -12,7 +12,7 @@ class ImposedPressure(RuptureTreatment):
     def __init__(self, pressure):
         self.__imposed_pressure = pressure
 
-    def applyTreatment(self, cells, ruptured_cells):
+    def applyTreatment(self, cells, ruptured_cells, *args, **kwargs):
         """
         Apply the rupture treatment by imposing the pressure on the ruptured cells
 

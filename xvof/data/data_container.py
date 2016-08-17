@@ -7,13 +7,16 @@ from collections import namedtuple
 import lxml.etree as et
 
 from xvof.equationsofstate.miegruneisen import MieGruneisen
+from xvof.rupturetreatment.enrichelement import EnrichElement
+from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.utilities.singleton import Singleton
 
 numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cells_number"])
 
 geometrical_props = namedtuple("geometrical_props", ["section", "length"])
 
-material_props = namedtuple("material_props", ["pression_init", "temp_init", "rho_init", "energie_init", "eos"])
+material_props = namedtuple("material_props", ["pression_init", "temp_init", "rho_init", "energie_init", "eos",
+                                               "damage_treatment", "damage_treatment_value"])
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time'])
 
@@ -77,7 +80,16 @@ class DataContainer(object):
             eos = MieGruneisen()
         else:
             raise ValueError("Only MieGruneisen's equation of state is available")
-        return init_pressure, init_temperature, init_density, init_internal_energy, eos
+        dmg_treatment_name = str(self.__datadoc.find('matter/damage-treatment/name').text)
+        if dmg_treatment_name == "ImposedPressure":
+            dmg_treatment = ImposedPressure
+        elif dmg_treatment_name == "Enrichment":
+            dmg_treatment = EnrichElement
+        else:
+            raise ValueError("Only 'ImposedPressure' or 'Enrichment' are possible values")
+        dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
+        return init_pressure, init_temperature, init_density, init_internal_energy, eos, \
+               dmg_treatment, dmg_treatment_value
 
     def __fillInTimeProperties(self):
         """

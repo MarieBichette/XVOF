@@ -39,6 +39,7 @@ class Cell(object):
         :rtype:
         """
         vec_coord = np.zeros([nbr_cells, topologie.dimension])
+
         for ielem in xrange(nbr_cells):
             nodes_index = topologie.getNodesBelongingToCell(ielem)
             vec_coord[ielem][0] = vecteur_x_node[nodes_index].mean()

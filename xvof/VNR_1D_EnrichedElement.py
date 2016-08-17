@@ -14,7 +14,6 @@ from xvof.figure_manager.figure_manager import FigureManager
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xvof.rupturetreatment.enrichelement import EnrichElement
 from xvof.data.data_container import DataContainer
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
 
@@ -35,7 +34,7 @@ NumberOfElements = data.numeric.cells_number
 LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
 RightBoundaryPressure = ConstantPressure(InitialPressure)
 RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
-RuptureTreatment = EnrichElement(0.5)
+RuptureTreatment = DataContainer().material.damage_treatment(DataContainer().material.damage_treatment_value)
 # OUTPUT
 ImagesNumber = data.output.number_of_images
 #  =================================================
