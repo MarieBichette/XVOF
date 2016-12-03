@@ -21,11 +21,13 @@ class Cell(object):
     que les lignes de chacun des vecteurs représentent les mailles. Ce faisant on a par exemple
     toutes les pressions des mailles contigues en mêmoire. (vectorisation, localisation spatiale)
     """
+
     @classmethod
-    def getCoordinates(cls, nbr_cells, topologie, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
+    def get_coordinates(cls, nbr_cells, topologie, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
         """
         Détermine le vecteur position du centre de l'élément au temps t
 
+        :param nbr_cells: number of cells
         :param topologie: topologie du calcul
         :param vecteur_x_node: vecteur des coordonnées x des noeuds
         :param vecteur_y_node: vecteur des coordonnées y des noeuds
@@ -63,7 +65,7 @@ class Cell(object):
                                                DataContainer().material.energie_init)
         self._fields_manager["Pseudo"] = Field(self._shape[0])
         self._fields_manager["SoundVelocity"] = Field(self._shape[0])
-        
+
     @property
     def dt(self):
         """
@@ -130,14 +132,12 @@ class Cell(object):
     @property
     def number_of_cells(self):
         return self._shape[0]
-    # ------------------------------------------------------------
-    # DEFINITIONS DES METHODES
-    # ------------------------------------------------------------
+
     def __str__(self):
         message = "Nombre d'éléments : {:d}".format(self._shape[0])
         return message
 
-    def printInfos(self, index):
+    def print_infos(self, index):
         """
         Affichage des informations concernant l'élément d'indice index
         """
@@ -158,15 +158,12 @@ class Cell(object):
             format(self.sound_velocity.new_value[index])
         print message
 
-    def incrementVariables(self):
+    def increment_variables(self):
         """
         Incrémentation des variables
         """
         self._fields_manager.incrementFields()
         self._size_t[:] = self._size_t_plus_dt[:]
-    #############################################################
-    # DEFINITIONS DES METHODES VIRTUELLES
-    #############################################################
 
     @abstractmethod
     def computeNewPressure(self, mask):
