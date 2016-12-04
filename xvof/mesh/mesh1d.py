@@ -8,7 +8,8 @@ import numpy as np
 from xvof.cell.one_dimension_cell import OneDimensionCell
 from xvof.data.data_container import DataContainer
 from xvof.mesh.topology1d import Topology1D
-from xvof.node.node1d import Node1d
+from xvof.node.one_dimension_node import OneDimensionNode
+
 
 class Mesh1d(object):
     """
@@ -27,8 +28,8 @@ class Mesh1d(object):
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
-        self.nodes = Node1d(nbr_nodes, initial_coordinates, initial_velocities,
-                            section=DataContainer().geometric.section)
+        self.nodes = OneDimensionNode(nbr_nodes, initial_coordinates, initial_velocities,
+                                      section=DataContainer().geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
@@ -39,19 +40,19 @@ class Mesh1d(object):
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------
-        self.__topologie = Topology1D(nbr_nodes, nbr_cells)
+        self.__topology = Topology1D(nbr_nodes, nbr_cells)
         # ---------------------------------------------
         # Ruptured cells vector
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
-    def computeNodesMasses(self):
+    def compute_nodes_masses(self):
         """ Nodal mass computation """
-        vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
-        vecteur_nb_noeuds_par_element[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.mass, vecteur_nb_noeuds_par_element)
+        nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
+        nb_nodes_per_cell[:] = 2
+        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_cell)
 
-    def computeNewNodesVelocities(self, delta_t):
+    def compute_new_nodes_velocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
 
@@ -60,7 +61,7 @@ class Mesh1d(object):
         """
         self.nodes.calculer_nouvo_vitesse(delta_t)
 
-    def computeNewNodesCoordinates(self, delta_t):
+    def compute_new_nodes_coordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
 
@@ -69,60 +70,60 @@ class Mesh1d(object):
         """
         self.nodes.calculer_nouvo_coord(delta_t)
 
-    def computeCellsSizes(self):
+    def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
         """
-        self.cells.computeSize(self.__topologie, self.nodes.xt)
+        self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    def computeNewCellsSizes(self, delta_t):
+    def compute_new_cells_sizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
         """
-        self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, self._all_cells, time_step=delta_t)
+        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self._all_cells, time_step=delta_t)
 
-    def computeNewCellsDensities(self):
+    def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
         """
-        self.cells.computeNewDensity(mask=self._all_cells)
+        self.cells.compute_new_density(mask=self._all_cells)
 
-    def computeNewCellsPressures(self):
+    def compute_new_cells_pressures(self):
         """
         Computation of cells pressure at t+dt
         """
-        self.cells.computeNewPressure(mask=~self.__ruptured_cells)
+        self.cells.compute_new_pressure(mask=~self.__ruptured_cells)
 
-    def computeNewCellsPseudoViscosities(self, delta_t):
+    def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
-        Computation of cells pseudoviscosities at t+dt
+        Computation of cells artificial viscosity at t+dt
 
         :var delta_t: time step
         :type delta_t: float
         """
-        self.cells.computeNewPseudo(delta_t, mask=self._all_cells)
+        self.cells.compute_new_pseudo(delta_t, mask=self._all_cells)
 
-    def computeNewNodesForces(self):
+    def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
         """
-        self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value)
+        self.nodes.calculer_nouvo_force(self.__topology, self.cells.pressure.new_value, self.cells.pseudo.new_value)
 
     def increment(self):
         """
         Moving to next time step
         """
         self.nodes.incrementer()
-        self.cells.incrementVariables()
+        self.cells.increment_variables()
 
-    def computeNewTimeStep(self):
+    def compute_new_time_step(self):
         """
         Computation of new time step
         """
-        self.cells.computeNewTimeStep(mask=self._all_cells)
+        self.cells.compute_new_time_step(mask=self._all_cells)
         return self.cells.dt.min()
 
-    def applyPressure(self, surface, pressure):
+    def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
 
@@ -132,13 +133,13 @@ class Mesh1d(object):
         :type pressure: float
         """
         if surface.lower() not in ("left", "right"):
-            raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
-        if (surface.lower() == 'left'):
+            raise (ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+        if surface.lower() == 'left':
             self.nodes.applyPressure(0, pressure)
         else:
             self.nodes.applyPressure(-1, -pressure)
 
-    def getRupturedCells(self, rupture_criterion):
+    def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
 
@@ -147,7 +148,7 @@ class Mesh1d(object):
         """
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
-    def applyRuptureTreatment(self, treatment):
+    def apply_rupture_treatment(self, treatment):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
 
@@ -175,7 +176,7 @@ class Mesh1d(object):
         """
         Cells coordinates (coordinates of cells centers)
         """
-        return self.cells.getCoordinates(self.cells.number_of_cells, self.__topologie, self.nodes.xt)
+        return self.cells.get_coordinates(self.cells.number_of_cells, self.__topology, self.nodes.xt)
 
     @property
     def pressure_field(self):
@@ -199,10 +200,8 @@ class Mesh1d(object):
         return self.cells.energy_field
 
     @property
-    def pseudoviscosity_field(self):
+    def artificial_viscosity_field(self):
         """
-        Pseudoviscosity field
+        Artificial viscosity field
         """
-        return self.cells.pseudoviscosity_field
-
-
+        return self.cells.artificial_viscosity_field
