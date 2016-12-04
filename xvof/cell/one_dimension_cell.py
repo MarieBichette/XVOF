@@ -21,8 +21,8 @@ class OneDimensionCell(Cell):
     nbr_noeuds = 2
 
     @classmethod
-    def computePseudo(cls, delta_t, rho_old, rho_new, size_new,
-                      cel_son, a_pseudo, b_pseudo):
+    def compute_pseudo(cls, delta_t, rho_old, rho_new, size_new,
+                       cel_son, a_pseudo, b_pseudo):
         """
         Calcul de la pseudo
         """
@@ -35,15 +35,13 @@ class OneDimensionCell(Cell):
         divu = vpointnplusundemi / vnplusundemi
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
         mask = divu < 0.
-        pseudo[mask] = 1. / vnplusundemi[mask] * \
-            (a_pseudo * size_new[mask] ** 2 * vpointnplusundemi[mask] ** 2 / vnplusundemi[mask] ** 2 +
-             b_pseudo * size_new[mask] * cel_son[mask] *
-             abs(vpointnplusundemi[mask]) / vnplusundemi[mask])
+        pseudo[mask] = (1. / vnplusundemi[mask] *
+                        (a_pseudo * size_new[mask] ** 2 * vpointnplusundemi[mask] ** 2 / vnplusundemi[mask] ** 2 +
+                         b_pseudo * size_new[mask] * cel_son[mask] * abs(vpointnplusundemi[mask]) / vnplusundemi[mask]))
         return pseudo
 
     @classmethod
-    def computeTimeStep(cls, cfl, rho_old, rho_new, taille_new, cson_new,
-                        pseudo):
+    def compute_time_step(cls, cfl, rho_old, rho_new, taille_new, cson_new, pseudo):
         """
         Calcul du pas de temps
         """
@@ -66,18 +64,17 @@ class OneDimensionCell(Cell):
             self._external_library = DataContainer().getExternalSolverPath()
         else:
             self._external_library = None
-        if self._external_library is not None :
+        if self._external_library is not None:
             _path = os.path.join(*(os.path.split(__file__)[:-1] + (self._external_library,)))
             self._mod = ctypes.cdll.LoadLibrary(_path)
             self._computePressureExternal = self._mod.launch_vnr_resolution
             self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
-                [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
+                                                      [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
     @property
     def mass(self):
         """ Masse de l'élément """
-        return self.size_t * DataContainer().geometric.section * \
-               self.density.current_value
+        return self.size_t * DataContainer().geometric.section * self.density.current_value
 
     @property
     def pressure_field(self):
@@ -101,16 +98,14 @@ class OneDimensionCell(Cell):
         return self.energy.current_value
 
     @property
-    def pseudoviscosity_field(self):
+    def artificial_viscosity_field(self):
         """
         Pseudoviscosity field
         """
         return self.pseudo.current_value
-    # --------------------------------------------------------
-    #            DEFINITION DES METHODES                     #
-    # --------------------------------------------------------
-    def _computeNewPressureWithExternalLib(self, density_current, density_new, pressure_current, pseudo_current,
-                                           energy_current, energy_new, pressure_new, vson_new):
+
+    def _compute_new_pressure_with_external_lib(self, density_current, density_new, pressure_current, pseudo_current,
+                                                energy_current, energy_new, pressure_new, vson_new):
         pb_size = ctypes.c_int()
         pb_size.value = energy_new.shape[0]
         c_density = density_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
@@ -128,7 +123,7 @@ class OneDimensionCell(Cell):
         vson_n = n_sound_speed[0:pb_size.value]
         return energy_n, pressure_n, vson_n
 
-    def computeNewPressure(self, mask):
+    def compute_new_pressure(self, mask):
         """
         Calcul du triplet energie, pression, vitesse du son
         au pas de temps suivant
@@ -136,12 +131,14 @@ class OneDimensionCell(Cell):
         """
         if self._external_library is not None:
             self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
-                self._computeNewPressureWithExternalLib(self.density.current_value[mask], self.density.new_value[mask],
-                                                        self.pressure.current_value[mask],
-                                                        self.pseudo.current_value[mask],
-                                                        self.energy.current_value[mask], self.energy.new_value[mask],
-                                                        self.pressure.new_value[mask],
-                                                        self.sound_velocity.new_value[mask])
+                self._compute_new_pressure_with_external_lib(self.density.current_value[mask],
+                                                             self.density.new_value[mask],
+                                                             self.pressure.current_value[mask],
+                                                             self.pseudo.current_value[mask],
+                                                             self.energy.current_value[mask],
+                                                             self.energy.new_value[mask],
+                                                             self.pressure.new_value[mask],
+                                                             self.sound_velocity.new_value[mask])
         else:
             shape = self.energy.new_value[mask].shape
             new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
@@ -161,7 +158,7 @@ class OneDimensionCell(Cell):
             self.sound_velocity.new_value[mask] = new_vson_value
             self._function_to_vanish.eraseVariables()
 
-    def computeSize(self, topologie, vecteur_coord_noeuds):
+    def compute_size(self, topologie, vecteur_coord_noeuds):
         """
         Calcul de la longueur de l'ï¿½lï¿½ment (ï¿½ t)
         """
@@ -170,16 +167,16 @@ class OneDimensionCell(Cell):
             self._size_t[ielem] = abs(vecteur_coord_noeuds[ind_nodes[0]] -
                                       vecteur_coord_noeuds[ind_nodes[1]])
 
-    def computeNewSize(self, topologie, vecteur_coord_noeuds, mask, time_step=None):
+    def compute_new_size(self, topologie, vecteur_coord_noeuds, mask, time_step=None):
         """
         Calcul de la nouvelle longueur de l'élément (à t+dt)
         """
-        connectivity = np.array(topologie._nodes_belonging_to_cell)
+        connectivity = np.array(topologie.nodes_belonging_to_cell)
         size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] -
                              vecteur_coord_noeuds[connectivity[:, 1]]).reshape(self.number_of_cells)
         self._size_t_plus_dt[mask] = size_t_plus_dt[mask]
 
-    def computeNewDensity(self, mask):
+    def compute_new_density(self, mask):
         """
         Calcul de la densite a l'instant t+dt basee sur
         la conservation de la masse
@@ -187,27 +184,26 @@ class OneDimensionCell(Cell):
         self.density.new_value[mask] = \
             self.density.current_value[mask] * self.size_t[mask] / self.size_t_plus_dt[mask]
 
-    def computeNewPseudo(self, delta_t, mask):
+    def compute_new_pseudo(self, delta_t, mask):
         """
         Calcul de la nouvelle pseudo
         """
         self.pseudo.new_value[mask] = \
-            OneDimensionCell.computePseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
-                                           self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-                                           DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+            OneDimensionCell.compute_pseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
+                                            self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
+                                            DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
 
-    def computeNewTimeStep(self, mask):
+    def compute_new_time_step(self, mask):
         """
         Calcul du pas de temps dans l'ï¿½lï¿½ment
         """
         cfl = DataContainer().numeric.cfl
-        dt = \
-            OneDimensionCell.computeTimeStep(cfl, self.density.current_value, self.density.new_value,
-                                             self.size_t_plus_dt, self.sound_velocity.new_value,
-                                             self.pseudo.current_value)
+        dt = OneDimensionCell.compute_time_step(cfl, self.density.current_value, self.density.new_value,
+                                                self.size_t_plus_dt, self.sound_velocity.new_value,
+                                                self.pseudo.current_value)
         self._dt[mask] = dt[mask]
 
-    def imposePressure(self, ind_cell, pression):
+    def impose_pressure(self, ind_cell, pression):
         """
         On impose la pression ï¿½ t+dt (par exemple pour endommagement)
         """
