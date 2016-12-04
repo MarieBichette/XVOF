@@ -120,8 +120,8 @@ if __name__ == '__main__':
         #                INCREMENTATION                #
         # ---------------------------------------------#
         my_mesh.increment()
-        # dt = dt_crit
         simulation_time += dt
+        dt = dt_crit
         step += 1
         loop_end_time = time.time()
         compute_time += loop_end_time - loop_begin_time

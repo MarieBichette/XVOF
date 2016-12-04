@@ -25,7 +25,7 @@
     <number-of-elements>1001</number-of-elements>
     <linear-pseudo>0.2</linear-pseudo>
     <quadratic-pseudo>1.5</quadratic-pseudo>
-    <cfl>0.95</cfl>
+      <cfl>0.45</cfl>
       <external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>
   </numeric-parameters>
   <output>
