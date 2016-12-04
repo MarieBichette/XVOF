@@ -26,11 +26,11 @@
     <linear-pseudo>0.2</linear-pseudo>
     <quadratic-pseudo>1.5</quadratic-pseudo>
     <cfl>0.95</cfl>
-    <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
+      <external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>
   </numeric-parameters>
   <output>
     <number-of-images>150</number-of-images>
-    <dump-images>true</dump-images>
+      <dump-images>false</dump-images>
     <show-images>true</show-images>
   </output>
 </data>
