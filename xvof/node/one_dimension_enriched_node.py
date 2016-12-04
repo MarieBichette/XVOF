@@ -8,13 +8,13 @@ Classe dÃ©finissant un noeud enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 
-from xvof.node import Node1d
+from xvof.node import OneDimensionNode
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ###### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class Node1dEnriched(Node1d):
+class OneDimensionEnrichedNode(OneDimensionNode):
     """
     Une classe pour les noeuds enrichis dans le cas 1d
 
@@ -33,7 +33,7 @@ class Node1dEnriched(Node1d):
         :param vit_init: vecteur vitesse initiale des noeuds
         :type vit_init: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')      
         '''
-        super(Node1dEnriched, self).__init__(nbr_of_nodes, poz_init, vit_init, section=section)
+        super(OneDimensionEnrichedNode, self).__init__(nbr_of_nodes, poz_init, vit_init, section=section)
         # self._classiques indique quels noeuds sont classiques (non enrichis)
         self._classiques = np.empty([self.number_of_nodes,], dtype=np.bool, order='C')
         self._classiques[:] = True
@@ -85,7 +85,7 @@ class Node1dEnriched(Node1d):
         res = self.upundemi
         if self._pos_disc != {}:
             for pos_disc in self.pos_disc.keys():
-            # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
+                # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
             # des noeuds enrichis
                 mask_in_nodes = self.pos_disc[pos_disc]["inside"]
                 mask_out_nodes = self.pos_disc[pos_disc]["outside"]
@@ -112,14 +112,14 @@ class Node1dEnriched(Node1d):
         """
         Affichage des informations
         """
-        Node1d.infos(self, index)
-        message = "==> vitesse classique Ã  t-1/2 = {}\n".\
+        OneDimensionNode.infos(self, index)
+        message = "==> vitesse classique Ã  t-1/2 = {}\n". \
             format(self.umundemi[index])
-        message += "==> vitesse enrichie Ã  t-1/2 = {}\n".\
+        message += "==> vitesse enrichie Ã  t-1/2 = {}\n". \
             format(self.umundemi_enrichi[index])
-        message += "==> vitesse classique Ã  t+1/2 = {}\n".\
+        message += "==> vitesse classique Ã  t+1/2 = {}\n". \
             format(self.upundemi[index])
-        message += "==> vitesse enrichie Ã  t+1/2 = {}\n".\
+        message += "==> vitesse enrichie Ã  t+1/2 = {}\n". \
             format(self.upundemi_enrichi[index])
         message += "==> force classique = {}\n".\
             format(self.force_classique[index])
@@ -133,7 +133,7 @@ class Node1dEnriched(Node1d):
         """
         # Le vecteur de vitesse des noeuds classique et le vecteur classique des
         # noeuds enrichis sont calculés de la même façon
-        super(Node1dEnriched, self).calculer_nouvo_vitesse(delta_t)
+        super(OneDimensionEnrichedNode, self).calculer_nouvo_vitesse(delta_t)
         # Calcul du vecteur vitesse enrichie des noeuds enrichis
         self._upundemi_enrichi[self._enrichis] = \
             self.force_enrichi[self._enrichis] * self.invmasse[self._enrichis] * delta_t +\
@@ -147,11 +147,11 @@ class Node1dEnriched(Node1d):
         :type delta_t: float
         """
         # Calcul des nouvelles coordonnées pour les noeuds non enrichis et calcul
-        # des nouvelles coordoonées classiques des noeuds enrichis
-        super(Node1dEnriched, self).calculer_nouvo_coord(delta_t)
+        #  des nouvelles coordoonées classiques des noeuds enrichis
+        super(OneDimensionEnrichedNode, self).calculer_nouvo_coord(delta_t)
         if self._pos_disc != {}:
             for pos_disc in self.pos_disc.keys():
-            # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
+                # Prise en compte des champs enrichis pour le calcul des nouvelles coordonnées
             # des noeuds enrichis
                 mask_in_nodes = self.pos_disc[pos_disc]["inside"]
                 mask_out_nodes = self.pos_disc[pos_disc]["outside"]
@@ -171,9 +171,10 @@ class Node1dEnriched(Node1d):
         :type vecteur_pression_maille: numpy.array([nbr_of_nodes+2, 1], dtype=np.float64, order='C')
         :type vecteur_pseudo_maille: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
-        # Calcul de la force pour les noeuds classiques et de la force classique pour les noeuds
+        #  Calcul de la force pour les noeuds classiques et de la force classique pour les noeuds
         # enrichis
-        super(Node1dEnriched, self).calculer_nouvo_force(topologie, vecteur_pression_classique, vecteur_pseudo_classique)
+        super(OneDimensionEnrichedNode, self).calculer_nouvo_force(topologie, vecteur_pression_classique,
+                                                                   vecteur_pseudo_classique)
         if self._pos_disc != {}:
             # Boucle sur les discontinuités
             for pos_disc in self.pos_disc.keys():
@@ -196,5 +197,5 @@ class Node1dEnriched(Node1d):
         Mise Ã  jour de la vitesse et de la coordonnÃ©e du noeud
         pour passer au pas de temps suivant.
         """
-        Node1d.incrementer(self)
+        OneDimensionNode.incrementer(self)
         self._umundemi_enrichi[:] = self.upundemi_enrichi[:]

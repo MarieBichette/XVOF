@@ -1,3 +1,3 @@
 from .node import Node
-from .node1d import Node1d
-from .node1denriched import Node1dEnriched
+from .one_dimension_enriched_node import OneDimensionEnrichedNode
+from .one_dimension_node import OneDimensionNode

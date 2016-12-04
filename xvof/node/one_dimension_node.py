@@ -7,13 +7,14 @@ Module définissant la classe Node1d
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
+
 from xvof.node import Node
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ###### DEFINITION DES CLASSES & FONCTIONS  ###############
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class Node1d(Node):
+class OneDimensionNode(Node):
     """
     Un objet Node1d représente l'ensemble des noeuds 1d du maillage
     """
