@@ -8,7 +8,7 @@ Classe définissant un noeud enrichi en 1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 import numpy as np
 
-from xvof.node import OneDimensionNode
+from xvof.node.one_dimension_node import OneDimensionNode
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
