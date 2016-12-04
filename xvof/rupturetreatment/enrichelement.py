@@ -35,8 +35,8 @@ class EnrichElement(RuptureTreatment):
             #
             nodes_to_be_enr = np.array(topology._nodes_belonging_to_cell)[ruptured_cells]
             print "==> Enrichment of nodes : ", nodes_to_be_enr
-            nodes._classiques[nodes_to_be_enr] = False
-            nodes.pos_disc = np.mean(nodes.xt[nodes_to_be_enr])
+            nodes.classical[nodes_to_be_enr] = False
+            nodes.relative_discontinuity_position = np.mean(nodes.xt[nodes_to_be_enr])
             print "==> Enrichement of cells : ", np.where(cells_to_be_enr == True)
             cells.classical[cells_to_be_enr] = False
             cells.right_size.new_value = (1. - self.__position_rupture) * cells.size_t_plus_dt
