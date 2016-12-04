@@ -12,7 +12,7 @@ from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xvof.equationsofstate.miegruneisen import MieGruneisen
 from xvof.figure_manager.figure_manager import FigureManager
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
-from xvof.node.node1denriched import Node1dEnriched
+from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 from xvof.pressurelaw.constantpressure import ConstantPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.rupturetreatment.enrichelement import EnrichElement
@@ -35,7 +35,7 @@ def print_infos_about_enrichment(mesh, titre="", cells=None, nodes=None):
     if nodes is not None:
         print " Nombre de noeuds : {:d}".format(len(nodes))
         for node in nodes:
-            if isinstance(node, Node1dEnriched):
+            if isinstance(node, OneDimensionEnrichedNode):
 #                 index = node.index
 #                 node_g = mesh.nodes[index - 1]
 #                 node_d = mesh.nodes[index + 1]
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     #         CALCUL DES MASSES NODALES            #
     # ---------------------------------------------#
     print "Calcul de la masse des noeuds :"
-    my_mesh.computeNodesMasses()
+    my_mesh.compute_nodes_masses()
     print "=> OK"
     print "LANCEMENT DU CALCUL!"
     while (time < FinalTime):
@@ -138,28 +138,28 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         CALCUL DES VITESSES NODALES          #
         # ---------------------------------------------#
-        my_mesh.computeNewNodesVelocities(dt)
+my_mesh.compute_new_nodes_velocities(dt)
 #         print_infos_about_enrichment(my_mesh, titre="VITESSES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES COORDONNEES NODALES       #
         # ---------------------------------------------#
-        my_mesh.computeNewNodesCoordinates(dt)
+my_mesh.compute_new_nodes_coordinates(dt)
 #         print_infos_about_enrichment(my_mesh, titre="COORDONNEES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         CALCUL DES VOLUMES DES MAILLES       #
         # ---------------------------------------------#
-        my_mesh.computeNewCellsSizes(dt)
+my_mesh.compute_new_cells_sizes(dt)
         print_infos_about(my_mesh, titre="VOLUMES DES MAILLES", cells=my_mesh.cells, nodes=my_mesh.nodes)
 #         print_infos_about_enrichment(my_mesh, titre="VOLUMES DES MAILLES", cells=my_mesh.cells)
         # ---------------------------------------------#
         #         CALCUL DES DENSITES DES MAILLES      #
         # ---------------------------------------------#
-        my_mesh.computeNewCellsDensities()
+my_mesh.compute_new_cells_densities()
 #         print_infos_about_enrichment(my_mesh, titre="DENSITE DES MAILLES", cells=my_mesh.cells)
         # ---------------------------------------------#
         #         CALCUL DES PRESSIONS                 #
         # ---------------------------------------------#
-        my_mesh.computeNewCellsPressures()
+my_mesh.compute_new_cells_pressures()
 #         print_infos_about_enrichment(my_mesh, titre="PRESSION DES MAILLES", cells=my_mesh.cells)
         # ---------------------------------------------#
         #              RUPTURE                         #
@@ -170,21 +170,21 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         CALCUL DES FORCES NODALES            #
         # ---------------------------------------------#
-        my_mesh.computeNewNodesForces()
+my_mesh.compute_new_nodes_forces()
 #         print_infos_about_enrichment(my_mesh, titre="FORCES NODALES", nodes=my_mesh.nodes)
         # ---------------------------------------------#
         #         APPLICATION DU CHARGEMENT            #
         # ---------------------------------------------#
-        my_mesh.applyPressure('gauche', LeftBoundaryPressure.evaluate(time))
-        my_mesh.applyPressure('droite', RightBoundaryPressure.evaluate(time))
+my_mesh.apply_pressure('gauche', LeftBoundaryPressure.evaluate(time))
+my_mesh.apply_pressure('droite', RightBoundaryPressure.evaluate(time))
         # ---------------------------------------------#
         #         CALCUL DU PAS DE TEMPS CRITIQUE      #
         # ---------------------------------------------#
-        dt_crit = my_mesh.computeNewTimeStep()
+dt_crit = my_mesh.compute_new_time_step()
         # ---------------------------------------------#
         #         CALCUL DE LA PSEUDOVISCOSITE         #
         # ---------------------------------------------#
-        my_mesh.computeNewCellsPseudoViscosities(dt)
+my_mesh.compute_new_cells_pseudo_viscosity(dt)
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#
