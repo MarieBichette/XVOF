@@ -45,9 +45,9 @@ class Mesh1dEnriched(object):
 
     def compute_nodes_masses(self):
         """ Nodal mass computation """
-        nb_nodes_per_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
-        nb_nodes_per_element[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_element)
+        nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
+        nb_nodes_per_cell[:] = 2
+        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_cell)
 
     def compute_new_nodes_velocities(self, delta_t):
         """
