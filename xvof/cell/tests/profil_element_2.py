@@ -8,7 +8,7 @@ from xvof.miscellaneous import *
 
 from xvof.cell.one_dimension_cell import OneDimensionCell
 from xvof.equationsofstate.miegruneisen import MieGruneisen
-from xvof.node.node1d import Node1d
+from xvof.node.one_dimension_node import OneDimensionNode
 from xvof.utilities import timeit_file
 
 if __name__ == '__main__':
@@ -23,8 +23,8 @@ if __name__ == '__main__':
         mat_props = material_props(1.0e+05, 0.0, 8129., equation_detat)
         geom_props = geometrical_props(1.0e-06)
         props = properties(num_props, mat_props, geom_props)
-        noda = Node1d(1, np.array([4.5e-03]))
-        nodb = Node1d(2, np.array([7.0e-03]))
+        noda = OneDimensionNode(1, np.array([4.5e-03]))
+        nodb = OneDimensionNode(2, np.array([7.0e-03]))
         noda._xtpdt = np.array([5.0e-03])
         nodb._xtpdt = np.array([6.25e-03])
         my_elem = OneDimensionCell(props, 1, [noda, nodb])

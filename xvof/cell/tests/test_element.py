@@ -11,7 +11,7 @@ from xvof.miscellaneous import numerical_props, properties
 
 import xvof.cell.cell as el
 from xvof.equationsofstate import MieGruneisen
-from xvof.node import Node1d
+from xvof.node import OneDimensionNode
 
 
 class ElementTest(unittest.TestCase):
@@ -23,8 +23,8 @@ class ElementTest(unittest.TestCase):
         mat_props = material_props(1.0e+05, 0.0, 8129., equation_detat)
         geom_props = geometrical_props(1.0e-06)
         props = properties(num_props, mat_props, geom_props)
-        noda = Node1d(1, np.array([-0.5]))
-        nodb = Node1d(2, np.array([0.1]))
+        noda = OneDimensionNode(1, np.array([-0.5]))
+        nodb = OneDimensionNode(2, np.array([0.1]))
         self.my_elem = el.Cell(props, 1, [noda, nodb])
 
     def tearDown(self):

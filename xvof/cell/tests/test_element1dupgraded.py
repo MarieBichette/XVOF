@@ -12,7 +12,7 @@ from xvof.miscellaneous import numerical_props, properties
 
 import xvof.cell.one_dimension_cell as el1d
 from xvof.equationsofstate import MieGruneisen
-from xvof.node import Node1d
+from xvof.node import OneDimensionNode
 
 
 class Element1dUpgradedTest(unittest.TestCase):
@@ -24,8 +24,8 @@ class Element1dUpgradedTest(unittest.TestCase):
         mat_props = material_props(1.0e+05, 0.0, 8129., ee)
         geom_props = geometrical_props(1.0e-06)
         props = properties(num_props, mat_props, geom_props)
-        noda = Node1d(1, poz_init=np.array([0.6]), section=1.0e-06)
-        nodb = Node1d(1, poz_init=np.array([-0.2]), section=1.0e-06)
+        noda = OneDimensionNode(1, poz_init=np.array([0.6]), section=1.0e-06)
+        nodb = OneDimensionNode(1, poz_init=np.array([-0.2]), section=1.0e-06)
         my_elem = el1d.OneDimensionCell(props, 123, [noda, nodb])
         self.my_elem_up = el1dup.Element1dUpgraded(my_elem, 0.5)
 
