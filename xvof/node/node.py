@@ -1,11 +1,12 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Module définissant la classe Node
+Module defining Node class
 """
 
-from abc import abstractmethod
 import numpy as np
+from abc import abstractmethod
+
 
 class Node(object):
     """
@@ -17,34 +18,35 @@ class Node(object):
     que les lignes de chacun des vecteurs représentent les noeuds. Ce faisant on a par exemple
     tous les X des noeuds contigus en mêmoire. (vectorisation, localisation spatiale)
     """
+
     # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
     def __init__(self, nbr_of_nodes, position_initiale, dim=1, vitesse_initiale=None):
         """
-    	:param dim: dimension du problème à traiter (par défaut 1)
-    	:param nbr_of_nodes: nombre de noeuds du problème
-    	:param position_initiale: vecteur des positions initiales
-    	:param vitesse_initiale: vecteur des vitesses initiales
+        :param dim: dimension du problème à traiter (par défaut 1)
+        :param nbr_of_nodes: nombre de noeuds du problème
+        :param position_initiale: vecteur des positions initiales
+        :param vitesse_initiale: vecteur des vitesses initiales
     
-    	:type dim: int
-    	:type nbr_of_nodes: int
-    	:type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
-    	:type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
-    	"""
+        :type dim: int
+        :type nbr_of_nodes: int
+        :type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+        :type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
+        """
         # Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
         # les différentes dimensions
         self.__shape = (nbr_of_nodes, dim)
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if position_initiale.shape != self.__shape:
-            message = "Node() : La dimension ({}) du vecteur position_initiale "\
+            message = "Node() : La dimension ({}) du vecteur position_initiale " \
                 .format(np.shape(position_initiale))
             message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
         if vitesse_initiale is None:
             vitesse_initiale = np.zeros(self.__shape, dtype=np.float64, order='C')
         elif np.shape(vitesse_initiale) != self.__shape:
-            message = "Node() : La dimension ({}) du vecteur vitesse_initiale "\
+            message = "Node() : La dimension ({}) du vecteur vitesse_initiale " \
                 .format(np.shape(vitesse_initiale))
             message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
@@ -160,8 +162,8 @@ class Node(object):
         :type index: int
         """
         message = "{} {:4d}\n".format(self.__class__, index)
-        message += "==> coordonnées à t = {}\n".format(self.coordt[index])
-        message += "==> coordonnées à t+dt = {}\n".format(self.coordtpdt[index])
+        message += "==> coordonnées à t = {}\n".format(self.xt[index])
+        message += "==> coordonnées à t+dt = {}\n".format(self.xtpdt[index])
         message += "==> vitesse à t-1/2 = {}\n".format(self.umundemi[index])
         message += "==> vitesse à t+1/2 = {}\n".format(self.upundemi[index])
         message += "==> masse = {:5.4g}\n".format(self.masse[index])
@@ -183,10 +185,11 @@ class Node(object):
         """
         for ind_node in xrange(self.number_of_nodes):
             elements_voisins = topologie.getCellsInContactWithNode(ind_node)
-            self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] / vecteur_nb_noeuds_par_element[elements_voisins])
+            self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] /
+                                           vecteur_nb_noeuds_par_element[elements_voisins])
             self._invmasse[ind_node] = 1. / self._masse[ind_node]
 
-    def calculer_nouvo_coord(self, delta_t):
+    def compute_new_coodinates(self, delta_t):
         """
         Calcul de la coordonnée au temps t+dt
 
@@ -195,7 +198,7 @@ class Node(object):
         """
         self._xtpdt = self.xt + self.upundemi * delta_t
 
-    def incrementer(self):
+    def increment(self):
         """
         Mise à jour de la vitesse et de la coordonnée des noeuds
         pour passer au pas de temps suivant.
@@ -204,16 +207,17 @@ class Node(object):
         self._xt[:] = self.xtpdt[:]
 
     @abstractmethod
-    def calculer_nouvo_force(self, *args, **kwargs):
+    def compute_new_force(self, *args, **kwargs):
         """
         Calcul de la force agissant sur le noeud
         """
 
     @abstractmethod
-    def calculer_nouvo_vitesse(self, delta_t):
+    def compute_new_velocity(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
         """
+
 
 if __name__ == "__main__":
     print "Ceci est uniquement un module!"

@@ -51,7 +51,7 @@ class OneDimensionNode(Node):
         message = "==> section = {:5.4g}".format(self.section)
         print message
 
-    def calculer_nouvo_force(self, topologie, vecteur_pression_maille, vecteur_pseudo_maille):
+    def compute_new_force(self, topologie, vecteur_pression_maille, vecteur_pseudo_maille):
         """
         Calcul des forces agissant sur les noeuds
 
@@ -76,7 +76,7 @@ class OneDimensionNode(Node):
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
         self._force[ind_node] = pressure[0]
 
-    def calculer_nouvo_vitesse(self, delta_t):
+    def compute_new_velocity(self, delta_t):
         """
         Calcul de la vitesse au demi pas de temps supérieur
 
@@ -85,7 +85,7 @@ class OneDimensionNode(Node):
         """
         self._upundemi = self.umundemi + self.force * self.invmasse * delta_t
 
-    def applyPressure(self, ind_node, pressure):
+    def apply_pressure(self, ind_node, pressure):
         """
         Appliquer une pressure sur le noeud d'indice "ind_node"
 
