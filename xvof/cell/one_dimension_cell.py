@@ -48,9 +48,10 @@ class OneDimensionCell(Cell):
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette m�thode cela semble ok
         delta_t = np.zeros(rho_old.shape, dtype=np.float64, order='C')
-        drho = rho_new - rho_old
+        drho = (rho_new - rho_old) / rho_old
         mask = drho > 0.1
-        delta_t[mask] = cfl * taille_new[mask] / (cson_new[mask] ** 2 + 2. * pseudo[mask] / drho[mask]) ** 0.5
+        delta_t[mask] = cfl * taille_new[mask] / \
+                        (cson_new[mask] ** 2 + 2. * pseudo[mask] / (drho[mask] * rho_new[mask])) ** 0.5
         mask = drho <= 0.1
         delta_t[mask] = cfl * taille_new[mask] / cson_new[mask]
         return delta_t
