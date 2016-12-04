@@ -56,7 +56,8 @@ class Mesh1dEnriched(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        self.nodes.calculer_nouvo_vitesse(delta_t)
+        self.nodes.compute_new_velocity(delta_t)
+        self.nodes.enriched_nodes_compute_new_velocity(delta_t)
 
     def compute_new_nodes_coordinates(self, delta_t):
         """
@@ -65,7 +66,8 @@ class Mesh1dEnriched(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        self.nodes.calculer_nouvo_coord(delta_t)
+        self.nodes.compute_new_coodinates(delta_t)
+        self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
 
     def compute_cells_sizes(self):
         """
@@ -78,7 +80,7 @@ class Mesh1dEnriched(object):
         Computation of cells sizes at t+dt
         """
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, mask=self.cells.classical, time_step=delta_t)
-        self.cells.compute_enriched_elements_new_part_size(delta_t, self.__topology, self.nodes.upundemi_enrichi,
+        self.cells.compute_enriched_elements_new_part_size(delta_t, self.__topology, self.nodes.upundemi_enriched,
                                                            self.nodes.upundemi)
 
     def compute_new_cells_densities(self):
@@ -109,14 +111,17 @@ class Mesh1dEnriched(object):
         """
         Computation of nodes forces at t+dt
         """
-        self.nodes.calculer_nouvo_force(self.__topology, self.cells.pressure.new_value, self.cells.pseudo.new_value,
-                                        self.cells.pressure.new_enr_value, self.cells.pseudo.new_enr_value)
+        self.nodes.compute_new_force(self.__topology, self.cells.pressure.new_value, self.cells.pseudo.new_value)
+        self.nodes.enriched_nodes_compute_new_force(self.__topology, self.cells.pressure.new_value,
+                                                    self.cells.pressure.new_enr_value, self.cells.pseudo.new_value,
+                                                    self.cells.pseudo.new_enr_value)
 
     def increment(self):
         """
         Moving to next time step
         """
-        self.nodes.incrementer()
+        self.nodes.increment()
+        self.nodes.enriched_nodes_increment()
         self.cells.increment_variables()
 
     def compute_new_time_step(self):
@@ -139,9 +144,9 @@ class Mesh1dEnriched(object):
         if surface.lower() not in ("left", "right"):
             raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
         if surface.lower() == 'left':
-            self.nodes.applyPressure(0, pressure)
+            self.nodes.apply_pressure(0, pressure)
         else:
-            self.nodes.applyPressure(-1, -pressure)
+            self.nodes.apply_pressure(-1, -pressure)
 
     def get_ruptured_cells(self, rupture_criterion):
         """
