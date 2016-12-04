@@ -44,39 +44,39 @@ class Node1dUpgradedTest(unittest.TestCase):
             self.my_node.position_relative = 2
 
     def test_calculer_nouvo_force(self):
-        """ Test de la méthode Node1dUpgraded.calculer_nouvo_force() """
+        """ Test de la méthode Node1dUpgraded.compute_new_force() """
         # Noeud à droite de la discontinuité
         self.my_node.position_relative = -1
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         np.testing.assert_array_equal(self.my_node.force_classique,
                                       np.array([2000.]))
-        np.testing.assert_array_equal(self.my_node.force_enrichi,
+        np.testing.assert_array_equal(self.my_node.force_enriched,
                                       np.array([2750.]))
         # Noeud à gauche de la discontinuité
         self.my_node.position_relative = 1
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         np.testing.assert_array_equal(self.my_node.force_classique,
                                       np.array([2000.]))
-        np.testing.assert_array_equal(self.my_node.force_enrichi,
+        np.testing.assert_array_equal(self.my_node.force_enriched,
                                       np.array([-3250.]))
 
     def test_calculer_nouvo_vitesse(self):
-        """ Test de la méthode Node1dUpgraded.calculer_nouvo_vitesse() """
+        """ Test de la méthode Node1dUpgraded.compute_new_velocity() """
         #  Noeud à droite de la discontinuité
         self.my_node.position_relative = -1
-        self.my_node.calculer_nouvo_force()
-        self.my_node.calculer_nouvo_vitesse(1.0e-01)
+        self.my_node.compute_new_force()
+        self.my_node.compute_new_velocity(1.0e-01)
         np.testing.assert_array_equal(self.my_node.upundemi_classique,
                                       np.array([400.0]))
-        np.testing.assert_array_equal(self.my_node.upundemi_enrichi,
+        np.testing.assert_array_equal(self.my_node.upundemi_enriched,
                                       np.array([550.0]))
         # Noeud à gauche de la discontinuité
         self.my_node.position_relative = 1
-        self.my_node.calculer_nouvo_force()
-        self.my_node.calculer_nouvo_vitesse(1.0e-01)
+        self.my_node.compute_new_force()
+        self.my_node.compute_new_velocity(1.0e-01)
         np.testing.assert_array_equal(self.my_node.upundemi_classique,
                                       np.array([400.0]))
-        np.testing.assert_array_equal(self.my_node.upundemi_enrichi,
+        np.testing.assert_array_equal(self.my_node.upundemi_enriched,
                                       np.array([-650.0]))
 
 if __name__ == '__main__':

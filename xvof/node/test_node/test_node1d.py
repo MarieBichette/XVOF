@@ -46,38 +46,38 @@ class Node1dTest(unittest.TestCase):
                              self.my_node.elements_voisins[1].coord)
 
     def test_calculer_nouvo_force(self):
-        """ Test de la méthode Node1d.calculer_nouvo_force() """
+        """ Test de la méthode Node1d.compute_new_force() """
         #
         # Test du calcul de la force en présence de 2 éléments voisins
         #
         self.my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         np.testing.assert_array_equal(self.my_node.force, np.array([2000.]))
         self.my_node._elements_voisins = []
         #
         # Test du calcul de la force pour un noeud de bord droit
         #
         self.my_node.elements_voisins = [self.elem_gauche]
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         np.testing.assert_array_equal(self.my_node.force, np.array([3500.]))
         self.my_node._elements_voisins = []        
         #
         # Test du calcul de la force pour un noeud de bord gauche
         #
         self.my_node.elements_voisins = [self.elem_droite]
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         np.testing.assert_array_equal(self.my_node.force, np.array([-1500.]))
 
     def test_calculer_nouvo_vitesse(self):
-        """ Test de la méthode Node1d.calculer_nouvo_vitesse() """
+        """ Test de la méthode Node1d.compute_new_velocity() """
         self.my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
         # On a besoin de la force agissant sur le noeud
-        self.my_node.calculer_nouvo_force()
+        self.my_node.compute_new_force()
         # On a besoin de la masse du noeud
         # Vérifiée par test dans test_node.py
         self.my_node.calculer_masse_wilkins()
         # Calcul de la vitesse
-        self.my_node.calculer_nouvo_vitesse(1.0e-01)
+        self.my_node.compute_new_velocity(1.0e-01)
         np.testing.assert_array_equal(self.my_node.upundemi, np.array([400.]))
 
 if __name__ == '__main__':

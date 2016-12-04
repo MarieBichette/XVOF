@@ -3,9 +3,9 @@
 """
 Classe de test du module node
 """
+import numpy as np
 import unittest
 
-import numpy as np
 import xvof.node.node as nd
 
 
@@ -88,15 +88,15 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(self.my_node.masse, 0.7083333333333333)
 
     def test_calculer_nouvo_coord(self):
-        """ Test de la méthode Node.calculer_nouvo_coord() """
-        self.my_node.calculer_nouvo_coord(delta_t=0.5e-06)
+        """ Test de la méthode Node.compute_new_coodinates() """
+        self.my_node.compute_new_coodinates(delta_t=0.5e-06)
         np.testing.assert_allclose(self.my_node.coordtpdt,
                                       np.array([0.49925, 0.0256, -0.09985]))
 
     def test_incrementer(self):
-        """ Test de la méthode Node.incrementer() """
-        self.my_node.calculer_nouvo_coord(delta_t=0.5e-06)
-        self.my_node.incrementer()
+        """ Test de la méthode Node.increment() """
+        self.my_node.compute_new_coodinates(delta_t=0.5e-06)
+        self.my_node.increment()
         np.testing.assert_allclose(self.my_node.coordt,
                                       np.array([0.49925, 0.0256, -0.09985]))
         np.testing.assert_array_equal(self.my_node.coordt,
