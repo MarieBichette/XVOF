@@ -7,7 +7,7 @@ import numpy as np
 from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xvof.data.data_container import DataContainer
 from xvof.mesh.topology1d import Topology1D
-from xvof.node.node1denriched import Node1dEnriched
+from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 
 
 class Mesh1dEnriched(object):
@@ -27,8 +27,8 @@ class Mesh1dEnriched(object):
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
-        self.nodes = Node1dEnriched(nbr_nodes, initial_coordinates, initial_velocities,
-                                    section=DataContainer().geometric.section)
+        self.nodes = OneDimensionEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
+                                              section=DataContainer().geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
@@ -37,19 +37,19 @@ class Mesh1dEnriched(object):
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------
-        self.__topologie = Topology1D(nbr_nodes, nbr_cells)
+        self.__topology = Topology1D(nbr_nodes, nbr_cells)
         # ---------------------------------------------
         # Ruptured cells vector
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
-    def computeNodesMasses(self):
+    def compute_nodes_masses(self):
         """ Nodal mass computation """
-        vecteur_nb_noeuds_par_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
-        vecteur_nb_noeuds_par_element[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topologie, self.cells.mass, vecteur_nb_noeuds_par_element)
+        nb_nodes_per_element = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
+        nb_nodes_per_element[:] = 2
+        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_element)
 
-    def computeNewNodesVelocities(self, delta_t):
+    def compute_new_nodes_velocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
 
@@ -58,7 +58,7 @@ class Mesh1dEnriched(object):
         """
         self.nodes.calculer_nouvo_vitesse(delta_t)
 
-    def computeNewNodesCoordinates(self, delta_t):
+    def compute_new_nodes_coordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
 
@@ -67,45 +67,49 @@ class Mesh1dEnriched(object):
         """
         self.nodes.calculer_nouvo_coord(delta_t)
 
-    def computeCellsSizes(self):
+    def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
         """
-        self.cells.computeSize(self.__topologie, self.nodes.xt)
+        self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    def computeNewCellsSizes(self, delta_t):
+    def compute_new_cells_sizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
         """
-        self.cells.computeNewSize(self.__topologie, self.nodes.xtpdt, self.nodes.upundemi, self.nodes.upundemi_enrichi,
-                                  time_step=delta_t)
+        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, mask=self.cells.classical, time_step=delta_t)
+        self.cells.compute_enriched_elements_new_part_size(delta_t, self.__topology, self.nodes.upundemi_enrichi,
+                                                           self.nodes.upundemi)
 
-    def computeNewCellsDensities(self):
+    def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
         """
-        self.cells.computeNewDensity()
+        self.cells.compute_new_density(self.cells.classical)
+        self.cells.compute_enriched_elements_new_density()
 
-    def computeNewCellsPressures(self):
+    def compute_new_cells_pressures(self):
         """
         Computation of cells pressure at t+dt
         """
-        self.cells.computeNewPressure(excep=self.__ruptured_cells)
+        self.cells.compute_new_pressure(mask=np.logical_and(self.cells.classical, ~self.__ruptured_cells))
+        self.cells.compute_enriched_elements_new_pressure()
 
-    def computeNewCellsPseudoViscosities(self, delta_t):
+    def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
-        Computation of cells pseudoviscosities at t+dt
+        Computation of cells artificial viscosity at t+dt
 
         :var delta_t: time step
         :type delta_t: float
         """
-        self.cells.computeNewPseudo(delta_t)
+        self.cells.compute_new_pseudo(delta_t, mask=self.cells.classical)
+        self.cells.compute_enriched_elements_new_pseudo(delta_t)
 
-    def computeNewNodesForces(self):
+    def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
         """
-        self.nodes.calculer_nouvo_force(self.__topologie, self.cells.pressure.new_value, self.cells.pseudo.new_value,
+        self.nodes.calculer_nouvo_force(self.__topology, self.cells.pressure.new_value, self.cells.pseudo.new_value,
                                         self.cells.pressure.new_enr_value, self.cells.pseudo.new_enr_value)
 
     def increment(self):
@@ -113,16 +117,17 @@ class Mesh1dEnriched(object):
         Moving to next time step
         """
         self.nodes.incrementer()
-        self.cells.incrementVariables()
+        self.cells.increment_variables()
 
-    def computeNewTimeStep(self):
+    def compute_new_time_step(self):
         """
         Computation of new time step
         """
-        self.cells.computeNewTimeStep()
+        self.cells.compute_new_time_step(self.cells.classical)
+        self.cells.compute_enriched_elements_new_time_step()
         return self.cells.dt.min()
 
-    def applyPressure(self, surface, pressure):
+    def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
 
@@ -133,12 +138,12 @@ class Mesh1dEnriched(object):
         """
         if surface.lower() not in ("left", "right"):
             raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
-        if (surface.lower() == 'left'):
+        if surface.lower() == 'left':
             self.nodes.applyPressure(0, pressure)
         else:
             self.nodes.applyPressure(-1, -pressure)
 
-    def getRupturedCells(self, rupture_criterion):
+    def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
 
@@ -147,16 +152,14 @@ class Mesh1dEnriched(object):
         """
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
-    def applyRuptureTreatment(self, treatment):
+    def apply_rupture_treatment(self, treatment):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
 
         :var treatment: rupture treatment
         :type treatment: RuptureTreatment
-        :todo: Revoir la façon de calculer la position de la rupture sans passer par
-        self.cells_coordinates (dépendance à self._enriched)
         """
-        treatment.applyTreatment(self.cells, self.__ruptured_cells, self.nodes, self.__topologie)
+        treatment.applyTreatment(self.cells, self.__ruptured_cells, self.nodes, self.__topology)
 
     @property
     def velocity_field(self):
@@ -177,10 +180,10 @@ class Mesh1dEnriched(object):
         """
         Cells coordinates (coordinates of cells centers)
         """
-        res = self.cells.getCoordinates(self.cells.number_of_cells, self.__topologie, self.nodes.xt)
+        res = self.cells.get_coordinates(self.cells.number_of_cells, self.__topology, self.nodes.xt)
         for i in xrange(self.cells.number_of_cells):
-            if self.cells._enriched[i]:
-                nodes_index = self.__topologie.getNodesBelongingToCell(i)
+            if self.cells.enriched[i]:
+                nodes_index = self.__topology.getNodesBelongingToCell(i)
                 res[i] = self.nodes.xtpdt[nodes_index][0] + self.cells.left_size.new_value[i] / 2.
                 res = np.insert(res, i + 1, self.nodes.xtpdt[nodes_index][1] - self.cells.right_size.new_value[i] / 2.,
                                 axis=0)
@@ -208,8 +211,8 @@ class Mesh1dEnriched(object):
         return self.cells.energy_field
 
     @property
-    def pseudoviscosity_field(self):
+    def artificial_viscosity_field(self):
         """
-        Pseudoviscosity field
+        Artificial viscosity field
         """
-        return self.cells.pseudoviscosity_field
+        return self.cells.artificial_viscosity_field
