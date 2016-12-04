@@ -19,4 +19,4 @@ class ImposedPressure(RuptureTreatment):
         :param cells: array of all cells
         :param ruptured_cells: boolean array marking the ruptured cells
         """
-        cells.imposePressure(ruptured_cells, self.__imposed_pressure)
+        cells.impose_pressure(ruptured_cells, self.__imposed_pressure)
