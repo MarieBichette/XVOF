@@ -21,6 +21,10 @@ class Topology(object):
     def dimension(self):
         return self._dim
 
+    @property
+    def nodes_belonging_to_cell(self):
+        return self._nodes_belonging_to_cell
+
     def setNodesBelongingToCell(self, ind_cell, ind_node_list):
         '''
         Attribue la liste des indices des noeuds, 'nodes_list'
