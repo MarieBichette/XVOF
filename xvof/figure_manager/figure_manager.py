@@ -47,8 +47,8 @@ class FigureManager(object):
              PressureField: self.__mesh_instance.pressure_field,
              DensityField: self.__mesh_instance.density_field,
              InternalEnergyField: self.__mesh_instance.energy_field,
-             PseudoViscosityField: self.__mesh_instance.pseudoviscosity_field
-            }
+             PseudoViscosityField: self.__mesh_instance.artificial_viscosity_field
+             }
         self.__champs_noeuds = \
             {
              NodePositionField: self.__mesh_instance.nodes_coordinates[:],
