@@ -137,25 +137,21 @@ class Cell(object):
         message = "Nombre d'éléments : {:d}".format(self._shape[0])
         return message
 
-    def print_infos(self, index):
+    def print_infos(self):
         """
         Affichage des informations concernant l'élément d'indice index
         """
-        message = "{} {:4d}\n".format(self.__class__, index)
-        message += "==> taille à t = {}\n".format(self.size_t[index])
-        message += "==> taille à t+dt = {}\n".format(self.size_t_plus_dt[index])
-        message += "==> masse volumique à t = {}\n".format(self.density.current_value[index])
-        message += "==> masse volumique à t+dt = {}\n". \
-            format(self.density.new_value[index])
-        message += "==> pression à t = {}\n".format(self.pressure.current_value[index])
-        message += "==> pression à t+dt = {}\n". \
-            format(self.pressure.new_value[index])
-        message += "==> énergie interne à t = {}\n".format(self.energy.current_value[index])
-        message += "==> énergie interne à t+dt = {}\n". \
-            format(self.energy.new_value[index])
-        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value[index])
-        message += "==> vitesse du son à t+dt = {}\n". \
-            format(self.sound_velocity.new_value[index])
+        message = "{} \n".format(self.__class__)
+        message += "==> taille à t = {}\n".format(self.size_t)
+        message += "==> taille à t+dt = {}\n".format(self.size_t_plus_dt)
+        message += "==> masse volumique à t = {}\n".format(self.density.current_value)
+        message += "==> masse volumique à t+dt = {}\n".format(self.density.new_value)
+        message += "==> pression à t = {}\n".format(self.pressure.current_value)
+        message += "==> pression à t+dt = {}\n".format(self.pressure.new_value)
+        message += "==> énergie interne à t = {}\n".format(self.energy.current_value)
+        message += "==> énergie interne à t+dt = {}\n".format(self.energy.new_value)
+        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value)
+        message += "==> vitesse du son à t+dt = {}\n".format(self.sound_velocity.new_value)
         print message
 
     def increment_variables(self):
@@ -166,7 +162,7 @@ class Cell(object):
         self._size_t[:] = self._size_t_plus_dt[:]
 
     @abstractmethod
-    def computeNewPressure(self, mask):
+    def compute_new_pressure(self, mask):
         """
         Algorithme de Newton-Raphson pour déterminer le couple
         energie/pression au pas de temps suivant
@@ -174,32 +170,32 @@ class Cell(object):
         """
 
     @abstractmethod
-    def computeSize(self, topologie):
+    def compute_size(self, topologie, vecteur_coord_noeuds):
         """
         Calcul de la taille (longueur, aire, volume) au temps t de l'élément
         """
 
     @abstractmethod
-    def computeNewSize(self, topologie, mask, time_step=None):
+    def compute_new_size(self, *args, **kwargs):
         """
         Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
         """
 
     @abstractmethod
-    def computeNewDensity(self, mask):
+    def compute_new_density(self, mask):
         """
         Calcul de la densité à l'instant t+dt basé sur
         la conservation de la masse
         """
 
     @abstractmethod
-    def computeNewPseudo(self, time_step, mask):
+    def compute_new_pseudo(self, time_step, mask):
         """
         Calcul de la nouvelle pseudo
         """
 
     @abstractmethod
-    def computeNewTimeStep(self, mask):
+    def compute_new_time_step(self, mask):
         """
         Calcul du nouveau pas de temps
         """
