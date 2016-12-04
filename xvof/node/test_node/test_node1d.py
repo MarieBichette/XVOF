@@ -3,10 +3,10 @@
 """
 Classe de test du module node1d
 """
+import numpy as np
 import unittest
 
-import numpy as np
-import xvof.node.node1d as nd1d
+import xvof.node.one_dimension_node as nd1d
 
 
 class Node1dTest(unittest.TestCase):
@@ -26,7 +26,7 @@ class Node1dTest(unittest.TestCase):
         self.elem_gauche = element(np.array([-0.5]), 2.5e+09, 1.0e+09, 3. / 4.)
         self.elem_droite = element(np.array([0.5]), 1.0e+09, 0.5e+09, 1. / 4.)
         self.elem_nul = element(np.array([0.15]), 3.3e+09, 0.0, 0.0)
-        self.my_node = nd1d.Node1d(1, section=1.0e-06)
+        self.my_node = nd1d.OneDimensionNode(1, section=1.0e-06)
 
     def test_elements_voisins(self):
         """ Test de Node1d.elements_voisins = """

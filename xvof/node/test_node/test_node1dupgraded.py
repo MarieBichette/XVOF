@@ -3,11 +3,12 @@
 """
 Classe de test du module node1dupgraded
 """
+import numpy as np
 import unittest
 
-import numpy as np
-import xvof.node.node1d as nd1d
 import xvof.node.node1dupgraded as nd1dup
+
+import xvof.node.one_dimension_node as nd1d
 
 
 class Node1dUpgradedTest(unittest.TestCase):
@@ -28,7 +29,7 @@ class Node1dUpgradedTest(unittest.TestCase):
                 self.masse = masse
         self.elem_gauche = element(np.array([-0.5]), 2.5e+09, 1.0e+09, 3. / 4.)
         self.elem_droite = element(np.array([0.5]), 1.0e+09, 0.5e+09, 1. / 4.)
-        my_node = nd1d.Node1d(1, section=1.0e-06)
+        my_node = nd1d.OneDimensionNode(1, section=1.0e-06)
         my_node.elements_voisins = [self.elem_droite, self.elem_gauche]
         self.my_node = nd1dup.Node1dUpgraded(my_node)
         self.my_node.calculer_masse_wilkins()
