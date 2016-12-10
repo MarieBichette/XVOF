@@ -18,7 +18,7 @@ geometrical_props = namedtuple("geometrical_props", ["section", "length"])
 material_props = namedtuple("material_props", ["pression_init", "temp_init", "rho_init", "energie_init", "eos",
                                                "damage_treatment", "damage_treatment_value"])
 
-time_props = namedtuple("time_props", ['initial_time_step', 'final_time'])
+time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
 output_props = namedtuple("output_props", ['number_of_images', 'images_dump', 'images_show'])
 
@@ -96,11 +96,16 @@ class DataContainer(object):
         :return: time properties :
             - initial time step
             - final time
-        :return: tuple(float, float)
+            - is time step constant
+        :return: tuple(float, float, bool)
         """
         initial_time_step = float(self.__datadoc.find('time-management/initial-time-step').text)
         final_time = float(self.__datadoc.find('time-management/final-time').text)
-        return initial_time_step, final_time
+        if self.__datadoc.find('time-management/constant-time-step') is not None:
+            cst_dt = True if self.__datadoc.find('time-management/constant-time-step').text == "True" else False
+        else:
+            cst_dt = False
+        return initial_time_step, final_time, cst_dt
 
     def __fillInOutputProperties(self):
         """
