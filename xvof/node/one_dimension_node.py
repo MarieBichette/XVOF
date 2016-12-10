@@ -6,7 +6,6 @@ Module définissant la classe Node1d
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # ########### IMPORTATIONS DIVERSES  ####################
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-import numpy as np
 
 from xvof.node import Node
 
@@ -64,9 +63,9 @@ class OneDimensionNode(Node):
         :type vecteur_pseudo_maille: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
         """
         # Suppose les éléments voisins triés par position croissante
-        connectivity = np.array(topologie._cells_in_contact_with_node[1 : self.number_of_nodes - 1])
+        connectivity = topologie.cells_in_contact_with_node[1:-1]
         pressure = self.section * (vecteur_pression_maille[connectivity] + vecteur_pseudo_maille[connectivity])
-        self._force[1:self.number_of_nodes - 1][:, 0] = (pressure[:, 0] - pressure[:, 1]).reshape(self.number_of_nodes - 2)
+        self._force[1:-1][:, 0] = (pressure[:, 0] - pressure[:, 1])
         ind_node = 0
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
