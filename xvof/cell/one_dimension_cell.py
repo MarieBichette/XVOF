@@ -172,9 +172,9 @@ class OneDimensionCell(Cell):
         """
         Calcul de la nouvelle longueur de l'élément (à t+dt)
         """
-        connectivity = np.array(topologie.nodes_belonging_to_cell)
+        connectivity = topologie.nodes_belonging_to_cell
         size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] -
-                             vecteur_coord_noeuds[connectivity[:, 1]]).reshape(self.number_of_cells)
+                             vecteur_coord_noeuds[connectivity[:, 1]])
         self._size_t_plus_dt[mask] = size_t_plus_dt[mask]
 
     def compute_new_density(self, mask):
