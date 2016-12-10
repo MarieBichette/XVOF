@@ -121,7 +121,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         my_mesh.increment()
         simulation_time += dt
-        dt = dt_crit
+        if not data.time.is_time_step_constant:
+            dt = dt_crit
         step += 1
         loop_end_time = time.time()
         compute_time += loop_end_time - loop_begin_time
