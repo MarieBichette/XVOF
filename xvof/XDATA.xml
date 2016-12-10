@@ -3,6 +3,7 @@
   <time-management>
     <final-time>15.0e-06</final-time>
     <initial-time-step>2e-09</initial-time-step>
+      <constant-time-step>True</constant-time-step>
   </time-management>
   <geometry>
     <length>25.0e-03</length>
@@ -22,7 +23,7 @@
     </damage-treatment>
   </matter>
   <numeric-parameters>
-    <number-of-elements>1001</number-of-elements>
+      <number-of-elements>1000</number-of-elements>
     <linear-pseudo>0.2</linear-pseudo>
     <quadratic-pseudo>1.5</quadratic-pseudo>
       <cfl>0.45</cfl>
