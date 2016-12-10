@@ -134,7 +134,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         :return: coordinates of the left part of enriched elements
         :rtype: numpy.array
         """
-        connectivity = np.array(topology.nodes_belonging_to_cell)
+        connectivity = topology.nodes_belonging_to_cell
         vec_min = min(nodes_coord[connectivity[self.enriched]])
         vec_coord = vec_min + self.left_size[self.enriched] / 2.
         return vec_coord
@@ -144,7 +144,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         :return: coordinates of the right part of enriched elements
         :rtype: numpy.array
         """
-        connectivity = np.array(topology.nodes_belonging_to_cell)
+        connectivity = topology.nodes_belonging_to_cell
         vec_max = max(nodes_coord[connectivity[self.enriched]])
         vec_coord = vec_max - self.right_size[self.enriched] / 2.
         return vec_coord
@@ -281,7 +281,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                                 vecteur_vitesse_noeuds):
         if self.enriched.any():
             # Calcul des tailles des parties gauches des éléments enrichis
-            connectivity = np.array(topologie.nodes_belonging_to_cell)[self.enriched]
+            connectivity = topologie.nodes_belonging_to_cell[self.enriched]
             self.left_size.new_value[self.enriched] = (self.left_size.current_value[self.enriched] +
                                                        (0.5 * (vecteur_vitesse_noeuds[connectivity[:, 1]] -
                                                                vecteur_vitesse_enr_noeud[connectivity[:, 0]]) -
