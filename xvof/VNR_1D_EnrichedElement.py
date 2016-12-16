@@ -44,6 +44,7 @@ if __name__ == '__main__':
     simulation_time = 0.
     step = 0
     dt = InitialTimeStep
+    dt_staggered = dt
     dt_crit = 2 * dt
     # ---------------------------------------------#
     #         MESH CREATION                        #
@@ -73,12 +74,13 @@ if __name__ == '__main__':
         loop_begin_time = time.time()
         if step % 1000 == 0:
             msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
-                   """ a time step of {:15.9g} seconds\n""").format(step, simulation_time, dt)
+                   """ a time step of {:15.9g} seconds and a staggered time step of {:15.9g}\n"""). \
+                format(step, simulation_time, dt, dt_staggered)
             print msg
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
         # ---------------------------------------------#
-        my_mesh.compute_new_nodes_velocities(dt)
+        my_mesh.compute_new_nodes_velocities(dt_staggered)
         # ---------------------------------------------#
         #         NODES COORDINATES COMPUTATION        #
         # ---------------------------------------------#
@@ -123,6 +125,7 @@ if __name__ == '__main__':
         my_mesh.increment()
         simulation_time += dt
         if not data.time.is_time_step_constant:
+            dt_staggered = 0.5 * (dt_crit + dt)
             dt = dt_crit
         step += 1
         loop_end_time = time.time()
