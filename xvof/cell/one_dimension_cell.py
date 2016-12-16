@@ -41,19 +41,23 @@ class OneDimensionCell(Cell):
         return pseudo
 
     @classmethod
-    def compute_time_step(cls, cfl, rho_old, rho_new, taille_new, cson_new, pseudo):
+    def compute_time_step(cls, cfl, cfl_pseudo, rho_old, rho_new, taille_new, cson_new, pseudo_old, pseudo_new):
         """
         Calcul du pas de temps
         """
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette m�thode cela semble ok
-        delta_t = np.zeros(rho_old.shape, dtype=np.float64, order='C')
-        drho = (rho_new - rho_old) / rho_old
-        mask = drho > 0.1
-        delta_t[mask] = cfl * taille_new[mask] / \
-                        (cson_new[mask] ** 2 + 2. * pseudo[mask] / (drho[mask] * rho_new[mask])) ** 0.5
-        mask = drho <= 0.1
-        delta_t[mask] = cfl * taille_new[mask] / cson_new[mask]
+        local_cson = cson_new[:] ** 2
+        mask_q = pseudo_new != 0.
+        drho = np.abs((rho_new - rho_old) / rho_old)
+        dpseudo = (pseudo_new - pseudo_old)
+        mask_r = drho > 1.e-04
+        mask_local_cson = np.logical_and(mask_q, mask_r)
+        pseudo_sound_speep_square = np.abs(cfl_pseudo * dpseudo[mask_local_cson] /
+                                           (rho_new[mask_local_cson] - rho_old[mask_local_cson]))
+        local_cson[mask_local_cson] += pseudo_sound_speep_square
+        local_cson **= 0.5
+        delta_t = cfl * taille_new / local_cson
         return delta_t
 
     def __init__(self, number_of_elements):
@@ -199,9 +203,10 @@ class OneDimensionCell(Cell):
         Calcul du pas de temps dans l'�l�ment
         """
         cfl = DataContainer().numeric.cfl
-        dt = OneDimensionCell.compute_time_step(cfl, self.density.current_value, self.density.new_value,
+        cfl_pseudo = DataContainer().numeric.cfl_pseudo
+        dt = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, self.density.current_value, self.density.new_value,
                                                 self.size_t_plus_dt, self.sound_velocity.new_value,
-                                                self.pseudo.current_value)
+                                                self.pseudo.current_value, self.pseudo.new_value)
         self._dt[mask] = dt[mask]
 
     def impose_pressure(self, ind_cell, pression):

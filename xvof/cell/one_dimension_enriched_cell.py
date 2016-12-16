@@ -338,20 +338,23 @@ class OneDimensionEnrichedCell(OneDimensionCell):
     def compute_enriched_elements_new_time_step(self):
         if self.enriched.any():
             cfl = DataContainer().numeric.cfl
+            cfl_pseudo = DataContainer().numeric.cfl_pseudo
             rho_t_gauche = self.density.current_left_value[self.enriched]
             rho_t_plus_dt_gauche = self.density.new_left_value[self.enriched]
             cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self.enriched]
-            pseudo_gauche = self.pseudo.current_left_value[self.enriched]
-            dt_g = OneDimensionCell.compute_time_step(cfl, rho_t_gauche, rho_t_plus_dt_gauche,
+            pseudo_t_gauche = self.pseudo.current_left_value[self.enriched]
+            pseudo_t_plus_dt_gauche = self.pseudo.new_left_value[self.enriched]
+            dt_g = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, rho_t_gauche, rho_t_plus_dt_gauche,
                                                       self.left_size.new_value[self.enriched], cson_t_plus_dt_gauche,
-                                                      pseudo_gauche)
+                                                      pseudo_t_gauche, pseudo_t_plus_dt_gauche)
 
             rho_t_droite = self.density.current_right_value[self.enriched]
             rho_t_plus_dt_droite = self.density.new_right_value[self.enriched]
             cson_t_plus_dt_droite = self.sound_velocity.new_right_value[self.enriched]
-            pseudo_droite = self.pseudo.current_right_value[self.enriched]
-            dt_d = OneDimensionCell.compute_time_step(cfl, rho_t_droite, rho_t_plus_dt_droite,
+            pseudo_t_droite = self.pseudo.current_right_value[self.enriched]
+            pseudo_t_plus_dt_droite = self.pseudo.new_right_value[self.enriched]
+            dt_d = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, rho_t_droite, rho_t_plus_dt_droite,
                                                       self.right_size.new_value[self.enriched], cson_t_plus_dt_droite,
-                                                      pseudo_droite)
+                                                      pseudo_t_droite, pseudo_t_plus_dt_droite)
 
             self._dt[self.enriched] = dt_g + dt_d  # Bizarre --> A vérifier
