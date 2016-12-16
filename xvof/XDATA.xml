@@ -3,7 +3,7 @@
   <time-management>
     <final-time>15.0e-06</final-time>
     <initial-time-step>2e-09</initial-time-step>
-      <constant-time-step>True</constant-time-step>
+    <constant-time-step>False</constant-time-step>
   </time-management>
   <geometry>
     <length>25.0e-03</length>
@@ -27,11 +27,12 @@
     <linear-pseudo>0.2</linear-pseudo>
     <quadratic-pseudo>1.5</quadratic-pseudo>
       <cfl>0.45</cfl>
+    <cfl-pseudo>0.</cfl-pseudo>
       <external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>
   </numeric-parameters>
   <output>
     <number-of-images>150</number-of-images>
-      <dump-images>false</dump-images>
+    <dump-images>false</dump-images>
     <show-images>true</show-images>
   </output>
 </data>

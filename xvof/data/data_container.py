@@ -11,7 +11,7 @@ from xvof.rupturetreatment.enrichelement import EnrichElement
 from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.utilities.singleton import Singleton
 
-numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cells_number"])
+numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo", "cells_number"])
 
 geometrical_props = namedtuple("geometrical_props", ["section", "length"])
 
@@ -51,8 +51,9 @@ class DataContainer(object):
         b_pseudo = float(self.__datadoc.find('numeric-parameters/linear-pseudo').text)
         a_pseudo = float(self.__datadoc.find('numeric-parameters/quadratic-pseudo').text)
         cfl = float(self.__datadoc.find('numeric-parameters/cfl').text)
+        cfl_pseudo = float(self.__datadoc.find('numeric-parameters/cfl-pseudo').text)
         cells_number = float(self.__datadoc.find('numeric-parameters/number-of-elements').text)
-        return a_pseudo, b_pseudo, cfl, cells_number
+        return a_pseudo, b_pseudo, cfl, cfl_pseudo, cells_number
 
     def __fillInGeometricalProperties(self):
         """
