@@ -3,16 +3,9 @@
 """
 Module définissant la classe Node1d
 """
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# ########### IMPORTATIONS DIVERSES  ####################
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
 from xvof.node import Node
 
 
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# ###### DEFINITION DES CLASSES & FONCTIONS  ###############
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class OneDimensionNode(Node):
     """
     Un objet Node1d représente l'ensemble des noeuds 1d du maillage
@@ -24,20 +17,12 @@ class OneDimensionNode(Node):
 		      dim=1, vitesse_initiale=vit_init)
         self._section = section
 
-    # ------------------------------------------------------------
-    # DEFINITIONS DES PROPRIETES
-    # ------------------------------------------------------------
-
     @property
     def section(self):
         """
         Surface associée au noeud
         """
         return self._section
-
-    # ------------------------------------------------------------
-    # DEFINITIONS DES METHODES
-    # ------------------------------------------------------------
 
     def infos(self, index):
         """
