@@ -6,6 +6,7 @@ Implementing class cell
 import numpy as np
 from abc import abstractmethod
 from copy import deepcopy
+import os
 
 from xvof.data.data_container import DataContainer
 from xvof.fields.field import Field
@@ -14,149 +15,151 @@ from xvof.fields.fieldsmanager import FieldManager
 
 class Cell(object):
     """
-    Un objet Element représente l'ensemble des éléments du maillage.
-    Ses différents membres sont essentiellement des vecteurs de nbr_of_cells lignes.
+    A Cell object represents all the mesh cells.
+    Its different members are, for most of them, numpy 1D-array of nbr_of_cells length.
 
-    L'organisation en mémoire est comme en C/C++ c'est à dire 'row wise'. C'est pour cette raison
-    que les lignes de chacun des vecteurs représentent les mailles. Ce faisant on a par exemple
-    toutes les pressions des mailles contigues en mêmoire. (vectorisation, localisation spatiale)
+    Memory layout is the same as in C/C++, i-e 'row wise'. 
     """
 
     @classmethod
-    def get_coordinates(cls, nbr_cells, topologie, vecteur_x_node, vecteur_y_node=None, vecteur_z_node=None):
+    def get_coordinates(cls, nbr_cells, topology, x_coord, y_coord=None,  z_coord=None):
         """
-        Détermine le vecteur position du centre de l'élément au temps t
+        Return the vector of cell center coordinates at time t
 
         :param nbr_cells: number of cells
-        :param topologie: topologie du calcul
-        :param vecteur_x_node: vecteur des coordonnées x des noeuds
-        :param vecteur_y_node: vecteur des coordonnées y des noeuds
-        :param vecteur_z_node: vecteur des coordonnées z des noeuds
+        :param topology: topology 
+        :param x_coord: x coordinate vector
+        :param y_coord: y coordinate vector
+        :param z_coord: z coordinate vector
 
-        :type topologie: Topology
-        :type vecteur_x_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
-        :type vecteur_y_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
-        :type vecteur_z_node: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
-        :return: les vecteurs des coordonnées du centre de chaque élément au temps t
-        :rtype:
+        :type topology: Topology
+        :type x_coord: numpy.array([nbr_of_cells, 1], dtype=np.float64, order='C')
+        :type y_coord: numpy.array([nbr_of_cells, 1], dtype=np.float64, order='C')
+        :type z_coord: numpy.array([nbr_of_cells, 1], dtype=np.float64, order='C')
+        :return: the vector of cell center coordinates at time t
+        :rtype: numpy.array([nbr_of_cells, topology.dimension], dtype=np.float64, order='C')
         """
-        vec_coord = np.zeros([nbr_cells, topologie.dimension])
+        vec_coord = np.zeros([nbr_cells, topology.dimension])
 
         for ielem in xrange(nbr_cells):
-            nodes_index = topologie.getNodesBelongingToCell(ielem)
-            vec_coord[ielem][0] = vecteur_x_node[nodes_index].mean()
-            if topologie.dimension == 2:
-                vec_coord[ielem][1] = vecteur_y_node[nodes_index].mean()
-            if topologie.dimension == 3:
-                vec_coord[ielem][2] = vecteur_z_node[nodes_index].mean()
+            nodes_index = topology.getNodesBelongingToCell(ielem)
+            vec_coord[ielem][0] = x_coord[nodes_index].mean()
+            if topology.dimension == 2:
+                vec_coord[ielem][1] = y_coord[nodes_index].mean()
+            if topology.dimension == 3:
+                vec_coord[ielem][2] =  z_coord[nodes_index].mean()
         return vec_coord
 
-    def __init__(self, number_of_elements):
-        self._shape = [number_of_elements, ]
-        self._dt = np.zeros(self._shape, dtype=np.float64, order='C')
-        self._size_t = np.zeros(self._shape, dtype=np.float64, order='C')
-        self._size_t_plus_dt = np.zeros(self._shape, dtype=np.float64, order='C')
+    def __init__(self, nbr_of_cells):
+        self._nbr_of_cells = nbr_of_cells
+        self._dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
+        self._size_t = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
+        self._size_t_plus_dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._fields_manager = FieldManager()
-        self._fields_manager["Density"] = Field(self._shape[0], DataContainer().material.rho_init,
+        self._fields_manager["Density"] = Field(self._nbr_of_cells, DataContainer().material.rho_init,
                                                 DataContainer().material.rho_init)
-        self._fields_manager["Pressure"] = Field(self._shape[0], DataContainer().material.pression_init,
+        self._fields_manager["Pressure"] = Field(self._nbr_of_cells, DataContainer().material.pression_init,
                                                  DataContainer().material.pression_init)
-        self._fields_manager["Energy"] = Field(self._shape[0], DataContainer().material.energie_init,
+        self._fields_manager["Energy"] = Field(self._nbr_of_cells, DataContainer().material.energie_init,
                                                DataContainer().material.energie_init)
-        self._fields_manager["Pseudo"] = Field(self._shape[0])
-        self._fields_manager["SoundVelocity"] = Field(self._shape[0])
+        self._fields_manager["Pseudo"] = Field(self._nbr_of_cells)
+        self._fields_manager["SoundVelocity"] = Field(self._nbr_of_cells)
 
     @property
     def dt(self):
         """
-        Pas de temps critique de la maille
+        Critical time step in cells
         """
         return self._dt
 
     @property
     def size_t(self):
         """
-        Taille (longueur, aire, volume) de l'élément à l'instant t
+        Size (length, area, volume) of the cells at time t
         """
         return self._size_t
 
     @property
     def size_t_plus_dt(self):
         """
-        Taille (longueur, aire, volume) de l'élément à l'instant t + dt
+        Size (length, area, volume) of the cells at time t + dt
         """
         return self._size_t_plus_dt
 
     @property
     def density(self):
         """
-        Champ masse volumique de l'élément
+        Density in the cells
         """
         return self._fields_manager['Density']
 
     @property
     def pressure(self):
         """
-        Champ pression dans l'élément
+        Pressure in the cells
         """
         return self._fields_manager['Pressure']
 
     @property
     def sound_velocity(self):
         """
-        Champ vitesse du son dans l'élément
+        Sound velocity in the cells
         """
         return self._fields_manager['SoundVelocity']
 
     @property
     def energy(self):
         """
-        Champ énergie interne de l'élément
+        Internal energy in the cells
         """
         return self._fields_manager['Energy']
 
     @property
     def pseudo(self):
         """
-        Champ pseudoviscosité dans l'élément
+        Artificial viscosity in the cells
         """
         return self._fields_manager['Pseudo']
 
     @property
     def fields_manager(self):
         """
-        Renvoi une copie du gestionnaire de champs
+        Return a copy of the field manager
         """
         return deepcopy(self._fields_manager)
 
     @property
     def number_of_cells(self):
-        return self._shape[0]
+        """
+        Number of cells
+        """
+        return self._nbr_of_cells
 
     def __str__(self):
-        message = "Nombre d'éléments : {:d}".format(self._shape[0])
+        message = "Number of cells: {:d}".format(self.number_of_cells)
         return message
 
     def print_infos(self):
         """
-        Affichage des informations concernant l'élément d'indice index
+        Print the fields in the cells
         """
-        message = "{} \n".format(self.__class__)
-        message += "==> taille à t = {}\n".format(self.size_t)
-        message += "==> taille à t+dt = {}\n".format(self.size_t_plus_dt)
-        message += "==> masse volumique à t = {}\n".format(self.density.current_value)
-        message += "==> masse volumique à t+dt = {}\n".format(self.density.new_value)
-        message += "==> pression à t = {}\n".format(self.pressure.current_value)
-        message += "==> pression à t+dt = {}\n".format(self.pressure.new_value)
-        message += "==> énergie interne à t = {}\n".format(self.energy.current_value)
-        message += "==> énergie interne à t+dt = {}\n".format(self.energy.new_value)
-        message += "==> vitesse du son à t = {}\n".format(self.sound_velocity.current_value)
-        message += "==> vitesse du son à t+dt = {}\n".format(self.sound_velocity.new_value)
+        message = os.linesep + "{:s} ".format(self.__class__.__name__) + os.linesep
+        message += "==> number of cells = {:d}".format(self.number_of_cells) + os.linesep
+        message += "==> size at t = {}".format(self.size_t) + os.linesep
+        message += "==> size at t+dt = {}".format(self.size_t_plus_dt) + os.linesep
+        message += "==> density at t = {}".format(self.density.current_value) + os.linesep
+        message += "==> density at t+dt = {}".format(self.density.new_value) + os.linesep
+        message += "==> pressure at t = {}".format(self.pressure.current_value) + os.linesep
+        message += "==> pressure at t+dt = {}".format(self.pressure.new_value) + os.linesep
+        message += "==> internal energy at t = {}".format(self.energy.current_value) + os.linesep
+        message += "==> internal energy at t+dt = {}".format(self.energy.new_value) + os.linesep
+        message += "==> sound velocity at t = {}".format(self.sound_velocity.current_value) + os.linesep
+        message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
         print message
 
     def increment_variables(self):
         """
-        Incrémentation des variables
+        Variables incrementation
         """
         self._fields_manager.incrementFields()
         self._size_t[:] = self._size_t_plus_dt[:]
@@ -164,38 +167,35 @@ class Cell(object):
     @abstractmethod
     def compute_new_pressure(self, mask):
         """
-        Algorithme de Newton-Raphson pour déterminer le couple
-        energie/pression au pas de temps suivant
-        Formulation v-e
+        Compute the pressure in the cells at time t + dt
         """
 
     @abstractmethod
     def compute_size(self, topologie, vecteur_coord_noeuds):
         """
-        Calcul de la taille (longueur, aire, volume) au temps t de l'élément
+        Compute the size of the cells
         """
 
     @abstractmethod
     def compute_new_size(self, *args, **kwargs):
         """
-        Calcul de la nouvelle taille (longueur, aire, volume) de l'élément
+        Compute the new size of the cells
         """
 
     @abstractmethod
     def compute_new_density(self, mask):
         """
-        Calcul de la densité à l'instant t+dt basé sur
-        la conservation de la masse
+        Compute the new density in the cells
         """
 
     @abstractmethod
     def compute_new_pseudo(self, time_step, mask):
         """
-        Calcul de la nouvelle pseudo
+        Compute the new value of artificial viscosity in the cells
         """
 
     @abstractmethod
     def compute_new_time_step(self, mask):
         """
-        Calcul du nouveau pas de temps
+        Compute the new value of critical time step in the cells
         """
