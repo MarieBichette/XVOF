@@ -167,7 +167,7 @@ class OneDimensionCell(Cell):
         """
         Calcul de la longueur de l'�l�ment (� t)
         """
-        for ielem in xrange(self._shape[0]):
+        for ielem in xrange(self.number_of_cells):
             ind_nodes = topologie.getNodesBelongingToCell(ielem)
             self._size_t[ielem] = abs(vecteur_coord_noeuds[ind_nodes[0]] -
                                       vecteur_coord_noeuds[ind_nodes[1]])

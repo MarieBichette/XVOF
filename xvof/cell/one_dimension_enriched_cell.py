@@ -27,7 +27,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         self._fields_manager["taille_droite"] = Field(number_of_elements, self.size_t * (1. - self._pos_disc),
                                                       self.size_t_plus_dt * (1. - self._pos_disc))
         print self._fields_manager
-        self._classical = np.empty(self._shape, dtype=np.bool, order='C')
+        self._classical = np.empty(self.number_of_cells, dtype=np.bool, order='C')
         self._classical[:] = True
 
     @property
