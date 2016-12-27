@@ -3,7 +3,7 @@ Implementing the DataContainer class
 """
 
 from collections import namedtuple
-
+import os.path
 import lxml.etree as et
 
 from xvof.equationsofstate.miegruneisen import MieGruneisen
@@ -33,7 +33,10 @@ class DataContainer(object):
         '''
         Constructor
         '''
-        self.__datadoc = et.parse(datafile_name)
+        src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+        datafile_path = os.path.normpath(os.path.join(src_dir, datafile_name))
+        print "Opening data file : {:s}".format(datafile_path)
+        self.__datadoc = et.parse(datafile_path)
         self.numeric = numerical_props(*self.__fillInNumericalProperties())
         self.geometric = geometrical_props(*self.__fillInGeometricalProperties())
         self.material = material_props(*self.__fillInMaterialProperties())
