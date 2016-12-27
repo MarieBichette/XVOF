@@ -6,23 +6,20 @@ Implementing field manager class
 """
 import os
 from collections import OrderedDict
-
 from xvof.fields.enrichedfield import EnrichedField
-from xvof.utilities.singleton import Singleton
 
 
 class FieldManager(OrderedDict):
     """
     Field manager class
     """
-    __metaclass__ = Singleton
 
     def __init__(self):
         super(FieldManager, self).__init__()
 
     def __setitem__(self, key, value):
         """
-        Set a field in the manager if the field doesn't yey exist or if it is an enriched field
+        Set a field in the manager if the field doesn't yet exist or if it is an enriched field
 
         :param key: name of the field
         :param value: Field object
