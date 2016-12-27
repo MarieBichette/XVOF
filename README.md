@@ -11,7 +11,7 @@ The rod has a purely fluid behavior. No elasticity nor plasticity is taken into 
 
 Two rupture models are available :
 
-1) *imposed pressure* : once the cell reach rupture criterion, the pressure is imposed at the value specified in XDATA.xml)
+1) *imposed pressure* : once the cell reach rupture criterion, the pressure is imposed at the value specified in XDATA.xml
 
 2) *enrichment* : once the cell reach rupture criterion, kinematic and thermodynamic fields are enriched with an heaviside shape function.
 
