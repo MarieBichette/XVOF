@@ -1,74 +1,86 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de test du module element1d
+one_dimension_cell module unit tests
 """
 import numpy as np
 import unittest
+import mock
 
-from xvof.miscellaneous import geometrical_props, material_props
-from xvof.miscellaneous import numerical_props, properties
-
-import xvof.cell.one_dimension_cell as el1d
-from xvof.equationsofstate import MieGruneisen
-from xvof.node import OneDimensionNode
+from xvof.cell.one_dimension_cell import OneDimensionCell as Cell
 
 
-class Element1dTest(unittest.TestCase):
+class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        """ Préparation des tests """
-        equation_detat = MieGruneisen()
-        num_props = numerical_props(0.2, 1.0, 0.35)
-        mat_props = material_props(1.0e+05, 0.0, 8129., equation_detat)
-        geom_props = geometrical_props(1.0e-06)
-        props = properties(num_props, mat_props, geom_props)
-        noda = OneDimensionNode(1, np.array([4.5e-03]))
-        nodb = OneDimensionNode(2, np.array([7.0e-03]))
-        noda._xtpdt = np.array([5.0e-03])
-        nodb._xtpdt = np.array([6.25e-03])
-        self.my_elem = el1d.OneDimensionCell(props, 1, [noda, nodb])
+        """Test setup"""
+        self.topology = mock.Mock(name="TopologyMock")
+        self.topology.dimension = 2
+        self.topology.nodes_belonging_to_cell = np.array([[0, 1], [1, 2], [2, 3]], dtype=np.int64)
+        self.my_cell = Cell(3)
 
     def tearDown(self):
         pass
 
-    def test_calculer_nouvo_pression(self):
-        """ Test de la méthode Element1d.calculer_nouvo_pression() """
-        self.my_elem._rho_t_plus_dt = 9000.0
-        self.my_elem.calculer_nouvo_pression()
-        self.assertEqual(self.my_elem.nrj_t_plus_dt / 1.e+05,
-                         1.0337842440399707)
-        self.assertEqual(self.my_elem.pression_t_plus_dt / 1.e+09,
-                         17.366763163767697)
-        self.assertEqual(self.my_elem.cson_t_plus_dt / 1.0e+03,
-                         4.89803134404931)
+    def test_compute_pseudo(self):
+        """
+        Test of compute_pseudo class method
+        """
+        rho_new = np.array([8500., 3500, 2175])
+        rho_old = np.array([8700., 3200, 2171])
+        new_size = np.array([0.025, 0.01, 0.005])
+        sound_speed = np.array([4400, 3200, 1140])
+        dt = 1.2e-08
+        pseudo_a, pseudo_b = 1.2, 0.25
+        result = Cell.compute_pseudo(dt, rho_old, rho_new, new_size, sound_speed, pseudo_a, pseudo_b) 
+        np.testing.assert_allclose(result, [0.00000000e+00, 2.25427729e+13, 2.00897590e+09])
 
-    def test_calculer_nouvo_taille(self):
-        """ Test de la méthode Element1d.calculer_nouvo_taille() """
-        self.my_elem.calculer_nouvo_taille()
-        self.assertAlmostEqual(self.my_elem.taille_t_plus_dt, 1.25e-03)
+    def test_compute_time_step(self):
+        """
+        Test of compute_time_step class method
+        """
+        cfl, cfl_pseudo = 0.25, 0.1
+        rho_new = np.array([8500., 2175., 3500.])
+        rho_old = np.array([8700., 2174.9, 3200])
+        new_size = np.array([0.025, 0.01, 0.005])
+        sound_speed = np.array([4400., 3200., 1140.])
+        pseudo_old = np.array([1.0e+09, 0.5e+08, 0.3e+08])
+        pseudo_new = np.array([1.5e+09, 1.5e+08, 0.])
+        result = Cell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size, sound_speed, pseudo_old, pseudo_new)    
+        np.testing.assert_allclose(result, [1.41137110e-06, 7.81250000e-07, 1.09649123e-06])
 
-    def test_calculer_nouvo_densite(self):
-        """ Test de la méthode Element1d.calculer_nouvo_densite() """
-        self.my_elem.calculer_nouvo_taille()
-        self.my_elem.calculer_nouvo_densite()
-        self.assertAlmostEqual(self.my_elem.rho_t_plus_dt, 16258.0)
+    def test_compute_size(self):
+        """
+        Test of compute_size method
+        """
+        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
+        np.testing.assert_allclose(self.my_cell.size_t, [0.6, 0.1, 0.15])
+    
+    def test_compute_new_size(self):
+        """
+        Test of compute_new_size method
+        """
+        self.my_cell.compute_new_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35]), np.array([True, False, True])) 
+        np.testing.assert_allclose(self.my_cell.size_t_plus_dt, [0.6, 0., 0.15])
 
-    def test_calculer_nouvo_pseudo(self):
-        """ Test de la méthode Element1d.calculer_nouvo_pseudo() """
-        self.my_elem.calculer_nouvo_taille()
-        self.my_elem.calculer_nouvo_densite()
-        self.my_elem.calculer_nouvo_pseudo(1.0e-6)
-        self.assertEqual(self.my_elem.pseudo, 1505370370.3703721)
+    def test_compute_mass(self):
+        """
+        Test of compute_mass method
+        """
+        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
+        self.my_cell.compute_mass()
+        np.testing.assert_allclose(self.my_cell.mass, [1.5322804 , 0.25538007, 0.3830701])
 
-    def test_calculer_nouvo_dt(self):
-        """ Test de la méthode Element1d.calculer_nouvo_dt() """
-        self.my_elem.calculer_nouvo_taille()
-        self.my_elem.calculer_nouvo_densite()
-        self.my_elem.calculer_nouvo_pseudo(1.0e-6)
-        self.my_elem.calculer_nouvo_pression()
-        self.my_elem.calculer_nouvo_dt()
-        self.assertEqual(self.my_elem.delta_t, 7.1888585672553036e-07)
+    def test_compute_new_density(self):
+        """
+        Test of compute_new_density method 
+        """
+        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
+        self.my_cell.compute_new_size(self.topology, np.array([-0.6, 0.2, 0.1, 0.37]), np.array([True, True, True]))
+        self.my_cell.compute_new_density(np.array([True, True, True]))
+        np.testing.assert_allclose(self.my_cell.density.new_value, np.array([6096.75, 8129., 4516.11111111]))
+
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
