@@ -59,13 +59,6 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         return self._fields_manager['taille_droite']
 
     @property
-    def mass(self):
-        """
-        :return: Mass of the elements
-        """
-        return self.size_t * DataContainer().geometric.section * self.density.current_value
-
-    @property
     def pressure_field(self):
         """
         :return: pressure field
