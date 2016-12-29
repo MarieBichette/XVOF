@@ -55,6 +55,7 @@ class Cell(object):
         self._dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._size_t = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._size_t_plus_dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
+        self._mass = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._fields_manager = FieldManager()
         self._fields_manager["Density"] = Field(self._nbr_of_cells, DataContainer().material.rho_init,
                                                 DataContainer().material.rho_init)
@@ -85,6 +86,13 @@ class Cell(object):
         Size (length, area, volume) of the cells at time t + dt
         """
         return self._size_t_plus_dt
+    
+    @property
+    def mass(self):
+        """
+        Mass of the cells
+        """
+        return self._mass
 
     @property
     def density(self):
@@ -180,6 +188,12 @@ class Cell(object):
     def compute_new_size(self, *args, **kwargs):
         """
         Compute the new size of the cells
+        """
+
+    @abstractmethod
+    def compute_mass(self):
+        """
+        Compute mass of the cells
         """
 
     @abstractmethod
