@@ -46,6 +46,10 @@ class Mesh1d(object):
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
+    def compute_cells_masses(self):
+        """ Cell mass computation """
+        self.cells.compute_mass()
+
     def compute_nodes_masses(self):
         """ Nodal mass computation """
         nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
@@ -76,11 +80,11 @@ class Mesh1d(object):
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    def compute_new_cells_sizes(self, delta_t):
+    def compute_new_cells_sizes(self):
         """
         Computation of cells sizes at t+dt
         """
-        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self._all_cells, time_step=delta_t)
+        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self._all_cells)
 
     def compute_new_cells_densities(self):
         """
