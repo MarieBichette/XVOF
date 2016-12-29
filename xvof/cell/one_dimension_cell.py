@@ -1,8 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant un élément en 1d
-
-:todo: essayer de supprimer les lignes 146-149 et passer directement les tableaux de pression, vitesse du son, dpde
+Implementation of the OneDimensionCell class
 """
 import ctypes
 import numpy as np
@@ -16,15 +14,12 @@ from xvof.solver.newtonraphson import NewtonRaphson
 
 class OneDimensionCell(Cell):
     """
-    Une classe pour les éléments en 1D
+    A class for one dimension cells
     """
-    nbr_noeuds = 2
-
     @classmethod
-    def compute_pseudo(cls, delta_t, rho_old, rho_new, size_new,
-                       cel_son, a_pseudo, b_pseudo):
+    def compute_pseudo(cls, delta_t, rho_old, rho_new, size_new, cel_son, a_pseudo, b_pseudo):
         """
-        Calcul de la pseudo
+        Computation of artificial viscosity
         """
         # pylint: disable=too-many-arguments
         # 8 arguments semblent nécessaires
@@ -43,7 +38,7 @@ class OneDimensionCell(Cell):
     @classmethod
     def compute_time_step(cls, cfl, cfl_pseudo, rho_old, rho_new, taille_new, cson_new, pseudo_old, pseudo_new):
         """
-        Calcul du pas de temps
+        Computation of the time step
         """
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette mï¿½thode cela semble ok
@@ -76,10 +71,11 @@ class OneDimensionCell(Cell):
             self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
                                                       [ctypes.c_int, ] + [ctypes.POINTER(ctypes.c_double), ] * 3)
 
-    @property
-    def mass(self):
-        """ Masse de l'élément """
-        return self.size_t * DataContainer().geometric.section * self.density.current_value
+    def compute_mass(self):
+        """
+        Compute mass of the cells
+        """
+        self._mass = self.size_t * DataContainer().geometric.section * self.density.current_value
 
     @property
     def pressure_field(self):
@@ -111,6 +107,10 @@ class OneDimensionCell(Cell):
 
     def _compute_new_pressure_with_external_lib(self, density_current, density_new, pressure_current, pseudo_current,
                                                 energy_current, energy_new, pressure_new, vson_new):
+        """
+        Computation of the set (internal energy, pressure, sound velocity) for v-e formulation thanks
+        to external C library
+        """
         pb_size = ctypes.c_int()
         pb_size.value = energy_new.shape[0]
         c_density = density_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
@@ -130,9 +130,7 @@ class OneDimensionCell(Cell):
 
     def compute_new_pressure(self, mask):
         """
-        Calcul du triplet energie, pression, vitesse du son
-        au pas de temps suivant
-        Formulation v-e
+        Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
         if self._external_library is not None:
             self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
@@ -165,42 +163,39 @@ class OneDimensionCell(Cell):
 
     def compute_size(self, topologie, vecteur_coord_noeuds):
         """
-        Calcul de la longueur de l'ï¿½lï¿½ment (ï¿½ t)
-        """
-        for ielem in xrange(self.number_of_cells):
-            ind_nodes = topologie.getNodesBelongingToCell(ielem)
-            self._size_t[ielem] = abs(vecteur_coord_noeuds[ind_nodes[0]] -
-                                      vecteur_coord_noeuds[ind_nodes[1]])
-
-    def compute_new_size(self, topologie, vecteur_coord_noeuds, mask, time_step=None):
-        """
-        Calcul de la nouvelle longueur de l'élément (à t+dt)
+        Computation of the cells initial length
         """
         connectivity = topologie.nodes_belonging_to_cell
-        size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] -
-                             vecteur_coord_noeuds[connectivity[:, 1]])
+        self._size_t = abs(vecteur_coord_noeuds[connectivity[:,0]] - vecteur_coord_noeuds[connectivity[:,1]]).flatten()
+
+    def compute_new_size(self, topologie, vecteur_coord_noeuds, mask):
+        """
+        Computation of the cells length at time t+dt
+        """
+        connectivity = topologie.nodes_belonging_to_cell
+        size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:,0]] - vecteur_coord_noeuds[connectivity[:,1]])
         self._size_t_plus_dt[mask] = size_t_plus_dt[mask]
 
     def compute_new_density(self, mask):
         """
-        Calcul de la densite a l'instant t+dt basee sur
-        la conservation de la masse
+        Computation of the density of the cells at time t+dt using mass conservation principle
         """
-        self.density.new_value[mask] = \
-            self.density.current_value[mask] * self.size_t[mask] / self.size_t_plus_dt[mask]
+        self.density.new_value[mask] =  self.density.current_value[mask] * self.size_t[mask] / self.size_t_plus_dt[mask]
 
     def compute_new_pseudo(self, delta_t, mask):
         """
-        Calcul de la nouvelle pseudo
+        Computation of cells artificial viscosity at time t+dt/2
         """
-        self.pseudo.new_value[mask] = \
-            OneDimensionCell.compute_pseudo(delta_t, self.density.current_value[mask], self.density.new_value[mask],
-                                            self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-                                            DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+        self.pseudo.new_value[mask] = OneDimensionCell.compute_pseudo(delta_t, self.density.current_value[mask],
+                                                                      self.density.new_value[mask],
+                                                                      self.size_t_plus_dt[mask],
+                                                                      self.sound_velocity.current_value[mask],
+                                                                      DataContainer().numeric.a_pseudo,
+                                                                      DataContainer().numeric.b_pseudo)
 
     def compute_new_time_step(self, mask):
         """
-        Calcul du pas de temps dans l'ï¿½lï¿½ment
+        Computation of the time step in the cells at time t+dt
         """
         cfl = DataContainer().numeric.cfl
         cfl_pseudo = DataContainer().numeric.cfl_pseudo
@@ -211,6 +206,6 @@ class OneDimensionCell(Cell):
 
     def impose_pressure(self, ind_cell, pression):
         """
-        On impose la pression ï¿½ t+dt (par exemple pour endommagement)
+        Pressure imposition
         """
         self.pressure.new_value[ind_cell] = pression
