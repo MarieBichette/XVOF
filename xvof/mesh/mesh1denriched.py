@@ -43,6 +43,10 @@ class Mesh1dEnriched(object):
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
+    def compute_cells_masses(self):
+        """ Cell mass computation """
+        self.cells.compute_mass()
+
     def compute_nodes_masses(self):
         """ Nodal mass computation """
         nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
@@ -79,7 +83,7 @@ class Mesh1dEnriched(object):
         """
         Computation of cells sizes at t+dt
         """
-        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, mask=self.cells.classical, time_step=delta_t)
+        self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, mask=self.cells.classical)
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.__topology, self.nodes.upundemi_enriched,
                                                            self.nodes.upundemi)
 
