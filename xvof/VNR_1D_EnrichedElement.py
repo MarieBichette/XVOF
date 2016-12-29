@@ -67,6 +67,7 @@ if __name__ == '__main__':
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
     my_mesh.compute_cells_sizes()
+    my_mesh.compute_cells_masses()
     my_mesh.compute_nodes_masses()
     print "CALCULUS LAUNCHED!"
     compute_time = 0.
