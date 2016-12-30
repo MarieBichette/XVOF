@@ -8,16 +8,15 @@ import unittest
 import mock
 
 from xvof.cell.one_dimension_cell import OneDimensionCell as Cell
+from xvof.mesh.topology1d import Topology1D
+from xvof.data.data_container import geometrical_props
+from xvof.fields.field import Field
 
 
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        """Test setup"""
-        self.topology = mock.Mock(name="TopologyMock")
-        self.topology.dimension = 2
-        self.topology.nodes_belonging_to_cell = np.array([[0, 1], [1, 2], [2, 3]], dtype=np.int64)
-        self.my_cell = Cell(3)
+        self.test_cell = Cell(3)
 
     def tearDown(self):
         pass
@@ -49,36 +48,46 @@ class OneDimensionCellTest(unittest.TestCase):
         result = Cell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size, sound_speed, pseudo_old, pseudo_new)    
         np.testing.assert_allclose(result, [1.41137110e-06, 7.81250000e-07, 1.09649123e-06])
 
-    def test_compute_size(self):
+    @mock.patch.object(Topology1D, "nodes_belonging_to_cell", new_callable=mock.PropertyMock, return_value=np.array([[0, 1], [1, 2], [2, 3]]))  
+    def test_compute_size(self, mock_connectivity):
         """
         Test of compute_size method
         """
-        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
-        np.testing.assert_allclose(self.my_cell.size_t, [0.6, 0.1, 0.15])
-    
-    def test_compute_new_size(self):
+        self.test_cell.compute_size(Topology1D(4, 3), np.array([-0.5, 0.1, 0.2, 0.35])) 
+        np.testing.assert_allclose(self.test_cell.size_t, [0.6, 0.1, 0.15])
+   
+    @mock.patch.object(Topology1D, "nodes_belonging_to_cell", new_callable=mock.PropertyMock, return_value=np.array([[0, 1], [1, 2], [2, 3]]))  
+    def test_compute_new_size(self, mock_connectivity):
         """
         Test of compute_new_size method
         """
-        self.my_cell.compute_new_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35]), np.array([True, False, True])) 
-        np.testing.assert_allclose(self.my_cell.size_t_plus_dt, [0.6, 0., 0.15])
+        self.test_cell.compute_new_size(Topology1D(4, 3), np.array([-0.5, 0.1, 0.2, 0.35]), np.array([True, False, True])) 
+        np.testing.assert_allclose(self.test_cell.size_t_plus_dt, [0.6, 0., 0.15])
 
-    def test_compute_mass(self):
+    @mock.patch.object(Cell, "size_t", new_callable=mock.PropertyMock, return_value=np.array([0.6, 0.1, 0.15])) 
+    @mock.patch.object(geometrical_props, "section", new_callable=mock.PropertyMock, return_value=0.0003141592653589793) 
+    @mock.patch.object(Field, "current_value", new_callable=mock.PropertyMock, return_value=np.array([8129., 8129., 8129.]))
+    def test_compute_mass(self, mock_density_filed, mock_geom_props, mock_cell):
         """
         Test of compute_mass method
         """
-        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
-        self.my_cell.compute_mass()
-        np.testing.assert_allclose(self.my_cell.mass, [1.5322804 , 0.25538007, 0.3830701])
+        self.test_cell.compute_mass()
+        np.testing.assert_allclose(self.test_cell.mass, [1.5322804 , 0.25538007, 0.3830701])
 
-    def test_compute_new_density(self):
+    @mock.patch.object(Cell, "size_t", new_callable=mock.PropertyMock, return_value=np.array([0.6, 0.1, 0.15]))
+    @mock.patch.object(Cell, "size_t_plus_dt", new_callable=mock.PropertyMock, return_value=np.array([0.8, 0.1, 0.27]))
+    def test_compute_new_density(self, mock_new_size, mock_size):
         """
         Test of compute_new_density method 
         """
-        self.my_cell.compute_size(self.topology, np.array([-0.5, 0.1, 0.2, 0.35])) 
-        self.my_cell.compute_new_size(self.topology, np.array([-0.6, 0.2, 0.1, 0.37]), np.array([True, True, True]))
-        self.my_cell.compute_new_density(np.array([True, True, True]))
-        np.testing.assert_allclose(self.my_cell.density.new_value, np.array([6096.75, 8129., 4516.11111111]))
+        self.test_cell.compute_new_density(np.array([True, True, True]))
+        np.testing.assert_allclose(self.test_cell.density.new_value, np.array([6096.75, 8129., 4516.11111111]))
+
+    def test_compute_new_pressure(self):
+        """
+        Test of compute_new_pressure method
+        """
+        pass
 
 
 
