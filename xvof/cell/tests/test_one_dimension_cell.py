@@ -83,12 +83,51 @@ class OneDimensionCellTest(unittest.TestCase):
         self.test_cell.compute_new_density(np.array([True, True, True]))
         np.testing.assert_allclose(self.test_cell.density.new_value, np.array([6096.75, 8129., 4516.11111111]))
 
-    def test_compute_new_pressure(self):
+    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
+    def test_compute_new_pressure_internal(self, sound_velocity_mock, pseudo_mock, density_mock, pressure_mock, energy_mock):
         """
-        Test of compute_new_pressure method
+        Test of compute_new_pressure method with internal solver
         """
-        pass
+        self.test_cell._external_library = None
+        self.test_cell.energy.current_value = np.array([1.e+06, 0.5e+05, 2.4e+07])
+        self.test_cell.pressure.current_value = np.array([1.5e+09, 0.5e+08, 1.2e+10])
+        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
+        self.test_cell.pseudo.current_value = np.array([1.e+08, 0., 2.4e+09])
+        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
+        self.test_cell.energy.new_value = np.array([0., 0., 0.])
+        self.test_cell.pressure.new_value = np.array([0., 0., 0.])
+        self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
+        self.test_cell.compute_new_pressure([True, True, True])
+        print self.test_cell.pressure.new_value
+        print self.test_cell.energy.new_value
+        print self.test_cell.sound_velocity.new_value
 
+    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
+    def test_compute_new_pressure_external(self, sound_velocity_mock, pseudo_mock, density_mock, pressure_mock, energy_mock):
+        """
+        Test of compute_new_pressure method with external solver
+        """
+        self.test_cell._external_library = ""
+        self.test_cell.energy.current_value = np.array([1.e+06, 0.5e+05, 2.4e+07])
+        self.test_cell.pressure.current_value = np.array([1.5e+09, 0.5e+08, 1.2e+10])
+        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
+        self.test_cell.pseudo.current_value = np.array([1.e+08, 0., 2.4e+09])
+        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
+        self.test_cell.energy.new_value = np.array([0., 0., 0.])
+        self.test_cell.pressure.new_value = np.array([0., 0., 0.])
+        self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
+        self.test_cell.compute_new_pressure([True, True, True])
+        print self.test_cell.pressure.new_value
+        print self.test_cell.energy.new_value
+        print self.test_cell.sound_velocity.new_value
 
 
 if __name__ == "__main__":
