@@ -101,10 +101,13 @@ class OneDimensionCellTest(unittest.TestCase):
         self.test_cell.energy.new_value = np.array([0., 0., 0.])
         self.test_cell.pressure.new_value = np.array([0., 0., 0.])
         self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
-        self.test_cell.compute_new_pressure([True, True, True])
-        print self.test_cell.pressure.new_value
-        print self.test_cell.energy.new_value
-        print self.test_cell.sound_velocity.new_value
+        self.test_cell.compute_new_pressure(np.array([True, True, True]))
+        # Function to vanish
+        delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
+        func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
+                (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
+                - self.test_cell.energy.current_value)
+        np.testing.assert_allclose(func, [0., 0., 0.])
 
     @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
     @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
@@ -124,10 +127,13 @@ class OneDimensionCellTest(unittest.TestCase):
         self.test_cell.energy.new_value = np.array([0., 0., 0.])
         self.test_cell.pressure.new_value = np.array([0., 0., 0.])
         self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
-        self.test_cell.compute_new_pressure([True, True, True])
-        print self.test_cell.pressure.new_value
-        print self.test_cell.energy.new_value
-        print self.test_cell.sound_velocity.new_value
+        self.test_cell.compute_new_pressure(np.array([True, True, True]))
+        # Function to vanish
+        delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
+        func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
+                (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
+                - self.test_cell.energy.current_value)
+        np.testing.assert_allclose(func, [0., 0., 0.])
 
 
 if __name__ == "__main__":
