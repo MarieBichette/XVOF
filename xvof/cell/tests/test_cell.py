@@ -30,7 +30,7 @@ class CellTest(unittest.TestCase):
         nodes = OneDimensionNode(4, np.array([[-0.5], [0.1], [0.2], [0.35]]), np.array([[0.], [0.], [0.], [0.]]))
         my_topo = Topology1D(4, 3)
         cell_coord = Cell.get_coordinates(3, my_topo, nodes.xt)
-        np.testing.assert_array_almost_equal(cell_coord, np.array([[-0.2], [0.15], [0.275]]))
+        np.testing.assert_allclose(cell_coord, np.array([[-0.2], [0.15], [0.275]]))
 
     def test_increment_variables(self):
         """
@@ -42,11 +42,11 @@ class CellTest(unittest.TestCase):
         self.my_cell.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05]) 
         self.my_cell._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
         self.my_cell.increment_variables()
-        np.testing.assert_array_equal(self.my_cell.pressure.current_value, np.array([2.0e+09, -0.5e+09, 1.25e+09]) )
-        np.testing.assert_array_equal(self.my_cell.density.current_value, np.array([8500., 4500, 9500.]))
-        np.testing.assert_array_equal(self.my_cell.sound_velocity.current_value, np.array([440., 210, -110]))
-        np.testing.assert_array_equal(self.my_cell.energy.current_value, np.array([-1.0e+06, 0.5e+05, 1.5e+05]) )
-        np.testing.assert_array_equal(self.my_cell.size_t, np.array([0.015, 0.01, 0.05]))
+        np.testing.assert_allclose(self.my_cell.pressure.current_value, np.array([2.0e+09, -0.5e+09, 1.25e+09]) )
+        np.testing.assert_allclose(self.my_cell.density.current_value, np.array([8500., 4500, 9500.]))
+        np.testing.assert_allclose(self.my_cell.sound_velocity.current_value, np.array([440., 210, -110]))
+        np.testing.assert_allclose(self.my_cell.energy.current_value, np.array([-1.0e+06, 0.5e+05, 1.5e+05]) )
+        np.testing.assert_allclose(self.my_cell.size_t, np.array([0.015, 0.01, 0.05]))
 
     def test_print_infos(self):
         """
