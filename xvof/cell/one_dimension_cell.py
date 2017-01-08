@@ -143,20 +143,21 @@ class OneDimensionCell(Cell):
                                                              self.pressure.new_value[mask],
                                                              self.sound_velocity.new_value[mask])
         else:
-            shape = self.energy.new_value[mask].shape
-            new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
-            new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
-            dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables = {'EquationOfState': DataContainer().material.eos,
                             'OldDensity': self.density.current_value[mask],
                             'NewDensity': self.density.new_value[mask],
                             'Pressure': self.pressure.current_value[mask] + 2. * self.pseudo.current_value[mask],
-                            'OldEnergy': self.energy.current_value[mask],
-                            'NewPressure': new_pressure_value,
-                            'NewSoundSpeed': new_vson_value,
-                            'NewDpOverDe': dummy}
+                            'OldEnergy': self.energy.current_value[mask]}
             self._function_to_vanish.setVariables(my_variables)
             self.energy.new_value[mask] = self._solver.computeSolution(self.energy.current_value[mask])
+            # Eos call to determine final pressure and sound speed values
+            shape = self.energy.new_value[mask].shape
+            new_pressure_value = np.zeros(shape, dtype=np.float64, order='C')
+            new_vson_value = np.zeros(shape, dtype=np.float64, order='C')
+            dummy = np.zeros(shape, dtype=np.float64, order='C')
+            my_variables['EquationOfState'].solveVolumeEnergy(
+                    1./ my_variables['NewDensity'], self.energy.new_value[mask], new_pressure_value, new_vson_value,
+                    dummy)
             self.pressure.new_value[mask] = new_pressure_value
             self.sound_velocity.new_value[mask] = new_vson_value
             self._function_to_vanish.eraseVariables()
