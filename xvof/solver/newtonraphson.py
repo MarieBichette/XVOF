@@ -5,6 +5,7 @@ Classe définissant un solveur non linéaire de type Newton Raphson
 
 :todo: Mettre les critères de convergence dans le XML des données
 """
+import numpy as np
 from xvof.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
 from xvof.solver.newtonraphsonbase import NewtonRaphsonBase
 
@@ -29,21 +30,23 @@ class NewtonRaphson(NewtonRaphsonBase):
         """
         Algorithme de Newton-Raphson
         """
+        #import ipdb; ipdb.set_trace()
         # Variable du Newton
         var_i = init_variable
+        var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
         # Critère de convergence
-        convergence = False
+        not_conv = np.array([True for i in xrange(len(var_i))])
         # Nombre d'itérations
         nit = 0
         #
-        while not convergence and nit < self.nb_iterations_max:
-            (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i)
+        while not_conv.any() and nit < self.nb_iterations_max:
+            (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i, not_conv)
             # Correction
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
-            var_iplus1 = var_i + delta
+            var_iplus1[not_conv] = var_i[not_conv] + delta
             nit += 1
-            if (abs(func_i) < EPSILON * abs(delta) + PRECISION).all():
-                convergence = True
+            not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
+            if not not_conv.any():
                 res = var_i
                 break
             # Incrémentation
