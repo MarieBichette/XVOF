@@ -28,7 +28,7 @@
         <quadratic-pseudo>1.5</quadratic-pseudo>
         <cfl>0.45</cfl>
         <cfl-pseudo>0.</cfl-pseudo>
-        <external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>
+        <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
     </numeric-parameters>
     <output>
         <number-of-images>150</number-of-images>
