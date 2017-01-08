@@ -223,37 +223,41 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                             self.energy.current_right_value[mask], self.energy.new_right_value[mask],
                             self.pressure.new_right_value[mask], self.sound_velocity.new_right_value[mask]))
                 else:
-                    shape = self.energy.new_left_value[mask].shape
-                    pressure_left_new = np.zeros(shape, dtype=np.float64, order='C')
-                    sound_velocity_left_new = np.zeros(shape, dtype=np.float64, order='C')
-                    dummy = np.zeros(shape, dtype=np.float64, order='C')
+                    # Left part
                     my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': self.density.current_left_value[mask],
                                     'NewDensity': self.density.new_left_value[mask],
                                     'Pressure': (self.pressure.current_left_value[mask] +
                                                  2. * self.pseudo.current_left_value[mask]),
-                                    'OldEnergy': self.energy.current_left_value[mask],
-                                    'NewPressure': pressure_left_new,
-                                    'NewSoundSpeed': sound_velocity_left_new,
-                                    'NewDpOverDe': dummy}
+                                    'OldEnergy': self.energy.current_left_value[mask]}
                     self._function_to_vanish.setVariables(my_variables)
                     energy_left_new = self._solver.computeSolution(self.energy.current_left_value[mask])
-                    self._function_to_vanish.eraseVariables()
-                    shape = self.energy.new_right_value[mask].shape
-                    pressure_right_new = np.zeros(shape, dtype=np.float64, order='C')
-                    sound_velocity_right_new = np.zeros(shape, dtype=np.float64, order='C')
+                    # Eos call to determine final pressure and sound speed values
+                    shape = self.energy.new_left_value[mask].shape
+                    pressure_left_new = np.zeros(shape, dtype=np.float64, order='C')
+                    sound_velocity_left_new = np.zeros(shape, dtype=np.float64, order='C')
                     dummy = np.zeros(shape, dtype=np.float64, order='C')
+                    my_variables['EquationOfState'].solveVolumeEnergy(
+                            1./ my_variables['NewDensity'], energy_left_new, pressure_left_new, sound_velocity_left_new,
+                            dummy)
+                    self._function_to_vanish.eraseVariables()
+                    # Right part
                     my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': self.density.current_right_value[mask],
                                     'NewDensity': self.density.new_right_value[mask],
                                     'Pressure': (self.pressure.current_right_value[mask] +
                                                  2. * self.pseudo.current_right_value[mask]),
-                                    'OldEnergy': self.energy.current_right_value[mask],
-                                    'NewPressure': pressure_right_new,
-                                    'NewSoundSpeed': sound_velocity_right_new,
-                                    'NewDpOverDe': dummy}
+                                    'OldEnergy': self.energy.current_right_value[mask]}
                     self._function_to_vanish.setVariables(my_variables)
                     energy_right_new = self._solver.computeSolution(self.energy.current_right_value[mask])
+                    # Eos call to determine final pressure and sound speed values
+                    shape = self.energy.new_right_value[mask].shape
+                    pressure_right_new = np.zeros(shape, dtype=np.float64, order='C')
+                    sound_velocity_right_new = np.zeros(shape, dtype=np.float64, order='C')
+                    dummy = np.zeros(shape, dtype=np.float64, order='C')
+                    my_variables['EquationOfState'].solveVolumeEnergy(
+                            1./ my_variables['NewDensity'], energy_right_new, pressure_right_new, sound_velocity_right_new,
+                            dummy)
                     self._function_to_vanish.eraseVariables()
             except ValueError as err:
                 raise err
