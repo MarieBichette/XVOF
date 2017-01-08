@@ -31,8 +31,11 @@ class FunctionToSolveBase(object):
         self._variables = None
 
     @abstractmethod
-    def computeFunctionAndDerivative(self, variable_value):
+    def computeFunctionAndDerivative(self, var_value, mask):
         """
         Return the values of the function and its derivative
+
+        :param var_value: value of the variable
+        :param mask: boolean mask on which the function has to be evaluated
         """
         raise NotImplementedError

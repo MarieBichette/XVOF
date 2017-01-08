@@ -3,6 +3,7 @@
 Implementing VnrEnergyEvolutionForVolumeEnergyFormulation class
 """
 
+import numpy as np
 from xvof.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
 
 
@@ -14,16 +15,16 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
     def __init__(self):
         super(VnrEnergyEvolutionForVolumeEnergyFormulation, self).__init__()
 
-    def computeFunctionAndDerivative(self, newton_variable_value):
-        nrj = newton_variable_value
+    def computeFunctionAndDerivative(self, var_value, mask):
+        nrj = var_value[mask]
         eos = self._variables['EquationOfState']
-        old_rho = self._variables['OldDensity']
-        new_rho = self._variables['NewDensity']
-        pressure = self._variables['Pressure']
-        old_nrj = self._variables['OldEnergy']
-        p_i = self._variables['NewPressure']
-        dpsurde = self._variables['NewDpOverDe']
-        dummy = self._variables['NewSoundSpeed']
+        old_rho = self._variables['OldDensity'][mask]
+        new_rho = self._variables['NewDensity'][mask]
+        pressure = self._variables['Pressure'][mask]
+        old_nrj = self._variables['OldEnergy'][mask]
+        p_i = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        dpsurde = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        dummy = np.ndarray(nrj.shape, dtype=np.float64, order='C')
         eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
         # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
