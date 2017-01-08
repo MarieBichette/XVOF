@@ -22,9 +22,9 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         new_rho = self._variables['NewDensity'][mask]
         pressure = self._variables['Pressure'][mask]
         old_nrj = self._variables['OldEnergy'][mask]
-        p_i = np.ndarray(nrj.shape, dtype=np.float64, order='C')
-        dpsurde = np.ndarray(nrj.shape, dtype=np.float64, order='C')
-        dummy = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        p_i = np.zeros(nrj.shape, dtype=np.float64, order='C')
+        dpsurde = np.zeros(nrj.shape, dtype=np.float64, order='C')
+        dummy = np.zeros(nrj.shape, dtype=np.float64, order='C')
         eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
         # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
