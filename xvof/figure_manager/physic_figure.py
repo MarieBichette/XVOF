@@ -11,13 +11,12 @@ class PhysicFigure(object):
     """
     Figure
     """
-    def __init__(self, X, Y, xlabel="X", ylabel="Y", titre="titre", save_path=None):
+    def __init__(self, X, Y, xlabel="X", ylabel="Y", titre="titre"):
         self._fig, self._ax = matplotlib.pyplot.subplots()
         self._line, = self._ax.plot(X, Y, '-+')
         self._ax.set_xlabel(xlabel)
         self._ax.set_ylabel(ylabel)
         self._ax.set_title(titre)
-        self._save_path = save_path
         self._fig_number = 1
         self._title = titre
         matplotlib.pyplot.show(block=False)
@@ -45,15 +44,4 @@ class PhysicFigure(object):
         self._ax.draw_artist(self._line)
         self._fig.canvas.update()
         self._fig.canvas.flush_events()
-        if (self._save_path is not None):
-            rac_path = self._save_path + sep + self._title
-            fig_path = rac_path + "_{:04d}.png".format(self._fig_number)
-            fig_path = fig_path.replace(" ", "_")
-            data_path = rac_path + "_{:04d}.dat".format(self._fig_number)
-            data_path = data_path.replace(" ", "_")
-            self._fig.savefig(fig_path)
-            self._fig_number += 1
-            with open(data_path, 'w') as fo:
-                for a, b in zip(X, Y):
-                    fo.write("{:20.18g}{:s}{:20.18g}\n".format(float(a), 4 * " ", float(b)))
 

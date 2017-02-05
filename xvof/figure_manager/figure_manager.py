@@ -3,7 +3,8 @@
 Classe définissant le gestionnaire d'images
 
 @todo: Hériter de la classe Figure
-@todo: Transformer la classe Field en NamedTuple (cf. properties)
+@todo: translate in english
+@todo: incorporate the calculation of the time at which images have to be shown (move from Vnr1D...py)
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,7 +38,6 @@ class FigureManager(object):
         self.__champs_mailles = {}
         self.__champs_noeuds = {}
         self.update_fields()
-        self._dump = dump
         self._show = show
 
     def update_fields(self):
@@ -70,11 +70,7 @@ class FigureManager(object):
         except ValueError as ve:
             print "Le champ {} est inconnu!".format(field_Y)
             raise ve
-        if self._dump:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                              titre=field_Y.titre, save_path=field_Y.results_path)
-        else:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
+        phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
                               titre=field_Y.titre)
         phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
         phyfig.set_x_limit(field_X.val_min, field_X.val_max)
@@ -95,11 +91,7 @@ class FigureManager(object):
         except ValueError as ve:
             print "Le champ {} est inconnu!".format(field_Y)
             raise ve
-        if self._dump:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                              titre=field_Y.titre, save_path=field_Y.results_path)
-        else:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
+        phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
                               titre=field_Y.titre)
         phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
         phyfig.set_x_limit(field_X.val_min, field_X.val_max)
@@ -122,8 +114,6 @@ class FigureManager(object):
                 self.__figures_noeuds.append((fig, champ_X, champ_Y))
         if self._show:
             plt.show(block=False)
-        if self._dump:
-            self.create_reps()
 
     def update_figs(self, title_compl=None):
         """
@@ -140,16 +130,3 @@ class FigureManager(object):
             fig.update(champ_x_valeurs, champ_y_valeurs, title_compl)
         if self._show:
             plt.show(block=False)
-
-    def create_reps(self):
-        """
-        Création des répertoires où sont stockées les figures
-        """
-        for (_, _, field) in self.__figures_mailles + self.__figures_noeuds:
-            path = field.results_path
-            if (exists(path)):
-                msg = "Le chemin {:s} existe déjà!"
-                msg += "\nAbandon pour éviter d'écraser des données!"
-                raise SystemExit(msg)
-            else:
-                makedirs(path)
