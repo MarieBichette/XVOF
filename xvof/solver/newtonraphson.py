@@ -30,7 +30,6 @@ class NewtonRaphson(NewtonRaphsonBase):
         """
         Algorithme de Newton-Raphson
         """
-        #import ipdb; ipdb.set_trace()
         # Variable du Newton
         var_i = init_variable
         var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
