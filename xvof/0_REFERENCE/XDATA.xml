@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <time-management>
+        <final-time>4e-06</final-time>
+        <initial-time-step>0.5e-09</initial-time-step>
+        <constant-time-step>True</constant-time-step>
+    </time-management>
+    <geometry>
+        <section>0.0003141592653589793</section>
+    </geometry>
+    <matter>
+        <equation-of-state>Mie-Gruneisen</equation-of-state>
+        <initialization>
+            <initial-pressure>100006.2096</initial-pressure>
+            <!--<initial-pressure>0.</initial-pressure>-->
+            <initial-density>8129.</initial-density>
+            <initial-temperature>300.</initial-temperature>
+            <initial-internal-energy>7.689</initial-internal-energy>
+        </initialization>
+        <!--<damage-treatment>
+            <name>ImposedPressure</name>
+            <value>0.</value>
+        </damage-treatment>-->
+    </matter>
+    <numeric-parameters>
+        <linear-pseudo>0.2</linear-pseudo>
+        <quadratic-pseudo>1.5</quadratic-pseudo>
+        <cfl>0.15</cfl>
+        <cfl-pseudo>0.</cfl-pseudo>
+        <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
+    </numeric-parameters>
+    <output>
+        <number-of-images>50</number-of-images>
+        <cell-for-time-figure>  500</cell-for-time-figure>
+        <node-for-time-figure>  500,501 </node-for-time-figure>
+        <dump-images>false</dump-images>
+        <show-images>True</show-images>
+        <show-images-time>true</show-images-time>
+    </output>
+</data>
