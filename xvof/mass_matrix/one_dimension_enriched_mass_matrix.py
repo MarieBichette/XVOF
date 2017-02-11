@@ -97,7 +97,7 @@ class OneDimensionEnrichedMassMatrix(object):
         Assemble la matrice de masse non condensée après enrichissement
         """
         # Boucle sur les discontinuités
-        for disc in [d for d in Discontinuity.discontinuity_list if not d.mass_matrix_updated]:
+        for disc in [d for d in Discontinuity.discontinuity_list() if not d.mass_matrix_updated]:
             print "Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(disc.label)
             alpha = disc.position_in_ruptured_element
             # Suppose les éléments voisins triés par position croissante

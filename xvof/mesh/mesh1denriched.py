@@ -79,7 +79,7 @@ class Mesh1dEnriched(object):
         self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned, inv_matrice_classique)
 
         if self.nodes.enriched.any():
-            for disc in [d for d in Discontinuity.discontinuity_list if not d.mass_matrix_updated]:
+            for disc in [d for d in Discontinuity.discontinuity_list() if not d.mass_matrix_updated]:
                 # Construction de la matrice masse enrichie
                 # --> Au beosin : modifications à faire dans one_dimension_enriched_mass_matrix / assemble
                 self.mass_matrix_enriched.compute_enriched_mass_matrix(self.__topology, self.cells.mass)

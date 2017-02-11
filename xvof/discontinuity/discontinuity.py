@@ -11,16 +11,24 @@ class Discontinuity(object):
 
     # A list of discontinuities
     # modified in rupturetreatment.enrichelement(...append)
-    discontinuity_list = []
-    discontinuity_number = 0
+    __discontinuity_list = []
+    __discontinuity_number = 0
 
     def __init__(self, mask_in_nodes, mask_out_nodes):
-        Discontinuity.discontinuity_number += 1
-        self.__label = Discontinuity.discontinuity_number
+        Discontinuity.__discontinuity_number += 1
+        self.__label = Discontinuity.__discontinuity_number
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
         self.__mass_matrix_updated = False
         print "Building discontinuity number {:d}".format(self.__label)
+
+    @classmethod
+    def discontinuity_number(cls):
+        return Discontinuity.__discontinuity_number
+
+    @classmethod
+    def discontinuity_list(cls):
+        return Discontinuity.__discontinuity_list
 
     @property
     def position_in_ruptured_element(self):
