@@ -2,12 +2,18 @@
 """
 Base class for one dimensional mesh
 """
+import os
+
 import numpy as np
 
 from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xvof.data.data_container import DataContainer
+from xvof.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
+from xvof.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionEnrichedMassMatrix
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xvof.discontinuity.discontinuity import discontinuity_list
+from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
 
 
 class Mesh1dEnriched(object):
@@ -23,17 +29,21 @@ class Mesh1dEnriched(object):
             message = ("""A 1D mesh must have one dimensional vector which is not the case"""
                        """ for initial coordinates vector!""")
             raise ValueError(message)
+        self.data_container = DataContainer(os.path.join(os.path.curdir, "XDATA.xml"))
+
         # ---------------------------------------------
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = OneDimensionEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
-                                              section=DataContainer().geometric.section)
+                                              section=self.data_container.geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
         self.cells = OneDimensionEnrichedCell(nbr_cells)
+        self.nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
+        self.nb_nodes_per_cell[:] = 2
         # ---------------------------------------------
         # Topology creation
         # ---------------------------------------------
@@ -42,16 +52,19 @@ class Mesh1dEnriched(object):
         # Ruptured cells vector
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
+        #----------------------------------------------
+        # Mass Matrix creation
+        #----------------------------------------------
+        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes)
+        self.mass_matrix_enriched = OneDimensionEnrichedMassMatrix(lumped_matrix_classic_dof=True, lumped_matrix_enr_dof=True)
 
     def compute_cells_masses(self):
         """ Cell mass computation """
         self.cells.compute_mass()
 
     def compute_nodes_masses(self):
-        """ Nodal mass computation """
-        nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
-        nb_nodes_per_cell[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_cell)
+        """ node mass computation """
+        self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, self.nb_nodes_per_cell)
 
     def compute_new_nodes_velocities(self, delta_t):
         """
@@ -60,8 +73,32 @@ class Mesh1dEnriched(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        self.nodes.compute_new_velocity(delta_t)
-        self.nodes.enriched_nodes_compute_new_velocity(delta_t)
+        # ddl classiques (loin de l'enrichissement )
+        matrice_masse_classique = self.mass_matrix.mass_matrix_value[self.nodes.enrichment_not_concerned]
+        inv_matrice_classique = inverseMasse(matrice_masse_classique)
+        self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned, inv_matrice_classique)
+
+        if self.nodes.enriched.any():
+            for disc in [d for d in discontinuity_list if not d.mass_matrix_updated]:
+                # Construction de la matrice masse enrichie
+                # --> Au beosin : modifications à faire dans one_dimension_enriched_mass_matrix / assemble
+                self.mass_matrix_enriched.compute_enriched_mass_matrix(self.__topology, self.cells.mass)
+                self.mass_matrix_enriched.assemble_enriched_mass_matrix("_matrix_classic_dof", "_matrix_enr_dof",
+                                                                        "_matrix_coupling")
+                lump_matrix(self.mass_matrix_enriched.complete_mass_matrix)
+                self.mass_matrix_enriched.print_enriched_mass_matrix()
+                disc.hasMassMatrixBeenComputed()
+            # Inverse la matrice masse
+            inv_enriched_mass = inverseMasse(self.mass_matrix_enriched.complete_mass_matrix)
+            inv_enriched_matrice_classic_dof = inv_enriched_mass[0:4, 0:4]
+            inv_enriched_matrice_enr_dof = inv_enriched_mass[4:6,4:6]
+            inv_enriched_matrice_couplage = inv_enriched_mass[0:4,4:6]
+            # Calcule des vitesses ddl classique et enrichi à l'endroit de l'enrichissement
+            self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_concerned, inv_enriched_matrice_classic_dof)
+            self.nodes.enriched_nodes_compute_new_velocity(delta_t, self.nodes.enriched, inv_enriched_matrice_enr_dof)
+            # Couplage entre ddl classiques et enrichis
+            self.nodes.coupled_enrichment_terms_compute_new_velocity(delta_t, inv_enriched_matrice_couplage)
+        self.nodes.compute_complete_velocity_field()
 
     def compute_new_nodes_coordinates(self, delta_t):
         """

@@ -45,16 +45,15 @@ class EnrichedField(Field):
     """
     def __init__(self, size, current_value, new_value):
         super(EnrichedField, self).__init__(size, current_value, new_value)
-        self.__enr_current = np.empty([size], dtype=np.float64, order='C')
-        self.__enr_future = np.empty([size], dtype=np.float64, order='C')
-        self.__enr_current[:] = 0.
-        self.__enr_future[:] = 0.
+        self.__enr_current = np.zeros([size], dtype=np.float64, order='C')
+        self.__enr_future = np.zeros([size], dtype=np.float64, order='C')
 
     def incrementValues(self):
         """
         Increment field values
         """
         super(EnrichedField, self).incrementValues()
+        # self.__enr_current = np.copy(self.__enr_future)
         self.__enr_current[:] = self.__enr_future[:]
 
     @property

@@ -93,7 +93,14 @@ class MieGruneisen(EquationOfStateBase):
         targets = epsv > 0  #  Cells in compression (~targets are cells in release)
         self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
         self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, ~targets)
-        vson[:] = np.sqrt(vson)
+        pb = vson < 0
+        if pb.any():
+            msg = "Sound speed square < 0 in cells {}\n".format(np.where(pb))
+            msg += "specific_volume = {}\n".format(specific_volume[pb])
+            msg += "pressure = {}\n".format(pressure[pb])
+            msg += "dpsurde = {}\n".format(gampervol[pb])
+            raise ValueError(msg)
+        vson[:] = np.sqrt(vson[:])
         #
         pb = vson >= 10000.
         vson[pb] = 0.
@@ -130,14 +137,6 @@ class MieGruneisen(EquationOfStateBase):
                       (internal_energy[targets] - einth) / specific_volume[targets]
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
-        pb = vson2 < 0
-        if pb.any():
-            msg = "Sound speed square < 0\n"
-            msg += "specific_volume = {}\n".format(specific_volume[pb])
-            msg += "pressure = {}\n".format(pressure[pb])
-            msg += "dpsurde = {}\n".format(gampervol[pb])
-            msg += "dpdv = {}\n".format(dpdv)
-            raise ValueError(msg)
 
     def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
         """
@@ -175,14 +174,6 @@ class MieGruneisen(EquationOfStateBase):
                       (internal_energy[targets] - einth) / specific_volume[targets] - loc_gampervol * deinth
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
-        pb = vson2 < 0
-        if pb.any():
-            msg = "Sound speed square < 0\n"
-            msg += "specific_volume = {}\n".format(specific_volume[pb])
-            msg += "pressure = {}\n".format(pressure[pb])
-            msg += "dpsurde = {}\n".format(gampervol[pb])
-            msg += "dpdv = {}\n".format(dpdv)
-            raise ValueError(msg)
 
     def solveVolumePressure(self, specific_volume, pressure):
         raise NotImplementedError

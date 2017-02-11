@@ -55,8 +55,7 @@ class Node(object):
         self._umundemi = np.array(vitesse_initiale)
         self._xtpdt = np.zeros(self.__shape, dtype=np.float64, order='C')
         self._upundemi = np.array(vitesse_initiale)
-        self._masse = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
-        self._invmasse = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
+
         self._force = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
 
     @property
@@ -109,15 +108,7 @@ class Node(object):
         """
         return self._masse
 
-    @property
-    def invmasse(self):
-        """
-        Inverse des masses nodales
 
-        :return: vecteur des inverses des masses nodales
-        :rtype: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
-        """
-        return self._invmasse
 
     @property
     def force(self):
@@ -170,24 +161,6 @@ class Node(object):
         message += "==> force = {}".format(self.force[index])
         print message
 
-    def calculer_masse_wilkins(self, topologie, vecteur_masse_elements, vecteur_nb_noeuds_par_element):
-        """
-        Calcule les masses associées à chaque noeud par moyenne arithmétique de la
-        masse des éléments voisins (méthode Wilkins)
-
-        :param topologie: topologie du calcul
-        :param vecteur_masse_elements: vecteur des masses de chaque élément
-        :param vecteur_nb_noeuds_par_element: vecteur des nombres de noeuds que possède chaque élément
-
-        :type topologie: Topology
-        :type vecteur_masse_elements: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
-        :type vecteur_nb_noeuds_par_element: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
-        """
-        for ind_node in xrange(self.number_of_nodes):
-            elements_voisins = topologie.getCellsInContactWithNode(ind_node)
-            self._masse[ind_node] = np.sum(vecteur_masse_elements[elements_voisins] /
-                                           vecteur_nb_noeuds_par_element[elements_voisins])
-            self._invmasse[ind_node] = 1. / self._masse[ind_node]
 
     def compute_new_coodinates(self, delta_t):
         """
@@ -213,7 +186,7 @@ class Node(object):
         """
 
     @abstractmethod
-    def compute_new_velocity(self, delta_t):
+    def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
         Calcul de la vitesse au demi pas de temps supérieur
         """

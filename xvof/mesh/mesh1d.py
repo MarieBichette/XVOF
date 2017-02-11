@@ -9,6 +9,7 @@ from xvof.cell.one_dimension_cell import OneDimensionCell
 from xvof.data.data_container import DataContainer
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.one_dimension_node import OneDimensionNode
+from xvof.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 
 
 class Mesh1d(object):
@@ -45,6 +46,10 @@ class Mesh1d(object):
         # Ruptured cells vector
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
+        #----------------------------------------------
+        # Mass Matrix creation
+        #----------------------------------------------
+        self.mass_matrix = OneDimensionMassMatrix()
 
     def compute_cells_masses(self):
         """ Cell mass computation """
@@ -54,7 +59,7 @@ class Mesh1d(object):
         """ Nodal mass computation """
         nb_nodes_per_cell = np.zeros([self.cells.number_of_cells, ], dtype=np.int, order='C')
         nb_nodes_per_cell[:] = 2
-        self.nodes.calculer_masse_wilkins(self.__topology, self.cells.mass, nb_nodes_per_cell)
+        self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, nb_nodes_per_cell)
 
     def compute_new_nodes_velocities(self, delta_t):
         """
@@ -63,7 +68,8 @@ class Mesh1d(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        self.nodes.compute_new_velocity(delta_t)
+        # self.nodes.compute_new_velocity(delta_t)
+        self.nodes.compute_new_velocity(delta_t, mask=self._all_cells)
 
     def compute_new_nodes_coordinates(self, delta_t):
         """

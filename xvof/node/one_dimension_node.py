@@ -3,6 +3,7 @@
 """
 Module définissant la classe Node1d
 """
+from xvof.mass_matrix.mass_matrix_utilities import multiplicationMasse
 from xvof.node import Node
 
 
@@ -16,6 +17,7 @@ class OneDimensionNode(Node):
         Node.__init__(self, nbr_of_nodes, position_initiale=poz_init,
 		      dim=1, vitesse_initiale=vit_init)
         self._section = section
+        self._nbr_of_nodes = nbr_of_nodes
 
     @property
     def section(self):
@@ -60,14 +62,22 @@ class OneDimensionNode(Node):
         pressure = self.section * (vecteur_pression_maille[elements_voisins] + vecteur_pseudo_maille[elements_voisins])
         self._force[ind_node] = pressure[0]
 
-    def compute_new_velocity(self, delta_t):
+    def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
         Calcul de la vitesse au demi pas de temps supérieur
 
         :param delta_t: pas de temps
         :type delta_t: float
+        :param mask : noeuds sélectionnés pour calculer avec cette méthode
+            (typiquement : OneDimensionEnrichedNode.classical / .enriched )
+            s'applique sur les degrés de liberté classiques des noeuds classiques ou enrichis
+            ne prend pas en compte le couplage entre degrés de liberté enrichis/classiques
+        :type mask : tableau de booléens
         """
-        self._upundemi = self.umundemi + self.force * self.invmasse * delta_t
+        # Nouveau : ddl classique de noeud classique (sauf 0 1 2 3 quand enrichissement)
+        # = noeuds classiques non conernéspar l'enrichissement
+        self._upundemi[mask] = self.umundemi[mask] + multiplicationMasse(matrice_masse , self.force[mask]) * delta_t
+
 
     def apply_pressure(self, ind_node, pressure):
         """

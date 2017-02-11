@@ -3,6 +3,7 @@
 """
 Classe définissant un critère de rupture basé sur la pression minimum
 """
+import numpy as np
 from xvof.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
@@ -15,4 +16,8 @@ class MinimumPressureCriterion(RuptureCriterion):
         self.__minimum_pressure = pmin
 
     def checkCriterion(self, cells, *args, **kwargs):
-        return cells.pressure.new_value < self.__minimum_pressure
+        # return cells.pressure.new_value < self.__minimum_pressure
+        mask_milieu = np.ndarray(cells.pressure.new_value.shape, dtype=np.bool,order='C')
+        mask_milieu[:] = False
+        mask_milieu[500] = True
+        return mask_milieu
