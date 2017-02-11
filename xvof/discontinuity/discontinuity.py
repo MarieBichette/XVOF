@@ -3,18 +3,15 @@
 A module implementing the Discontinuity class
 """
 
-import numpy as np
-import os
-
-# A list of discontonuities
-# modified in rupturetreatment.enrichelement(...append)
-discontinuity_list = []
 
 class Discontinuity(object):
     """
     A class describing a discontinuity
     """
 
+    # A list of discontinuities
+    # modified in rupturetreatment.enrichelement(...append)
+    discontinuity_list = []
     discontinuity_number = 0
 
     def __init__(self, mask_in_nodes, mask_out_nodes):

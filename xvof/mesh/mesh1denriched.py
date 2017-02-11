@@ -12,7 +12,7 @@ from xvof.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xvof.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionEnrichedMassMatrix
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
-from xvof.discontinuity.discontinuity import discontinuity_list
+from xvof.discontinuity.discontinuity import Discontinuity
 from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
 
 
@@ -79,7 +79,7 @@ class Mesh1dEnriched(object):
         self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned, inv_matrice_classique)
 
         if self.nodes.enriched.any():
-            for disc in [d for d in discontinuity_list if not d.mass_matrix_updated]:
+            for disc in [d for d in Discontinuity.discontinuity_list if not d.mass_matrix_updated]:
                 # Construction de la matrice masse enrichie
                 # --> Au beosin : modifications à faire dans one_dimension_enriched_mass_matrix / assemble
                 self.mass_matrix_enriched.compute_enriched_mass_matrix(self.__topology, self.cells.mass)

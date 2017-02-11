@@ -5,7 +5,7 @@ A class defining the mass matrix 1D (enrichment)
 """
 import numpy as np
 
-from xvof.discontinuity.discontinuity import discontinuity_list
+from xvof.discontinuity.discontinuity import Discontinuity
 from xvof.mass_matrix.mass_matrix_utilities import SymNDArray, lump_matrix
 from xvof.mass_matrix.mass_matrix import MassMatrix
 
@@ -97,7 +97,7 @@ class OneDimensionEnrichedMassMatrix(object):
         Assemble la matrice de masse non condensée après enrichissement
         """
         # Boucle sur les discontinuités
-        for disc in [d for d in discontinuity_list if not d.mass_matrix_updated]:
+        for disc in [d for d in Discontinuity.discontinuity_list if not d.mass_matrix_updated]:
             print "Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(disc.label)
             alpha = disc.position_in_ruptured_element
             # Suppose les éléments voisins triés par position croissante

@@ -6,7 +6,7 @@ A class defining one dimension enriched nodes
 import numpy as np
 
 from xvof.node.one_dimension_node import OneDimensionNode
-from xvof.discontinuity.discontinuity import discontinuity_list
+from xvof.discontinuity.discontinuity import Discontinuity
 
 class OneDimensionEnrichedNode(OneDimensionNode):
     """
@@ -108,7 +108,7 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         Calcule le champ de vitesse vrai à partir des champs classiques et enrichis
         """
         res = np.copy(self._upundemi)
-        for disc in discontinuity_list:
+        for disc in Discontinuity.discontinuity_list:
             res[disc.mask_in_nodes] -= self.upundemi_enriched[disc.mask_in_nodes]
             res[disc.mask_out_nodes] += self.upundemi_enriched[disc.mask_out_nodes]
         return res
@@ -169,7 +169,7 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         Compute the new nodes coordinates after enrichment
         :param delta_t: float, time step
         """
-        for disc in discontinuity_list:
+        for disc in Discontinuity.discontinuity_list:
             self._xtpdt[disc.mask_in_nodes] -= self.upundemi_enriched[disc.mask_in_nodes] * delta_t
             self._xtpdt[disc.mask_out_nodes] += self.upundemi_enriched[disc.mask_out_nodes] * delta_t
 
@@ -184,7 +184,7 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         :param vecteur_pseudo_enrichie: array1D
         """
         connectivity = topology.cells_in_contact_with_node[1:-1]
-        for disc in discontinuity_list:
+        for disc in Discontinuity.discontinuity_list:
             connectivity_in = connectivity[disc.mask_in_nodes[1:-1]].flatten()
             connectivity_out = connectivity[disc.mask_out_nodes[1:-1]].flatten()
             p_classic = vecteur_pression_classique[connectivity_in] + vecteur_pseudo_classique[connectivity_in]
