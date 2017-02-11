@@ -20,6 +20,7 @@ class Discontinuity(object):
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
         self.__mass_matrix_updated = False
+        Discontinuity.__discontinuity_list.append(self)
         print "Building discontinuity number {:d}".format(self.__label)
 
     @classmethod
