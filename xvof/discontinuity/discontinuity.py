@@ -3,6 +3,12 @@
 A module implementing the Discontinuity class
 """
 
+import numpy as np
+import os
+
+# A list of discontonuities
+# modified in rupturetreatment.enrichelement(...append)
+discontinuity_list = []
 
 class Discontinuity(object):
     """
@@ -16,7 +22,25 @@ class Discontinuity(object):
         self.__label = Discontinuity.discontinuity_number
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
+        self.__mass_matrix_updated = False
         print "Building discontinuity number {:d}".format(self.__label)
+
+    @property
+    def position_in_ruptured_element(self):
+        """
+        Accessor on the "alpha" position in ruptured element
+        """
+        alpha = 0.5
+        return alpha
+
+
+    @property
+    def label(self):
+        """
+        Accessor on label variable
+        :return: label
+        """
+        return self.__label
 
     @property
     def mask_in_nodes(self):
@@ -35,3 +59,18 @@ class Discontinuity(object):
         :return: the mask on the nodes "out" the discontinuity
         """
         return self.__mask_out_nodes
+
+    @property
+    def mass_matrix_updated(self):
+        """
+        Accessor on the boolean that indicates if the mass matrix has been computed for this discontinuity
+
+        :return: he boolean that indicates if the mass matrix has been computed for this discontinuity
+        """
+        return self.__mass_matrix_updated
+
+    def hasMassMatrixBeenComputed(self):
+        """
+        Set the __mass_matrix_updated boolean to True
+        """
+        self.__mass_matrix_updated = True

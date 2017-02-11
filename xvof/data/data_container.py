@@ -11,16 +11,17 @@ from xvof.rupturetreatment.enrichelement import EnrichElement
 from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.utilities.singleton import Singleton
 
-numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo", "cells_number"])
+numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
 
-geometrical_props = namedtuple("geometrical_props", ["section", "length"])
+geometrical_props = namedtuple("geometrical_props", ["section"])
 
 material_props = namedtuple("material_props", ["pression_init", "temp_init", "rho_init", "energie_init", "eos",
                                                "damage_treatment", "damage_treatment_value"])
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
-output_props = namedtuple("output_props", ['number_of_images', 'images_dump', 'images_show'])
+output_props = namedtuple("output_props", ['number_of_images', 'cells_numbers','nodes_numbers',
+                                           'images_dump', 'images_show', 'images_time_show'])
 
 
 class DataContainer(object):
@@ -29,13 +30,11 @@ class DataContainer(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, datafile_name="XDATA.xml"):
+    def __init__(self, datafile_path):
         '''
         Constructor
         '''
-        src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-        datafile_path = os.path.normpath(os.path.join(src_dir, datafile_name))
-        print "Opening data file : {:s}".format(datafile_path)
+        print "Opening data file : {:s}".format(os.path.abspath(datafile_path))
         self.__datadoc = et.parse(datafile_path)
         self.numeric = numerical_props(*self.__fillInNumericalProperties())
         self.geometric = geometrical_props(*self.__fillInGeometricalProperties())
@@ -55,8 +54,7 @@ class DataContainer(object):
         a_pseudo = float(self.__datadoc.find('numeric-parameters/quadratic-pseudo').text)
         cfl = float(self.__datadoc.find('numeric-parameters/cfl').text)
         cfl_pseudo = float(self.__datadoc.find('numeric-parameters/cfl-pseudo').text)
-        cells_number = float(self.__datadoc.find('numeric-parameters/number-of-elements').text)
-        return a_pseudo, b_pseudo, cfl, cfl_pseudo, cells_number
+        return a_pseudo, b_pseudo, cfl, cfl_pseudo
 
     def __fillInGeometricalProperties(self):
         """
@@ -66,8 +64,7 @@ class DataContainer(object):
         :rtype: tuple(float, float)
         """
         section = float(self.__datadoc.find('geometry/section').text)
-        length = float(self.__datadoc.find('geometry/length').text)
-        return section, length
+        return (section,)
 
     def __fillInMaterialProperties(self):
         """
@@ -84,14 +81,24 @@ class DataContainer(object):
             eos = MieGruneisen()
         else:
             raise ValueError("Only MieGruneisen's equation of state is available")
-        dmg_treatment_name = str(self.__datadoc.find('matter/damage-treatment/name').text)
-        if dmg_treatment_name == "ImposedPressure":
-            dmg_treatment = ImposedPressure
-        elif dmg_treatment_name == "Enrichment":
-            dmg_treatment = EnrichElement
-        else:
-            raise ValueError("Only 'ImposedPressure' or 'Enrichment' are possible values")
-        dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
+
+        try :
+            dmg_treatment_name = str(self.__datadoc.find('matter/damage-treatment/name').text)
+            if dmg_treatment_name == "ImposedPressure":
+                dmg_treatment = ImposedPressure
+            elif dmg_treatment_name == "Enrichment":
+                dmg_treatment = EnrichElement
+            else:
+                raise ValueError("Only 'ImposedPressure' or 'Enrichment' are possible values")
+        except :
+            dmg_treatment = None
+            print ("No damage treatment will be applied")
+
+        try :
+            dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
+        except :
+            dmg_treatment_value =None
+
         return init_pressure, init_temperature, init_density, init_internal_energy, eos, \
                dmg_treatment, dmg_treatment_value
 
@@ -115,14 +122,26 @@ class DataContainer(object):
         """
         :return: output properties:
             - number of images
+            -cell_number / node_number : cell / node selected for extraction of time history
             - is dump of images required?
-            - is display of images required?
-        :tuple(int, bool, bool)
+            - is display of images required? both for position and time figures
+        :tuple(int, liste de int, liste de int,  bool, bool, bool)
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
+        try:
+            str_cell_numbers = self.__datadoc.find('output/cell-for-time-figure').text
+            cell_numbers = str_cell_numbers.split(',')
+        except:
+            cell_numbers = None
+        try:
+            str_node_numbers = self.__datadoc.find('output/node-for-time-figure').text
+            node_numbers = str_node_numbers.split(',')
+        except:
+            node_numbers = None
         images_dump = self.__datadoc.find('output/dump-images').text.lower() == 'true'
         images_show = self.__datadoc.find('output/show-images').text.lower() == 'true'
-        return number_of_images, images_dump, images_show
+        images_time_show = self.__datadoc.find('output/show-images-time').text.lower() == 'true'
+        return number_of_images, cell_numbers, node_numbers, images_dump, images_show, images_time_show
 
     def hasExternalSolver(self):
         if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:

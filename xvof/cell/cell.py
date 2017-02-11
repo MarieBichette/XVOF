@@ -57,12 +57,13 @@ class Cell(object):
         self._size_t_plus_dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._mass = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._fields_manager = FieldManager()
-        self._fields_manager["Density"] = Field(self._nbr_of_cells, DataContainer().material.rho_init,
-                                                DataContainer().material.rho_init)
-        self._fields_manager["Pressure"] = Field(self._nbr_of_cells, DataContainer().material.pression_init,
-                                                 DataContainer().material.pression_init)
-        self._fields_manager["Energy"] = Field(self._nbr_of_cells, DataContainer().material.energie_init,
-                                               DataContainer().material.energie_init)
+        self._data_path_file = os.path.join(os.path.curdir, "XDATA.xml")
+        self._fields_manager["Density"] = Field(self._nbr_of_cells, DataContainer(self._data_path_file).material.rho_init,
+                                                DataContainer(self._data_path_file).material.rho_init)
+        self._fields_manager["Pressure"] = Field(self._nbr_of_cells, DataContainer(self._data_path_file).material.pression_init,
+                                                 DataContainer(self._data_path_file).material.pression_init)
+        self._fields_manager["Energy"] = Field(self._nbr_of_cells, DataContainer(self._data_path_file).material.energie_init,
+                                               DataContainer(self._data_path_file).material.energie_init)
         self._fields_manager["Pseudo"] = Field(self._nbr_of_cells)
         self._fields_manager["SoundVelocity"] = Field(self._nbr_of_cells)
 

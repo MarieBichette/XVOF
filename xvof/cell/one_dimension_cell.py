@@ -42,7 +42,7 @@ class OneDimensionCell(Cell):
         """
         # pylint: disable=too-many-arguments
         # 7 arguments pour cette m�thode cela semble ok
-        local_cson = cson_new[:] ** 2
+        local_cson = np.copy(cson_new) ** 2
         mask_q = pseudo_new != 0.
         drho = np.abs((rho_new - rho_old) / rho_old)
         dpseudo = (pseudo_new - pseudo_old)
@@ -59,9 +59,10 @@ class OneDimensionCell(Cell):
         Cell.__init__(self, number_of_elements)
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
+        self._data_path_file = os.path.join(os.path.curdir, "XDATA.xml")
         #
-        if DataContainer().hasExternalSolver():
-            self._external_library = DataContainer().getExternalSolverPath()
+        if DataContainer(self._data_path_file).hasExternalSolver():
+            self._external_library = DataContainer(self._data_path_file).getExternalSolverPath()
         else:
             self._external_library = None
         if self._external_library is not None:
@@ -75,7 +76,7 @@ class OneDimensionCell(Cell):
         """
         Compute mass of the cells
         """
-        self._mass = self.size_t * DataContainer().geometric.section * self.density.current_value
+        self._mass = self.size_t * DataContainer(self._data_path_file).geometric.section * self.density.current_value
 
     @property
     def pressure_field(self):
@@ -143,7 +144,7 @@ class OneDimensionCell(Cell):
                                                              self.pressure.new_value[mask],
                                                              self.sound_velocity.new_value[mask])
         else:
-            my_variables = {'EquationOfState': DataContainer().material.eos,
+            my_variables = {'EquationOfState': DataContainer(self._data_path_file).material.eos,
                             'OldDensity': self.density.current_value[mask],
                             'NewDensity': self.density.new_value[mask],
                             'Pressure': self.pressure.current_value[mask] + 2. * self.pseudo.current_value[mask],
@@ -175,7 +176,7 @@ class OneDimensionCell(Cell):
         """
         connectivity = topologie.nodes_belonging_to_cell
         size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:,0]] - vecteur_coord_noeuds[connectivity[:,1]])
-        self._size_t_plus_dt[mask] = size_t_plus_dt[mask]
+        self._size_t_plus_dt[mask] = size_t_plus_dt[mask].flatten()
 
     def compute_new_density(self, mask):
         """
@@ -191,15 +192,15 @@ class OneDimensionCell(Cell):
                                                                       self.density.new_value[mask],
                                                                       self.size_t_plus_dt[mask],
                                                                       self.sound_velocity.current_value[mask],
-                                                                      DataContainer().numeric.a_pseudo,
-                                                                      DataContainer().numeric.b_pseudo)
+                                                                      DataContainer(self._data_path_file).numeric.a_pseudo,
+                                                                      DataContainer(self._data_path_file).numeric.b_pseudo)
 
     def compute_new_time_step(self, mask):
         """
         Computation of the time step in the cells at time t+dt
         """
-        cfl = DataContainer().numeric.cfl
-        cfl_pseudo = DataContainer().numeric.cfl_pseudo
+        cfl = DataContainer(self._data_path_file).numeric.cfl
+        cfl_pseudo = DataContainer(self._data_path_file).numeric.cfl_pseudo
         dt = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, self.density.current_value, self.density.new_value,
                                                 self.size_t_plus_dt, self.sound_velocity.new_value,
                                                 self.pseudo.current_value, self.pseudo.new_value)

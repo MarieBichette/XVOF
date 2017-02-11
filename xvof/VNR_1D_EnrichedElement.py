@@ -6,39 +6,78 @@
 :todo: correct pb of variable time step
 """
 import matplotlib
-
 matplotlib.use('Qt4Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
-from xvof.figure_manager.figure_manager import FigureManager
-from xvof.pressurelaw.constantpressure import ConstantPressure
-from xvof.pressurelaw.twostepspressure import TwoStepsPressure
-from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xvof.data.data_container import DataContainer
-from xvof.mesh.mesh1denriched import Mesh1dEnriched
-from xvof.output_manager.hdf5database import Hdf5Database
-from xvof.output_manager.output_manager import OutputManager
 import time
+import os.path
+
+from xvof.figure_manager.figure_manager      import FigureManager
+from xvof.pressurelaw.constantpressure       import ConstantPressure
+from xvof.rupturecriterion.minimumpressure   import MinimumPressureCriterion
+from xvof.data.data_container                import DataContainer
+from xvof.mesh.mesh1denriched                import Mesh1dEnriched
+from xvof.data.save_time_data                import CellTimeData, NodeTimeData
+from xvof.output_manager.hdf5database        import Hdf5Database
+from xvof.output_manager.output_manager      import OutputManager
 
 # SIMULATION PARAMETERS
-data = DataContainer()
+path = os.path.curdir
+print "Running model for {:s}".format(os.path.normpath(os.path.abspath(path)))
+
+data = DataContainer(os.path.join(path, "XDATA.xml"))
+meshfile = os.path.join(path, "mesh.txt")
+
+
 # TIME MANAGEMENT
 FinalTime = data.time.final_time
 InitialTimeStep = data.time.initial_time_step
-# GEOMETRY
-Length = data.geometric.length
 # MATTER
 InitialPressure = data.material.pression_init
-#  NUMERIC
-NumberOfElements = data.numeric.cells_number
 # LOADING
-LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
-RightBoundaryPressure = ConstantPressure(InitialPressure)
-RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
-RuptureTreatment = data.material.damage_treatment(data.material.damage_treatment_value)
+LeftBoundaryPressure = ConstantPressure(-10.0e+09)
+RightBoundaryPressure = ConstantPressure(0.) #échange du coté du chargement
+
+# LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
+# RightBoundaryPressure = ConstantPressure(InitialPressure)
+RuptureCriterion = MinimumPressureCriterion(.0e+09)
+if data.material.damage_treatment_value is not None:
+    RuptureTreatment = data.material.damage_treatment(data.material.damage_treatment_value)
+else:
+    RuptureTreatment = None
+
 # OUTPUT
 ImagesNumber = data.output.number_of_images
 TheOutputManager = OutputManager()
+
+# Initialization for time figure plot
+cells_for_time_figure = []
+nodes_for_time_figure = []
+
+str_nodes_for_time_figure = data.output.nodes_numbers
+str_cells_for_time_figure = data.output.cells_numbers
+
+try :
+    for cell_number in str_cells_for_time_figure:
+        cells_for_time_figure.append(int(cell_number))
+except TypeError:
+    pass
+
+try :
+    for node_number in str_nodes_for_time_figure:
+        nodes_for_time_figure.append(int(node_number))
+except TypeError:
+    pass
+
+print cells_for_time_figure
+print nodes_for_time_figure
+
+
+#_______________________________________________
+history_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
+history_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
+
 #  =================================================
 
 if __name__ == '__main__':
@@ -52,14 +91,17 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
-    coord_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
-    coord_init[:, 0] = np.linspace(0, Length, NumberOfElements + 1)
-    vit_init = np.zeros([NumberOfElements + 1, 1], dtype=np.float64, order='C')
+    coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,))
+    NumberOfNodes = coord_mesh.shape[0]
+    coord_init = np.zeros([NumberOfNodes, 1], dtype=np.float64, order='C')
+    coord_init[:, 0] = coord_mesh
+    vit_init = np.zeros([NumberOfNodes, 1], dtype=np.float64, order='C')
     my_mesh = Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init)
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
     my_fig_manager = FigureManager(my_mesh, dump=data.output.images_dump, show=data.output.images_show)
+
     if ImagesNumber != 0:
         delta_t_images = FinalTime / ImagesNumber
         my_fig_manager.populate_figs()
@@ -126,8 +168,9 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-        my_mesh.get_ruptured_cells(RuptureCriterion)
-        my_mesh.apply_rupture_treatment(RuptureTreatment)
+        if RuptureTreatment is not None:
+            my_mesh.get_ruptured_cells(RuptureCriterion)
+            my_mesh.apply_rupture_treatment(RuptureTreatment)
         # ---------------------------------------------#
         #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
@@ -153,16 +196,41 @@ if __name__ == '__main__':
         if not data.time.is_time_step_constant:
             dt_staggered = 0.5 * (dt_crit + dt)
             dt = dt_crit
+        else:
+            dt_staggered = dt
         step += 1
         loop_end_time = time.time()
         compute_time += loop_end_time - loop_begin_time
+
         # ---------------------------------------------#
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         TheOutputManager.update(simulation_time, step)
         if simulation_time > t_next_image:
-            my_fig_manager.update_figs("t={:5.4g} us".format(simulation_time / 1.e-06))
-            t_next_image += delta_t_images
+           my_fig_manager.update_figs("t={:5.4g} us".format(simulation_time / 1.e-06))
+           t_next_image += delta_t_images
+
+        # ---------------------------------------------#
+        # CREATION D'UN FICHIER DE SORTIE POUR HISTORIQUE TEMPOREL#
+        # ---------------------------------------------#
+        for item_time_data in history_list:
+            try:
+                item_time_data.add_time_step_fields(simulation_time, my_mesh.density_field, my_mesh.pressure_field,
+                                                     my_mesh.energy_field, my_mesh.artificial_viscosity_field)
+
+            except TypeError:
+                # <!> vitesse définie à t+1/2
+                item_time_data.add_time_step_fields(simulation_time - dt/2, my_mesh.nodes_coordinates,
+                                                    my_mesh.velocity_field)
+
     print "Total time spent in compute operation is : {:15.9g} seconds".format(compute_time)
-    #plt.show()
-    TheOutputManager.finalize()
+    plt.show(block=False)
+
+    for item_time_data in history_list:
+        item_time_data.write_fields_history()
+        item_time_data.close_file()
+
+    # import ipdb; ipdb.set_trace()
+
+    print 'Impression in history data file is finished'
+
