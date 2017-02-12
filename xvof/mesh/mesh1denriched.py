@@ -14,6 +14,7 @@ from xvof.mesh.topology1d import Topology1D
 from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 from xvof.discontinuity.discontinuity import Discontinuity
 from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
+from xvof.utilities.profilingperso import timeit_file
 
 
 class Mesh1dEnriched(object):
@@ -55,7 +56,8 @@ class Mesh1dEnriched(object):
         # Mass Matrix creation
         #----------------------------------------------
         self.mass_matrix = OneDimensionMassMatrix(nbr_nodes)
-        self.mass_matrix_enriched = OneDimensionEnrichedMassMatrix(lumped_matrix_classic_dof=True, lumped_matrix_enr_dof=True)
+        self.mass_matrix_enriched = OneDimensionEnrichedMassMatrix(lumped_matrix_classic_dof=True,
+                                                                   lumped_matrix_enr_dof=True)
 
     def compute_cells_masses(self):
         """ Cell mass computation """
@@ -65,6 +67,7 @@ class Mesh1dEnriched(object):
         """ node mass computation """
         self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, self.nb_nodes_per_cell)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_nodes_velocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
@@ -72,23 +75,22 @@ class Mesh1dEnriched(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        # ddl classiques (loin de l'enrichissement )
-        matrice_masse_classique = self.mass_matrix.mass_matrix_value[self.nodes.enrichment_not_concerned]
-        inv_matrice_classique = inverseMasse(matrice_masse_classique)
-        self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned, inv_matrice_classique)
+        # ddl classiques (loin de l'enrichissement)
+        self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned,
+                                        self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
         if self.nodes.enriched.any():
             for disc in [d for d in Discontinuity.discontinuity_list() if not d.mass_matrix_updated]:
                 # Construction de la matrice masse enrichie
                 # --> Au beosin : modifications à faire dans one_dimension_enriched_mass_matrix / assemble
                 self.mass_matrix_enriched.compute_enriched_mass_matrix(self.__topology, self.cells.mass)
-                self.mass_matrix_enriched.assemble_enriched_mass_matrix("_matrix_classic_dof", "_matrix_enr_dof",
-                                                                        "_matrix_coupling")
-                lump_matrix(self.mass_matrix_enriched.complete_mass_matrix)
+                self.mass_matrix_enriched.assemble_enriched_mass_matrix("__matrix_classic_dof", "__matrix_enr_dof",
+                                                                        "__matrix_coupling")
+                lump_matrix(self.mass_matrix_enriched.enriched_mass_matrix)
                 self.mass_matrix_enriched.print_enriched_mass_matrix()
                 disc.hasMassMatrixBeenComputed()
             # Inverse la matrice masse
-            inv_enriched_mass = inverseMasse(self.mass_matrix_enriched.complete_mass_matrix)
+            inv_enriched_mass = inverseMasse(self.mass_matrix_enriched.enriched_mass_matrix)
             inv_enriched_matrice_classic_dof = inv_enriched_mass[0:4, 0:4]
             inv_enriched_matrice_enr_dof = inv_enriched_mass[4:6,4:6]
             inv_enriched_matrice_couplage = inv_enriched_mass[0:4,4:6]
@@ -99,6 +101,7 @@ class Mesh1dEnriched(object):
             self.nodes.coupled_enrichment_terms_compute_new_velocity(delta_t, inv_enriched_matrice_couplage)
         self.nodes.compute_complete_velocity_field()
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_nodes_coordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
@@ -109,12 +112,14 @@ class Mesh1dEnriched(object):
         self.nodes.compute_new_coodinates(delta_t)
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_cells_sizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
@@ -123,6 +128,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.__topology, self.nodes.upundemi_enriched,
                                                            self.nodes.upundemi)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
@@ -130,6 +136,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_new_density(self.cells.classical)
         self.cells.compute_enriched_elements_new_density()
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_cells_pressures(self):
         """
         Computation of cells pressure at t+dt
@@ -137,6 +144,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_new_pressure(mask=np.logical_and(self.cells.classical, ~self.__ruptured_cells))
         self.cells.compute_enriched_elements_new_pressure()
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
         Computation of cells artificial viscosity at t+dt
@@ -147,6 +155,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_new_pseudo(delta_t, mask=self.cells.classical)
         self.cells.compute_enriched_elements_new_pseudo(delta_t)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
@@ -156,6 +165,7 @@ class Mesh1dEnriched(object):
                                                     self.cells.pressure.new_enr_value, self.cells.pseudo.new_value,
                                                     self.cells.pseudo.new_enr_value)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def increment(self):
         """
         Moving to next time step
@@ -164,6 +174,7 @@ class Mesh1dEnriched(object):
         self.nodes.enriched_nodes_increment()
         self.cells.increment_variables()
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_time_step(self):
         """
         Computation of new time step
@@ -172,6 +183,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_enriched_elements_new_time_step()
         return self.cells.dt.min()
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
@@ -188,6 +200,7 @@ class Mesh1dEnriched(object):
         else:
             self.nodes.apply_pressure(-1, -pressure)
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
@@ -197,6 +210,7 @@ class Mesh1dEnriched(object):
         """
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
+    @timeit_file("/tmp/profil_xvof.txt")
     def apply_rupture_treatment(self, treatment):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
