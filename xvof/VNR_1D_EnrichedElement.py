@@ -15,7 +15,7 @@ import os.path
 
 from xvof.figure_manager.figure_manager      import FigureManager
 from xvof.pressurelaw.constantpressure       import ConstantPressure
-from xvof.rupturecriterion.minimumpressure   import MinimumPressureCriterion
+from xvof.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
 from xvof.data.data_container                import DataContainer
 from xvof.mesh.mesh1denriched                import Mesh1dEnriched
 from xvof.data.save_time_data                import CellTimeData, NodeTimeData
@@ -37,11 +37,9 @@ InitialTimeStep = data.time.initial_time_step
 InitialPressure = data.material.pression_init
 # LOADING
 LeftBoundaryPressure = ConstantPressure(-10.0e+09)
-RightBoundaryPressure = ConstantPressure(0.) #échange du coté du chargement
+RightBoundaryPressure = ConstantPressure(0.)
 
-# LeftBoundaryPressure = TwoStepsPressure(15e+09, InitialPressure, 2.0e-06)
-# RightBoundaryPressure = ConstantPressure(InitialPressure)
-RuptureCriterion = MinimumPressureCriterion(.0e+09)
+RuptureCriterion = HalfRodComparisonCriterion(ruptured_cell_index=500)
 if data.material.damage_treatment_value is not None:
     RuptureTreatment = data.material.damage_treatment(data.material.damage_treatment_value)
 else:
