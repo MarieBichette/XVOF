@@ -53,7 +53,6 @@ class EnrichedField(Field):
         Increment field values
         """
         super(EnrichedField, self).incrementValues()
-        # self.__enr_current = np.copy(self.__enr_future)
         self.__enr_current[:] = self.__enr_future[:]
 
     @property

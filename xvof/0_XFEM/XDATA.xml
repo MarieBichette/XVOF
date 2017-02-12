@@ -33,8 +33,8 @@
         <number-of-images>50</number-of-images>
         <!--<cell-for-time-figure> 500, 501 </cell-for-time-figure>
         <node-for-time-figure> 500, 501 </node-for-time-figure>-->
-        <dump-images>false</dump-images>
+        <dump-images>False</dump-images>
         <show-images>True</show-images>
-        <show-images-time>false</show-images-time>
+        <show-images-time>False</show-images-time>
     </output>
 </data>

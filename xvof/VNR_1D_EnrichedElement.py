@@ -110,14 +110,14 @@ if __name__ == '__main__':
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
     # db1 = Hdf5Database("./simulation_output.hdf5")
-    db2 = Hdf5Database("./simulation_output_2.hdf5")
+    # db2 = Hdf5Database("./simulation_output_2.hdf5")
     # TheOutputManager.register_database_iteration_ctrl("GenericDatabase", db1, 100)
-    TheOutputManager.register_database_time_ctrl("GenericDatabase2", db2, 1e-06)
+    # TheOutputManager.register_database_time_ctrl("GenericDatabase2", db2, 1e-06)
     # TheOutputManager.register_field("NodeCoordinates", my_mesh.nodes, "xt", "GenericDatabase", "GenericDatabase2")
     # TheOutputManager.register_field("NodeStatus", my_mesh.nodes, "enriched", "GenericDatabase", "GenericDatabase2")
     # TheOutputManager.register_field("CellStatus", my_mesh.cells, "enriched", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "GenericDatabase2")
-    TheOutputManager.register_field("EnrichedNodeVelocity", my_mesh.nodes, "umundemi_enriched", "GenericDatabase2")
+    # TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "GenericDatabase2")
+    # TheOutputManager.register_field("EnrichedNodeVelocity", my_mesh.nodes, "umundemi_enriched", "GenericDatabase2")
     # TheOutputManager.register_field("ClassicalPressure", my_mesh.cells.pressure, "new_value", "GenericDatabase")
     # TheOutputManager.register_field("EnrichedPressure", my_mesh.cells.pressure, "new_enr_value", "GenericDatabase")
     # TheOutputManager.register_field("ClassicalDensity", my_mesh.cells.density, "new_value", "GenericDatabase")
@@ -227,8 +227,6 @@ if __name__ == '__main__':
     for item_time_data in history_list:
         item_time_data.write_fields_history()
         item_time_data.close_file()
-
-    # import ipdb; ipdb.set_trace()
 
     print 'Impression in history data file is finished'
 
