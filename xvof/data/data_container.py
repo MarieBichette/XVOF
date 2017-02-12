@@ -100,6 +100,8 @@ class DataContainer(object):
             except AttributeError:
                 raise ValueError("""A damage treatment is specified in XDATA file but"""
                                  """ no damagage treatment value is found!""")
+        else:
+            dmg_treatment_value = None
 
         return (init_pressure, init_temperature, init_density, init_internal_energy, eos,
                 dmg_treatment, dmg_treatment_value)
