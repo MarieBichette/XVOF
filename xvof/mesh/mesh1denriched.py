@@ -29,14 +29,13 @@ class Mesh1dEnriched(object):
             message = ("""A 1D mesh must have one dimensional vector which is not the case"""
                        """ for initial coordinates vector!""")
             raise ValueError(message)
-        self.data_container = DataContainer(os.path.join(os.path.curdir, "XDATA.xml"))
 
         # ---------------------------------------------
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = OneDimensionEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
-                                              section=self.data_container.geometric.section)
+                                              section=DataContainer().geometric.section)
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------

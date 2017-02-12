@@ -31,9 +31,9 @@ class DataContainer(object):
     __metaclass__ = Singleton
 
     def __init__(self, datafile_path):
-        '''
+        """
         Constructor
-        '''
+        """
         print "Opening data file : {:s}".format(os.path.abspath(datafile_path))
         self.__datadoc = et.parse(datafile_path)
         self.numeric = numerical_props(*self.__fillInNumericalProperties())
@@ -46,8 +46,7 @@ class DataContainer(object):
         """
         :return: the numerical properties :
             - linear and quadratic artifical viscosity coefficients;
-            - CFL;
-            - number of cells
+            - CFL and CFL for pseudo;
         :rtype: tuple(float, float, float, int)
         """
         b_pseudo = float(self.__datadoc.find('numeric-parameters/linear-pseudo').text)
@@ -60,8 +59,7 @@ class DataContainer(object):
         """
         :return: the geometric properties:
             - area of the cell;
-            - length of the rod
-        :rtype: tuple(float, float)
+        :rtype: tuple(float,)
         """
         section = float(self.__datadoc.find('geometry/section').text)
         return (section,)
@@ -71,6 +69,8 @@ class DataContainer(object):
         :return: the material properties:
             - initialization pressure, temperature, density and internal energy
             - eos
+            - damage treatment type
+            - damage treatment value
         :rtype: tuple(float, float, float, float, EquationOfStateBase)
         """
         init_pressure = float(self.__datadoc.find('matter/initialization/initial-pressure').text)
@@ -82,7 +82,7 @@ class DataContainer(object):
         else:
             raise ValueError("Only MieGruneisen's equation of state is available")
 
-        try :
+        try:
             dmg_treatment_name = str(self.__datadoc.find('matter/damage-treatment/name').text)
             if dmg_treatment_name == "ImposedPressure":
                 dmg_treatment = ImposedPressure
@@ -90,17 +90,19 @@ class DataContainer(object):
                 dmg_treatment = EnrichElement
             else:
                 raise ValueError("Only 'ImposedPressure' or 'Enrichment' are possible values")
-        except :
+        except AttributeError:
             dmg_treatment = None
-            print ("No damage treatment will be applied")
+            print("No damage treatment will be applied")
 
-        try :
-            dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
-        except :
-            dmg_treatment_value =None
+        if dmg_treatment is not None:
+            try:
+                dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
+            except AttributeError:
+                raise ValueError("""A damage treatment is specified in XDATA file but"""
+                                 """ no damagage treatment value is found!""")
 
-        return init_pressure, init_temperature, init_density, init_internal_energy, eos, \
-               dmg_treatment, dmg_treatment_value
+        return (init_pressure, init_temperature, init_density, init_internal_energy, eos,
+                dmg_treatment, dmg_treatment_value)
 
     def __fillInTimeProperties(self):
         """

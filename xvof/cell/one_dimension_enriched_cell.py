@@ -229,7 +229,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                             self.pressure.new_right_value[mask], self.sound_velocity.new_right_value[mask]))
                 else:
                     # Left part
-                    my_variables = {'EquationOfState': DataContainer(self._data_path_file).material.eos,
+                    my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': self.density.current_left_value[mask],
                                     'NewDensity': self.density.new_left_value[mask],
                                     'Pressure': (self.pressure.current_left_value[mask] +
@@ -247,7 +247,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                             dummy)
                     self._function_to_vanish.eraseVariables()
                     # Right part
-                    my_variables = {'EquationOfState': DataContainer(self._data_path_file).material.eos,
+                    my_variables = {'EquationOfState': DataContainer().material.eos,
                                     'OldDensity': self.density.current_right_value[mask],
                                     'NewDensity': self.density.new_right_value[mask],
                                     'Pressure': (self.pressure.current_right_value[mask] +
@@ -334,7 +334,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                                 rho_t_plus_dt_gauche,
                                                 self.left_size.new_value[self.enriched],
                                                 cson_t_gauche,
-                                                DataContainer(self._data_path_file).numeric.a_pseudo, DataContainer(self._data_path_file).numeric.b_pseudo)
+                                                DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
 
             rho_t_droite = self.density.current_right_value[self.enriched]
             rho_t_plus_dt_droite = self.density.new_right_value[self.enriched]
@@ -344,7 +344,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                                 rho_t_plus_dt_droite,
                                                 self.right_size.new_value[self.enriched],
                                                 cson_t_droite,
-                                                DataContainer(self._data_path_file).numeric.a_pseudo, DataContainer(self._data_path_file).numeric.b_pseudo)
+                                                DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
 
             self.pseudo.new_value[self.enriched] = \
                 from_geometry_to_classic_field(pseudo_gauche, pseudo_droite)
@@ -358,8 +358,8 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         gauche et droite de l'élément enrichi
         """
         if self.enriched.any():
-            cfl = DataContainer(self._data_path_file).numeric.cfl
-            cfl_pseudo = DataContainer(self._data_path_file).numeric.cfl_pseudo
+            cfl = DataContainer().numeric.cfl
+            cfl_pseudo = DataContainer().numeric.cfl_pseudo
             rho_t_gauche = self.density.current_left_value[self.enriched]
             rho_t_plus_dt_gauche = self.density.new_left_value[self.enriched]
             cson_t_plus_dt_gauche = self.sound_velocity.new_left_value[self.enriched]

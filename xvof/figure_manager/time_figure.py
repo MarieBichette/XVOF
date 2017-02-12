@@ -4,14 +4,10 @@
 Classe définissant une figure en fonction du temps
 """
 import matplotlib.pyplot as plt
-
-
 from collections import namedtuple
 
-from xvof.data.data_container import DataContainer
-
-
 Time_Field = namedtuple("Time_Field", ["label","title","application", "colonne_history"])
+
 
 class TimeFigure():
     """
