@@ -1,21 +1,19 @@
-#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-A class defining the mass matrix 1D (enrichment)
+Implementing the OneDimensionEnrichedMassMatrix class
 """
 import numpy as np
 
 from xvof.discontinuity.discontinuity import Discontinuity
 from xvof.mass_matrix.mass_matrix_utilities import SymNDArray, lump_matrix
-from xvof.mass_matrix.mass_matrix import MassMatrix
 
 
 class OneDimensionEnrichedMassMatrix(object):
     """
-    Class for enriched mass matrix
+    Class for 1D enriched mass matrix
     UO    Cell0    U1     Cell1      U2    Cell2    U3
     *------------ * ------ // ------ * ------------ *
-    La matrice est organisée:
+    The matrix is organized as :
         U0    U1    U2    U3    U1 *  U2 *
     U0
     U1
@@ -25,78 +23,75 @@ class OneDimensionEnrichedMassMatrix(object):
     U2 *
     """
     def __init__(self, lumped_matrix_classic_dof=False, lumped_matrix_coupling=False, lumped_matrix_enr_dof=False):
-        self._enriched_mass_matrix = SymNDArray((6,6), dtype=np.float64, order='C')
-        self._enriched_mass_matrix[:, :] = 0.
-        self._lumped_enriched_mass_matrix = SymNDArray((6,6), dtype=np.float64, order='C')
-        self._lumped_enriched_mass_matrix[:, :] = 0.
-        self._matrix_classic_dof = SymNDArray((6,6), dtype=np.float64, order='C')
-        self._matrix_classic_dof_lumped = lumped_matrix_classic_dof
-        self._matrix_coupling = SymNDArray((6,6), dtype=np.float64, order='C')
-        self._matrix_coupling_lumped = lumped_matrix_coupling
-        self._matrix_enr_dof = SymNDArray((6,6), dtype=np.float64, order='C')
-        self._matrix_enr_dof_lumped = lumped_matrix_enr_dof
+        self.__enriched_mass_matrix = SymNDArray((6, 6), dtype=np.float64, order='C')
+        self.__enriched_mass_matrix[:, :] = 0.
+        self.__matrix_classic_dof = SymNDArray((6, 6), dtype=np.float64, order='C')
+        self.__matrix_classic_dof_lumped = lumped_matrix_classic_dof
+        self.__matrix_coupling = SymNDArray((6, 6), dtype=np.float64, order='C')
+        self.__matrix_coupling_lumped = lumped_matrix_coupling
+        self.__matrix_enr_dof = SymNDArray((6, 6), dtype=np.float64, order='C')
+        self.__matrix_enr_dof_lumped = lumped_matrix_enr_dof
 
     def compute_enriched_mass_matrix_classical_dof(self, mass_moins_un, mass_0, mass_1, mass_2, mass_3):
         """
-        Calcul la matrice de masse non condensée après enrichissement pour les degrés de libertés classiques
-        Calcule la partie U0  U1  U2  U3
+        Compute the mass matrix after enrichment for classical degrees of freedom
+        Compute the part   U0  U1  U2  U3
                         U0
                         U1
                         U2
                         U3
         """
-        self._matrix_classic_dof[:,:] = 0.
-        self._matrix_classic_dof[0, 0] = 2. * mass_0 + 6. * mass_moins_un / 2.
-        self._matrix_classic_dof[0, 1] = mass_0
-        self._matrix_classic_dof[1, 1] = 2* mass_0 + 2* mass_1
-        self._matrix_classic_dof[1, 2] = mass_1
-        self._matrix_classic_dof[2, 2] = 2 * mass_1 + 2 * mass_2
-        self._matrix_classic_dof[2, 3] = mass_2
-        self._matrix_classic_dof[3, 3] = 2 * mass_2 + 6. * mass_3 / 2.
-        self._matrix_classic_dof *= 1. / 6.
-        if self._matrix_classic_dof_lumped:
-            self._matrix_classic_dof = lump_matrix(self._matrix_classic_dof)
+        self.__matrix_classic_dof[:, :] = 0.
+        self.__matrix_classic_dof[0, 0] = 2. * mass_0 + 6. * mass_moins_un / 2.
+        self.__matrix_classic_dof[0, 1] = mass_0
+        self.__matrix_classic_dof[1, 1] = 2 * mass_0 + 2 * mass_1
+        self.__matrix_classic_dof[1, 2] = mass_1
+        self.__matrix_classic_dof[2, 2] = 2 * mass_1 + 2 * mass_2
+        self.__matrix_classic_dof[2, 3] = mass_2
+        self.__matrix_classic_dof[3, 3] = 2 * mass_2 + 6. * mass_3 / 2.
+        self.__matrix_classic_dof *= 1. / 6.
+        if self.__matrix_classic_dof_lumped:
+            self.__matrix_classic_dof = lump_matrix(self.__matrix_classic_dof)
 
     def compute_enriched_mass_matrix_enriched_dof(self, mass_0, mass_1, mass_2):
         """
-        Calcul la matrice de masse non condensée après enrichissement pour les dégrés de liberté enrichis
-        Calcule la partie U1* U2*
+        Compute the mass matrix after enrichment for enriched degrees of freedom
+        Compute the part    U1* U2*
                         U1*
                         U2*
         """
-        self._matrix_enr_dof[:, :] = 0.
-        self._matrix_enr_dof[4, 4] = 2. * mass_0 + 2. * mass_1
-        self._matrix_enr_dof[4, 5] = mass_1
-        self._matrix_enr_dof[5, 5] = 2. * mass_1 + 2. * mass_2
-        self._matrix_enr_dof *= 1. / 6.
-        if self._matrix_enr_dof_lumped:
-            self._matrix_enr_dof = lump_matrix(self._matrix_enr_dof)
+        self.__matrix_enr_dof[:, :] = 0.
+        self.__matrix_enr_dof[4, 4] = 2. * mass_0 + 2. * mass_1
+        self.__matrix_enr_dof[4, 5] = mass_1
+        self.__matrix_enr_dof[5, 5] = 2. * mass_1 + 2. * mass_2
+        self.__matrix_enr_dof *= 1. / 6.
+        if self.__matrix_enr_dof_lumped:
+            self.__matrix_enr_dof = lump_matrix(self.__matrix_enr_dof)
 
     def compute_enriched_mass_matrix_couplage(self, mass_0, mass_1, mass_2, alpha):
         """
-        Calcul la matrice de masse non condensée après enrichissement pour les couplages
-        Calcule la partie U1* U2* et U0  U1  U2  U3
+        Compute the mass matrix after enrichment for coupled degrees of freedom
+        Compute the part U1* U2* et U0  U1  U2  U3
                        U0          U1*
                        U1          U2*
                        U2
                        U3
         """
-        self._matrix_coupling[:, :] = 0.
-        self._matrix_coupling[0, 4] = -mass_0
-        self._matrix_coupling[1, 4] = -2 * mass_0 + mass_1 * (0.5 - 4  * alpha)
-        self._matrix_coupling[1, 5] = (1 - 2 * alpha) * mass_1
-        self._matrix_coupling[2, 4] = (1 - 2 * alpha) * mass_1
-        self._matrix_coupling[2, 5] = (7. / 2. - 4. * alpha) * mass_1 + 2. * mass_2
-        self._matrix_coupling[3, 5] = mass_2
-        self._matrix_coupling *= 1. / 6.
-        if self._matrix_coupling_lumped:
-            self._matrix_coupling = lump_matrix(self._matrix_coupling)
+        self.__matrix_coupling[:, :] = 0.
+        self.__matrix_coupling[0, 4] = -mass_0
+        self.__matrix_coupling[1, 4] = -2 * mass_0 + mass_1 * (0.5 - 4 * alpha)
+        self.__matrix_coupling[1, 5] = (1 - 2 * alpha) * mass_1
+        self.__matrix_coupling[2, 4] = (1 - 2 * alpha) * mass_1
+        self.__matrix_coupling[2, 5] = (7. / 2. - 4. * alpha) * mass_1 + 2. * mass_2
+        self.__matrix_coupling[3, 5] = mass_2
+        self.__matrix_coupling *= 1. / 6.
+        if self.__matrix_coupling_lumped:
+            self.__matrix_coupling = lump_matrix(self.__matrix_coupling)
 
     def compute_enriched_mass_matrix(self, topology, cells_mass):
         """
-        Assemble la matrice de masse non condensée après enrichissement
+        Compute the mass matrix after enrichment for every discontinuity
         """
-        # Boucle sur les discontinuités
         for disc in [d for d in Discontinuity.discontinuity_list() if not d.mass_matrix_updated]:
             print "Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(disc.label)
             alpha = disc.position_in_ruptured_element
@@ -122,20 +117,20 @@ class OneDimensionEnrichedMassMatrix(object):
 
     def assemble_enriched_mass_matrix(self, *sub_matrix_names):
         """
-        Assemblage de la matrice masse complète enrichie
+        Assemble the mass matrix after enrichment
         """
-        for name  in sub_matrix_names:
-            self._enriched_mass_matrix += getattr(self, name)
+        for name in sub_matrix_names:
+            self.__enriched_mass_matrix += getattr(self, "_" + self.__class__.__name__ + name)
 
     @property
-    def complete_mass_matrix(self):
+    def enriched_mass_matrix(self):
         """
         Accessor on the complete enriched_mass_matrix
         """
-        return self._enriched_mass_matrix
+        return self.__enriched_mass_matrix
 
     def print_enriched_mass_matrix(self):
-        m = self.complete_mass_matrix
+        m = self.enriched_mass_matrix
         print "Enriched mass matrix :"
         ligne0 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[0,0], m[0,1], m[0,2], m[0,3], m[0,4], m[0,5])
         ligne1 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[1,0], m[1,1], m[1,2], m[1,3], m[1,4], m[1,5])
