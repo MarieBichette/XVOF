@@ -31,8 +31,6 @@
         <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
     </numeric-parameters>
     <output>
-        <number-of-images>150</number-of-images>
-        <dump-images>false</dump-images>
-        <show-images>true</show-images>
+        <number-of-images>15</number-of-images>
     </output>
 </data>
