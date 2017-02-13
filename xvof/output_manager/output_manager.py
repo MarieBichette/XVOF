@@ -65,6 +65,7 @@ class OutputManager(object):
         """
         Close all the database
         """
+        print("Flushing and writing database outputs!")
         for build_infos in self.__db_build_infos.values():
             build_infos.database_object.close()
 
