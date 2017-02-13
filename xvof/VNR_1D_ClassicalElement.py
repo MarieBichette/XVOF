@@ -12,12 +12,11 @@ from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.data.data_container import DataContainer
+from xvof.output_manager.hdf5database import Hdf5Database
+from xvof.output_manager.output_manager import OutputManager
 import time
 
-
-#  =================================================
-#  SIMULATION PARAMETERS                           =
-#  =================================================
+# SIMULATION PARAMETERS
 data = DataContainer()
 # TIME MANAGEMENT
 FinalTime = data.time.final_time
@@ -35,6 +34,7 @@ RuptureCriterion = MinimumPressureCriterion(-7.0e+09)
 RuptureTreatment = ImposedPressure(0.)
 # OUTPUT
 ImagesNumber = data.output.number_of_images
+TheOutputManager = OutputManager()
 #  =================================================
 
 if __name__ == '__main__':
@@ -55,13 +55,24 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
-    my_fig_manager = FigureManager(my_mesh, dump=data.output.images_dump, show=data.output.images_show)
+    TheFigureManager = FigureManager(my_mesh, dump=data.output.images_dump, show=data.output.images_show)
     if ImagesNumber != 0:
-        delta_t_images = FinalTime / ImagesNumber
-        my_fig_manager.populate_figs()
-    else:
-        delta_t_images = FinalTime * 2.0
-    t_next_image = delta_t_images
+        TheFigureManager.set_time_controler(FinalTime / ImagesNumber)
+        TheFigureManager.populate_figs()
+    # ---------------------------------------------#
+    #  OUTPUT MANAGER SETUP                        #
+    # ---------------------------------------------#
+    db1 = Hdf5Database("./simulation_output.hdf5")
+    db2 = Hdf5Database("./simulation_output_2.hdf5")
+    TheOutputManager.register_database_iteration_ctrl("GenericDatabase", db1, 10)
+    TheOutputManager.register_database_time_ctrl("GenericDatabase2", db2, 1e-06)
+    TheOutputManager.register_field("NodeCoordinates", my_mesh.nodes, "xt", "GenericDatabase", "GenericDatabase2")
+    TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "GenericDatabase", "GenericDatabase2")
+    TheOutputManager.register_field("ClassicalPressure", my_mesh.cells.pressure, "new_value", "GenericDatabase")
+    TheOutputManager.register_field("ClassicalDensity", my_mesh.cells.density, "new_value", "GenericDatabase")
+    TheOutputManager.register_field("ClassicalInternalEnergy", my_mesh.cells.energy, "new_value", "GenericDatabase")
+    TheOutputManager.register_field("ClassicalSoundVelocity", my_mesh.cells.sound_velocity, "new_value", "GenericDatabase")
+    TheOutputManager.register_field("ClassicalArtificalViscosity", my_mesh.cells.pseudo, "new_value", "GenericDatabase")
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
@@ -133,8 +144,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
-        if simulation_time > t_next_image:
-            my_fig_manager.update_figs("t={:5.4g} us".format(simulation_time / 1.e-06))
-            t_next_image += delta_t_images
+        TheOutputManager.update(simulation_time, step)
+        TheFigureManager.update(simulation_time, step)
     print "Total time spent in compute operation is : {:15.9g} seconds".format(compute_time)
-    plt.show()
+    #plt.show()
+    TheOutputManager.finalize()
