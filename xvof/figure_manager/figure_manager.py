@@ -30,14 +30,13 @@ class FigureManager(object):
     """
     __metaclass__ = Singleton
 
-    def __init__(self, mesh_instance, dump=False, show=True):
+    def __init__(self, mesh_instance):
         self.__mesh_instance = mesh_instance
         self.__figures_mailles = []
         self.__figures_noeuds = []
         self.__champs_mailles = {}
         self.__champs_noeuds = {}
         self.update_fields()
-        self._show = show
         self.__time_ctrl = None
 
     def set_time_controler(self, deltat_t):
@@ -128,8 +127,7 @@ class FigureManager(object):
             if champ_Y != champ_X:
                 fig = self.create_figure_for_node_field(champ_X, champ_Y)
                 self.__figures_noeuds.append((fig, champ_X, champ_Y))
-        if self._show:
-            plt.show(block=False)
+        plt.show(block=False)
 
     def update_figs(self, title_compl=None):
         """
@@ -144,8 +142,7 @@ class FigureManager(object):
             champ_x_valeurs = self.__champs_noeuds[champ_x]
             champ_y_valeurs = self.__champs_noeuds[champ_y]
             fig.update(champ_x_valeurs, champ_y_valeurs, title_compl)
-        if self._show:
-            plt.show(block=False)
+        plt.show(block=False)
 
     def update(self, time, iteration):
         """
