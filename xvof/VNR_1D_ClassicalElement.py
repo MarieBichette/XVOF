@@ -55,7 +55,7 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
-    TheFigureManager = FigureManager(my_mesh, dump=data.output.images_dump, show=data.output.images_show)
+    TheFigureManager = FigureManager(my_mesh)
     if ImagesNumber != 0:
         TheFigureManager.set_time_controler(FinalTime / ImagesNumber)
         TheFigureManager.populate_figs()
