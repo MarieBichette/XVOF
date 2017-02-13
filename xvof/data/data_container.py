@@ -20,7 +20,7 @@ material_props = namedtuple("material_props", ["pression_init", "temp_init", "rh
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
-output_props = namedtuple("output_props", ['number_of_images', 'images_dump', 'images_show'])
+output_props = namedtuple("output_props", ['number_of_images'])
 
 
 class DataContainer(object):
@@ -101,7 +101,7 @@ class DataContainer(object):
             - initial time step
             - final time
             - is time step constant
-        :return: tuple(float, float, bool)
+        :rtype: tuple(float, float, bool)
         """
         initial_time_step = float(self.__datadoc.find('time-management/initial-time-step').text)
         final_time = float(self.__datadoc.find('time-management/final-time').text)
@@ -115,14 +115,10 @@ class DataContainer(object):
         """
         :return: output properties:
             - number of images
-            - is dump of images required?
-            - is display of images required?
-        :tuple(int, bool, bool)
+        :rtype: tuple(int,)
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
-        images_dump = self.__datadoc.find('output/dump-images').text.lower() == 'true'
-        images_show = self.__datadoc.find('output/show-images').text.lower() == 'true'
-        return number_of_images, images_dump, images_show
+        return (number_of_images,)
 
     def hasExternalSolver(self):
         if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:
