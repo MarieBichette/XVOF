@@ -66,25 +66,27 @@ if __name__ == '__main__':
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    db1 = Hdf5Database("./simulation_output.hdf5")
-    db2 = Hdf5Database("./simulation_output_2.hdf5")
-    TheOutputManager.register_database_iteration_ctrl("GenericDatabase", db1, 10)
-    TheOutputManager.register_database_time_ctrl("GenericDatabase2", db2, 1e-06)
-    TheOutputManager.register_field("NodeCoordinates", my_mesh.nodes, "xt", "GenericDatabase", "GenericDatabase2")
-    TheOutputManager.register_field("NodeStatus", my_mesh.nodes, "enriched", "GenericDatabase", "GenericDatabase2")
-    TheOutputManager.register_field("CellStatus", my_mesh.cells, "enriched", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "GenericDatabase", "GenericDatabase2")
-    TheOutputManager.register_field("EnrichedNodeVelocity", my_mesh.nodes, "umundemi_enriched", "GenericDatabase", "GenericDatabase2")
-    TheOutputManager.register_field("ClassicalPressure", my_mesh.cells.pressure, "new_value", "GenericDatabase")
-    TheOutputManager.register_field("EnrichedPressure", my_mesh.cells.pressure, "new_enr_value", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalDensity", my_mesh.cells.density, "new_value", "GenericDatabase")
-    TheOutputManager.register_field("EnrichedDensity", my_mesh.cells.density, "new_enr_value", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalInternalEnergy", my_mesh.cells.energy, "new_value", "GenericDatabase")
-    TheOutputManager.register_field("EnrichedInternalEnergy", my_mesh.cells.energy, "new_enr_value", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalSoundVelocity", my_mesh.cells.sound_velocity, "new_value", "GenericDatabase")
-    TheOutputManager.register_field("EnrichedSoundVelocity", my_mesh.cells.sound_velocity, "new_enr_value", "GenericDatabase")
-    TheOutputManager.register_field("ClassicalArtificalViscosity", my_mesh.cells.pseudo, "new_value", "GenericDatabase")
-    TheOutputManager.register_field("EnrichedArtificalViscosity", my_mesh.cells.pseudo, "new_enr_value", "GenericDatabase")
+    for db_el in DataContainer().output.databases:
+        db = Hdf5Database(db_el.path)
+        if db_el.iteration_period is not None:
+            TheOutputManager.register_database_iteration_ctrl(db_el.identifier, db, db_el.iteration_period)
+        else:
+            TheOutputManager.register_database_time_ctrl(db_el.identifier, db, db_el.time_period)
+    TheOutputManager.register_field("NodeCoordinates", my_mesh.nodes, "xt", "NodeDb")
+    TheOutputManager.register_field("NodeStatus", my_mesh.nodes, "enriched", "NodeDb")
+    TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "NodeDb")
+    TheOutputManager.register_field("EnrichedNodeVelocity", my_mesh.nodes, "umundemi_enriched", "NodeDb")
+    TheOutputManager.register_field("CellStatus", my_mesh.cells, "enriched", "CellDb")
+    TheOutputManager.register_field("ClassicalPressure", my_mesh.cells.pressure, "new_value", "CellDb")
+    TheOutputManager.register_field("EnrichedPressure", my_mesh.cells.pressure, "new_enr_value", "CellDb")
+    TheOutputManager.register_field("ClassicalDensity", my_mesh.cells.density, "new_value", "CellDb")
+    TheOutputManager.register_field("EnrichedDensity", my_mesh.cells.density, "new_enr_value", "CellDb")
+    TheOutputManager.register_field("ClassicalInternalEnergy", my_mesh.cells.energy, "new_value", "CellDb")
+    TheOutputManager.register_field("EnrichedInternalEnergy", my_mesh.cells.energy, "new_enr_value", "CellDb")
+    TheOutputManager.register_field("ClassicalSoundVelocity", my_mesh.cells.sound_velocity, "new_value", "CellDb")
+    TheOutputManager.register_field("EnrichedSoundVelocity", my_mesh.cells.sound_velocity, "new_enr_value", "CellDb")
+    TheOutputManager.register_field("ClassicalArtificalViscosity", my_mesh.cells.pseudo, "new_value", "CellDb")
+    TheOutputManager.register_field("EnrichedArtificalViscosity", my_mesh.cells.pseudo, "new_enr_value", "CellDb")
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
@@ -159,5 +161,4 @@ if __name__ == '__main__':
         TheOutputManager.update(simulation_time, step)
         TheFigureManager.update(simulation_time, step)
     print "Total time spent in compute operation is : {:15.9g} seconds".format(compute_time)
-    #plt.show()
     TheOutputManager.finalize()
