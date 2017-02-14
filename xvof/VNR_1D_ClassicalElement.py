@@ -68,13 +68,7 @@ if __name__ == '__main__':
             TheOutputManager.register_database_iteration_ctrl(db_el.identifier, db, db_el.iteration_period)
         else:
             TheOutputManager.register_database_time_ctrl(db_el.identifier, db, db_el.time_period)
-    TheOutputManager.register_field("NodeCoordinates", my_mesh.nodes, "xt", "NodeDb")
-    TheOutputManager.register_field("ClassicalNodeVelocity", my_mesh.nodes, "umundemi", "NodeDb")
-    TheOutputManager.register_field("ClassicalPressure", my_mesh.cells.pressure, "new_value", "CellDb")
-    TheOutputManager.register_field("ClassicalDensity", my_mesh.cells.density, "new_value", "CellDb")
-    TheOutputManager.register_field("ClassicalInternalEnergy", my_mesh.cells.energy, "new_value", "CellDb")
-    TheOutputManager.register_field("ClassicalSoundVelocity", my_mesh.cells.sound_velocity, "new_value", "CellDb")
-    TheOutputManager.register_field("ClassicalArtificalViscosity", my_mesh.cells.pseudo, "new_value", "CellDb")
+        TheOutputManager.register_all_fields(my_mesh.cells, my_mesh.nodes, db_el.identifier, db_el.indexes)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
