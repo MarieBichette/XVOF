@@ -33,14 +33,14 @@
     <output>
         <number-of-images>15</number-of-images>
         <database>
-            <identifier>CellDb</identifier>
-            <path>cell_fields.hdf5</path>
-            <iteration-period>100</iteration-period>
+            <identifier>AllFieldsDb</identifier>
+            <path>all_fields.hdf5</path>
+            <iteration-period>10</iteration-period>
         </database>
         <database>
-            <identifier>NodeDb</identifier>
-            <path>node_fields.hdf5</path>
-            <time-period>1.e-07</time-period>
+            <identifier>AroundDiscDb</identifier>
+            <path>around_disc.hdf5</path>
+            <iteration-period>1</iteration-period>
         </database>
     </output>
 </data>
