@@ -20,7 +20,9 @@ material_props = namedtuple("material_props", ["pression_init", "temp_init", "rh
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
-output_props = namedtuple("output_props", ['number_of_images'])
+output_props = namedtuple("output_props", ['number_of_images', 'databases'])
+
+database_props = namedtuple("database_props", ["identifier", "path", "time_period", "iteration_period"])
 
 
 class DataContainer(object):
@@ -118,7 +120,18 @@ class DataContainer(object):
         :rtype: tuple(int,)
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
-        return (number_of_images,)
+        db_prop_l = []
+        for el in self.__datadoc.iterfind('output/database'):
+            identi = el.find('identifier').text
+            database_path = el.find('path').text
+            iteration_period, time_period = None, None
+            if el.find('iteration-period') is not None:
+                iteration_period = int(el.find('iteration-period').text)
+            else:
+                time_period = float(el.find('time-period').text)
+            db_props = database_props(identi, database_path, time_period, iteration_period)
+            db_prop_l.append(db_props)
+        return [number_of_images, db_prop_l]
 
     def hasExternalSolver(self):
         if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:
