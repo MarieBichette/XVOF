@@ -7,7 +7,7 @@ from xvof.utilities.singleton import Singleton
 from xvof.output_manager.outputtimecontroler import OutputTimeControler
 
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields", "time_controler"])
-Field = namedtuple("Field", ["name", "owner", "attr_name", "indices"])
+Field = namedtuple("Field", ["name", "owner", "attr_name", "indexes"])
 
 
 class OutputManager(object):
@@ -35,7 +35,7 @@ class OutputManager(object):
         dbinfos = DatabaseBuildInfos(database_obj, fields=[], time_controler=time_ctrl)
         self.__db_build_infos[database_name] = dbinfos
 
-    def register_field(self, field_name, field_support, field_attr_name, indices=None, database_names=None):
+    def register_field(self, field_name, field_support, field_attr_name, indexes=None, database_names=None):
         """
         Add a field to the manager. Each field will be stored in every database in arguments
         if specified else in every database registered
@@ -43,11 +43,41 @@ class OutputManager(object):
         if database_names is not None:
             for db in database_names:
                 self.__db_build_infos[db].fields.append(
-                    Field(name=field_name, owner=field_support, attr_name=field_attr_name, indices=indices))
+                    Field(name=field_name, owner=field_support, attr_name=field_attr_name, indexes=indexes))
         else:
             for build_infos in self.__db_build_infos.values():
                 build_infos.fields.append(Field(name=field_name, owner=field_support,
-                                                attr_name=field_attr_name, indices=indices))
+                                                attr_name=field_attr_name, indexes=indexes))
+
+    def register_all_fields(self, cells, nodes, database_id, cell_indexes=None, node_indexes=None):
+        """
+        Add all fields to the manager.
+
+        :param cells: cells from which fields must be printed
+        :param nodes: nodes from which fields must be printed
+        :param database_id: identifier of the database
+        :param cell_indexes: indexes of the cells to be printed
+        :param node_indexes: indexes of the nodes to be printed
+        """
+        if cell_indexes is None and node_indexes is None:
+            cell_indexes = slice(0, cells.number_of_cells)
+            node_indexes = slice(0, nodes.number_of_nodes)
+        self.register_field("NodeStatus", nodes, "enriched", database_names=[database_id], indexes=node_indexes)
+        self.register_field("NodeCoordinates", nodes, "xt", database_names=[database_id], indexes=node_indexes)
+        self.register_field("ClassicalNodeVelocity", nodes, "umundemi", database_names=[database_id], indexes=node_indexes)
+        self.register_field("EnrichedNodeVelocity", nodes, "umundemi_enriched", database_names=[database_id], indexes=node_indexes)
+        self.register_field("CellStatus", cells, "enriched", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalPressure", cells.pressure, "new_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedPressure", cells.pressure, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalDensity", cells.density, "new_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedDensity", cells.density, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalInternalEnergy", cells.energy, "new_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedInternalEnergy", cells.energy, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalSoundVelocity", cells.sound_velocity, "new_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedSoundVelocity", cells.sound_velocity, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalArtificalViscosity", cells.pseudo, "new_value", database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedArtificalViscosity", cells.pseudo, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
+
 
     def update(self, time, iteration):
         """
@@ -59,12 +89,12 @@ class OutputManager(object):
             if build_infos.time_controler.db_has_to_be_updated(time, iteration):
                 build_infos.database_object.add_time(time)
                 for field in build_infos.fields:
-                    if field.indices is None:
-                        build_infos.database_object.add_field(field.name, getattr(field.owner, field.attr_name))
-                    else:
+                    # if field.indexes is None:
+                    #     build_infos.database_object.add_field(field.name, getattr(field.owner, field.attr_name))
+                    # else:
+                    if field.indexes is not None:
                         build_infos.database_object.add_field(
-                            field.name, getattr(field.owner, field.attr_name).__getitem__(field.indices))
-
+                            field.name, getattr(field.owner, field.attr_name).__getitem__(field.indexes))
 
     def finalize(self):
         """

@@ -22,7 +22,8 @@ time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_ti
 
 output_props = namedtuple("output_props", ['number_of_images', 'databases'])
 
-database_props = namedtuple("database_props", ["identifier", "path", "time_period", "iteration_period"])
+database_props = namedtuple("database_props",
+                            ["identifier", "path", "time_period", "iteration_period", "cell_indexes", "node_indexes"])
 
 
 class DataContainer(object):
@@ -125,11 +126,16 @@ class DataContainer(object):
             identi = el.find('identifier').text
             database_path = el.find('path').text
             iteration_period, time_period = None, None
+            cell_indexes, node_indexes = None, None
             if el.find('iteration-period') is not None:
                 iteration_period = int(el.find('iteration-period').text)
             else:
                 time_period = float(el.find('time-period').text)
-            db_props = database_props(identi, database_path, time_period, iteration_period)
+            if el.find('cell-indexes') is not None:
+                cell_indexes = [int(ind) for ind in el.find('cell-indexes').text.split(',')]
+            if el.find('node-indexes') is not None:
+                node_indexes = [int(ind) for ind in el.find('node-indexes').text.split(',')]
+            db_props = database_props(identi, database_path, time_period, iteration_period, cell_indexes, node_indexes)
             db_prop_l.append(db_props)
         return [number_of_images, db_prop_l]
 
