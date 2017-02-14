@@ -6,7 +6,6 @@ import os
 from xvof.utilities.singleton import Singleton
 from xvof.output_manager.outputtimecontroler import OutputTimeControler
 
-
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields", "time_controler"])
 Field = namedtuple("Field", ["name", "owner", "attr_name"])
 
@@ -27,7 +26,7 @@ class OutputManager(object):
         time_ctrl = OutputTimeControler(database_name, time_period=delta_t)
         dbinfos = DatabaseBuildInfos(database_obj, fields=[], time_controler=time_ctrl)
         self.__db_build_infos[database_name] = dbinfos
-    
+
     def register_database_iteration_ctrl(self, database_name, database_obj, delta_it):
         """
         Add a database to the manager. The database will be updated every delta_it iterations
@@ -44,7 +43,7 @@ class OutputManager(object):
         if database_names:
             for db in database_names:
                 self.__db_build_infos[db].fields.append(
-                        Field(name=field_name, owner=field_support, attr_name=field_attr_name))
+                    Field(name=field_name, owner=field_support, attr_name=field_attr_name))
         else:
             for build_infos in self.__db.values():
                 build_infos.fields.append(Field(name=field_name, owner=field_support, attr_name=field_attr_name))
@@ -75,5 +74,5 @@ class OutputManager(object):
         for db_name in self.__db_build_infos:
             msg += "|_> " + db_name + os.linesep
             msg += "    Fields : {:s}".format(
-                    ",".join([field.name for field in self.__db_build_infos[db_name].fields])) + os.linesep
+                ",".join([field.name for field in self.__db_build_infos[db_name].fields])) + os.linesep
         return msg
