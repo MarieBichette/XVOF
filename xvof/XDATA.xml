@@ -41,6 +41,8 @@
             <identifier>AroundDiscDb</identifier>
             <path>around_disc.hdf5</path>
             <iteration-period>1</iteration-period>
+            <cell-indexes>500,650</cell-indexes>
+            <!--<node-indexes>200, 400, 600</node-indexes>-->
         </database>
     </output>
 </data>
