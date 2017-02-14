@@ -15,11 +15,17 @@ class OutputTimeControler(object):
             raise ValueError("Only time_period nor iteration_period can be specified for the OutputTimeControler {:s}".format(self))
         self.__time_period = time_period
         self.__iteration_period = iteration_period
-        self.__next_output_time = self.__time_period
-        self.__next_output_iteration = self.__iteration_period
+        self.__next_output_time = None
+        self.__next_output_iteration = None
+        if self.__time_period is not None:
+            self.__next_output_time = self.__time_period
+        if self.__iteration_period is not None:
+            self.__next_output_iteration = self.__iteration_period
 
     def __str__(self):
-        return self.__class__.__name__ + " of the database {:s}".format(self.__id)
+        return (self.__class__.__name__
+                + " of the database {:s} with iteration period : {} or time period {}"
+                .format(self.__id, self.__iteration_period, self.__time_period))
 
     def db_has_to_be_updated(self, time, iteration):
         """
@@ -27,12 +33,10 @@ class OutputTimeControler(object):
         and update the next output time or iteration
         """
         answer = False
-        try:
-            if time > self.__next_output_time:
-                answer = True
-                self.__next_output_time += self.__time_period
-        except TypeError:
-            if iteration > self.__next_output_iteration:
-                answer = True
-                self.__next_output_iteration += self.__iteration_period
+        if self.__next_output_time is not None and time > self.__next_output_time:
+            answer = True
+            self.__next_output_time += self.__time_period
+        if self.__next_output_iteration is not None and iteration > self.__next_output_iteration:
+            answer = True
+            self.__next_output_iteration += self.__iteration_period
         return answer
