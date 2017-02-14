@@ -7,7 +7,7 @@ from xvof.utilities.singleton import Singleton
 from xvof.output_manager.outputtimecontroler import OutputTimeControler
 
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields", "time_controler"])
-Field = namedtuple("Field", ["name", "owner", "attr_name"])
+Field = namedtuple("Field", ["name", "owner", "attr_name", "indices"])
 
 
 class OutputManager(object):
@@ -35,18 +35,19 @@ class OutputManager(object):
         dbinfos = DatabaseBuildInfos(database_obj, fields=[], time_controler=time_ctrl)
         self.__db_build_infos[database_name] = dbinfos
 
-    def register_field(self, field_name, field_support, field_attr_name, *database_names):
+    def register_field(self, field_name, field_support, field_attr_name, indices=None, database_names=None):
         """
         Add a field to the manager. Each field will be stored in every database in arguments
         if specified else in every database registered
         """
-        if database_names:
+        if database_names is not None:
             for db in database_names:
                 self.__db_build_infos[db].fields.append(
-                    Field(name=field_name, owner=field_support, attr_name=field_attr_name))
+                    Field(name=field_name, owner=field_support, attr_name=field_attr_name, indices=indices))
         else:
-            for build_infos in self.__db.values():
-                build_infos.fields.append(Field(name=field_name, owner=field_support, attr_name=field_attr_name))
+            for build_infos in self.__db_build_infos.values():
+                build_infos.fields.append(Field(name=field_name, owner=field_support,
+                                                attr_name=field_attr_name, indices=indices))
 
     def update(self, time, iteration):
         """
@@ -58,7 +59,12 @@ class OutputManager(object):
             if build_infos.time_controler.db_has_to_be_updated(time, iteration):
                 build_infos.database_object.add_time(time)
                 for field in build_infos.fields:
-                    build_infos.database_object.add_field(field.name, getattr(field.owner, field.attr_name))
+                    if field.indices is None:
+                        build_infos.database_object.add_field(field.name, getattr(field.owner, field.attr_name))
+                    else:
+                        build_infos.database_object.add_field(
+                            field.name, getattr(field.owner, field.attr_name).__getitem__(field.indices))
+
 
     def finalize(self):
         """
