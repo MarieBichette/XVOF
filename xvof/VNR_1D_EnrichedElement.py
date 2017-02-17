@@ -16,8 +16,8 @@ from xvof.pressurelaw.twostepspressure import TwoStepsPressure
 from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xvof.data.data_container import DataContainer
 from xvof.mesh.mesh1denriched import Mesh1dEnriched
-from xvof.output_manager.hdf5database import Hdf5Database
-from xvof.output_manager.output_manager import OutputManager
+from xvof.output_manager.outputdatabase import OutputDatabase
+from xvof.output_manager.outputmanager import OutputManager
 import time
 
 # SIMULATION PARAMETERS
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
     for db_el in DataContainer().output.databases:
-        db = Hdf5Database(db_el.path)
+        db = OutputDatabase(db_el.path)
         if db_el.iteration_period is not None:
             TheOutputManager.register_database_iteration_ctrl(db_el.identifier, db, db_el.iteration_period)
         else:
