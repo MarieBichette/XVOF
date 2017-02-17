@@ -31,7 +31,7 @@
         <!--<external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>-->
     </numeric-parameters>
     <output>
-        <number-of-images>15</number-of-images>
+        <number-of-images>150</number-of-images>
         <database>
             <identifier>AllFieldsDb</identifier>
             <path>all_fields.hdf5</path>
