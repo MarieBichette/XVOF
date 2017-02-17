@@ -62,22 +62,24 @@ class OutputManager(object):
         if cell_indexes is None and node_indexes is None:
             cell_indexes = slice(0, cells.number_of_cells)
             node_indexes = slice(0, nodes.number_of_nodes)
-        self.register_field("NodeStatus", nodes, "enriched", database_names=[database_id], indexes=node_indexes)
-        self.register_field("NodeCoordinates", nodes, "xt", database_names=[database_id], indexes=node_indexes)
-        self.register_field("ClassicalNodeVelocity", nodes, "umundemi", database_names=[database_id], indexes=node_indexes)
-        self.register_field("EnrichedNodeVelocity", nodes, "umundemi_enriched", database_names=[database_id], indexes=node_indexes)
-        self.register_field("CellStatus", cells, "enriched", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalPressure", cells.pressure, "new_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("EnrichedPressure", cells.pressure, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalDensity", cells.density, "new_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("EnrichedDensity", cells.density, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalInternalEnergy", cells.energy, "new_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("EnrichedInternalEnergy", cells.energy, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalSoundVelocity", cells.sound_velocity, "new_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("EnrichedSoundVelocity", cells.sound_velocity, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalArtificalViscosity", cells.pseudo, "new_value", database_names=[database_id], indexes=cell_indexes)
-        self.register_field("EnrichedArtificalViscosity", cells.pseudo, "new_enr_value", database_names=[database_id], indexes=cell_indexes)
-
+        self.register_field("NodeStatus", nodes, ("enriched",), database_names=[database_id], indexes=node_indexes)
+        self.register_field("NodeCoordinates", nodes, ("xt",), database_names=[database_id], indexes=node_indexes)
+        self.register_field("ClassicalNodeVelocity", nodes, ("umundemi",), database_names=[database_id], indexes=node_indexes)
+        self.register_field("EnrichedNodeVelocity", nodes, ("umundemi_enriched",), database_names=[database_id], indexes=node_indexes)
+        self.register_field("CellStatus", cells, ("enriched",), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("CellSize", cells, ("size_t_plus_dt",), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("CellLeftSize", cells, ("left_size", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("CellRightSize", cells, ("right_size", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalPressure", cells, ("pressure", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedPressure", cells, ("pressure", "new_enr_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalDensity", cells, ("density", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedDensity", cells, ("density", "new_enr_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalInternalEnergy", cells, ("energy", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedInternalEnergy", cells, ("energy", "new_enr_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalSoundVelocity", cells, ("sound_velocity", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedSoundVelocity", cells, ("sound_velocity", "new_enr_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("ClassicalArtificialViscosity", cells, ("pseudo", "new_value"), database_names=[database_id], indexes=cell_indexes)
+        self.register_field("EnrichedArtificialViscosity", cells, ("pseudo", "new_enr_value"), database_names=[database_id], indexes=cell_indexes)
 
     def update(self, time, iteration):
         """
@@ -89,12 +91,12 @@ class OutputManager(object):
             if build_infos.time_controler.db_has_to_be_updated(time, iteration):
                 build_infos.database_object.add_time(time)
                 for field in build_infos.fields:
-                    # if field.indexes is None:
-                    #     build_infos.database_object.add_field(field.name, getattr(field.owner, field.attr_name))
-                    # else:
                     if field.indexes is not None:
+                        value = getattr(field.owner, field.attr_name[0])
+                        for attr_name in field.attr_name[1:]:
+                            value = getattr(value, attr_name)
                         build_infos.database_object.add_field(
-                            field.name, getattr(field.owner, field.attr_name).__getitem__(field.indexes))
+                            field.name, value.__getitem__(field.indexes), support=field.owner.__class__.__name__)
 
     def finalize(self):
         """
