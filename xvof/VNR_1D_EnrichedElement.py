@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-# -*- coding: iso-8859-15 -*-
 """
 :todo: merge with VNR_1D_ClassicalElement
 :todo: increase perf of external solver library
@@ -19,8 +18,7 @@ from xvof.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
 from xvof.data.data_container                import DataContainer
 from xvof.mesh.mesh1denriched                import Mesh1dEnriched
 from xvof.data.save_time_data                import CellTimeData, NodeTimeData
-from xvof.output_manager.hdf5database        import Hdf5Database
-from xvof.output_manager.output_manager      import OutputManager
+from xvof.output_manager.outputmanager       import OutputManager
 from xvof.output_manager.outputdatabase      import OutputDatabase
 
 # SIMULATION PARAMETERS
@@ -201,7 +199,7 @@ if __name__ == '__main__':
                                                      my_mesh.energy_field, my_mesh.artificial_viscosity_field)
 
             except TypeError:
-                # <!> vitesse définie à t+1/2
+                # <!> velocity is defined at t+1/2
                 item_time_data.add_time_step_fields(simulation_time - dt/2, my_mesh.nodes_coordinates,
                                                     my_mesh.velocity_field)
 
