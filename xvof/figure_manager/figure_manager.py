@@ -9,11 +9,9 @@ Classe définissant le gestionnaire d'images
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import namedtuple
-from os import makedirs
-from os.path import exists
-
 from physic_figure import PhysicFigure
 from xvof.utilities.singleton import Singleton
+from xvof.output_manager.outputtimecontroler import OutputTimeControler
 
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
@@ -25,20 +23,37 @@ CellPositionField = Field("Position [m]", "Champ de position", 0.0, 0.04, "./RES
 NodePositionField = Field("Position [m]", "Champ de position", 0.0 , 0.04, "./RESULTATS/NodePositionField")
 NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -1000.0 , 1000.0, "./RESULTATS/NodeVelocityField")
 
+
 class FigureManager(object):
     """
     Gestionnaire de figures
     """
     __metaclass__ = Singleton
 
-    def __init__(self, mesh_instance, dump=False, show=True):
+    def __init__(self, mesh_instance):
         self.__mesh_instance = mesh_instance
         self.__figures_mailles = []
         self.__figures_noeuds = []
         self.__champs_mailles = {}
         self.__champs_noeuds = {}
         self.update_fields()
-        self._show = show
+        self.__time_ctrl = None
+
+    def set_time_controler(self, deltat_t):
+        """
+        The figures will be updated every delta_t seconds
+
+        :param deltat_t: interval between two figures
+        """
+        self.__time_ctrl = OutputTimeControler(identifier="FigureManager", time_period=deltat_t)
+
+    def set_iteration_controler(self, deltat_it):
+        """
+        The figures will be updated every delta_it iterations
+
+        :param deltat_it: interval between two figures
+        """
+        self.__time_ctrl = OutputTimeControler(identifier="FigureManager", iteration_period=deltat_it)
 
     def update_fields(self):
         """ MAJ des champs par appel des propriétés du maillage"""
@@ -112,8 +127,7 @@ class FigureManager(object):
             if champ_Y != champ_X:
                 fig = self.create_figure_for_node_field(champ_X, champ_Y)
                 self.__figures_noeuds.append((fig, champ_X, champ_Y))
-        if self._show:
-            plt.show(block=False)
+        plt.show(block=False)
 
     def update_figs(self, title_compl=None):
         """
@@ -128,5 +142,14 @@ class FigureManager(object):
             champ_x_valeurs = self.__champs_noeuds[champ_x]
             champ_y_valeurs = self.__champs_noeuds[champ_y]
             fig.update(champ_x_valeurs, champ_y_valeurs, title_compl)
-        if self._show:
-            plt.show(block=False)
+        plt.show(block=False)
+
+    def update(self, time, iteration):
+        """
+        If the current time given in argument is above the time of next output then
+        the manager asks each of its database to save fields. It's the same for
+        a current iteration above the iteration of next output
+        """
+        if self.__time_ctrl is not None:
+            if self.__time_ctrl.db_has_to_be_updated(time, iteration):
+                self.update_figs("t={:5.4g} us".format(time / 1.e-06))

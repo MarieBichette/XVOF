@@ -20,8 +20,11 @@ material_props = namedtuple("material_props", ["pression_init", "temp_init", "rh
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
-output_props = namedtuple("output_props", ['number_of_images', 'cells_numbers','nodes_numbers',
-                                           'images_dump', 'images_show', 'images_time_show'])
+output_props = namedtuple("output_props", ['number_of_images', 'cells_numbers','nodes_numbers', 
+                                           'images_time_show', 'databases'])
+
+database_props = namedtuple("database_props",
+                            ["identifier", "path", "time_period", "iteration_period", "cell_indexes", "node_indexes"])
 
 
 class DataContainer(object):
@@ -112,7 +115,7 @@ class DataContainer(object):
             - initial time step
             - final time
             - is time step constant
-        :return: tuple(float, float, bool)
+        :rtype: tuple(float, float, bool)
         """
         initial_time_step = float(self.__datadoc.find('time-management/initial-time-step').text)
         final_time = float(self.__datadoc.find('time-management/final-time').text)
@@ -124,12 +127,12 @@ class DataContainer(object):
 
     def __fillInOutputProperties(self):
         """
-        :return: output properties:
+        :return: 
             - number of images
-            -cell_number / node_number : cell / node selected for extraction of time history
-            - is dump of images required?
-            - is display of images required? both for position and time figures
-        :tuple(int, liste de int, liste de int,  bool, bool, bool)
+            - cell_number / node_number : cell / node selected for extraction of time history
+            - is display of times figures required? 
+            - list of output database properties
+        :tuple(int, [int], [int], bool, [database_props])
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
         try:
@@ -142,10 +145,25 @@ class DataContainer(object):
             node_numbers = str_node_numbers.split(',')
         except:
             node_numbers = None
-        images_dump = self.__datadoc.find('output/dump-images').text.lower() == 'true'
-        images_show = self.__datadoc.find('output/show-images').text.lower() == 'true'
         images_time_show = self.__datadoc.find('output/show-images-time').text.lower() == 'true'
-        return number_of_images, cell_numbers, node_numbers, images_dump, images_show, images_time_show
+        # Databases
+        db_prop_l = []
+        for el in self.__datadoc.iterfind('output/database'):
+            identi = el.find('identifier').text
+            database_path = el.find('path').text
+            iteration_period, time_period = None, None
+            cell_indexes, node_indexes = None, None
+            if el.find('iteration-period') is not None:
+                iteration_period = int(el.find('iteration-period').text)
+            else:
+                time_period = float(el.find('time-period').text)
+            if el.find('cell-indexes') is not None:
+                cell_indexes = [int(ind) for ind in el.find('cell-indexes').text.split(',')]
+            if el.find('node-indexes') is not None:
+                node_indexes = [int(ind) for ind in el.find('node-indexes').text.split(',')]
+            db_props = database_props(identi, database_path, time_period, iteration_period, cell_indexes, node_indexes)
+            db_prop_l.append(db_props)
+        return number_of_images, cell_numbers, node_numbers, images_time_show, db_prop_l
 
     def hasExternalSolver(self):
         if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:

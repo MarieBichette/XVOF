@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 
 
-class Hdf5Database(object):
+class OutputDatabase(object):
     """
     A class to store simulation fields in an hdf5 database
     """
@@ -21,16 +21,18 @@ class Hdf5Database(object):
         Create an hdf5 group containing all fields for the current time
         """
         self.__db.flush()  # Flushing to print preceding time steps
-        self.__current_group = self.__db.create_group("sav_{:04d}".format(self.__nb_sav))
-        self.__current_group.attrs['time'] = time
+        self.__current_group = self.__db.create_group("{:9.8g}".format(time))
         self.__nb_sav += 1
 
-    def add_field(self, field_name, values):
+    def add_field(self, field_name, values, **kwargs):
         """
-        Create a dataset corresponding to field_name and storing the values
+        Create a dataset corresponding to field_name and storing the values. All extra keywords arguments
+        are stored as attributes of the dataset
         """
         ds = self.__current_group.create_dataset(field_name, values.shape, np.result_type(values))
         ds[...] = values
+        for k, v in kwargs.items():
+            ds.attrs[k] = v
 
     def close(self):
         """

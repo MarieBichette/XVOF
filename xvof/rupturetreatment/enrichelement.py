@@ -59,6 +59,6 @@ class EnrichElement(RuptureTreatment):
                     print "==> Out nodes : ", np.nonzero(out_nodes)
                     Discontinuity(in_nodes, out_nodes)
                     cells.classical[cell_tb_enr] = False
-                    cells.right_size.new_value = (1. - self.__position_rupture) * cells.size_t_plus_dt
-                    cells.left_size.new_value = self.__position_rupture * cells.size_t_plus_dt
+                    cells.right_size.new_value[cell_tb_enr] = (1. - self.__position_rupture) * cells.size_t_plus_dt[cell_tb_enr]
+                    cells.left_size.new_value[cell_tb_enr] = self.__position_rupture * cells.size_t_plus_dt[cell_tb_enr]
         ruptured_cells[:] = False
