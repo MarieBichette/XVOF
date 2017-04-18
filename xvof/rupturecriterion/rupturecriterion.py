@@ -1,18 +1,16 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe de base abstraite (interface) définissant un critère de rupture
+Implementing the RuptureCriterion abstract base class
 """
 from abc import ABCMeta, abstractmethod
 
 
 class RuptureCriterion(object):
     """
-    Une interface pour les critères de rupture
+    An abstract base class for rupture criteria
     """
-    # Nécessaire pour spécifier l'interface
     __metaclass__ = ABCMeta
-    #
 
     def __init__(self):
         pass
@@ -20,7 +18,8 @@ class RuptureCriterion(object):
     @abstractmethod
     def checkCriterion(self, cells, *args, **kwargs):
         """
-        Vérification du critère de rupture sur les mailles
-        passées en argument
+        Check of the rupture criterion on the cells in arguments
+
+        :param cells: cells on which to check the criterion
         """
         pass

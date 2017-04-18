@@ -21,7 +21,7 @@ class OutputDatabase(object):
         Create an hdf5 group containing all fields for the current time
         """
         self.__db.flush()  # Flushing to print preceding time steps
-        self.__current_group = self.__db.create_group("{:9.8g}".format(time))
+        self.__current_group = self.__db.create_group("{:g}".format(time))
         self.__nb_sav += 1
 
     def add_field(self, field_name, values, **kwargs):

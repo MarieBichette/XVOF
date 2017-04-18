@@ -37,11 +37,24 @@ class Topology1D(Topology):
     """
     def __init__(self, nbr_of_nodes, nbr_of_cells):
         Topology.__init__(self, nbr_of_nodes, nbr_of_cells)
+        self._nbr_of_nodes = nbr_of_nodes
         self._nodes_belonging_to_cell = np.ndarray(shape=(nbr_of_cells, 2), dtype=np.int64, order='C')
         self._nodes_belonging_to_cell[:, :] = -1
         self._cells_in_contact_with_node = np.ndarray(shape=(nbr_of_nodes, 2), dtype=np.int64, order='C')
         self._cells_in_contact_with_node[:, :] = -1
         self._generateMesh(nbr_of_cells)
+
+    def addCellInContactWithNode(self, ind_node, ind_cell):
+        '''
+        Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
+        avec le noeud d'indice 'ind_node'
+        '''
+        Topology.addCellInContactWithNode(self,ind_node, ind_cell)
+        for ind in range(self._nbr_of_nodes):
+            cells_in_contact_with_node_number = 0
+            cells_in_contact_with_node_number += np.size(self.getCellsInContactWithNode(ind))
+            if cells_in_contact_with_node_number > 2:
+                raise SystemExit
 
     def _generateMesh(self, nbr_of_cells):
         '''

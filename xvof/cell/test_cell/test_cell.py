@@ -5,6 +5,7 @@ Cell module unit tests
 """
 import numpy as np
 import unittest
+import mock
 
 from xvof.cell.cell import Cell
 from xvof.mesh.topology1d import Topology1D
@@ -32,6 +33,7 @@ class CellTest(unittest.TestCase):
         cell_coord = Cell.get_coordinates(3, my_topo, nodes.xt)
         np.testing.assert_allclose(cell_coord, np.array([[-0.2], [0.15], [0.275]]))
 
+
     def test_increment_variables(self):
         """
         Test of cell.increment_variables method
@@ -47,6 +49,12 @@ class CellTest(unittest.TestCase):
         np.testing.assert_allclose(self.my_cell.sound_velocity.current_value, np.array([440., 210, -110]))
         np.testing.assert_allclose(self.my_cell.energy.current_value, np.array([-1.0e+06, 0.5e+05, 1.5e+05]) )
         np.testing.assert_allclose(self.my_cell.size_t, np.array([0.015, 0.01, 0.05]))
+
+    def test_str(self):
+        """Teste la réponse de __str__ de la classe Cell"""
+        message = self.my_cell.__str__()
+        answer = "Number of cells: 3"
+        self.assertEqual(message.split(), answer.split())
 
     def test_print_infos(self):
         """

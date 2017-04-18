@@ -11,12 +11,14 @@ from xvof.cell.one_dimension_cell import OneDimensionCell as Cell
 from xvof.mesh.topology1d import Topology1D
 from xvof.data.data_container import geometrical_props
 from xvof.fields.field import Field
+from xvof.data.data_container import DataContainer
 
 
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
         self.test_cell = Cell(3)
+        self.test_datacontainer = DataContainer(self.test_cell._data_path_file)
 
     def tearDown(self):
         pass
@@ -134,6 +136,57 @@ class OneDimensionCellTest(unittest.TestCase):
                 (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
                 - self.test_cell.energy.current_value)
         np.testing.assert_allclose(func, [0., 0., 0.])
+
+    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
+    @mock.patch.object(DataContainer, "numeric", new_callable= mock.PropertyMock)
+    def test_compute_new_pseudo(self):
+        """   Test of compute_new_pseudo     """
+        mask = [True, True, True]
+        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
+        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
+        self.test_cell.sound_velocity.current_value = np.array([0., 0., 0.])
+        self.test_datacontainer.numeric.a_pseudo = 0.2
+        self.test_datacontainer.numeric.b_pseudo = 0.0
+        self.test_cell.pseudo.new_value[mask] = Cell.compute_pseudo(1.0e+06, self.test_cell.density.current_value[mask],
+                                                                      self.test_cell.density.new_value[mask],
+                                                                      self.test_cell.size_t_plus_dt[mask],
+                                                                      self.test_cell.sound_velocity.current_value[mask],
+                                                                      self.test_datacontainer.numeric.a_pseudo,
+                                                                      self.test_datacontainer.numeric.b_pseudo)
+        np.testing.assert_allclose(self.test_cell.pseudo.new_value[mask], np.array([0., 0., 0.]))
+
+
+    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
+    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
+    @mock.patch.object(DataContainer, "numeric", new_callable= mock.PropertyMock)
+    @mock.patch.object(Cell, "size_t_plus_dt", new_callable = mock.PropertyMock, return_value = np.array([1.]))
+    def test_compute_new_time_step(self, mock_sizetpdt):
+        """Test de compute_new_time_step"""
+        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
+        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
+        self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
+        self.test_cell.pseudo.current_value = np.array([0., 0., 0.])
+        self.test_cell.pseudo.new_value = np.array([0., 0., 0.])
+        cfl = self.test_datacontainer.numeric.cfl
+        cfl_pseudo = self.test_datacontainer.numeric.cfl_pseudo
+        mask = np.array([False, True, False])
+        self.test_cell.compute_new_time_step(mask)
+        # compute_time_step(cfl, cfl_pseudo, self.test_cell.density.current_value, self.test_cell.density.new_value,
+        #                                    self.test_cell.size_t_plus_dt, self.test_cell.sound_velocity.new_value,
+        #                                    self.test_cell.pseudo.current_value, self.test_cell.pseudo.new_value)
+        np.testing.assert_array_equal(self.test_cell._dt, 4.) #calcul à faire
+
+    @mock.patch.object(Cell, "pressure", new_callable = mock.PropertyMock)
+    def test_impose_pressure(self, mock_pressure):
+        """Test de impose_pressure"""
+        self.test_cell.pressure.new_value = np.array([1., 2., 3.])
+        self.test_cell.impose_pressure(1, 4.)
+        np.testing.assert_array_equal(self.test_cell.pressure.new_value, np.array([1., 4., 3.]))
 
 
 if __name__ == "__main__":
