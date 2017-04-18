@@ -2,9 +2,10 @@
 # -*- coding: iso-8859-1 -*-
 """
 A class defining one dimension enriched nodes
+
 """
 import numpy as np
-
+from xvof.node.node import Node
 from xvof.node.one_dimension_node import OneDimensionNode
 from xvof.discontinuity.discontinuity import Discontinuity
 
