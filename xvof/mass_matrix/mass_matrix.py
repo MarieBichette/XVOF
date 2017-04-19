@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 Implementing the MassMatrix class
@@ -16,7 +17,7 @@ def compute_wilkins_mass_matrix(topology, cell_mass_vector, node_number_by_cell_
     :type topology: Topology
     :type cell_mass_vector: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
     :type node_number_by_cell_vector: numpy.array([nbr_of_nodes, 1], dtype=np.int64, order='C')
-    """
+        """
     nbr_nodes = len(topology.cells_in_contact_with_node)
     mass_matrix = np.zeros([nbr_nodes, 1], dtype=np.float64, order='C')
     for ind_node in xrange(nbr_nodes):

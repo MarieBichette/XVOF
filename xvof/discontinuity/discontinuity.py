@@ -1,7 +1,10 @@
+#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 A module implementing the Discontinuity class
 """
+
+from xvof.data.data_container import DataContainer
 
 
 class Discontinuity(object):
@@ -34,7 +37,7 @@ class Discontinuity(object):
         """
         Accessor on the "alpha" position in ruptured element
         """
-        alpha = 0.5
+        alpha = DataContainer().material.damage_treatment_value
         return alpha
 
 
@@ -69,7 +72,7 @@ class Discontinuity(object):
         """
         Accessor on the boolean that indicates if the mass matrix has been computed for this discontinuity
 
-        :return: he boolean that indicates if the mass matrix has been computed for this discontinuity
+        :return: the boolean that indicates if the mass matrix has been computed for this discontinuity
         """
         return self.__mass_matrix_updated
 

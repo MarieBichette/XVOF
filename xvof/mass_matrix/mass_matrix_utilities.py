@@ -6,6 +6,7 @@ un module pour des utilitaires numpy
 import numpy as np
 from numpy.linalg import inv
 
+
 def multiplicationMasse(matrice, vecteur) :
     """
     Fonction pour faire le produit matriciel matrice * vecteur adapté pour la matrice masse sous forme de vecteur
@@ -29,14 +30,17 @@ def multiplicationMasse(matrice, vecteur) :
 
 def inverseMasse(matrice):
     """
-    Fonction pour faire inverse lamatrice masse, qu'elle soit sous forme de vecteur ou de matrice
+    MassMatrix de type MassMatrix
+    Fonction pour faire inverse la matrice masse, qu'elle soit sous forme de vecteur ou de matrice
     """
+
     if len(matrice.shape) == 1 or matrice.ndim == 2 and 1 in matrice.shape:
         result = np.zeros([len(matrice), 1])
         for ind_node in xrange(len(matrice)):
             result[ind_node] = 1. / matrice[ind_node]
-    else : #la matrice est unevraie matrice (dim >=2)
+    else : #la matrice est une vraie matrice (dim >=2)
         result = inv(matrice)
+    print "Mass matrix has been inverted"
     return result
 
 def lump_matrix(matrix):

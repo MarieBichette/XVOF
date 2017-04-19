@@ -161,7 +161,6 @@ class Node(object):
         message += "==> force = {}".format(self.force[index])
         print message
 
-
     def compute_new_coodinates(self, delta_t):
         """
         Calcul de la coordonnée au temps t+dt

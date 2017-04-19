@@ -101,7 +101,7 @@ class OneDimensionEnrichedNodeTest(unittest.TestCase):
     def test_velocity_field(self, mock_up_enriched):
         self.my_node_enr6._upundemi = np.array([1., 1., 1., 1., 1., 1.])
         res_test = self.my_node_enr6.velocity_field
-        # import ipdb ; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         np.testing.assert_array_almost_equal(res_test, np.array([1., 1., 0., 2., 1., 1.]))
 
 

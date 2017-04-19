@@ -9,6 +9,7 @@ from xvof.cell import OneDimensionCell
 from xvof.data.data_container import DataContainer
 from xvof.fields.enrichedfield import from_geometry_to_classic_field, from_geometry_to_enrich_field
 from xvof.fields.field import Field
+from xvof.discontinuity.discontinuity import Discontinuity
 
 
 class OneDimensionEnrichedCell(OneDimensionCell):
@@ -20,13 +21,19 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         super(OneDimensionEnrichedCell, self).__init__(number_of_elements)
         #
         self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
-        #
-        self._pos_disc = 0.5  #  La rupture est au milieu de l'élément
         self._fields_manager["taille_gauche"] = Field(number_of_elements, 0., 0.)
         self._fields_manager["taille_droite"] = Field(number_of_elements, 0., 0.)
         print self._fields_manager
         self._classical = np.empty(self.number_of_cells, dtype=np.bool, order='C')
         self._classical[:] = True
+
+        if len(Discontinuity.discontinuity_list()) < 2:
+            try:
+                self._pos_disc = Discontinuity.discontinuity_list()[0].position_in_ruptured_element
+            except IndexError:
+                self._pos_disc = DataContainer().material.damage_treatment_value
+        else:
+            raise ValueError("Don't know how to deal with several discontinuities")
 
     @property
     def classical(self):
@@ -125,6 +132,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         :return: coordinates of the left part of enriched elements
         :rtype: numpy.array
         """
+        # Attention, on ne passe jamais dans cette fonction dans le code
         connectivity = topology.nodes_belonging_to_cell
         vec_min = min(nodes_coord[connectivity[self.enriched]])
         vec_coord = vec_min + self.left_size[self.enriched] / 2.
@@ -135,6 +143,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         :return: coordinates of the right part of enriched elements
         :rtype: numpy.array
         """
+        # Attention, on ne passe jamais dans cette fonction dans le code
         connectivity = topology.nodes_belonging_to_cell
         vec_max = max(nodes_coord[connectivity[self.enriched]])
         vec_coord = vec_max - self.right_size[self.enriched] / 2.
@@ -294,10 +303,18 @@ class OneDimensionEnrichedCell(OneDimensionCell):
             u2s = vecteur_vitesse_enr_noeud[connectivity[:, 1]]
             u1 = vecteur_vitesse_noeuds[connectivity[:, 0]]
             u1s = vecteur_vitesse_enr_noeud[connectivity[:, 0]]
+            # self.left_size.new_value[self.enriched] = (self.left_size.current_value[self.enriched] +
+            #                                            (0.5 * (u2 - u2s - u1 + u1s)) * time_step).flatten()
+            # self.right_size.new_value[self.enriched] = (self.right_size.current_value[self.enriched] +
+            #                                            (0.5 * (u2 + u2s - u1 - u1s)) * time_step).flatten()
+            # import ipdb ; ipdb.set_trace()
+            ug = (u2 - u2s) * self._pos_disc + (u1 - u1s) * (1. - self._pos_disc)
+            ud = (u2 + u2s) * self._pos_disc + (u1 + u1s) * (1. - self._pos_disc)
+
             self.left_size.new_value[self.enriched] = (self.left_size.current_value[self.enriched] +
-                                                       (0.5 * (u2 - u2s - u1 + u1s)) * time_step).flatten()
+                                                       (ug - u1 + u1s) * time_step)
             self.right_size.new_value[self.enriched] = (self.right_size.current_value[self.enriched] +
-                                                       (0.5 * (u2 + u2s - u1 - u1s)) * time_step).flatten()
+                                                        (u2 + u2s - ud) * time_step)
 
     def compute_enriched_elements_new_density(self):
         """
@@ -376,4 +393,5 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                                                       self.right_size.new_value[self.enriched], cson_t_plus_dt_droite,
                                                       pseudo_t_droite, pseudo_t_plus_dt_droite)
 
-            self._dt[self.enriched] = dt_g + dt_d  # Bizarre --> A vérifier
+            # self._dt[self.enriched] = dt_g + dt_d  # Bizarre --> A vérifier
+            self._dt[self.enriched] = min(dt_g, dt_d)

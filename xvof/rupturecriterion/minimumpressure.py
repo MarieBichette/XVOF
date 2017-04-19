@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 Implementation of MinimumPressureCriterion class

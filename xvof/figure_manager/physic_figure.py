@@ -19,6 +19,7 @@ class PhysicFigure(object):
         self._ax.set_title(titre)
         self._fig_number = 1
         self._title = titre
+        self._fig.canvas.draw()
         matplotlib.pyplot.show(block=False)
 
     def set_y_limit(self, val_min=0., val_max=1.0):
@@ -40,6 +41,7 @@ class PhysicFigure(object):
             self._line.set_ydata(Y)
         if(title_comp is not None):
             self._ax.set_title(self._title + ' ' + title_comp)
+
         self._ax.draw_artist(self._ax.patch)
         self._ax.draw_artist(self._line)
         self._fig.canvas.update()

@@ -47,7 +47,7 @@ class Cell(object):
             if topology.dimension == 2:
                 vec_coord[ielem][1] = y_coord[nodes_index].mean()
             if topology.dimension == 3:
-                vec_coord[ielem][2] =  z_coord[nodes_index].mean()
+                vec_coord[ielem][2] = z_coord[nodes_index].mean()
         return vec_coord
 
     def __init__(self, nbr_of_cells):

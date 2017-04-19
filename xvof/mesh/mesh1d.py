@@ -49,7 +49,7 @@ class Mesh1d(object):
         #----------------------------------------------
         # Mass Matrix creation
         #----------------------------------------------
-        self.mass_matrix = OneDimensionMassMatrix()
+        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes)
 
     def compute_cells_masses(self):
         """ Cell mass computation """
@@ -86,7 +86,7 @@ class Mesh1d(object):
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    def compute_new_cells_sizes(self):
+    def compute_new_cells_sizes(self, dt):
         """
         Computation of cells sizes at t+dt
         """

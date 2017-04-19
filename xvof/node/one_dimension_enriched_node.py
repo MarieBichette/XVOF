@@ -11,10 +11,6 @@ from xvof.discontinuity.discontinuity import Discontinuity
 class OneDimensionEnrichedNode(OneDimensionNode):
     """
     A class for enriched nodes in 1d case.
-
-    @todo :
-    - Do we need to compute the mass of the node in case of enrichment when discontinuity is not at the middle of
-    the cell?
     """
     # pylint: disable-msg=R0902
     # 9 attributes : seams of ok here
@@ -142,11 +138,6 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         """
         # utilise un mask et une matrice masse particulière pour garder la forme de compute_new_velocity classique.
         # permettra de gérer plusieurs discontinuités
-
-        # Ancien : Calcul du vecteur vitesse enrichie des noeuds enrichis
-        #self._upundemi_enriched[self.enriched] = \
-        # self.force_enriched[self.enriched] * self.invmasse[self.enriched] * delta_t + self.umundemi_enriched[self.enriched]
-
         self._upundemi_enriched[mask] = \
             np.dot(inv_matrice_masse , self.force_enriched[mask]) * delta_t + self.umundemi_enriched[mask]
 
@@ -176,7 +167,7 @@ class OneDimensionEnrichedNode(OneDimensionNode):
     def enriched_nodes_compute_new_force(self, topology, vecteur_pression_classique, vecteur_pression_enrichie,
                                          vecteur_pseudo_classique, vecteur_pseudo_enrichie):
         """
-        Compute the enriched force on enriched nodes
+        Compute the enriched force on enriched nodes and apply correction for classical force on enriched nodes (classical ddl)
         :param topology: Topology1D, give the connectivity of nodes
         :param vecteur_pression_classique: array1D
         :param vecteur_pression_enrichie: array1D
@@ -187,16 +178,23 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         for disc in Discontinuity.discontinuity_list():
             connectivity_in = connectivity[disc.mask_in_nodes[1:-1]].flatten()
             connectivity_out = connectivity[disc.mask_out_nodes[1:-1]].flatten()
+            alpha = 2. * disc.position_in_ruptured_element - 1
+
+            # Node left
             p_classic = vecteur_pression_classique[connectivity_in] + vecteur_pseudo_classique[connectivity_in]
             p_enr = vecteur_pression_enrichie[connectivity_in] + vecteur_pseudo_enrichie[connectivity_in]
-            self._force_enriched[disc.mask_in_nodes] = (- p_classic[0] - p_enr[1]) * self.section
+            self._force_enriched[disc.mask_in_nodes] = (- p_classic[0] + alpha * p_classic[1] - p_enr[1]) * self.section
+            self._force[disc.mask_in_nodes] += alpha * p_enr[1] * self.section
+
+            # Node right
             p_classic = vecteur_pression_classique[connectivity_out] + vecteur_pseudo_classique[connectivity_out]
             p_enr = vecteur_pression_enrichie[connectivity_out] + vecteur_pseudo_enrichie[connectivity_out]
-            self._force_enriched[disc.mask_out_nodes] = (p_enr[0] - p_classic[1]) * self.section
+            self._force_enriched[disc.mask_out_nodes] = (- alpha * p_classic[0] + p_enr[0] - p_classic[1]) * self.section
+            self._force[disc.mask_out_nodes] -= alpha * p_enr[0] * self.section
+
 
     def enriched_nodes_increment(self):
         """
         Mise à jour de la vitesse et de la coordonnée du noeud pour passer au pas de temps suivant.
         """
-        # self._umundemi_enriched[:] = self.upundemi_enriched[:]
         self._umundemi_enriched = np.copy(self.upundemi_enriched)

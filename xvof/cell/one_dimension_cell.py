@@ -167,25 +167,25 @@ class OneDimensionCell(Cell):
         Computation of the cells initial length
         """
         connectivity = topologie.nodes_belonging_to_cell
-        self._size_t = abs(vecteur_coord_noeuds[connectivity[:,0]] - vecteur_coord_noeuds[connectivity[:,1]]).flatten()
+        self._size_t = abs(vecteur_coord_noeuds[connectivity[:, 0]] - vecteur_coord_noeuds[connectivity[:, 1]]).flatten()
 
     def compute_new_size(self, topologie, vecteur_coord_noeuds, mask):
         """
         Computation of the cells length at time t+dt
         """
         connectivity = topologie.nodes_belonging_to_cell
-        size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:,0]] - vecteur_coord_noeuds[connectivity[:,1]])
+        size_t_plus_dt = abs(vecteur_coord_noeuds[connectivity[:, 0]] - vecteur_coord_noeuds[connectivity[:, 1]])
         self._size_t_plus_dt[mask] = size_t_plus_dt[mask].flatten()
 
     def compute_new_density(self, mask):
         """
         Computation of the density of the cells at time t+dt using mass conservation principle
         """
-        self.density.new_value[mask] =  self.density.current_value[mask] * self.size_t[mask] / self.size_t_plus_dt[mask]
+        self.density.new_value[mask] = self.density.current_value[mask] * self.size_t[mask] / self.size_t_plus_dt[mask]
 
     def compute_new_pseudo(self, delta_t, mask):
         """
-        Computation of cells artificial viscosity at time t+dt/2
+        Computation of cells artificial viscosity at time t+dt
         """
         self.pseudo.new_value[mask] = OneDimensionCell.compute_pseudo(delta_t, self.density.current_value[mask],
                                                                       self.density.new_value[mask],
@@ -205,8 +205,8 @@ class OneDimensionCell(Cell):
                                                 self.pseudo.current_value, self.pseudo.new_value)
         self._dt[mask] = dt[mask]
 
-    def impose_pressure(self, ind_cell, pression):
+    def impose_pressure(self, ind_cell, pressure):
         """
         Pressure imposition
         """
-        self.pressure.new_value[ind_cell] = pression
+        self.pressure.new_value[ind_cell] = pressure

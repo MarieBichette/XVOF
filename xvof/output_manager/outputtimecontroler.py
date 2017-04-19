@@ -33,10 +33,10 @@ class OutputTimeControler(object):
         and update the next output time or iteration
         """
         answer = False
-        if self.__next_output_time is not None and time > self.__next_output_time:
+        if self.__next_output_time is not None and time >= self.__next_output_time:
             answer = True
             self.__next_output_time += self.__time_period
-        if self.__next_output_iteration is not None and iteration > self.__next_output_iteration:
+        if self.__next_output_iteration is not None and iteration >= self.__next_output_iteration:
             answer = True
             self.__next_output_iteration += self.__iteration_period
-        return answer
+        return answer if time != 0. else True

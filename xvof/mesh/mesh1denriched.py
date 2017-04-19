@@ -13,7 +13,6 @@ from xvof.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionEnri
 from xvof.mesh.topology1d import Topology1D
 from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
 from xvof.utilities.profilingperso import timeit_file
 
 
@@ -52,12 +51,13 @@ class Mesh1dEnriched(object):
         # Ruptured cells vector
         # ---------------------------------------------
         self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
-        #----------------------------------------------
+        # ----------------------------------------------
         # Mass Matrix creation
-        #----------------------------------------------
-        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes)
-        self.mass_matrix_enriched = OneDimensionEnrichedMassMatrix(lumped_matrix_classic_dof=True,
-                                                                   lumped_matrix_enr_dof=True)
+        # ----------------------------------------------
+        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes, correction_3x3_on_cell_500=True)
+        self.mass_matrix_enriched = OneDimensionEnrichedMassMatrix(lumped_matrix_classic_dof=False,
+                                                                   lumped_matrix_enr_dof=False,
+                                                                   analytical_inverse=False)
 
     def compute_cells_masses(self):
         """ Cell mass computation """
@@ -66,6 +66,15 @@ class Mesh1dEnriched(object):
     def compute_nodes_masses(self):
         """ node mass computation """
         self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, self.nb_nodes_per_cell)
+        # import  ipdb ;ipdb.set_trace()
+        if self.mass_matrix.correction_3x3_on_cell_500:
+            self.mass_matrix.compute_3x3_mass_matrix_for_cell_500(self.cells.mass)
+            self.mask_last_cells_of_ref = np.empty([self.nodes.number_of_nodes, 1], dtype=bool)
+            self.mask_last_cells_of_ref[:] = False # mask pour identifier les deux derniers éléments de la barre de référence
+            self.mask_last_cells_of_ref[-3] = True
+            self.mask_last_cells_of_ref[-1] = True
+            self.mask_last_cells_of_ref[-2] = True
+            self.inverse_correction = self.mass_matrix.inverse_3x3_mass_matrix
 
     @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_nodes_velocities(self, delta_t):
@@ -75,30 +84,35 @@ class Mesh1dEnriched(object):
         :var delta_t: time step
         :type delta_t: float
         """
-        # ddl classiques (loin de l'enrichissement)
+        # ddl classiques (loin de l'enrichissement )
         self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned,
                                         self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
+        # on applique la correction sur le dernier élément de la matrice de référence :
+        if self.mass_matrix.correction_3x3_on_cell_500:
+            self.nodes.apply_correction_for_complete_mass_matrix_cell_500_ref(delta_t,
+                                                                         self.inverse_correction,
+                                                                         self.mass_matrix.inverse_mass_matrix
+                                                                           [self.mask_last_cells_of_ref],
+                                                                         mask=self.mask_last_cells_of_ref)
+
         if self.nodes.enriched.any():
             for disc in [d for d in Discontinuity.discontinuity_list() if not d.mass_matrix_updated]:
-                # Construction de la matrice masse enrichie
-                # --> Au beosin : modifications à faire dans one_dimension_enriched_mass_matrix / assemble
+                # Construction de la matrice masse enrichie et de son inverse
                 self.mass_matrix_enriched.compute_enriched_mass_matrix(self.__topology, self.cells.mass)
                 self.mass_matrix_enriched.assemble_enriched_mass_matrix("__matrix_classic_dof", "__matrix_enr_dof",
                                                                         "__matrix_coupling")
-                lump_matrix(self.mass_matrix_enriched.enriched_mass_matrix)
+                # self.mass_matrix_enriched.assemble_enriched_mass_matrix("__matrix_classic_dof", "__matrix_enr_dof")
                 self.mass_matrix_enriched.print_enriched_mass_matrix()
                 disc.hasMassMatrixBeenComputed()
-            # Inverse la matrice masse
-            inv_enriched_mass = inverseMasse(self.mass_matrix_enriched.enriched_mass_matrix)
-            inv_enriched_matrice_classic_dof = inv_enriched_mass[0:4, 0:4]
-            inv_enriched_matrice_enr_dof = inv_enriched_mass[4:6,4:6]
-            inv_enriched_matrice_couplage = inv_enriched_mass[0:4,4:6]
             # Calcule des vitesses ddl classique et enrichi à l'endroit de l'enrichissement
-            self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_concerned, inv_enriched_matrice_classic_dof)
-            self.nodes.enriched_nodes_compute_new_velocity(delta_t, self.nodes.enriched, inv_enriched_matrice_enr_dof)
+            self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_concerned,
+                                            self.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
+            self.nodes.enriched_nodes_compute_new_velocity(delta_t, self.nodes.enriched,
+                                            self.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
             # Couplage entre ddl classiques et enrichis
-            self.nodes.coupled_enrichment_terms_compute_new_velocity(delta_t, inv_enriched_matrice_couplage)
+            self.nodes.coupled_enrichment_terms_compute_new_velocity(delta_t,
+                                            self.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof)
         self.nodes.compute_complete_velocity_field()
 
     @timeit_file("/tmp/profil_xvof.txt")
@@ -118,6 +132,7 @@ class Mesh1dEnriched(object):
         Computation of cells sizes at t
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
+
 
     @timeit_file("/tmp/profil_xvof.txt")
     def compute_new_cells_sizes(self, delta_t):
@@ -244,6 +259,7 @@ class Mesh1dEnriched(object):
             if self.cells.enriched[i]:
                 nodes_index = self.__topology.getNodesBelongingToCell(i)
                 res[i] = self.nodes.xtpdt[nodes_index][0] + self.cells.left_size.new_value[i] / 2.
+                # import ipdb ; ipdb.set_trace()
                 res = np.insert(res, i + 1, self.nodes.xtpdt[nodes_index][1] - self.cells.right_size.new_value[i] / 2.,
                                 axis=0)
         return res 

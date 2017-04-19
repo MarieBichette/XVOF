@@ -1,3 +1,5 @@
+#!/usr/bin/env python2.7
+# -*- coding: iso-8859-1 -*-
 """
 Implementing the DataContainer class
 """
@@ -7,11 +9,11 @@ import os.path
 import lxml.etree as et
 
 from xvof.equationsofstate.miegruneisen import MieGruneisen
-from xvof.rupturetreatment.enrichelement import EnrichElement
-from xvof.rupturetreatment.imposedpressure import ImposedPressure
 from xvof.utilities.singleton import Singleton
 
 numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
+
+boundary_conditions_props = namedtuple("boundary_conditions_props", ["right_pressure_value"])
 
 geometrical_props = namedtuple("geometrical_props", ["section"])
 
@@ -20,8 +22,7 @@ material_props = namedtuple("material_props", ["pression_init", "temp_init", "rh
 
 time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant'])
 
-output_props = namedtuple("output_props", ['number_of_images', 'cells_numbers','nodes_numbers', 
-                                           'images_time_show', 'databases'])
+output_props = namedtuple("output_props", ['number_of_images', 'cells_numbers','nodes_numbers', 'databases'])
 
 database_props = namedtuple("database_props",
                             ["identifier", "path", "time_period", "iteration_period", "cell_indexes", "node_indexes"])
@@ -44,6 +45,14 @@ class DataContainer(object):
         self.material = material_props(*self.__fillInMaterialProperties())
         self.time = time_props(*self.__fillInTimeProperties())
         self.output = output_props(*self.__fillInOutputProperties())
+        self.boundary_condition = boundary_conditions_props(*self.__fillInBCProperties())
+
+    def __fillInBCProperties(self):
+        """
+        :return: the pressure to be applied on the right boundary of geometry
+        """
+        right_pressure = float(self.__datadoc.find('boundary-conditions/right-pressure').text)
+        return (right_pressure,)
 
     def __fillInNumericalProperties(self):
         """
@@ -87,24 +96,21 @@ class DataContainer(object):
 
         try:
             dmg_treatment_name = str(self.__datadoc.find('matter/damage-treatment/name').text)
-            if dmg_treatment_name == "ImposedPressure":
-                dmg_treatment = ImposedPressure
-            elif dmg_treatment_name == "Enrichment":
-                dmg_treatment = EnrichElement
-            else:
+            dmg_treatment = dmg_treatment_name
+            if dmg_treatment not in ["ImposedPressure", "Enrichment"]:
                 raise ValueError("Only 'ImposedPressure' or 'Enrichment' are possible values")
         except AttributeError:
             dmg_treatment = None
-            print("No damage treatment will be applied")
+            print ("No damage treatment will be applied")
 
         if dmg_treatment is not None:
-            try:
+            try :
                 dmg_treatment_value = float(self.__datadoc.find('matter/damage-treatment/value').text)
             except AttributeError:
                 raise ValueError("""A damage treatment is specified in XDATA file but"""
                                  """ no damagage treatment value is found!""")
         else:
-            dmg_treatment_value = None
+                dmg_treatment_value =None
 
         return (init_pressure, init_temperature, init_density, init_internal_energy, eos,
                 dmg_treatment, dmg_treatment_value)
@@ -127,10 +133,10 @@ class DataContainer(object):
 
     def __fillInOutputProperties(self):
         """
-        :return: 
+        :return:
             - number of images
-            - cell_number / node_number : cell / node selected for extraction of time history
-            - is display of times figures required? 
+            -cell_number / node_number : cell / node selected for extraction of time history
+            - is display of times figures required?
             - list of output database properties
         :tuple(int, [int], [int], bool, [database_props])
         """
@@ -145,7 +151,6 @@ class DataContainer(object):
             node_numbers = str_node_numbers.split(',')
         except:
             node_numbers = None
-        images_time_show = self.__datadoc.find('output/show-images-time').text.lower() == 'true'
         # Databases
         db_prop_l = []
         for el in self.__datadoc.iterfind('output/database'):
@@ -163,7 +168,7 @@ class DataContainer(object):
                 node_indexes = [int(ind) for ind in el.find('node-indexes').text.split(',')]
             db_props = database_props(identi, database_path, time_period, iteration_period, cell_indexes, node_indexes)
             db_prop_l.append(db_props)
-        return number_of_images, cell_numbers, node_numbers, images_time_show, db_prop_l
+        return number_of_images, cell_numbers, node_numbers, db_prop_l
 
     def hasExternalSolver(self):
         if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:
