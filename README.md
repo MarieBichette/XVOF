@@ -1,13 +1,13 @@
 # XVOF
-One dimensional hydro code for testing xfem method
-
+One dimensional hydro code for testing xfem method. 
 This software is an experimental work trying to modelize spall rupture thanks to enrichment and partition of unity 
-method in a finite volume code.
+method in a finite volume code. Hansbo & Hansbo enrichment is used.
 
 Input data are stored in the file XDATA.xml.
 
-At that time the problem solved is a 1D rod subjected to a shock. 
-The rod has a purely fluid behavior. No elasticity nor plasticity is taken into account.
+At that time the problem solved is a 1D rod subjected to a shock.
+Material behavior includes simple models for hydrodynamics, elasticity, plasticity.
+
 
 Two rupture models are available :
 
@@ -15,12 +15,10 @@ Two rupture models are available :
 
 2) *enrichment* : once the cell reach rupture criterion, kinematic and thermodynamic fields are enriched with an heaviside shape function.
 
-# Future work
+Mass matrix can be lumped to improve calculation time.
 
-* Implement elasticity and plasticity
-* Use a non condensed mass matrix to improve results
+# Future work
 * Check CFL stability with respect to mass matrix
-* Allow multiple discontinuity / enrichment
 
 # Miscellaneous
 To launch a profiling under ipython type:
