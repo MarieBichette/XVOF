@@ -5,13 +5,14 @@ A collection of methods for building True fields from classical and enriched one
 import numpy as np
 
 
-def build_node_true_field(classical_field, enriched_field, node_status):
+def build_node_true_field(classical_field, enriched_field, node_status, enrichment_type=None):
     """
     Build the node true field based on the node status
 
     :param classical_field: field of classical values
     :param enriched_field: field of enriched values
     :param node_status: boolean mask where True indicates an enriched item
+    :param enrichment_type: type of enrichment. Moes ou Hansbo (utile pour reconstruction)
     :return: the node true field
 
     >>> import numpy as np
@@ -36,24 +37,30 @@ def build_node_true_field(classical_field, enriched_field, node_status):
     [1.0, 1.5, 0.5, 1.0, -0.5, -4.5, 0.0]
     """
     true_field = np.copy(classical_field)
-    sign = -1
-    for i, b in enumerate(node_status):
-        if b:
-            true_field[i] = classical_field[i] + sign * enriched_field[i]
-            sign *= -1
-    if sign == 1:
-        raise ValueError("""We don't know yet how to handle discontinuities so close"""
-                         """ that enrichment functions share support!""")
-    return true_field
+    control = 0
+    i0 = int(enriched_field[0][0])  # pour initialiser les tableaux de Discontinuity
+    if enrichment_type == "Moes":
+        for i in np.where(node_status)[0]:
+            if control >= 2:  # plus de 2 noeuds enrichis
+                raise ValueError("""We don't know yet how to handle more than one discontinuity for Moes enrichment""")
+            true_field[i] = classical_field[i] + np.array([-1, 1])[i-i0] * enriched_field[0][1 + i-i0]
+            control += 1
+    elif not enrichment_type == "Hansbo":
+        # Hansbo : vitesse nodale = vitesse classique
+        raise ValueError(
+            """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
+                enrichment_type))
+
+    return true_field.reshape((len(true_field), 1))
 
 
-def build_cell_true_field(classical_field, enriched_field, cell_status):
+def build_cell_true_field(classical_field, enriched_field, enrichment_type):
     """
     Build the cell true field based on the cell status
 
     :param classical_field: field of classical values
     :param enriched_field: field of enriched values
-    :param cell_status: boolean mask where True indicates an enriched item
+    :param enrichment_type: type of enrichment. Moes ou Hansbo (utile pour reconstruction)
     :return the cell true field
 
     >>> import numpy as np
@@ -77,15 +84,54 @@ def build_cell_true_field(classical_field, enriched_field, cell_status):
     >>> build_cell_true_field(a, b, s).tolist()
     [-3.0, 4.0, 0.0, -2.0, 4.0, -3.0, -5.0, 9.0]
     """
+    # ------------- extract sigma xx if field = tensor
+    # if len(classical_field.value.flatten()) > classical_field.shape[0]:  # si tableau de dimension > 1
+    #     # correspond a un field de type tenseur (3 valeurs enregistrees pour chaque cell)
+    #     classical_field = classical_field[:, 0]  # on ne garde que la composante xx
+
+    # idem pour le champ enrichi (operation transparente pour les champs scalaires)
+    # enriched_field = enriched_field[:, 0:2]  # on ne garde que cell_id et la composante xx
+    # -------------------------------------------------------------------
+
+    if len(classical_field.flatten()) == classical_field.shape[0]:
+        # si le champ est un champ scalaire, on rentre dans la boucle et on reshape le np.array pour avoir
+        # deux dimensions (dont une egale a 1). Cela permet d'avoirla compatibilite avec le type des coordonnees
+        # des items pour np.concatenate
+        classical_field = classical_field.reshape((len(classical_field), 1))
+
     true_field = np.copy(classical_field)
+    # import ipdb ; ipdb.set_trace()
     offset = 0
-    for stable_index in np.where(cell_status)[0]:
-        moving_index = stable_index + offset
-        true_field = np.insert(true_field, moving_index+1, true_field[moving_index])
-        true_field[moving_index] -= enriched_field[stable_index]
-        true_field[moving_index+1] += enriched_field[stable_index]
-        offset += 1
-    return true_field.reshape((len(true_field), 1))
+
+    # on recupere les cell_id dans la premiere colonne de la db
+    # la methode de reconstruction des champs necessite que les indices des cells enrichies soient triees
+    enriched_field = np.sort(enriched_field, 0)
+    enriched_id = enriched_field[:, 0]
+
+    if enrichment_type == 'Moes':
+        for stable_index in enriched_id:
+            moving_index = int(stable_index + offset)
+            true_field = np.insert(true_field, moving_index + 1, true_field[moving_index])
+            true_field[moving_index] -= enriched_field[offset, 1]
+            true_field[moving_index+1] += enriched_field[offset, 1]
+            offset += 1
+    elif enrichment_type == 'Hansbo':
+        for stable_index in enriched_id:
+            # import ipdb ; ipdb.set_trace()
+            moving_index = int(stable_index + offset)
+            # true_field = np.insert(true_field, moving_index + 1, enriched_field[offset, 1])
+            true_field = np.insert(true_field, moving_index + 1, enriched_field[offset, 1:])
+            # reshape car le np.insert a casse la structure tenseur [n, 3].
+            # Le np.reshape sert a retrouve une shape de [n+1, 3] apres insertion
+            true_field = true_field.reshape(-1, classical_field.shape[1])
+            offset += 1
+    else:
+        raise ValueError(
+            """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
+                enrichment_type))
+
+    # return true_field.reshape((len(true_field), 1))
+    return true_field
 
 if __name__ == "__main__":
     import doctest

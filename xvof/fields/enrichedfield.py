@@ -48,63 +48,9 @@ class EnrichedField(Field):
         self.__enr_current = np.zeros([size], dtype=np.float64, order='C')
         self.__enr_future = np.zeros([size], dtype=np.float64, order='C')
 
-    def incrementValues(self):
+    def increment_values(self):
         """
         Increment field values
         """
-        super(EnrichedField, self).incrementValues()
+        super(EnrichedField, self).increment_values()
         self.__enr_current[:] = self.__enr_future[:]
-
-    @property
-    def current_enr_value(self):
-        """
-        :return: a copy of the enriched current field values
-        :rtype: numpy.array
-        """
-        return self.__enr_current[:]
-
-    @property
-    def new_enr_value(self):
-        """
-        :return: a copy of the enriched future field values
-        :rtype: numpy.array
-        """
-        return self.__enr_future[:]
-
-    @new_enr_value.setter
-    def new_enr_value(self, value):
-        """
-        Set value as the future value of the enriched field
-
-        :param value: new value to set
-        :type value: float ou numpy.array
-        """
-        self.__enr_future[:] = value
-
-    @property
-    def current_left_value(self):
-        """
-        :return: Current left field
-        """
-        return from_enrich_to_left_part_field(self.current_value, self.current_enr_value)
-
-    @property
-    def current_right_value(self):
-        """
-        :return: Current right field
-        """
-        return from_enrich_to_right_part_field(self.current_value, self.current_enr_value)
-
-    @property
-    def new_left_value(self):
-        """
-        :return: Future left field
-        """
-        return from_enrich_to_left_part_field(self.new_value, self.new_enr_value)
-
-    @property
-    def new_right_value(self):
-        """
-        :return: Future right field
-        """
-        return from_enrich_to_right_part_field(self.new_value, self.new_enr_value)

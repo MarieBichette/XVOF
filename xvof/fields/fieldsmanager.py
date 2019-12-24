@@ -4,7 +4,6 @@ Implementing field manager class
 
 :todo: Use Singleton metaclass
 """
-import os
 from collections import OrderedDict
 from xvof.fields.enrichedfield import EnrichedField
 
@@ -33,8 +32,10 @@ class FieldManager(OrderedDict):
         """
         :return: informations about the contents of the manager
         """
-        msg = "FieldManager contents :" + os.linesep
-        msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
+        msg = " "
+        # msg = "Initial fields have been created"
+        # msg = "FieldManager contents :" + os.linesep
+        # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
         return msg
 
     def moveClassicalToEnrichedFields(self, size):
@@ -49,4 +50,4 @@ class FieldManager(OrderedDict):
         Increment all the fields registered in the manager
         """
         for field in self.values():
-            field.incrementValues()
+            field.increment_values()

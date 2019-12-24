@@ -39,8 +39,7 @@ class Node(object):
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if position_initiale.shape != self.__shape:
-            message = "Node() : La dimension ({}) du vecteur position_initiale " \
-                .format(np.shape(position_initiale))
+            message = "Node() : La dimension ({}) du vecteur position_initiale ".format(np.shape(position_initiale))
             message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
         if vitesse_initiale is None:
@@ -56,7 +55,16 @@ class Node(object):
         self._xtpdt = np.zeros(self.__shape, dtype=np.float64, order='C')
         self._upundemi = np.array(vitesse_initiale)
 
-        self._force = np.zeros([self.__shape[0], 1], dtype=np.float64, order='C')
+        self._masse = np.zeros(self.__shape, dtype=np.float64, order='C')
+
+        self._force = np.zeros([self.__shape[0], dim], dtype=np.float64, order='C')
+
+        self._enriched = np.empty(nbr_of_nodes)
+        self._enriched[:] = False
+
+    @property
+    def enriched(self):
+        return self._enriched
 
     @property
     def xt(self):
@@ -107,8 +115,6 @@ class Node(object):
         :rtype: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
         return self._masse
-
-
 
     @property
     def force(self):

@@ -7,9 +7,9 @@ from abc import ABCMeta, abstractmethod
 
 
 class NewtonRaphsonIncrementBase(object):
-    '''
+    """
     Classe base définissant une méthode d'incrémentation
-    '''
+    """
     # pylint: disable=abstract-class-not-used
     # Nécessaire pour spécifier l'interface
     __metaclass__ = ABCMeta
@@ -19,7 +19,7 @@ class NewtonRaphsonIncrementBase(object):
 
     @abstractmethod
     def computeIncrement(self, function_value, derivative_function_value):
-        '''
+        """
         Calcul de l'incrément
-        '''
+        """
         raise NotImplementedError

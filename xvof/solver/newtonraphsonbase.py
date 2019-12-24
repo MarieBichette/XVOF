@@ -22,21 +22,21 @@ class NewtonRaphsonBase(object):
 
     @property
     def function(self):
-        '''
+        """
         Renvoie la fonction à annuler
-        '''
+        """
         return self.__function_to_vanish
 
     @property
     def nb_iterations_max(self):
-        '''
+        """
         Retourne le nombre maximal d'itérations autorisé
-        '''
+        """
         return self.__nb_iterations_max
 
     @abstractmethod
     def computeSolution(self, init_variable):
-        '''
+        """
         Résolution du solveur
-        '''
+        """
         raise NotImplementedError

@@ -57,14 +57,70 @@ class Cell(object):
         self._size_t_plus_dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._mass = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._fields_manager = FieldManager()
-        self._fields_manager["Density"] = Field(self._nbr_of_cells, DataContainer().material.rho_init,
-                                                DataContainer().material.rho_init)
-        self._fields_manager["Pressure"] = Field(self._nbr_of_cells, DataContainer().material.pression_init,
-                                                 DataContainer().material.pression_init)
-        self._fields_manager["Energy"] = Field(self._nbr_of_cells, DataContainer().material.energie_init,
-                                               DataContainer().material.energie_init)
+
+        self.cell_in_target = np.zeros(self.number_of_cells, dtype='bool')
+        self.cell_in_projectile = np.zeros(self.number_of_cells, dtype='bool')
+
+        # initialisation par défaut avec material_target ---------------------
+        # hydro :
+        material_data = DataContainer().material_target.initial_values
+        self._fields_manager["Density"] = Field(self._nbr_of_cells, material_data.rho_init, material_data.rho_init)
+        self._fields_manager["Pressure"] = Field(self._nbr_of_cells, material_data.pression_init, material_data.pression_init)
+        self._fields_manager["Energy"] = Field(self._nbr_of_cells, material_data.energie_init, material_data.energie_init)
         self._fields_manager["Pseudo"] = Field(self._nbr_of_cells)
         self._fields_manager["SoundVelocity"] = Field(self._nbr_of_cells)
+        # Elasticity
+        self._stress = np.zeros([self.number_of_cells, 3], dtype=np.float64, order='C')  # Cauchy sxx, syy, szz
+        self._fields_manager["ShearModulus"] = Field(self._nbr_of_cells, material_data.shear_modulus_init, material_data.shear_modulus_init)
+        self._fields_manager["YieldStress"] = Field(self._nbr_of_cells, material_data.yield_stress_init, material_data.yield_stress_init)
+
+    def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
+        """
+        Initialisation des champs aux mailles et des caractéristiques cell_in_target et cell_in_projectile
+        :param mask_node_target: tableau de bool pour les noeuds dans la cible
+        :param mask_node_projectile: tableau de bool pour les noeuds dans le projectile
+        :param topology: Topologie donnant les tableaux de connectivité
+        :return:
+        """
+        # Partie mask_cible
+        indice_noeuds = np.where(mask_node_target)[0]
+        cell_target = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
+        # on élimine les noeuds extrêmes :
+        # 1 pour ne pas prendre la dernière maille du projectile qui est connectée aussi à un noeud target
+        # -1 pour ne pas prendre la maille connectéee au dernier noeud de la cible, qui n'existe pas
+        self.cell_in_target[cell_target] = True
+
+        # Partie mask_projectile
+        indice_noeuds = np.where(mask_node_projectile)[0]
+        cell_projectile = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
+        # on élimine les noeuds extrêmes :
+        # -1 pour ne pas prendre la première maille de la cible qui est aussi connectée à un noeud projectile
+        # 1 pour ne pas prendre la maille connectéee au premier noeud du projectile, qui n'existe pas
+        self.cell_in_projectile[cell_projectile] = True
+
+        try:
+            print "Cells in the projectile : de {:} a {:}" .format(np.where(self.cell_in_projectile)[0][0],
+                                                                   np.where(self.cell_in_projectile)[0][-1])
+            print "Cells in the target : de {:} a {:}".format(np.where(self.cell_in_target)[0][0],
+                                                              np.where(self.cell_in_target)[0][-1])
+        except IndexError:
+            # pour gérer  les exceptions où il n'y a pas de projectile ou de target (cas tableau vide [index])
+            pass
+
+        # correction de l'init si materiau projectile déclaré dans XDATA.xml
+        # (le mask est vide si pas de projectile donc transparent quand il n'y a pas de projectile déclaré)
+        material_data = DataContainer().material_projectile.initial_values
+        self.density.current_value[self.cell_in_projectile] = material_data.rho_init
+        self.density.new_value[self.cell_in_projectile] = material_data.rho_init
+        self.pressure.current_value[self.cell_in_projectile] = material_data.pression_init
+        self.pressure.new_value[self.cell_in_projectile] = material_data.pression_init
+        self.energy.current_value[self.cell_in_projectile] = material_data.energie_init
+        self.energy.new_value[self.cell_in_projectile] = material_data.energie_init
+        self.shear_modulus.current_value[self.cell_in_projectile] = material_data.shear_modulus_init
+        self.shear_modulus.new_value[self.cell_in_projectile] = material_data.shear_modulus_init
+        self.yield_stress.current_value[self.cell_in_projectile] = material_data.yield_stress_init
+        self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
+
 
     @property
     def dt(self):
@@ -130,6 +186,48 @@ class Cell(object):
         return self._fields_manager['Pseudo']
 
     @property
+    def shear_modulus(self):
+        """
+        Elastic shear modulus
+        """
+        return self._fields_manager["ShearModulus"]
+
+    @property
+    def yield_stress(self):
+        """
+        Yield stress separating elastic from plastic behavior
+        """
+        return self._fields_manager["YieldStress"]
+
+    @property
+    def stress(self):
+        """
+        Cauchy stress tensor in the cells
+        """
+        return self._stress
+
+    @property
+    def stress_xx(self):
+        """
+        Cauchy stress tensor in the cells. 1D : component xx
+        """
+        return self._stress[:, 0]
+
+    @property
+    def stress_yy(self):
+        """
+        Stress tensor field : sigma_yy
+        """
+        return self._stress[:, 1]
+
+    @property
+    def stress_zz(self):
+        """
+        Stress tensor field : sigma_zz
+        """
+        return self._stress[:, 2]
+
+    @property
     def fields_manager(self):
         """
         Return a copy of the field manager
@@ -173,7 +271,7 @@ class Cell(object):
         self._size_t[:] = self._size_t_plus_dt[:]
 
     @abstractmethod
-    def compute_new_pressure(self, mask):
+    def compute_new_pressure(self, mask, dt):
         """
         Compute the pressure in the cells at time t + dt
         """

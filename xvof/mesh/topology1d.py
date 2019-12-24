@@ -45,10 +45,10 @@ class Topology1D(Topology):
         self._generateMesh(nbr_of_cells)
 
     def addCellInContactWithNode(self, ind_node, ind_cell):
-        '''
+        """
         Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
         avec le noeud d'indice 'ind_node'
-        '''
+        """
         Topology.addCellInContactWithNode(self,ind_node, ind_cell)
         for ind in range(self._nbr_of_nodes):
             cells_in_contact_with_node_number = 0
@@ -57,9 +57,9 @@ class Topology1D(Topology):
                 raise SystemExit
 
     def _generateMesh(self, nbr_of_cells):
-        '''
+        """
         Generation du maillage (connectivité mailles <--> noeuds)
-        '''
+        """
         for ind_cell in xrange(nbr_of_cells):
             ind_node_left = ind_cell
             ind_node_right = ind_cell + 1

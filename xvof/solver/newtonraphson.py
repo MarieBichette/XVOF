@@ -9,21 +9,24 @@ import numpy as np
 from xvof.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
 from xvof.solver.newtonraphsonbase import NewtonRaphsonBase
 
-
-EPSILON = 1.0e-08
-PRECISION = 1.0e-9
+# EPSILON = 1.0e-09
+# PRECISION = 1.0e-10
+# EPSILON = 1.0e-08
+# PRECISION = 1.0e-09
+EPSILON = 1.0e-06
+PRECISION = 1.0e-08  # valeurs par défaut dans A1 et dans A3
 
 class NewtonRaphson(NewtonRaphsonBase):
-    '''
+    """
     Solveur non linéaire de type Newton Raphson
-    '''
+    """
     def __init__(self, function_to_vanish):
-        super(NewtonRaphson, self).__init__(function_to_vanish, 40, ClassicalNewtonRaphsonIncrement())
+        super(NewtonRaphson, self).__init__(function_to_vanish, 100, ClassicalNewtonRaphsonIncrement())
 
     def setIncrementMethod(self, increment_method_obj):
-        '''
+        """
         Permet un changement de méthode d'incrémentation
-        '''
+        """
         self._increment_method = increment_method_obj
 
     def computeSolution(self, init_variable):

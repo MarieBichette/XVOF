@@ -1,0 +1,12 @@
+{
+    "MieGruneisen": {
+        "ref_density": "2703",
+        "ref_sound_velocity": "5240",
+        "ref_internal_energy": "0",
+        "coefficient_gruneisen": "1.97",
+        "param_b": "0.48",
+        "s1": "1.4",
+        "s2": "0",
+        "s3": "0"
+    }
+}

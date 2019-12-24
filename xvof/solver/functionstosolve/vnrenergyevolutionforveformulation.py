@@ -31,4 +31,4 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj
         # Derivative of the function with respect to internal energy
         dfunc = 1 + dpsurde * delta_v / 2.
-        return (func, dfunc)
+        return func, dfunc

@@ -22,3 +22,5 @@ class MinimumPressureCriterion(RuptureCriterion):
         :return: the mask of the cells where pressure is below the minimum pressure
         """
         return cells.pressure.new_value < self.__minimum_pressure
+
+
