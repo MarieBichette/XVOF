@@ -7,7 +7,6 @@ import numpy as np
 from xvof.data.data_container import DataContainer
 from xvof.fields.field import Field
 from xvof.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import OneDimensionHansboEnrichedMassMatrix
-from xvof.mass_matrix.one_dimension_enriched_mass_matrix_Moes import OneDimensionMoesEnrichedMassMatrix
 
 
 class Discontinuity(object):
@@ -77,11 +76,7 @@ class Discontinuity(object):
             self.history_min_cohesive_force = 0.
 
         # création de la matrice de masse associée à la discontinuité
-        if DataContainer().material_target.failure_model.type_of_enrichment == "Moes":
-            self.mass_matrix_enriched = OneDimensionMoesEnrichedMassMatrix(
-                lump=DataContainer().material_target.failure_model.lump_mass_matrix
-                , correction_1_2=False)
-        elif DataContainer().material_target.failure_model.type_of_enrichment == "Hansbo":
+        if DataContainer().material_target.failure_model.type_of_enrichment == "Hansbo":
             self.mass_matrix_enriched = OneDimensionHansboEnrichedMassMatrix(
                 lump=DataContainer().material_target.failure_model.lump_mass_matrix)
 

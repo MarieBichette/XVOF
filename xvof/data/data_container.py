@@ -203,7 +203,7 @@ class DataContainer(object):
                       "This may result in errors in the future"
 
         # Return ---------------------------------------------------
-        return (init, behavior, failure, damage)
+        return init, behavior, failure, damage
 
     def __fillInTimeProperties(self):
         """
@@ -336,7 +336,7 @@ class DataContainer(object):
         :return: has_failure : booleen pour activer la rupture
                 failure_model : modèle de traitement de la rupture
                 failure_treatment_value : position of disconitnuity in cracked element or imposed pressure
-                type_of_enrichment : Moes or Hansbo
+                type_of_enrichment : Hansbo
                 lump_mass_matrix : lumping strategy
         :rtype bool, str, float, str, str
         """
@@ -356,8 +356,8 @@ class DataContainer(object):
 
         if failure_treatment == "Enrichment":
             type_of_enrichment = str(self.__datadoc.find(repertoire_base + 'type-of-enrichment').text)
-            if type_of_enrichment not in ['Moes', 'Hansbo'] and failure_treatment == "Enrichment":
-                raise ValueError("Unknown enrichment type. Possibilities are Moes and Hansbo")
+            if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
+                raise ValueError("Unknown enrichment type. = Hansbo")
             else:
                 lump_mass_matrix = str(self.__datadoc.find(repertoire_base + 'lump-mass-matrix').text)
                 if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:

@@ -53,7 +53,7 @@
                 <failure-treatment>
                     <name>Enrichment</name> <!-- ImposedPressure || Enrichment-->
                     <value>0.5</value>
-                    <type-of-enrichment>Hansbo</type-of-enrichment> <!-- Hansbo || Moes (/!\ pas complet) -->
+                    <type-of-enrichment>Hansbo</type-of-enrichment> <!-- Hansbo -->
                     <lump-mass-matrix>somme</lump-mass-matrix>  <!-- none || somme || menouillard -->
                 </failure-treatment>
                 <damage-treatment>

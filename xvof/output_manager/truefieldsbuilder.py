@@ -12,45 +12,15 @@ def build_node_true_field(classical_field, enriched_field, node_status, enrichme
     :param classical_field: field of classical values
     :param enriched_field: field of enriched values
     :param node_status: boolean mask where True indicates an enriched item
-    :param enrichment_type: type of enrichment. Moes ou Hansbo (utile pour reconstruction)
+    :param enrichment_type: type of enrichment
     :return: the node true field
-
-    >>> import numpy as np
-    >>> a = np.array([1., 2., -1., 1.])
-    >>> b = np.array([0., 0.5, 1.5, 0.])
-    >>> s = np.array([False, True, True, False])
-    >>> build_node_true_field(a, b, s).tolist()
-    [1.0, 1.5, 0.5, 1.0]
-    >>> b = np.array([1.5, 0.5, 0., 0.])
-    >>> s = np.array([True, True, False, False])
-    >>> build_node_true_field(a, b, s).tolist()
-    [-0.5, 2.5, -1.0, 1.0]
-    >>> s = np.array([True, True, True, False])
-    >>> build_node_true_field(a, b, s).tolist() # doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-    ...
-    ValueError
-    >>> a = np.array([1., 2., -1., 1., -0.5, -2, 3.])
-    >>> b = np.array([0., 0.5, 1.5, 0., 0., 2.5, -3.0])
-    >>> s = np.array([False, True, True, False, False, True, True])
-    >>> build_node_true_field(a, b, s).tolist()
-    [1.0, 1.5, 0.5, 1.0, -0.5, -4.5, 0.0]
     """
     true_field = np.copy(classical_field)
-    control = 0
-    i0 = int(enriched_field[0][0])  # pour initialiser les tableaux de Discontinuity
-    if enrichment_type == "Moes":
-        for i in np.where(node_status)[0]:
-            if control >= 2:  # plus de 2 noeuds enrichis
-                raise ValueError("""We don't know yet how to handle more than one discontinuity for Moes enrichment""")
-            true_field[i] = classical_field[i] + np.array([-1, 1])[i-i0] * enriched_field[0][1 + i-i0]
-            control += 1
-    elif not enrichment_type == "Hansbo":
-        # Hansbo : vitesse nodale = vitesse classique
+    if not enrichment_type == "Hansbo":
+        # Hansbo : vitesse nodale = vitesse classique => rien a faire. On verifie quand meme
         raise ValueError(
             """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
                 enrichment_type))
-
     return true_field.reshape((len(true_field), 1))
 
 
@@ -100,7 +70,6 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
         classical_field = classical_field.reshape((len(classical_field), 1))
 
     true_field = np.copy(classical_field)
-    # import ipdb ; ipdb.set_trace()
     offset = 0
 
     # on recupere les cell_id dans la premiere colonne de la db
@@ -108,14 +77,7 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
     enriched_field = np.sort(enriched_field, 0)
     enriched_id = enriched_field[:, 0]
 
-    if enrichment_type == 'Moes':
-        for stable_index in enriched_id:
-            moving_index = int(stable_index + offset)
-            true_field = np.insert(true_field, moving_index + 1, true_field[moving_index])
-            true_field[moving_index] -= enriched_field[offset, 1]
-            true_field[moving_index+1] += enriched_field[offset, 1]
-            offset += 1
-    elif enrichment_type == 'Hansbo':
+    if enrichment_type == 'Hansbo':
         for stable_index in enriched_id:
             # import ipdb ; ipdb.set_trace()
             moving_index = int(stable_index + offset)
@@ -130,8 +92,8 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
             """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
                 enrichment_type))
 
-    # return true_field.reshape((len(true_field), 1))
     return true_field
+
 
 if __name__ == "__main__":
     import doctest

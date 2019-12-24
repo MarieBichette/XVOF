@@ -10,7 +10,7 @@ from xvof.discontinuity.discontinuity import Discontinuity
 
 class OneDimensionEnrichedCell(OneDimensionCell):
     """
-    A collection of 1d enriched elements. Treatment for both Moes and Hansbo enrichment
+    A collection of 1d enriched elements. Treatment for all enrichment type
     """
 
     def __init__(self, number_of_elements):

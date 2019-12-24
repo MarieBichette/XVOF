@@ -105,7 +105,7 @@ if __name__ == '__main__':
     coord_init[:, 0] = coord_mesh
     vit_init = np.zeros([NumberOfNodes, 1], dtype=np.float64, order='C')
     enrichissement_registration = False
-    if data.material_target.failure_model.type_of_enrichment in ['Moes', 'Hansbo']:
+    if data.material_target.failure_model.type_of_enrichment == 'Hansbo':
         enrichissement_registration = True
     my_mesh = Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init,
                              enrichment_type=data.material_target.failure_model.type_of_enrichment)

@@ -37,10 +37,7 @@ class Mesh1dEnriched(object):
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
-        if enrichment_type == "Moes":
-            self.nodes = OneDimensionMoesEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
-                                                section=DataContainer().geometric.section)
-        elif enrichment_type == "Hansbo":
+        if enrichment_type == "Hansbo":
             self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
                                                 section=DataContainer().geometric.section)
         else:
@@ -51,9 +48,7 @@ class Mesh1dEnriched(object):
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        if self.enrichment_type == "Moes":
-            self.cells = OneDimensionMoesEnrichedCell(nbr_cells)
-        elif self.enrichment_type == "Hansbo":
+        if self.enrichment_type == "Hansbo":
             self.cells = OneDimensionHansboEnrichedCell(nbr_cells)
         else:
             self.cells = OneDimensionHansboEnrichedCell(nbr_cells)
@@ -106,8 +101,6 @@ class Mesh1dEnriched(object):
                 [self.nodes.number_of_nodes], dtype=bool) # identifier derniers éléments de la barre de référence
             self.mask_last_nodes_of_ref[-2] = True
             self.mask_last_nodes_of_ref[-1] = True
-            if self.mass_matrix.correction_on_cell_500.lower() == 'xfem':
-                self.mask_last_nodes_of_ref[-3] = True
             self.mass_matrix.compute_correction_mass_matrix_for_cell_500(
                 self.cells.mass, self.mask_last_nodes_of_ref, self.__topology)
             self.inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
@@ -133,10 +126,7 @@ class Mesh1dEnriched(object):
             if not disc.mass_matrix_updated:
                 # Construction de la matrice masse enrichie et de son inverse
                 disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology, self.cells.mass)
-                if self.enrichment_type == "Moes":
-                    disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
-                        "_matrix_classic_dof", "_matrix_enr_dof", "_matrix_coupling")
-                elif self.enrichment_type == "Hansbo":
+                if self.enrichment_type == "Hansbo":
                     disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
                         "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
                     # réarrangement de la matrice de masse pour avoir strucure (classiq/enr/couplage)
