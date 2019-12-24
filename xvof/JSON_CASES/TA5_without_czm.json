@@ -1,0 +1,9 @@
+{
+    "TA5_without_czm": {
+        "color": "orange",
+        "directory_name": "RESULTS/OLD_MODELE_COHESIF/0_CZM_TA5_sans_modele_cohesif/",
+        "label": "$[\\mathcal{M}]_{sum}$",
+        "linestyle": "--",
+        "marker": "s"
+    }
+}

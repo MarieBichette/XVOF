@@ -1,0 +1,9 @@
+{
+    "ref_detente_elasto": {
+        "color": "red",
+        "directory_name": "1_init_detente_ref_elasto",
+        "label": "ref elasto",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}

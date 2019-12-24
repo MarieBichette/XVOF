@@ -1,0 +1,9 @@
+{
+    "debug_elasto": {
+        "color": "green",
+        "directory_name": "0_debug_elasto",
+        "label": "elasto",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

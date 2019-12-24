@@ -1,0 +1,9 @@
+{
+    "debug": {
+        "color": "red",
+        "directory_name": "0_debug",
+        "label": "modif",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}
