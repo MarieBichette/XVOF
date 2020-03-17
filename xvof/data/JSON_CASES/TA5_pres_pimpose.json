@@ -1,0 +1,9 @@
+{
+    "TA5_pres_pimpose": {
+        "color": "orange",
+        "directory_name": "3_impact_TA5_pimpose",
+        "label": "$p=0, S=0$",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

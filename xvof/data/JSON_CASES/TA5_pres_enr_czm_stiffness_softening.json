@@ -1,0 +1,9 @@
+{
+    "TA5_pres_enr_czm_stiffness_softening": {
+        "color": "red",
+        "directory_name": "3_impact_with_czm_elastic_stiffness",
+        "label": "Enrichissement + CZM elastique",
+        "linestyle": "-",
+        "marker": "+"
+    }
+}

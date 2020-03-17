@@ -1,0 +1,9 @@
+{
+    "debug_epp_fm": {
+        "color": "purple",
+        "directory_name": "0_debug_epp_fine_mesh",
+        "label": "epp fine mesh",
+        "linestyle": "-",
+        "marker": "+"
+    }
+}

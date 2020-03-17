@@ -1,0 +1,9 @@
+{
+    "epp_hansbo_consistent_eps_025": {
+        "color": "blue",
+        "directory_name": "RESULTS/VALIDATION_EPP/EPP_rupture/epp_120_MPa/eps_025_hansbo_complete_epp/",
+        "label": "XVOF : EPP, $\\epsilon= 0.25$",
+        "linestyle": "",
+        "marker": "d"
+    }
+}

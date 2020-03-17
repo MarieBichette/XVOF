@@ -1,0 +1,9 @@
+{
+    "hydro_hansbo_consistent_eps_050": {
+        "color": "lightblue",
+        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_consistent_050",
+        "label": "0.5 consistent",
+        "linestyle": "",
+        "marker": "s"
+    }
+}

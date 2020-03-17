@@ -1,0 +1,9 @@
+{
+    "validation_hydro_avec_pseudo": {
+        "color": "orange",
+        "directory_name": "RESULTS/VALIDATION_EPP/HYDRO/HYDRO_avec_pseudo",
+        "label": "XVOF : hydro avec pseudo",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

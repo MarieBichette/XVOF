@@ -1,0 +1,9 @@
+{
+    "czm_without_czm": {
+        "color": "red",
+        "directory_name": "0_CZM_TA5_no_czm",
+        "label": "TA5 without czm",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

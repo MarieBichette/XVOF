@@ -1,0 +1,9 @@
+{
+    "convergence_h_100_um": {
+        "color": "gray",
+        "directory_name": "ETUDE_CONVERGENCE_REFERENCE/h_100_um/",
+        "label": "h= 100 $\\mu$m",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "CFRAC_TA4": {
+        "color": "green",
+        "directory_name": "CFRAC/TA4",
+        "label": "TA4",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}

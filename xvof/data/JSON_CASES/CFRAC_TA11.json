@@ -1,0 +1,9 @@
+{
+    "CFRAC_TA11": {
+        "color": "gray",
+        "directory_name": "CFRAC/TA11",
+        "label": "TA11",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}

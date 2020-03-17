@@ -1,0 +1,9 @@
+{
+    "ref_wilkins_epp_050": {
+        "color": "red",
+        "directory_name": "RESULTS/PLASTICITY/ref_wilkins_050",
+        "label": "ref ",
+        "linestyle": "-",
+        "marker": "+"
+    }
+}

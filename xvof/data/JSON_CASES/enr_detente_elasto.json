@@ -1,0 +1,9 @@
+{
+    "enr_detente_elasto": {
+        "color": "blue",
+        "directory_name": "1_init_detente_enrichi_elasto",
+        "label": "enr elasto",
+        "linestyle": "-",
+        "marker": "+"
+    }
+}
