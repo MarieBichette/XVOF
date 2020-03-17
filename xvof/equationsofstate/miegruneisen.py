@@ -4,7 +4,7 @@ Implementing MieGruneisen class
 
 >>> import numpy as np
 >>> from xvof.equationsofstate.miegruneisen import MieGruneisen
->>> my_eos = MieGruneisen()
+>>> my_eos = MieGruneisen(3980, 1.58, 0, 0, 8129, 1.6, 0.5, 0)
 >>> print my_eos # doctest:+NORMALIZE_WHITESPACE
 EquationOfState : MieGruneisen
 Parameters :
@@ -52,7 +52,7 @@ class MieGruneisen(EquationOfStateBase):
     Mie Gruneisen equation of state
     """
 
-    def __init__(self, czero=3980.0, S1=1.58, S2=0., S3=0., rhozero=8129.0, grunzero=1.6, b=0.5, ezero=0.):
+    def __init__(self, czero=3940.0, S1=1.489, S2=0., S3=0., rhozero=8930.0, grunzero=2.02, b=0.47, ezero=0.):
         #
         self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero,
                                               b=b, ezero=ezero)
@@ -69,6 +69,14 @@ class MieGruneisen(EquationOfStateBase):
     def __repr__(self):
         msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in zip(self.__param._fields, self.__param)])
         return "MieGruneisen({:s})".format(msg)
+
+    @property
+    def eos_param(self):
+        """
+        Accesseur sur les paramètres de l'équation d'état
+        :return:
+        """
+        return self.__param
 
     def solveVolumeEnergy(self, specific_volume, internal_energy, pressure, vson, gampervol):
         """
@@ -136,6 +144,7 @@ class MieGruneisen(EquationOfStateBase):
         dpdv = dphi + (self.__dgam - loc_gampervol) * \
                       (internal_energy[targets] - einth) / specific_volume[targets]
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
+
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
 
     def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):

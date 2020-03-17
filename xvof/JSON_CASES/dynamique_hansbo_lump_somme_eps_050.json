@@ -1,0 +1,9 @@
+{
+    "dynamique_hansbo_lump_somme_eps_050": {
+        "color": "blue",
+        "directory_name": "RESULTS/TEST_HYDRO_2_CHARGEMENTS/eps_050_hansbo_lump_somme_2charg/",
+        "label": "$\\epsilon = 0.50$ lump sum",
+        "linestyle": "-",
+        "marker": "o"
+    }
+}

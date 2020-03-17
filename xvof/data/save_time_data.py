@@ -8,13 +8,14 @@ import os
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
+
 class TimeData(object):
     """
     Une classe abstraite pour les objets de type TimeData
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, attribute, id_number , o_path):
+    def __init__(self, attribute, id_number, o_path):
         """
 
         :param attribute:
@@ -23,12 +24,11 @@ class TimeData(object):
         """
         self.__attribute = attribute
         self._item_id = id_number
-        self._path = ("./{:s}/{:s}_history_{:<03d}.dat").format(o_path, attribute, id_number)
+        self._path = "./{:s}/{:s}_history_{:<03d}.dat".format(o_path, attribute, id_number)
         try:
-            self._fd = open(self._path,"w")
+            self._fd = open(self._path, "w")
         except IOError:
             raise SystemExit("Unable to open the file under : {:s}".format(self._path))
-
     
     @abstractmethod
     def add_time_step_fields(self):
@@ -64,7 +64,6 @@ class CellTimeData(TimeData):
         super(CellTimeData, self).__init__("cell", id_number, o_path)
         self._data = []
 
-
     @property
     def header(self):
         """
@@ -72,8 +71,10 @@ class CellTimeData(TimeData):
         :return:
         """
         msg = "---Time History for cell :" + str(self._item_id) + os.linesep
-        msg += "{:^15s}    {:^15s}    {:^15s}    {:^15s}    {:^15s}" .format("Time[s]", "Density[kg/m3]", "Pressure[MPa]",
-                                                                             "Internal Energy[J/m3]", "Artificial Viscosity[MPa]")
+        msg += "{:^15s}    {:^15s}    {:^15s}    {:^15s}    {:^15s}" .format("Time[s]", "Density[kg/m3]",
+                                                                             "Pressure[MPa]",
+                                                                             "Internal Energy[J/m3]",
+                                                                             "Artificial Viscosity[MPa]")
         msg += os.linesep
         return msg
 
@@ -85,11 +86,8 @@ class CellTimeData(TimeData):
         - time : float, real simulation time
         - density, pressure, energy, pseudo : array, cell fields to be added
         """
-        # self._fd.write("{:+10.9e}    {:+10.9e}    {:+10.9e}    {:+10.9e}    {:+10.9e}"
-        #         .format(time, density[self._item_id], pressure[self._item_id], energy[self._item_id], pseudo[self._item_id]))
-        # self._fd.write(os.linesep)
-        self._data.append([time, density[self._item_id], pressure[self._item_id], energy[self._item_id], pseudo[self._item_id]])
-
+        self._data.append(
+            [time, density[self._item_id], pressure[self._item_id], energy[self._item_id], pseudo[self._item_id]])
 
     @property
     def history_array(self):
@@ -99,7 +97,6 @@ class CellTimeData(TimeData):
         """
         write the history data in appropriate file
         """
-        # import ipdb ; ipdb.set_trace()
         np.savetxt(self._path, self.history_array, fmt=['%+10.9e', '%+10.9e', '%+10.9e', '%+10.9e', '%+10.9e'],
                    header=self.header)
 
@@ -117,7 +114,7 @@ class NodeTimeData(TimeData):
         """
         super(NodeTimeData, self).__init__("node", id_number, o_path)
         self._data = []
-
+        self.vitesse = []
 
     @property
     def header(self):
@@ -130,7 +127,6 @@ class NodeTimeData(TimeData):
         msg += os.linesep
         return msg
 
-
     def add_time_step_fields(self, time, position, velocity):
         """
         Append the history file with the current cell data
@@ -141,11 +137,8 @@ class NodeTimeData(TimeData):
         - velocity : array, node fields to be added
         - node_number : int, reference of the node of interest to select data
         """
-        # self._fd.write("{:+10.9e}    {:+10.9e}    {:+10.9e}"
-        #                .format(time, position[self._item_id][0], velocity[self._item_id][0]))
-        # self._fd.write(os.linesep)
-
-        self._data.append([time, position[self._item_id], velocity[self._item_id]])
+        # self.vitesse.append(velocity[self._item_id][0])
+        self._data.append([time, position[self._item_id][0], velocity[self._item_id][0]])
 
     @property
     def history_array(self):

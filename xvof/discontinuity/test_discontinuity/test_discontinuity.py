@@ -7,8 +7,8 @@ Classe de test du module Discontinuity
 
 import unittest
 import numpy as np
-import mock
 from xvof.discontinuity.discontinuity import Discontinuity
+
 
 class DiscontinuityTest(unittest.TestCase):
     """
@@ -22,7 +22,6 @@ class DiscontinuityTest(unittest.TestCase):
         self.mask_in = np.array([True, False, False, False])
         self.mask_out = np.array([False, True, False, False])
         self.my_disc = Discontinuity(self.mask_in, self.mask_out)
-
 
     # def test_label(self):
     #     """
@@ -49,11 +48,10 @@ class DiscontinuityTest(unittest.TestCase):
     #     self.my_disc.__mass_matrix_updated = False
     #     np.testing.assert_equal(self.my_disc.mass_matrix_updated, False)
 
-
     def test_hasMassMatrixBeenComputed(self):
-        """Teste de la méthode hasMassMatrixBeenComputed pour le module Discontinuity"""
+        """Teste de la méthode has_mass_matrix_been_computed pour le module Discontinuity"""
         # utilise la propriété mass_matrix_updated testée plus haut
-        self.my_disc.hasMassMatrixBeenComputed()
+        self.my_disc.has_mass_matrix_been_computed()
         np.testing.assert_equal(self.my_disc.mass_matrix_updated, True)
 
 if __name__ == '__main__':

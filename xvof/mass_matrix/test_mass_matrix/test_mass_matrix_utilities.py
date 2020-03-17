@@ -7,9 +7,8 @@ Classe de test du module Discontinuity
 
 import unittest
 import numpy as np
-from numpy.linalg import inv
-import mock
-from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix, multiplicationMasse
+from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
+
 
 class MatrixUtliitiesTest(unittest.TestCase):
     """
@@ -30,7 +29,7 @@ class MatrixUtliitiesTest(unittest.TestCase):
         inverse = inverseMasse(self._test_matrix)
         inverse_solution = np.array([[2, -1], [-0.5, 0.5]])
         np.testing.assert_array_equal(inverse, inverse_solution)
-        #cas matrice = vraie matrice
+        # cas matrice = vraie matrice
         inverse = inverseMasse(self._test_vecteur)
         inverse_solution = np.array([[1.], [0.5]])
         np.testing.assert_array_equal(inverse, inverse_solution)

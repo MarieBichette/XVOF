@@ -1,0 +1,9 @@
+{
+    "hydro_hansbo_lump_menouillard_eps_050": {
+        "color": "deepskyblue",
+        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_lump_eps_050/",
+        "label": "$\\epsilon = 0.50$ enriched $[\\mathcal{M}]_{menouillard}$",
+        "linestyle": "",
+        "marker": "o"
+    }
+}

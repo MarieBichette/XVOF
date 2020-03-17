@@ -1,0 +1,9 @@
+{
+    "enr": {
+        "color": "blue",
+        "directory_name": "0_ENR",
+        "label": "enr",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

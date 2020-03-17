@@ -7,7 +7,7 @@ import numpy as np
 from numpy.linalg import inv
 
 
-def multiplicationMasse(matrice, vecteur) :
+def multiplicationMasse(matrice, vecteur):
     """
     Fonction pour faire le produit matriciel matrice * vecteur adapté pour la matrice masse sous forme de vecteur
 
@@ -21,27 +21,27 @@ def multiplicationMasse(matrice, vecteur) :
     >>> multiplicationMasse(matrice_bis, vecteur_bis)
     array([ 3.75 ,  3.875,  3.   ,  3.75 ])
     """
-    #la matrice est en fait un vecteur ligne ou colonne--> produit terme à terme
+    # la matrice est en fait un vecteur ligne ou colonne--> produit terme à terme
     if len(matrice.shape) == 1 or matrice.ndim == 2 and 1 in matrice.shape:
         result = matrice * vecteur
-    else : #la matrice est unevraie matrice (dim >=2) --> produit matriciel
+    else:  # matrice est unevraie matrice (dim >=2) --> produit matriciel
         result = np.dot(matrice, vecteur)
     return result
+
 
 def inverseMasse(matrice):
     """
     MassMatrix de type MassMatrix
     Fonction pour faire inverse la matrice masse, qu'elle soit sous forme de vecteur ou de matrice
     """
-
-    if len(matrice.shape) == 1 or matrice.ndim == 2 and 1 in matrice.shape:
+    if len(matrice.shape) == 1 or (matrice.ndim == 2 and 1 in matrice.shape):
         result = np.zeros([len(matrice), 1])
         for ind_node in xrange(len(matrice)):
             result[ind_node] = 1. / matrice[ind_node]
-    else : #la matrice est une vraie matrice (dim >=2)
+    else:  # la matrice est une vraie matrice (dim >=2)
         result = inv(matrice)
-    print "Mass matrix has been inverted"
     return result
+
 
 def lump_matrix(matrix):
     """
@@ -49,7 +49,7 @@ def lump_matrix(matrix):
     (on somme sur toute la ligne pour obtenir une matrice diagonale)
     """
     lumped_matrix = np.zeros((matrix.shape[0], matrix.shape[1]))
-    for iligne in range(matrix.shape[0]) :
+    for iligne in range(matrix.shape[0]):
         lumped_matrix[iligne, iligne] = sum(matrix[iligne, :])
     return lumped_matrix
 
@@ -58,11 +58,11 @@ class SymNDArray(np.ndarray):
     """
     Une classe pour les matrices symétriques
     """
-    def __setitem__(self, (i , j), value):
+    def __setitem__(self, (i, j), value):
         super(SymNDArray, self).__setitem__((i, j), value)
         super(SymNDArray, self).__setitem__((j, i), value)
 
 
-if __name__ =="__main__":
+if __name__ == "__main__":
     import doctest
     doctest.testmod()

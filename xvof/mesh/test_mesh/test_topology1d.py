@@ -3,12 +3,7 @@
 """
 Classe de test du module Topology1d
 """
-import numpy as np
 import unittest
-import mock
-
-import xvof.node.one_dimension_node as nd1d
-from xvof.mesh.topology1d import Topology1D
 
 
 class Topology1dTest(unittest.TestCase):

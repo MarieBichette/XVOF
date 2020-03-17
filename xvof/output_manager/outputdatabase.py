@@ -29,7 +29,10 @@ class OutputDatabase(object):
         Create a dataset corresponding to field_name and storing the values. All extra keywords arguments
         are stored as attributes of the dataset
         """
+        # try:
         ds = self.__current_group.create_dataset(field_name, values.shape, np.result_type(values))
+        # except TypeError:
+        #     import ipdb; ipdb.set_trace()
         ds[...] = values
         for k, v in kwargs.items():
             ds.attrs[k] = v

@@ -1,0 +1,9 @@
+{
+    "eps_050_hansbo": {
+        "color": "deepskyblue",
+        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_consistent_050/",
+        "label": "$\\epsilon = 0.50$ enriched $[\\mathcal{M}]_{consist}$",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

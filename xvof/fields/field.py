@@ -47,6 +47,16 @@ class Field(object):
         """
         return self.__current[:]
 
+    @current_value.setter
+    def current_value(self, value):
+        """
+        Set value as the current value of the field (useful for Hansbo enrichment)
+
+        :param value: new field value to set
+        :type value: float or numpy.array
+        """
+        self.__current[:] = value
+
     @property
     def new_value(self):
         """
@@ -65,7 +75,7 @@ class Field(object):
         """
         self.__future[:] = value
 
-    def incrementValues(self):
+    def increment_values(self):
         """
         Increment field values
         """

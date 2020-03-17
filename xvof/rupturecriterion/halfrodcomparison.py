@@ -13,17 +13,16 @@ class HalfRodComparisonCriterion(RuptureCriterion):
     """
     def __init__(self, ruptured_cell_index=500):
         super(HalfRodComparisonCriterion, self).__init__()
-        self.__ruptured_cell_index = ruptured_cell_index
+        self.__ruptured_cell_index = int(ruptured_cell_index)
 
     def checkCriterion(self, cells):
         """
         Return the mask of the cells where only the ruptured_cell_index is set to True
 
         :param cells: cells on which to check criterion
-        :param ruptured_cell_index: index of the cell to be marked as ruptured
         :return: mask of the cells where only the ruptured_cell_index is set to True
         """
-        mask_milieu = np.ndarray(cells.pressure.new_value.shape, dtype=np.bool,order='C')
+        mask_milieu = np.ndarray(cells.pressure.new_value.shape, dtype=np.bool, order='C')
         mask_milieu[:] = False
         mask_milieu[self.__ruptured_cell_index] = True
         return mask_milieu

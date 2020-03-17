@@ -11,6 +11,7 @@ from time import clock, time, sleep
 
 cumul_times = OrderedDict()
 
+
 def timeit_file(filename=None):
     """
     Decorateur permettant de sortir dans le fichier de nom "filename"
@@ -27,7 +28,6 @@ def timeit_file(filename=None):
             """
             wrapper autour de la fonction func
             """
-            file_desc = None
             if filename is not None:
                 file_desc = open(filename, 'a+')
             else:
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         Compte à rebours sur nbr_iter itérations
         """
         for i in range(nbr_iter, 0, -1):
-            if (i % 1000 == 0):
+            if i % 1000 == 0:
                 print i
             sleep(0.0001)
 

@@ -7,14 +7,14 @@ from xvof.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphso
 
 
 class ClassicalNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
-    '''
+    """
     Classe définissant un incrément classique de l'algorithme de Newton-Raphson
-    '''
+    """
     def __init__(self):
         super(ClassicalNewtonRaphsonIncrement, self).__init__()
 
     def computeIncrement(self, function_value, derivative_function_value):
-        '''
-        Calcul de l'incrément
-        '''
+        """
+        Increment computation
+        """
         return - function_value / derivative_function_value

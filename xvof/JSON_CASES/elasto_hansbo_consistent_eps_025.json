@@ -1,0 +1,9 @@
+{
+    "elasto_hansbo_consistent_eps_025": {
+        "color": "green",
+        "directory_name": "RESULTS/VALIDATION_EPP/EPP_rupture/elasto/eps_025_hansbo_complete_elasto/",
+        "label": "XVOF : Elastique, $\\epsilon= 0.25$",
+        "linestyle": "",
+        "marker": "s"
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "CFRAC_TA5": {
+        "color": "blue",
+        "directory_name": "CFRAC/TA5",
+        "label": "TA5",
+        "linestyle": "-",
+        "marker": "."
+    }
+}
