@@ -12,10 +12,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.utilities.case_definition import CaseManager
-from xvof.figure_manager.time_figure_tools import VelocityField
-from xvof.output_figure.hdf5_posttreatment_tools import read_database_in_array
-from xvof.utilities.experimental_data_exploit import ExperimentalData
+from xvof.src.utilities.case_definition import CaseManager
+from xvof.src.figure_manager.time_figure_tools import VelocityField
+from xvof.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
+from xvof.src.utilities.experimental_data_exploit import ExperimentalData
 
 # -----------------------------------------
 # Initialize treatment and legend

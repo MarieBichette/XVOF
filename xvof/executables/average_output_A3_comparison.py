@@ -10,11 +10,11 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.utilities.case_definition import CaseManager
-from xvof.figure_manager.time_figure_tools import PressureField, DeviatoricStressField, PseudoViscosityField
-from xvof.output_figure.profile_tools import get_error_value, initialize_profile_figure,read_hdf5_file, \
+from xvof.src.utilities.case_definition import CaseManager
+from xvof.src.figure_manager.time_figure_tools import PressureField, DeviatoricStressField, PseudoViscosityField
+from xvof.src.output_figure.profile_tools import get_error_value, initialize_profile_figure,read_hdf5_file, \
                                             A3_list, plot_field_from_txt_file, get_field_from_txt_file
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 # Fields to be compared ----------------
 field = PressureField

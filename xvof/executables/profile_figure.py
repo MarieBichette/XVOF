@@ -21,11 +21,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib2tikz import save as tikz_save
 
-import xvof.figure_manager.time_figure_tools as fig_tools_path
-from xvof.utilities.case_definition import CaseManager
-from xvof.output_figure.profile_tools import get_error_value, plot_field_with_rectangle_shapes, read_hdf5_file, \
+import xvof.src.figure_manager.time_figure_tools as fig_tools_path
+from xvof.src.utilities.case_definition import CaseManager
+from xvof.src.output_figure.profile_tools import get_error_value, plot_field_with_rectangle_shapes, read_hdf5_file, \
     initialize_profile_figure
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 # -----------------------------------------
 # Read user instructions
