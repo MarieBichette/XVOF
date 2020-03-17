@@ -5,7 +5,7 @@
 :todo: correct pb of variable time step
 """
 import matplotlib
-matplotlib.use('Qt4Agg')
+#matplotlib.use('Qt4Agg')
 
 
 import matplotlib.pyplot as plt
@@ -190,7 +190,8 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         TheOutputManager.update(simulation_time, step, data.material_target.failure_model.type_of_enrichment,
                                 data.material_target.failure_model.failure_treatment_value)
-        TheFigureManager.update(simulation_time, step)
+        #TheFigureManager.update(simulation_time, step)
+        # commente en attendant de retrouver Qt
 
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
@@ -285,25 +286,6 @@ if __name__ == '__main__':
         step += 1
         loop_end_time = time.time()
         compute_time += loop_end_time - loop_begin_time
-
-        # Acquisition des  anciennes donnees faites a ce moment la :
-        # c'est pas les vraies valeurs. on laise pour comparer avec les anciennes donnees !
-        # TheOutputManager.update(simulation_time-dt, step-1, data.material_target.failure_model.type_of_enrichment,
-        #                         data.material_target.failure_model.failure_treatment_value)
-
-        # ---------------------------------------------#
-        # CREATION D'UN FICHIER DE SORTIE POUR HISTORIQUE TEMPOREL#
-        # ---------------------------------------------#
-        # for item_time_data in history_list:
-        #     try:
-        #         item_time_data.add_time_step_fields(simulation_time - dt, my_mesh.density_field, my_mesh.pressure_field,
-        #                                              my_mesh.energy_field, my_mesh.artificial_viscosity_field)
-        #
-        #     except TypeError:
-        #         # <!> velocity is defined at t+1/2
-        #         item_time_data.add_time_step_fields(simulation_time - dt/2, my_mesh.nodes_coordinates,
-        #                                             my_mesh.velocity_field)
-
 
     print "Total time spent in compute operation is : {:15.9g} seconds".format(compute_time)
     plt.show(block=False)

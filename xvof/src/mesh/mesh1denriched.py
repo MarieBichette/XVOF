@@ -5,9 +5,7 @@ Base class for one dimensional mesh
 
 import numpy as np
 from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xvof.src.cell.one_dimension_enriched_cell_Moes import OneDimensionMoesEnrichedCell
 from xvof.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
-from xvof.src.node.one_dimension_enriched_node_Moes import OneDimensionMoesEnrichedNode
 from xvof.src.data.data_container import DataContainer
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.discontinuity.discontinuity import Discontinuity

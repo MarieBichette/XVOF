@@ -286,7 +286,7 @@ class DataContainer(object):
         velocity = float(self.__datadoc.find(repertoire_base + 'initial-velocity').text)
 
         json_name = self.__datadoc.find(repertoire_base + 'init-thermo').text
-        json_path = os.path.join(self.project_dir, "CONSTITUTIVE_MODEL/" + json_name)
+        json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
         with open(json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["InitThermo"]
@@ -309,7 +309,7 @@ class DataContainer(object):
         repertoire_base = matter + '/equation-of-state/'
         if self.__datadoc.find(repertoire_base + 'name').text == 'Mie-Gruneisen':
             json_name = self.__datadoc.find(repertoire_base + 'coefficients').text
-            json_path = os.path.join(self.project_dir, "CONSTITUTIVE_MODEL/" + json_name)
+            json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
             with open(json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
