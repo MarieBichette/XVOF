@@ -1,9 +1,0 @@
-{
-    "TA5_pres_enr": {
-        "color": "green",
-        "directory_name": "3_impact_TA5_without_czm",
-        "label": "Enrichissement",
-        "linestyle": "-",
-        "marker": "+"
-    }
-}

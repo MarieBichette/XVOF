@@ -1,9 +1,0 @@
-{
-    "validation_elasto": {
-        "color": "red",
-        "directory_name": "RESULTS/VALIDATION_EPP/EPP/elasto/",
-        "label": "XVOF : Elastique",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

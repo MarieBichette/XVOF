@@ -1,9 +1,0 @@
-{
-    "convergence_h_05um": {
-        "color": "blue",
-        "directory_name": "ETUDE_CONVERGENCE_REFERENCE/h_05_um/",
-        "label": "h= 5 $\\mu$m",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

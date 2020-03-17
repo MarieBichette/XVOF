@@ -1,9 +1,0 @@
-{
-    "CFRAC_Coarse_without_czm": {
-        "color": "blue",
-        "directory_name": "CFRAC/CoarseMesh_without_czm",
-        "label": "Coarse mesh without czm",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

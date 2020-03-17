@@ -1,9 +1,0 @@
-{
-    "czm_default": {
-        "color": "blue",
-        "directory_name": "RESULTS/OLD_MODELE_COHESIF/0_CZM/",
-        "label": "$[\\mathcal{M}]_{menouillard}$ + CZM",
-        "linestyle": "--",
-        "marker": "."
-    }
-}
