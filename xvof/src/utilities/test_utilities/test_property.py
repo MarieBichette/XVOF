@@ -59,34 +59,57 @@ class PropertyTest(unittest.TestCase):
 
     def test_prop(self):
         """Teste la méthode de renvoi simple"""
+        # Remise à zéro de la classe
+        self.my_class._field = np.array([0., 1., 2.])
+        self.my_class._field_enriched = np.array([0., 4., 0.])
+        # test de ...
         np.testing.assert_array_equal(self.my_class.prop, self.my_class._field)
-        self.my_class.prop[0] += 10.
-        np.testing.assert_array_equal(self.my_class.prop, np.array([10., 1., 2.]))
-        np.testing.assert_array_equal(self.my_class._field, np.array([0., 1., 2.]))
+        result = self.my_class.prop
+        result[0] += 10
+        np.testing.assert_array_equal(result, np.array([10., 1., 2.]))
+        np.testing.assert_array_equal(self.my_class._field, np.array([10., 1., 2.]))
 
     def test_prop_copy(self):
         """Teste la méthode de renvoi simple - ecriture copy"""
+        # Remise à zéro de la classe
+        self.my_class._field = np.array([0., 1., 2.])
+        self.my_class._field_enriched = np.array([0., 4., 0.])
+        # test de ...
         np.testing.assert_array_equal(self.my_class.prop_copy, self.my_class._field)
-        self.my_class.prop[0] += 10.
-        np.testing.assert_array_equal(self.my_class.prop, np.array([10., 1., 2.]))
+        result = self.my_class.prop_copy
+        result[0] += 10
+        np.testing.assert_array_equal(result, np.array([10., 1., 2.]))
         np.testing.assert_array_equal(self.my_class._field, np.array([0., 1., 2.]))
 
     def test_prop_total(self):
         """Teste la méthode de renvoi avec operation - ecriture simple"""
-        np.testing.assert_array_equal(self.my_class.prop_total, np.array([0., 5., 2.]))
-        appel1 = self.my_class.prop_total # appel dela prop quelque part dans le code
-        np.testing.assert_array_equal(self.my_class._field, np.array([0., 1., 2.]))
+        # Remise à zéro de la classe
+        self.my_class._field = np.array([0., 1., 2.])
+        self.my_class._field_enriched = np.array([0., 4., 0.])
+        # test de ...
+        result = self.my_class.prop_total
+        np.testing.assert_array_equal(result, np.array([0., 5., 2.]))
+        np.testing.assert_array_equal(self.my_class._field, np.array([0., 5., 2.]))
 
     def test_prop_total_point(self):
         """Teste la méthode de renvoi avec operation - ecriture [:]"""
-        np.testing.assert_array_equal(self.my_class.prop_total_point, np.array([0., 5., 2.]))
-        appel1 = self.my_class.prop_total_point # appel dela prop quelque part dans le code
-        np.testing.assert_array_equal(self.my_class._field, np.array([0., 1., 2.]))
+        # Remise à zéro de la classe
+        self.my_class._field = np.array([0., 1., 2.])
+        self.my_class._field_enriched = np.array([0., 4., 0.])
+        # test de ...
+        result = self.my_class.prop_total_point
+        np.testing.assert_array_equal(result, np.array([0., 5., 2.]))
+        np.testing.assert_array_equal(self.my_class._field, np.array([0., 5., 2.]))
+
 
     def test_prop_total_copy(self):
         """Teste la méthode de renvoi avec operation - ecriture np.copy()"""
-        np.testing.assert_array_equal(self.my_class.prop_total_copy, np.array([0., 5., 2.]))
-        appel1 = self.my_class.prop_total_copy # appel dela prop quelque part dans le code
+        # Remise à zéro de la classe
+        self.my_class._field = np.array([0., 1., 2.])
+        self.my_class._field_enriched = np.array([0., 4., 0.])
+        # test de ...
+        result = self.my_class.prop_total_copy
+        np.testing.assert_array_equal(result, np.array([0., 5., 2.]))
         np.testing.assert_array_equal(self.my_class._field, np.array([0., 1., 2.]))
 
 
