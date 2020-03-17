@@ -1,9 +1,0 @@
-{
-    "ref_wilkins_epp_050_adapt_hansbo": {
-        "color": "red",
-        "directory_name": "RESULTS/PLASTICITY/ref_wilkins_consistent_050",
-        "label": "refconsistent",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

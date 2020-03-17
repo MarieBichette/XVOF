@@ -1,9 +1,0 @@
-{
-    "TA5_with_czm": {
-        "color": "red",
-        "directory_name": "RESULTS/OLD_MODELE_COHESIF/0_CZM_TA5/",
-        "label": "TA5 enr et czm",
-        "linestyle": "--",
-        "marker": "o"
-    }
-}

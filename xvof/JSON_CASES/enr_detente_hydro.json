@@ -1,9 +1,0 @@
-{
-    "enr_detente_hydro": {
-        "color": "blue",
-        "directory_name": "1_init_detente_enrichi_hydro",
-        "label": "hydro enr",
-        "linestyle": "-",
-        "marker": "*"
-    }
-}

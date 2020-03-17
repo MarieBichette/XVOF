@@ -1,9 +1,0 @@
-{
-    "hydro_wilkins_ref_eps_025_adapt_hansbo": {
-        "color": "purple",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/REFERENCE/eps_025_ref_correction_hansbo/",
-        "label": "REF : matrice complete (adapt. hansbo), $\\epsilon = 0.25",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

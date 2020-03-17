@@ -1,9 +1,0 @@
-{
-    "TA5_pimpose": {
-        "color": "green",
-        "directory_name": "RESULTS/OLD_MODELE_COHESIF/0_CZM_TA5_pimpose/",
-        "label": "TA5 impose p=0",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

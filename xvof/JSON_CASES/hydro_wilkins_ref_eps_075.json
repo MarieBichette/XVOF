@@ -1,9 +1,0 @@
-{
-    "hydro_wilkins_ref_eps_075": {
-        "color": "red",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/REFERENCE/eps_075_ref_wilkins/",
-        "label": "REF : lump wilkins, $\\epsilon= 0.75$",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

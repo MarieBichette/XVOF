@@ -1,9 +1,0 @@
-{
-    "elasto_wilkins_ref_eps_025": {
-        "color": "red",
-        "directory_name": "RESULTS/VALIDATION_EPP/EPP_rupture/elasto_ref/eps_025_ref_complete_elasto/",
-        "label": "Reference : Elastique, $\\epsilon= 0.25$",
-        "linestyle": "-",
-        "marker": "."
-    }
-}
