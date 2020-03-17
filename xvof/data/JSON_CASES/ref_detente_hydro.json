@@ -1,0 +1,9 @@
+{
+    "ref_detente_hydro": {
+        "color": "red",
+        "directory_name": "1_init_detente_ref_hydro",
+        "label": "hydro ref",
+        "linestyle": "-",
+        "marker": "+"
+    }
+}

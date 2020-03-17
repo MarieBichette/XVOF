@@ -1,0 +1,9 @@
+{
+    "CFRAC_Fine_with_czm": {
+        "color": "green ",
+        "directory_name": "CFRAC/FineMesh_with_czm",
+        "label": "Fine mesh with czm",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

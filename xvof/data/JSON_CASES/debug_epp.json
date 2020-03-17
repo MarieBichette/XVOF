@@ -1,0 +1,9 @@
+{
+    "debug_epp": {
+        "color": "blue",
+        "directory_name": "0_debug_epp",
+        "label": "epp",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}

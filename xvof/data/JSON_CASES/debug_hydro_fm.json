@@ -1,0 +1,9 @@
+{
+    "debug_hydro_fm": {
+        "color": "deepskyblue",
+        "directory_name": "0_debug_hydro_fine_mesh",
+        "label": "hydro fine mesh",
+        "linestyle": "-",
+        "marker": "*"
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "epp_wilkins_ref_eps_050": {
+        "color": "red",
+        "directory_name": "RESULTS/VALIDATION_EPP/EPP_rupture/epp_120_MPa_ref/eps_050_ref_complete_epp/",
+        "label": "Reference : EPP, $\\epsilon= 0.50$",
+        "linestyle": "-",
+        "marker": "."
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "InitThermo": {
+        "initial_pressure": "1.e09",
+        "initial_density": "17043.",
+        "initial_internal_energy": "1.278194e2",
+        "initial_temperature":"302"
+    }
+}
