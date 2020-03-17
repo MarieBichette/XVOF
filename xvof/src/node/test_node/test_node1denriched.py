@@ -7,13 +7,13 @@ import numpy as np
 import unittest
 import mock
 
-import xvof.node.one_dimension_enriched_node as nd1denr
-import xvof.node.one_dimension_node as nd1d
+import xvof.src.node.one_dimension_enriched_node as nd1denr
+import xvof.src.node.one_dimension_node as nd1d
 
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
-from xvof.node.one_dimension_node import OneDimensionNode
-from xvof.mesh.topology1d import Topology1D
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xvof.src.node.one_dimension_node import OneDimensionNode
+from xvof.src.mesh.topology1d import Topology1D
 
 
 class OneDimensionEnrichedNodeTest(unittest.TestCase):

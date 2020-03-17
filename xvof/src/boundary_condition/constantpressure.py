@@ -3,7 +3,7 @@
 """
 Classe définissant une pression constante
 """
-from xvof.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.pressurelaw import PressureLaw
 
 
 class ConstantPressure(PressureLaw):

@@ -7,7 +7,7 @@ Classe de test du module Discontinuity
 
 import unittest
 import numpy as np
-from xvof.discontinuity.discontinuity import Discontinuity
+from xvof.src.discontinuity.discontinuity import Discontinuity
 
 
 class DiscontinuityTest(unittest.TestCase):

@@ -4,7 +4,7 @@ Implementing the EnrichedField class
 """
 import numpy as np
 
-from xvof.fields.field import Field
+from xvof.src.fields.field import Field
 
 
 def from_geometry_to_enrich_field(left_field, right_field):

@@ -5,7 +5,7 @@
 Classe de test du module RampPressure
 """
 import unittest
-import xvof.boundary_condition.ramppressure as RpPressure
+import xvof.src.boundary_condition.ramppressure as RpPressure
 
 
 class RampPressureTest(unittest.TestCase):

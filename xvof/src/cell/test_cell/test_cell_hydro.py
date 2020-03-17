@@ -5,12 +5,12 @@ Cell module unit tests
 """
 import numpy as np
 import unittest
-from xvof.cell.cell import Cell
-from xvof.mesh.topology1d import Topology1D
-from xvof.node import OneDimensionNode
-from xvof.utilities.testing import captured_output
-from xvof.data.data_container import DataContainer
-from xvof.cell.test_cell.test_variables import TestVariables
+from xvof.src.cell.cell import Cell
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.node import OneDimensionNode
+from xvof.src.utilities.testing import captured_output
+from xvof.src.data.data_container import DataContainer
+from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class CellTest(unittest.TestCase):
@@ -19,7 +19,7 @@ class CellTest(unittest.TestCase):
         """
         Tests setup
         """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof/0_UNITTEST/XDATA_hydro.xml"
+        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA_hydro.xml"
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.test_variables = TestVariables(4, 5)

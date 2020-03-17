@@ -3,8 +3,8 @@
 """
 Classe définissant une pression en rampe
 """
-from xvof.boundary_condition.pressurelaw import PressureLaw
-from xvof.boundary_condition.ramppressure import RampPressure
+from xvof.src.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.ramppressure import RampPressure
 
 
 class CreneauRampPressure(PressureLaw):

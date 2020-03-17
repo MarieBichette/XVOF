@@ -6,17 +6,17 @@ one_dimension_cell module unit tests
 import numpy as np
 import unittest
 import mock
-from xvof.cell.cell import Cell
-from xvof.cell.one_dimension_cell import OneDimensionCell
-from xvof.mesh.topology1d import Topology1D
-from xvof.data.data_container import DataContainer
-from xvof.rheology.constantshearmodulus import ConstantShearModulus
-from xvof.cell.test_cell.test_variables import TestVariables
+from xvof.src.cell.cell import Cell
+from xvof.src.cell.one_dimension_cell import OneDimensionCell
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.data.data_container import DataContainer
+from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
+from xvof.src.cell.test_cell.test_variables import TestVariables
 
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof/0_UNITTEST/XDATA_elasto.xml"
+        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA_elasto.xml"
         self.test_datacontainer = DataContainer(data_file_path)
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)

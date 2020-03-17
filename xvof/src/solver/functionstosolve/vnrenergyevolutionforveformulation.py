@@ -4,7 +4,7 @@ Implementing VnrEnergyEvolutionForVolumeEnergyFormulation class
 """
 
 import numpy as np
-from xvof.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
+from xvof.src.solver.functionstosolve.functiontosolvebase import FunctionToSolveBase
 
 
 class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):

@@ -6,8 +6,8 @@ Classe de test du module node
 import numpy as np
 import unittest
 import mock
-from xvof.cell.cell import Cell
-from xvof.rupturecriterion.minimumpressure import MinimumPressureCriterion
+from xvof.src.cell.cell import Cell
+from xvof.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 
 class MinimumPressureTest(unittest.TestCase):
     """

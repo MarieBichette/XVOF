@@ -7,7 +7,7 @@ import numpy as np
 import unittest
 import mock
 
-from xvof.mesh.mesh1d import Mesh1d
+from xvof.src.mesh.mesh1d import Mesh1d
 
 class Mesh1dTest(unittest.TestCase):
     """

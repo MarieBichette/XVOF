@@ -6,7 +6,7 @@ Classe de test du module TwoStepsPressure
 """
 import unittest
 
-import xvof.boundary_condition.twostepspressure as TwoStpPressure
+import xvof.src.boundary_condition.twostepspressure as TwoStpPressure
 
 class TwoStepsPressureTest(unittest.TestCase):
     """

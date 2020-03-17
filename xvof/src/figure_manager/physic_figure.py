@@ -6,7 +6,7 @@ Classe définissant une figure
 import matplotlib.pyplot as plt
 from os import sep
 import numpy as np
-from xvof.data.data_container import DataContainer
+from xvof.src.data.data_container import DataContainer
 
 
 class PhysicFigure(object):

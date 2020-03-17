@@ -6,13 +6,13 @@ Cell module unit tests
 import numpy as np
 import unittest
 import mock
-from xvof.mesh.topology1d import Topology1D
-from xvof.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.cell.one_dimension_cell import OneDimensionCell
-from xvof.data.data_container import DataContainer
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.rheology.constantshearmodulus import ConstantShearModulus
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
+from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xvof.src.cell.one_dimension_cell import OneDimensionCell
+from xvof.src.data.data_container import DataContainer
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
 class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
@@ -21,7 +21,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Préparation des tests
         """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof/0_UNITTEST/XDATA.xml"
+        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA.xml"
         self.test_datacontainer = DataContainer(data_file_path)
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
@@ -72,7 +72,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xvof.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
 
@@ -93,13 +93,13 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         config = {'label': 1,
                   'ruptured_cell_id': np.array([0]),
                   'additional_dof_pressure.current_value': np.array([1.e+09])}
-        patcher = mock.patch('xvof.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_1 = patcher.start()
         # configuration de la deuxième discontinuité
         config = {'label': 2,
                   'ruptured_cell_id': np.array([1]),
                   'additional_dof_pressure.current_value': np.array([5.e+09])}
-        patcher = mock.patch('xvof.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_2 = patcher.start()
 
         # on a besoin de faire comme si on avait 2 cells classiques qui rompent

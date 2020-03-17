@@ -9,8 +9,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.figure_manager.time_figure import TimeFigure, Time_Field
-from xvof.output_figure.hdf5_posttreatment_tools import read_database_in_array
+from xvof.src.figure_manager.time_figure import TimeFigure, Time_Field
+from xvof.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
 
 # -- Rappel : Time_Field = namedtuple("Time_Field", ["label","title","application", "colonne_history"])
 DensityField = Time_Field("Density [$kg/m^3$]", "Density", "cell", 1)

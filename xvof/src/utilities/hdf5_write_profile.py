@@ -11,9 +11,9 @@ case (optional) : list
 import os
 import sys
 
-import xvof.figure_manager.time_figure_tools as fig_tools
-import xvof.utilities.case_definition as case_path
-from xvof.output_figure.hdf5_posttreatment_tools import write_profile_from_db, write_evolution_from_db
+import xvof.src.figure_manager.time_figure_tools as fig_tools
+import xvof.src.utilities.case_definition as case_path
+from xvof.src.output_figure.hdf5_posttreatment_tools import write_profile_from_db, write_evolution_from_db
 
 # -----------------------------------------
 # Read user instructions

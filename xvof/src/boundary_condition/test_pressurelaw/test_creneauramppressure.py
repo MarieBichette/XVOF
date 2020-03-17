@@ -6,7 +6,7 @@ Classe de test du module RampPressure
 """
 import unittest
 
-import xvof.boundary_condition.creneau_ramp_pressure as CrRpPressure
+import xvof.src.boundary_condition.creneau_ramp_pressure as CrRpPressure
 
 class CreneauRampPressureTest(unittest.TestCase):
     """

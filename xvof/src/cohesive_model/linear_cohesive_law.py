@@ -3,7 +3,7 @@
 Definition of LinearCohesiveZoneModel
 """
 
-from xvof.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
+from xvof.src.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
 
 
 class LinearCohesiveZoneModel(CohesiveZoneModelBase):

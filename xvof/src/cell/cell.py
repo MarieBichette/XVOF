@@ -8,9 +8,9 @@ from abc import abstractmethod
 from copy import deepcopy
 import os
 
-from xvof.data.data_container import DataContainer
-from xvof.fields.field import Field
-from xvof.fields.fieldsmanager import FieldManager
+from xvof.src.data.data_container import DataContainer
+from xvof.src.fields.field import Field
+from xvof.src.fields.fieldsmanager import FieldManager
 
 
 class Cell(object):

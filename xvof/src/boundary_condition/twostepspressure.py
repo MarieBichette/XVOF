@@ -3,7 +3,7 @@
 """
 Classe définissant une pression à deux paliers constants
 """
-from xvof.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.pressurelaw import PressureLaw
 
 
 class TwoStepsPressure(PressureLaw):

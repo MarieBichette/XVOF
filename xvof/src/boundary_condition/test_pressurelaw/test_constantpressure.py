@@ -6,7 +6,7 @@ Classe de test du module ConstantPressure
 """
 import unittest
 
-import xvof.boundary_condition.constantpressure as CstPressure
+import xvof.src.boundary_condition.constantpressure as CstPressure
 
 
 class ConstantPressureTest(unittest.TestCase):

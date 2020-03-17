@@ -5,7 +5,7 @@ Classe gérant la topologie 1D du maillage
 """
 import numpy as np
 
-from xvof.mesh.topology import Topology
+from xvof.src.mesh.topology import Topology
 
 
 class Topology1D(Topology):

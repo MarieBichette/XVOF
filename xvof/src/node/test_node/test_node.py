@@ -5,7 +5,7 @@ Classe de test du module node
 """
 import numpy as np
 import unittest
-import xvof.node.node as nd
+import xvof.src.node.node as nd
 
 
 class NodeTest(unittest.TestCase):

@@ -7,7 +7,7 @@ Classe de test du module ConstantPressure
 import numpy as np
 import unittest
 
-import xvof.pressurelaw.twostepspressure as TwoStpPressure
+import xvof.src.pressurelaw.twostepspressure as TwoStpPressure
 
 class ConstantPressureTest(unittest.TestCase):
     """

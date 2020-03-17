@@ -4,9 +4,9 @@ Implementing EnrichElement class
 """
 import numpy as np
 
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.rupturetreatment.rupturetreatment import RuptureTreatment
-from xvof.data.data_container import DataContainer
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.rupturetreatment.rupturetreatment import RuptureTreatment
+from xvof.src.data.data_container import DataContainer
 
 
 class EnrichElement(RuptureTreatment):

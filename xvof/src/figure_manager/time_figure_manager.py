@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pylab import rcParams
 
-import xvof.utilities.case_definition as case_path
-from xvof.figure_manager.time_figure import TimeFigure
-from xvof.figure_manager.time_figure_tools import TimeFigureTools
+import xvof.src.utilities.case_definition as case_path
+from xvof.src.figure_manager.time_figure import TimeFigure
+from xvof.src.figure_manager.time_figure_tools import TimeFigureTools
 
 
 class TimeFigureManager:

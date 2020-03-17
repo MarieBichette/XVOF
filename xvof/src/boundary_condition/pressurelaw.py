@@ -4,7 +4,7 @@
 Classe de base définissant une loi de pression
 """
 from abc import abstractmethod
-from xvof.boundary_condition.boundary_condition import BoundaryCondition
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
 class PressureLaw(BoundaryCondition):

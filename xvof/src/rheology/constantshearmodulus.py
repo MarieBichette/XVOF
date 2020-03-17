@@ -4,7 +4,7 @@
 Implementation d'une classe de module de cisaillement constant
 """
 
-from xvof.rheology.shearmodulus import ShearModulus
+from xvof.src.rheology.shearmodulus import ShearModulus
 
 
 class ConstantShearModulus(ShearModulus):

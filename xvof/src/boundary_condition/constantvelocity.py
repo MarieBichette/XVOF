@@ -3,7 +3,7 @@
 """
 Classe définissant une pression constante
 """
-from xvof.boundary_condition.velocitylaw import VelocityLaw
+from xvof.src.boundary_condition.velocitylaw import VelocityLaw
 
 
 class ConstantVelocity(VelocityLaw):

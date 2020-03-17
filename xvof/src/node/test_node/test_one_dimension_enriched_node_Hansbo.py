@@ -6,10 +6,10 @@ Classe de test du module OneDimensionEnrichedNode
 import numpy as np
 import unittest
 import mock
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
-from xvof.mesh.topology1d import Topology1D
-from xvof.data.data_container import DataContainer
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.data.data_container import DataContainer
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """
@@ -19,7 +19,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Préparation des tests unitaires
         """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof/0_UNITTEST/XDATA.xml"
+        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA.xml"
         self.test_datacontainer = DataContainer(data_file_path)
         class element:
             def __init__(self, poz, pressure, pseudo, masse):
@@ -74,7 +74,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'discontinuity_opening.current_value': 0.5,
                   'discontinuity_opening.new_value': 0.5
                   }
-        patcher = mock.patch('xvof.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def test_enrichment_concerned(self):

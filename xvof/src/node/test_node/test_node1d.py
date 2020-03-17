@@ -7,9 +7,9 @@ import numpy as np
 import unittest
 import mock
 
-import xvof.node.one_dimension_node as nd1d
-from xvof.mesh.topology1d import Topology1D
-from xvof.node.one_dimension_node import OneDimensionNode
+import xvof.src.node.one_dimension_node as nd1d
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.node.one_dimension_node import OneDimensionNode
 
 
 class Node1dTest(unittest.TestCase):

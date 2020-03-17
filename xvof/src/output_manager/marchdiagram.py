@@ -4,7 +4,7 @@ A script writing a march diagram after exploitation of the output database
 """
 from __future__ import print_function
 import numpy as np
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
 if __name__ == "__main__":

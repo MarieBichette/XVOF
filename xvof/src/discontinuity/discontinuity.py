@@ -4,9 +4,9 @@
 A module implementing the Discontinuity class
 """
 import numpy as np
-from xvof.data.data_container import DataContainer
-from xvof.fields.field import Field
-from xvof.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import OneDimensionHansboEnrichedMassMatrix
+from xvof.src.data.data_container import DataContainer
+from xvof.src.fields.field import Field
+from xvof.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import OneDimensionHansboEnrichedMassMatrix
 
 
 class Discontinuity(object):

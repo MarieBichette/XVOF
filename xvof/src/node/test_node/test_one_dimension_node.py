@@ -7,9 +7,9 @@ import numpy as np
 import unittest
 import mock
 
-from xvof.mesh.topology1d import Topology1D
-from xvof.node.one_dimension_node import OneDimensionNode
-from xvof.mass_matrix.mass_matrix_utilities import inverseMasse
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.node.one_dimension_node import OneDimensionNode
+from xvof.src.mass_matrix.mass_matrix_utilities import inverseMasse
 
 
 class Node1dTest(unittest.TestCase):

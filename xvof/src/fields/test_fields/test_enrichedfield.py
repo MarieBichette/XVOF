@@ -5,7 +5,7 @@ Unit tests for enriched_field class
 """
 import numpy as np
 import unittest
-import xvof.fields.enrichedfield as enr_field
+import xvof.src.fields.enrichedfield as enr_field
 
 
 class EnrichedFieldTest(unittest.TestCase):

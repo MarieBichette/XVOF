@@ -6,17 +6,17 @@ Classe de test du module element1dupgraded
 import numpy as np
 import unittest
 import mock
-from xvof.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.data.data_container import DataContainer
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.cell.test_cell.test_variables import TestVariables
+from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xvof.src.data.data_container import DataContainer
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def setUp(self):
         """ Préparation des tests """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof/0_UNITTEST/XDATA_enrichment_hydro.xml"
+        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA_enrichment_hydro.xml"
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.test_variables = TestVariables(4, 5)

@@ -2,8 +2,8 @@
 """
 Definition of TrilinearCohesiveZoneModel
 """
-from xvof.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
-from xvof.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
+from xvof.src.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
+from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
 
 
 class TrilinearCohesiveZoneModel(CohesiveZoneModelBase):

@@ -4,16 +4,16 @@ Base class for one dimensional mesh
 """
 
 import numpy as np
-from xvof.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xvof.cell.one_dimension_enriched_cell_Moes import OneDimensionMoesEnrichedCell
-from xvof.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
-from xvof.node.one_dimension_enriched_node_Moes import OneDimensionMoesEnrichedNode
-from xvof.data.data_container import DataContainer
-from xvof.mesh.topology1d import Topology1D
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.utilities.profilingperso import timeit_file
-from xvof.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
-from xvof.contact.contact import ContactModel
+from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
+from xvof.src.cell.one_dimension_enriched_cell_Moes import OneDimensionMoesEnrichedCell
+from xvof.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xvof.src.node.one_dimension_enriched_node_Moes import OneDimensionMoesEnrichedNode
+from xvof.src.data.data_container import DataContainer
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.utilities.profilingperso import timeit_file
+from xvof.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
+from xvof.src.contact.contact import ContactModel
 
 # noinspection PyArgumentList
 class Mesh1dEnriched(object):
@@ -105,7 +105,7 @@ class Mesh1dEnriched(object):
                 self.cells.mass, self.mask_last_nodes_of_ref, self.__topology)
             self.inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_nodes_velocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
@@ -158,7 +158,7 @@ class Mesh1dEnriched(object):
                 contact.compute_contact(self.nodes.upundemi, delta_t)
                 contact.apply_contact(self.nodes.upundemi, delta_t)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
@@ -170,14 +170,14 @@ class Mesh1dEnriched(object):
 
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_cells_sizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
@@ -188,7 +188,7 @@ class Mesh1dEnriched(object):
 
         self.nodes.compute_discontinuity_opening()
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
@@ -197,7 +197,7 @@ class Mesh1dEnriched(object):
 
         self.cells.compute_enriched_elements_new_density()
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_cells_pressures(self, dt):
         """
         Computation of cells pressure at t+dt
@@ -208,7 +208,7 @@ class Mesh1dEnriched(object):
 
         self.cells.compute_enriched_elements_new_pressure(dt)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
         Computation of cells artificial viscosity at t+dt
@@ -219,7 +219,7 @@ class Mesh1dEnriched(object):
 
         self.cells.compute_enriched_elements_new_pseudo(delta_t)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
@@ -228,7 +228,7 @@ class Mesh1dEnriched(object):
 
         self.nodes.compute_enriched_nodes_new_force(self.__topology, self.cells.stress_xx)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_cohesive_forces(self, time):
         """
         Computation of cohesive forces at t+dt
@@ -239,7 +239,7 @@ class Mesh1dEnriched(object):
             if DataContainer().material_target.failure_model.failure_treatment == "Enrichment":
                 self.nodes.compute_enriched_nodes_cohesive_forces()
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def increment(self):
         """
         Moving to next time step
@@ -249,7 +249,7 @@ class Mesh1dEnriched(object):
         for disc in Discontinuity.discontinuity_list():
             disc.additional_dof_increment()
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_deviator_elasticity(self, delta_t, mask):
         """
         Compute the deviatoric part of stress tensor
@@ -261,7 +261,7 @@ class Mesh1dEnriched(object):
                                                     self.nodes.xtpdt, self.nodes.upundemi, delta_t)
         self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt, self.nodes.upundemi, delta_t)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def assemble_complete_stress_tensor(self):
         """
         Assembling pressure and stress deviator
@@ -269,7 +269,7 @@ class Mesh1dEnriched(object):
         self.cells.compute_complete_stress_tensor(self.cells.classical)
         self.cells.compute_enriched_stress_tensor()
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def compute_new_time_step(self):
         """
         Computation of new time step
@@ -286,7 +286,7 @@ class Mesh1dEnriched(object):
                 dt = dt/reduction_factor
         return dt
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
@@ -302,7 +302,7 @@ class Mesh1dEnriched(object):
         else:
             self.nodes.apply_pressure(-1, -pressure)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def apply_velocity_boundary_condition(self, surface, velocity):
         """
         Apply a given velocity on left or right boundary
@@ -314,7 +314,7 @@ class Mesh1dEnriched(object):
         else:
             self.nodes.apply_velocity_boundary_coundition(-1, velocity)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
@@ -326,7 +326,7 @@ class Mesh1dEnriched(object):
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):
         """
         Find the cells where the plasticity criterion is checked and store them
@@ -340,7 +340,7 @@ class Mesh1dEnriched(object):
             disc.plastic_cells = plastic_criterion.checkCriterion_on_right_part_cells(disc)
 
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def apply_rupture_treatment(self, treatment, time):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
@@ -349,7 +349,7 @@ class Mesh1dEnriched(object):
         """
         treatment.applyTreatment(self.cells, self.__ruptured_cells, self.nodes, self.__topology, time)
 
-    @timeit_file("/tmp/profil_xvof.txt")
+    @timeit_file("/tmp/profil_xvof.src.txt")
     def apply_plasticity_treatment(self, dt):
         """
         Apply plasticity treatment if criterion is activated :

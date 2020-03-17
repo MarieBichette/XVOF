@@ -11,8 +11,8 @@ import numpy as np
 import os
 from collections import namedtuple
 from physic_figure import PhysicFigure
-from xvof.utilities.singleton import Singleton
-from xvof.output_manager.outputtimecontroler import OutputTimeControler
+from xvof.src.utilities.singleton import Singleton
+from xvof.src.output_manager.outputtimecontroler import OutputTimeControler
 
 max_coord = 0.015
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])

@@ -7,11 +7,11 @@ import numpy as np
 import unittest
 import mock
 
-from xvof.cell.one_dimension_cell import OneDimensionCell as Cell
-from xvof.mesh.topology1d import Topology1D
-from xvof.data.data_container import geometrical_props
-from xvof.fields.field import Field
-from xvof.data.data_container import DataContainer
+from xvof.src.cell.one_dimension_cell import OneDimensionCell as Cell
+from xvof.src.mesh.topology1d import Topology1D
+from xvof.src.data.data_container import geometrical_props
+from xvof.src.fields.field import Field
+from xvof.src.data.data_container import DataContainer
 
 
 class OneDimensionCellTest(unittest.TestCase):

@@ -3,7 +3,7 @@
 Implementig the HalfRodComparisonCriterion class
 """
 import numpy as np
-from xvof.rupturecriterion.rupturecriterion import RuptureCriterion
+from xvof.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
 class HalfRodComparisonCriterion(RuptureCriterion):

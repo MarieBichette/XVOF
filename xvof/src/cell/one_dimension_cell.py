@@ -6,11 +6,11 @@ import ctypes
 import numpy as np
 import os
 
-from xvof.cell import Cell
-from xvof.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
-from xvof.solver.newtonraphson import NewtonRaphson
-from xvof.data.data_container import DataContainer
-from xvof.utilities.stress_invariants_calculation import compute_J2
+from xvof.src.cell import Cell
+from xvof.src.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xvof.src.solver.newtonraphson import NewtonRaphson
+from xvof.src.data.data_container import DataContainer
+from xvof.src.utilities.stress_invariants_calculation import compute_J2
 
 
 # noinspection PyArgumentList

@@ -2,7 +2,7 @@
 """
 Implementing ImposedPressure class
 """
-from xvof.rupturetreatment.rupturetreatment import RuptureTreatment
+from xvof.src.rupturetreatment.rupturetreatment import RuptureTreatment
 
 
 class ImposedPressure(RuptureTreatment):

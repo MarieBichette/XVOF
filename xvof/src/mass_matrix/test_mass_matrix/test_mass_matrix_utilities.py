@@ -7,7 +7,7 @@ Classe de test du module Discontinuity
 
 import unittest
 import numpy as np
-from xvof.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
+from xvof.src.mass_matrix.mass_matrix_utilities import inverseMasse, lump_matrix
 
 
 class MatrixUtliitiesTest(unittest.TestCase):

@@ -3,8 +3,8 @@
 """
 Implementation of MinimumPressureCriterion class
 """
-from xvof.plasticitycriterion.plasticitycriterion import PlasticityCriterion
-from xvof.utilities.stress_invariants_calculation import compute_J2
+from xvof.src.plasticitycriterion.plasticitycriterion import PlasticityCriterion
+from xvof.src.utilities.stress_invariants_calculation import compute_J2
 
 
 class VonMisesCriterion(PlasticityCriterion):

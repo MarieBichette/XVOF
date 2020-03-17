@@ -3,7 +3,7 @@
 """
 Class définissant la correction amortie appliquée sur la variable d'un Newton Raphson
 """
-from xvof.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphsonIncrementBase
+from xvof.src.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphsonIncrementBase
 
 
 class DampedNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):

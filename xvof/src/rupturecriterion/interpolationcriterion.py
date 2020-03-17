@@ -3,7 +3,7 @@
 """
 Implementation of InterpolationPressureCriterion class
 """
-from xvof.rupturecriterion.rupturecriterion import RuptureCriterion
+from xvof.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
 class InterpolationPressureCriterion(RuptureCriterion):

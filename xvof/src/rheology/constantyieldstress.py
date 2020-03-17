@@ -4,7 +4,7 @@
 Implementation d'une classe de limite d'élasticité constant
 """
 
-from xvof.rheology.yieldstress import YieldStress
+from xvof.src.rheology.yieldstress import YieldStress
 
 
 class ConstantYieldStress(YieldStress):

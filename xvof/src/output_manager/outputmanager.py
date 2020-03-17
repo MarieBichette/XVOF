@@ -4,9 +4,9 @@ Implementing the OutputManager class
 from collections import namedtuple
 import os
 import numpy as np
-from xvof.utilities.singleton import Singleton
-from xvof.output_manager.outputtimecontroler import OutputTimeControler
-from xvof.discontinuity.discontinuity import Discontinuity
+from xvof.src.utilities.singleton import Singleton
+from xvof.src.output_manager.outputtimecontroler import OutputTimeControler
+from xvof.src.discontinuity.discontinuity import Discontinuity
 
 
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields", "time_controler"])

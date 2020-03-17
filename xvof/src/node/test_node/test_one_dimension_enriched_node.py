@@ -6,8 +6,8 @@ Classe de test du module OneDimensionEnrichedNode
 import numpy as np
 import unittest
 import mock
-from xvof.discontinuity.discontinuity import Discontinuity
-from xvof.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xvof.src.discontinuity.discontinuity import Discontinuity
+from xvof.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 
 
 class OneDimensionEnrichedNodeTest(unittest.TestCase):

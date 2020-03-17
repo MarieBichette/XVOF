@@ -5,8 +5,8 @@ Implementing the OneDimensionEnrichedMassMatrix class
 """
 import numpy as np
 
-from xvof.mass_matrix.mass_matrix_utilities import SymNDArray
-from xvof.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionEnrichedMassMatrix
+from xvof.src.mass_matrix.mass_matrix_utilities import SymNDArray
+from xvof.src.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionEnrichedMassMatrix
 
 
 class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):

@@ -4,7 +4,7 @@
 Classe définissant une pression à partir d'un fichier texte en entrée (table de marche)
 """
 import numpy as np
-from xvof.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.pressurelaw import PressureLaw
 
 
 class MarchTablePressure(PressureLaw):
