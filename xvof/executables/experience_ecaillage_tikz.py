@@ -13,7 +13,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib2tikz import save as tikz_save
-from xvof.figure_manager.time_figure_tools import VelocityField
+from xvof.src.figure_manager.time_figure_tools import VelocityField
 
 
 project_dir = os.path.split(os.path.dirname(os.path.abspath(os.path.curdir)))[0]

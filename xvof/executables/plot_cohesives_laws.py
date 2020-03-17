@@ -9,8 +9,8 @@ import numpy as np
 import sys
 import os
 import matplotlib.pyplot as plt
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
-from xvof.utilities.case_definition import CaseManager
+from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xvof.src.utilities.case_definition import CaseManager
 
 
 def prepare_figure(fig_id, title, x_label, y_label):

@@ -11,10 +11,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-import xvof.figure_manager.time_figure_tools as fig_tools_path
-from xvof.utilities.case_definition import CaseManager
-from xvof.output_figure.hdf5_posttreatment_tools import read_database_in_array
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+import xvof.src.figure_manager.time_figure_tools as fig_tools_path
+from xvof.src.utilities.case_definition import CaseManager
+from xvof.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
+from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
 print("Ce script estamené à disparaitre. Il faut utiliser show_error_with_epsilon")
