@@ -128,7 +128,8 @@ class OneDimensionCell(Cell):
         return delta_t
 
     def __init__(self, number_of_elements):
-        Cell.__init__(self, number_of_elements)
+        super(OneDimensionCell, self).__init__(number_of_elements)
+        # Cell.__init__(self, number_of_elements)
 
         # By default :all cells are classical (non enriched)
         self._classical = np.ones([number_of_elements, ], dtype=np.bool, order='C')
