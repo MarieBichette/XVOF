@@ -6,6 +6,7 @@ one_dimension_cell module unit tests
 import numpy as np
 import unittest
 import mock
+import os
 
 from xvof.src.cell.one_dimension_cell import OneDimensionCell as Cell
 from xvof.src.mesh.topology1d import Topology1D
@@ -18,7 +19,8 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
         self.test_cell = Cell(3)
-        self.test_datacontainer = DataContainer(self.test_cell._data_path_file)
+        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
+        self.test_datacontainer = DataContainer(data_file_path)
 
     def tearDown(self):
         pass

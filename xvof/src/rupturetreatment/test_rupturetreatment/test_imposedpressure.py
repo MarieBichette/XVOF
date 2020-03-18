@@ -6,8 +6,10 @@ Classe de test du module ImposedPressure
 import unittest
 import xvof.src.rupturetreatment.imposedpressure as IP
 import numpy as np
+import os
 
 from xvof.src.cell.one_dimension_cell import OneDimensionCell
+from xvof.src.data.data_container import DataContainer
 
 
 class ImposedPressureTest(unittest.TestCase):
@@ -20,6 +22,11 @@ class ImposedPressureTest(unittest.TestCase):
         """
         Préparation du test
         """
+        # Création d'un DataContainer bidon :
+        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
+        self.test_datacontainer = DataContainer(data_file_path)
+
+        # Préparation du test
         self._pressure = 0.
 
         self.my_imposed_pressure = IP.ImposedPressure(self._pressure)
