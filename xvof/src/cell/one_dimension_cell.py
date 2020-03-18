@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
 Implementation of the OneDimensionCell class
@@ -86,18 +87,15 @@ class OneDimensionCell(Cell):
         """
         # pylint: disable=too-many-arguments
         # 8 arguments semblent nécessaires
-        vnt = 1. / rho_old
+        vn = 1. / rho_old
         vnplusun = 1. / rho_new
-        # vnplusundemi = 0.5 * (vnt + vnplusun)
-        vnplusundemi = 2. / (rho_old + rho_new)  # correction ! # ou 2 * (vnt * vnplusun) / (vnt + vnplusun)
-        vpointnplusundemi = 1. / delta_t * (vnplusun - vnt)
-        divu = vpointnplusundemi / vnplusundemi
+        vnplusundemi = (vn + vnplusun) / 2.
+        vpoint = (vnplusun - vn) / delta_t
+        divu = vpoint / vnplusundemi
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
         mask = np.where(divu < 0.)
-        pseudo[mask] = 0.5 * (rho_new[mask] + rho_old[mask]) * (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
-                                                    b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
-        # pseudo[mask] = 1. / vnplusundemi[mask] * (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
-        #                                           b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
+        pseudo[mask] = 1. / vnplusundemi[mask] * (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
+                                                  b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
         return pseudo
 
     @classmethod
@@ -128,7 +126,7 @@ class OneDimensionCell(Cell):
         return delta_t
 
     def __init__(self, number_of_elements):
-        Cell.__init__(self, number_of_elements)
+        super(OneDimensionCell, self).__init__(number_of_elements)
 
         # By default :all cells are classical (non enriched)
         self._classical = np.ones([number_of_elements, ], dtype=np.bool, order='C')
@@ -394,16 +392,15 @@ class OneDimensionCell(Cell):
         :param dt : time step (staggered tn+1/2)
         """
         self.compute_shear_modulus()
-        G = self.shear_modulus.current_value[mask]
+        G = self.shear_modulus.current_value
 
         # Compute rotation rate tensor  and strain rate tensor: W = 0 en 1D
-        # import ipdb ; ipdb.set_trace()
         self.compute_deviator_strain_rate(mask, dt, topologie, coord_noeud_new, vitesse_noeud_new)
         D = self._deviatoric_strain_rate
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
         for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] = self._deviatoric_stress_current[mask, i] + 2. * G * D[mask, i] * dt
+            self._deviatoric_stress_new[mask, i] = np.copy(self._deviatoric_stress_current[mask, i]) + 2. * G[mask] * D[mask, i] * dt
 
         # -----------------------------
         # pour être sur que la trace soit nulle
@@ -434,9 +431,11 @@ class OneDimensionCell(Cell):
         (classical cells where plasticity criterion is activated)
         """
         invariant_J2_el = compute_J2(self.deviatoric_stress_new)  # prédiction élastique avant le traitement de la plasticité
-        radial_return = self.yield_stress.current_value[mask] / invariant_J2_el[mask]
+        radial_return = self.yield_stress.current_value / invariant_J2_el
+        plasticity = radial_return < 1.
+        plastic_mask = np.logical_and(mask, plasticity)
         for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] *= radial_return
+                self._deviatoric_stress_new[plastic_mask, i] *= radial_return[plastic_mask]
 
     def compute_plastic_strain_rate_tensor(self, mask, dt):
         """
@@ -447,11 +446,13 @@ class OneDimensionCell(Cell):
         """
         # A faire avant apply_plastic_corrector_on_deviatoric_stress_tensor
         invariant_J2_el = compute_J2(self.deviatoric_stress_new)
-        radial_return = self.yield_stress.current_value[mask] / invariant_J2_el[mask]
+        radial_return = self.yield_stress.current_value / invariant_J2_el
+        plasticity = radial_return < 1.
+        plastic_mask = np.logical_and(mask, plasticity)
         for i in range(0, 3):
-            self._plastic_strain_rate[mask, i] = (1- radial_return) / \
-                                                 (radial_return * 3 * self.shear_modulus.current_value[mask] * dt) * \
-                                                 self._deviatoric_stress_new[mask, i]
+            self._plastic_strain_rate[plastic_mask, i] = \
+                (1 - radial_return[plastic_mask]) * self._deviatoric_stress_new[plastic_mask, i] / \
+                (radial_return[plastic_mask] * 3 * self.shear_modulus.current_value[plastic_mask] * dt)
 
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):
@@ -461,9 +462,12 @@ class OneDimensionCell(Cell):
         :param dt : float, time step staggered
         """
         invariant_J2_el = compute_J2(self.deviatoric_stress_new) # prédiction élastique avant le traitement de la plasticité
-        G = self.shear_modulus.current_value[mask]
+        G = self.shear_modulus.current_value
+        plasticity = invariant_J2_el > self.yield_stress.current_value
+        plastic_mask = np.logical_and(mask, plasticity)
 
-        self._equivalent_plastic_strain_rate[mask] = (invariant_J2_el[mask] - self.yield_stress.current_value[mask]) / (3. * G * dt)
+        self._equivalent_plastic_strain_rate[plastic_mask] = \
+            (invariant_J2_el[plastic_mask] - self.yield_stress.current_value[plastic_mask]) / (3. * G[plastic_mask] * dt)
 
     def impose_pressure(self, ind_cell, pressure):
         """

@@ -6,11 +6,13 @@ Cell module unit tests
 import numpy as np
 import unittest
 import mock
+import os
 
 from xvof.src.cell.cell import Cell
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.node import OneDimensionNode
 from xvof.src.utilities.testing import captured_output
+from xvof.src.data.data_container import DataContainer
 
 
 class CellTest(unittest.TestCase):
@@ -19,7 +21,10 @@ class CellTest(unittest.TestCase):
         """
         Tests setup
         """
-        self.my_cell = Cell(3)
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml")
+        self.test_datacontainer = DataContainer(data_file_path)
+        self.nbr_cells = 3
+        self.my_cells = Cell(self.nbr_cells)
 
     def tearDown(self):
         pass
@@ -38,21 +43,25 @@ class CellTest(unittest.TestCase):
         """
         Test of cell.increment_variables method
         """
-        self.my_cell.pressure.new_value = np.array([2.0e+09, -0.5e+09, 1.25e+09])
-        self.my_cell.density.new_value = np.array([8500., 4500, 9500.])
-        self.my_cell.sound_velocity.new_value = np.array([440., 210, -110])
-        self.my_cell.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05]) 
-        self.my_cell._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
-        self.my_cell.increment_variables()
-        np.testing.assert_allclose(self.my_cell.pressure.current_value, np.array([2.0e+09, -0.5e+09, 1.25e+09]) )
-        np.testing.assert_allclose(self.my_cell.density.current_value, np.array([8500., 4500, 9500.]))
-        np.testing.assert_allclose(self.my_cell.sound_velocity.current_value, np.array([440., 210, -110]))
-        np.testing.assert_allclose(self.my_cell.energy.current_value, np.array([-1.0e+06, 0.5e+05, 1.5e+05]) )
-        np.testing.assert_allclose(self.my_cell.size_t, np.array([0.015, 0.01, 0.05]))
+        self.my_cells.pressure.new_value = np.array([2.0e+09, -0.5e+09, 1.25e+09])
+        self.my_cells.density.new_value = np.array([8500., 4500, 9500.])
+        self.my_cells.sound_velocity.new_value = np.array([440., 210, -110])
+        self.my_cells.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05])
+        self.my_cells._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
+        self.my_cells.shear_modulus.new_value = np.array([2., 3., 4.])
+        self.my_cells.yield_stress.new_value = np.array([1., 2., 3.])
+        self.my_cells.increment_variables()
+        np.testing.assert_allclose(self.my_cells.pressure.current_value, np.array([2.0e+09, -0.5e+09, 1.25e+09]) )
+        np.testing.assert_allclose(self.my_cells.density.current_value, np.array([8500., 4500, 9500.]))
+        np.testing.assert_allclose(self.my_cells.sound_velocity.current_value, np.array([440., 210, -110]))
+        np.testing.assert_allclose(self.my_cells.energy.current_value, np.array([-1.0e+06, 0.5e+05, 1.5e+05]) )
+        np.testing.assert_allclose(self.my_cells.size_t, np.array([0.015, 0.01, 0.05]))
+        np.testing.assert_allclose(self.my_cells.shear_modulus.current_value, np.array([2., 3., 4.]))
+        np.testing.assert_allclose(self.my_cells.yield_stress.current_value, np.array([1., 2., 3.]))
 
     def test_str(self):
         """Teste la réponse de __str__ de la classe Cell"""
-        message = self.my_cell.__str__()
+        message = self.my_cells.__str__()
         answer = "Number of cells: 3"
         self.assertEqual(message.split(), answer.split())
 
@@ -60,13 +69,17 @@ class CellTest(unittest.TestCase):
         """
         Test of cell.print_infos method
         """
-        self.my_cell.pressure.new_value = np.array([2.0e+09, -0.5e+09, 1.25e+09])
-        self.my_cell.density.new_value = np.array([8500., 4500, 9500.])
-        self.my_cell.sound_velocity.new_value = np.array([440., 210, -110])
-        self.my_cell.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05]) 
-        self.my_cell._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
+        self.my_cells.pressure.current_value = np.ones(self.nbr_cells) * 100006.2096
+        self.my_cells.pressure.new_value = np.array([2.0e+09, -0.5e+09, 1.25e+09])
+        self.my_cells.density.current_value = np.ones(self.nbr_cells) * 8129.
+        self.my_cells.density.new_value = np.array([8500., 4500., 9500.])
+        self.my_cells.sound_velocity.new_value = np.array([440., 210, -110])
+        self.my_cells.energy.current_value = np.ones(self.nbr_cells) * 7.689
+        self.my_cells.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05])
+        self.my_cells._size_t = np.zeros(self.nbr_cells)
+        self.my_cells._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
         with captured_output() as (out, err):
-            self.my_cell.print_infos()
+            self.my_cells.print_infos()
             output = out.getvalue().strip()
             answer = """Cell 
             ==> number of cells = 3

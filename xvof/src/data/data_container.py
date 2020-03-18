@@ -468,7 +468,7 @@ class DataContainer(object):
             json_name = self.__datadoc.find(repertoire_base + 'coefficients').text
         except AttributeError:
             return 0, 0
-        json_path = os.path.join(self.project_dir, "CONSTITUTIVE_MODEL/" + json_name)
+        json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
         with open(json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["EPP"]

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
     <time-management>
-        <final-time>10.e-06</final-time>
+        <final-time>5e-06</final-time>
         <initial-time-step>0.5e-09</initial-time-step>
         <constant-time-step>True</constant-time-step>
     </time-management>
+
     <geometry>
         <section>0.000003141592653589793</section>
         <initial-interface-position>1.5e-03</initial-interface-position>
     </geometry>
+
     <matter>
         <projectile>
             <initialization>
@@ -36,12 +38,6 @@
                 <name>Mie-Gruneisen</name>
                 <coefficients>Cuivre_MieGruneisen.json</coefficients>
             </equation-of-state>
-            <rheology>
-                <coefficients>Cuivre_EPP.json</coefficients>
-                <elasticity-model>Linear</elasticity-model>
-                <plasticity-criterion>VonMises</plasticity-criterion>
-                <plasticity-model>EPP</plasticity-model>
-            </rheology>
             <failure>
                 <failure-criterion>
                     <name>MaximalStress</name> <!-- MaximalStress, MinimumPressure, HalfRodComparison, Damage-->
@@ -50,51 +46,40 @@
                 <failure-treatment>
                     <name>Enrichment</name>
                     <value>0.5</value>
-                    <type-of-enrichment>Hansbo</type-of-enrichment> <!-- Hansbo, Moes (pas complet)-->
-                    <lump-mass-matrix>somme</lump-mass-matrix> <!-- none, somme, menouillard-->
+                    <type-of-enrichment>Hansbo</type-of-enrichment> <!-- Hansbo -->
+                    <lump-mass-matrix>somme</lump-mass-matrix>  <!-- none || somme || menouillard -->
                 </failure-treatment>
-                <!--<damage-treatment>-->
-                    <!--<cohesive-model>-->
-                        <!--<name>Bilinear</name> &lt;!&ndash; Linear, Bilinear, Trilinear&ndash;&gt;-->
-                        <!--<coefficients>-->
-                            <!--<cohesive-strength>1.e+09</cohesive-strength>-->
-                            <!--<stress-at-point-1>0.5e+09</stress-at-point-1> &lt;!&ndash; Première rupture de pente &ndash;&gt;-->
-                            <!--<separation-at-point-1>0.5e-09</separation-at-point-1>-->
-                            <!--&lt;!&ndash;<stress-at-point-2>0.2e+09</stress-at-point-2> &lt;!&ndash; Deuxième rupture de pente &ndash;&gt;&ndash;&gt;-->
-                            <!--&lt;!&ndash;<separation-at-point-2>1.e-07</separation-at-point-2>&ndash;&gt;-->
-                            <!--<critical-separation>1.e-7</critical-separation>-->
-                        <!--</coefficients>-->
-                        <!--<unloading-model>-->
-                            <!--<name>ProgressiveUnloading</name>-->
-                            <!--<slope>1.e+16</slope>-->
-                        <!--</unloading-model>-->
-                    <!--</cohesive-model>-->
-                <!--</damage-treatment>-->
             </failure>
         </target>
     </matter>
 
     <boundary-conditions>
-        <right-pressure>
-            <type>ConstantPressure</type> <!--ConstantPressure, MarchTablePressure, TwoStepPressure, CreneauRampPressure, RampPressure -->
+        <left-boundary>
+            <type>pressure</type>  <!-- pressure || velocity-->
+            <bc-law>constant</bc-law> <!-- constant (1 arg float : value) || TwoSteps (3 arg float : value1, value2, time-activation)
+             || MarchTablePressure (1 arg str : value (nom du fichier)) || Ramp (4 arg float value1, value2, time-activation1, time-activation2)
+             || CreneauRamp (7 arg float : initial-value, plateau-value, end-value, start-first-ramp-time, reach-value2-time, start-second-ramp-time, reach-value3-time)  -->
             <value>0.</value>
-        </right-pressure>
-        <left-pressure>
-            <type>TwoStepPressure</type>
-            <value1>10.e+9</value1>
-            <value2>0.</value2>
-            <time-activation>1.e-06</time-activation>
-        </left-pressure>
+        </left-boundary>
+        <right-boundary>
+            <type>pressure</type>  <!-- pressure || velocity-->
+            <bc-law>constant</bc-law> <!-- constant (1 arg float : value) || TwoSteps (3 arg float : value1, value2, time-activation)
+             || MarchTablePressure (1 arg str : value (nom du fichier)) || Ramp (4 arg float value1, value2, time-activation1, time-activation2)
+             || CreneauRamp (7 arg float : initial-value, plateau-value, end-value, start-first-ramp-time, reach-value2-time, start-second-ramp-time, reach-value3-time)  -->
+            <value>0.</value>
+        </right-boundary>
     </boundary-conditions>
+
     <numeric-parameters>
         <linear-pseudo>0.2</linear-pseudo>
-        <quadratic-pseudo>1.5</quadratic-pseudo>
+        <quadratic-pseudo>2.</quadratic-pseudo>
         <cfl>0.34</cfl>
         <cfl-pseudo>0.</cfl-pseudo>
     </numeric-parameters>
+
     <output>
         <number-of-images>500</number-of-images>
-        <dump-images>false</dump-images> <!-- to save images -->
+        <dump-images>false</dump-images>
         <database>
             <identifier>AllFieldsDb</identifier>
             <path>all_fields.hdf5</path>

@@ -6,6 +6,7 @@ Cell module unit tests
 import numpy as np
 import unittest
 import mock
+import os
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
 from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
@@ -21,8 +22,9 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Préparation des tests
         """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA.xml"
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_elasto.xml")
         self.test_datacontainer = DataContainer(data_file_path)
+
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
         self.my_cells._external_library = None
