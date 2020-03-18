@@ -32,6 +32,9 @@ class PressureRamp(PressureLaw):
         self.__start_time = start_time
         self.__end_time = end_time
 
+        if self.__end_time <= self.__start_time:
+            raise ValueError("Please respect the chronology")
+
     def evaluate(self, time, *args, **kwargs):
         if time <= self.__start_time:
             return self.__first_value
