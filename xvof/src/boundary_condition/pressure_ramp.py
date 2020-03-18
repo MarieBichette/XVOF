@@ -7,7 +7,7 @@ from xvof.src.boundary_condition.pressure_law import PressureLaw
 
 class PressureRamp(PressureLaw):
     """
-    A class that defines a ramp between 2 constants steps pressure 
+    A class that defines a ramp between 2 constants steps pressure
 
                 ^
     second value|       ...........
@@ -43,3 +43,31 @@ class PressureRamp(PressureLaw):
         # time is in the slope
         slope = (self.__second_value - self.__first_value) / (self.__end_time - self.__start_time)
         return slope * (time - self.__start_time) + self.__first_value
+
+    @property
+    def start_time(self):
+        """
+        Return the time at which the slope begins
+        """
+        return self.__start_time
+
+    @property
+    def end_time(self):
+        """
+        Return the time at which the slope ends
+        """
+        return self.__end_time
+
+    @property
+    def first_value(self):
+        """
+        Return the first value
+        """
+        return self.__first_value
+
+    @property
+    def second_value(self):
+        """
+        Return the second value
+        """
+        return self.__second_value
