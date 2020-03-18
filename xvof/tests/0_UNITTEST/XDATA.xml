@@ -21,12 +21,6 @@
                 <name>Mie-Gruneisen</name>
                 <coefficients>Cuivre_MieGruneisen.json</coefficients>
             </equation-of-state>
-            <rheology>
-                <coefficients>Cuivre_EPP.json</coefficients>
-                <elasticity-model>Linear</elasticity-model>
-                <plasticity-criterion>VonMises</plasticity-criterion>
-                <plasticity-model>EPP</plasticity-model>
-            </rheology>
         </projectile>
 
         <target>
@@ -44,32 +38,22 @@
                 <plasticity-criterion>VonMises</plasticity-criterion>
                 <plasticity-model>EPP</plasticity-model>
             </rheology>
-            <failure>
-                <failure-criterion>
-                    <name>MaximalStress</name>
-                    <value>5.e+09</value>
-                </failure-criterion>
-                <failure-treatment>
-                    <name>Enrichment</name>
-                    <value>0.5</value>
-                    <type-of-enrichment>Hansbo</type-of-enrichment>
-                    <lump-mass-matrix>somme</lump-mass-matrix>
-                </failure-treatment>
-            </failure>
         </target>
     </matter>
 
     <boundary-conditions>
         <left-boundary>
-            <type>pressure</type>
-            <bc-law>TwoStep</bc-law>
-            <value1>10.e+9</value1>
-            <value2>0.</value2>
-            <time-activation>1.e-06</time-activation>
+            <type>pressure</type>  <!-- pressure || velocity-->
+            <bc-law>constant</bc-law> <!-- constant (1 arg float : value) || TwoSteps (3 arg float : value1, value2, time-activation)
+             || MarchTablePressure (1 arg str : value (nom du fichier)) || Ramp (4 arg float value1, value2, time-activation1, time-activation2)
+             || CreneauRamp (7 arg float : initial-value, plateau-value, end-value, start-first-ramp-time, reach-value2-time, start-second-ramp-time, reach-value3-time)  -->
+            <value>0.</value>
         </left-boundary>
         <right-boundary>
-            <type>pressure</type>
-            <bc-law>constant</bc-law>
+            <type>pressure</type>  <!-- pressure || velocity-->
+            <bc-law>constant</bc-law> <!-- constant (1 arg float : value) || TwoSteps (3 arg float : value1, value2, time-activation)
+             || MarchTablePressure (1 arg str : value (nom du fichier)) || Ramp (4 arg float value1, value2, time-activation1, time-activation2)
+             || CreneauRamp (7 arg float : initial-value, plateau-value, end-value, start-first-ramp-time, reach-value2-time, start-second-ramp-time, reach-value3-time)  -->
             <value>0.</value>
         </right-boundary>
     </boundary-conditions>
@@ -83,7 +67,7 @@
 
     <output>
         <number-of-images>500</number-of-images>
-        <dump-images>false</dump-images> <!-- bool = "true" to save images, else "false" -->
+        <dump-images>false</dump-images>
         <database>
             <identifier>AllFieldsDb</identifier>
             <path>all_fields.hdf5</path>
