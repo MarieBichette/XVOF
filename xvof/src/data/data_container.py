@@ -577,7 +577,9 @@ class DataContainer(object):
                 time2 = float(self.__datadoc.find(info + 'reach-value2-time').text)
                 time3 = float(self.__datadoc.find(info + 'start-second-ramp-time').text)
                 time4 = float(self.__datadoc.find(info + 'reach-value3-time').text)
-                bc_law = SuccessivePressureRamp(value1, value2, value3, time1, time2, time3, time4)
+                first_ramp = PressureRamp(value1, value2, time1, time2)
+                second_ramp = PressureRamp(value2, value3, time3, time4)
+                bc_law = SuccessivePressureRamp(first_ramp, second_ramp)
             else:
                 raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
                                 Les possibilit�s sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
