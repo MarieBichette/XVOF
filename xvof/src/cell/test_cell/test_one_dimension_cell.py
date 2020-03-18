@@ -139,20 +139,14 @@ class OneDimensionCellTest(unittest.TestCase):
                 - self.test_cell.energy.current_value)
         np.testing.assert_allclose(func, [0., 0., 0.])
 
-    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
-    @mock.patch.object(DataContainer, "numeric", new_callable= mock.PropertyMock)
     def test_compute_new_pseudo(self):
         """   Test of compute_new_pseudo     """
         mask = [True, True, True]
         self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
         self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
         self.test_cell.sound_velocity.current_value = np.array([0., 0., 0.])
-        self.test_datacontainer.numeric.a_pseudo = 0.2
-        self.test_datacontainer.numeric.b_pseudo = 0.0
+        # self.test_datacontainer.numeric.a_pseudo = 0.2
+        # self.test_datacontainer.numeric.b_pseudo = 0.0
         self.test_cell.pseudo.new_value[mask] = Cell.compute_pseudo(1.0e+06, self.test_cell.density.current_value[mask],
                                                                       self.test_cell.density.new_value[mask],
                                                                       self.test_cell.size_t_plus_dt[mask],
@@ -161,13 +155,8 @@ class OneDimensionCellTest(unittest.TestCase):
                                                                       self.test_datacontainer.numeric.b_pseudo)
         np.testing.assert_allclose(self.test_cell.pseudo.new_value[mask], np.array([0., 0., 0.]))
 
-
-    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
-    @mock.patch.object(DataContainer, "numeric", new_callable= mock.PropertyMock)
-    @mock.patch.object(Cell, "size_t_plus_dt", new_callable = mock.PropertyMock, return_value = np.array([1.]))
-    def test_compute_new_time_step(self, mock_sizetpdt):
+    @mock.patch.object(Cell, "size_t_plus_dt", new_callable=mock.PropertyMock, return_value=np.array([1., 1., 1.]))
+    def test_compute_new_time_step(self, mock_size_t):
         """Test de compute_new_time_step"""
         self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
         self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
@@ -178,9 +167,6 @@ class OneDimensionCellTest(unittest.TestCase):
         cfl_pseudo = self.test_datacontainer.numeric.cfl_pseudo
         mask = np.array([False, True, False])
         self.test_cell.compute_new_time_step(mask)
-        # compute_time_step(cfl, cfl_pseudo, self.test_cell.density.current_value, self.test_cell.density.new_value,
-        #                                    self.test_cell.size_t_plus_dt, self.test_cell.sound_velocity.new_value,
-        #                                    self.test_cell.pseudo.current_value, self.test_cell.pseudo.new_value)
         np.testing.assert_array_equal(self.test_cell._dt, 4.) #calcul à faire
 
     @mock.patch.object(Cell, "pressure", new_callable = mock.PropertyMock)
