@@ -18,8 +18,6 @@ class OneDimensionNode(Node):
 
         super(OneDimensionNode, self).__init__(nbr_of_nodes, position_initiale=poz_init,
                                                 dim=1, vitesse_initiale=vit_init)
-        # Node.__init__(self, nbr_of_nodes, position_initiale=poz_init,
-        #                                         dim=1, vitesse_initiale=vit_init)
         self._section = section
         self._nbr_of_nodes = nbr_of_nodes
         # Par définition, ces noeuds ne sont pas enrichis
