@@ -1,14 +1,21 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe définissant une pression à deux paliers constants
+Implements the TwoStepsPressure class
 """
-from xvof.src.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.pressure_law import PressureLaw
 
 
 class TwoStepsPressure(PressureLaw):
     """
-    Une pression à deux paliers constants
+    This class defines a 2 constant steps pressure boundary condition
+
+                ^
+    second value|    ...........
+                |    |
+                |    |
+    first value |....|
+                |_________________>
+                 critical time
     """
     def __init__(self, first_value, second_value, critical_time):
         super(TwoStepsPressure, self).__init__()
@@ -19,5 +26,4 @@ class TwoStepsPressure(PressureLaw):
     def evaluate(self, time, *args, **kwargs):
         if time <= self.__critical_time:
             return self.__first_value
-        else:
-            return self.__second_value
+        return self.__second_value

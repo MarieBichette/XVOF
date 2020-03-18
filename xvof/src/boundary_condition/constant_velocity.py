@@ -1,14 +1,13 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe définissant une pression constante
+Implements the ConstantVelocity class
 """
-from xvof.src.boundary_condition.velocitylaw import VelocityLaw
+from xvof.src.boundary_condition.velocity_law import VelocityLaw
 
 
 class ConstantVelocity(VelocityLaw):
     """
-    Une pression constante
+    That class defines a constant velocity boundary condition
     """
     def __init__(self, value):
         super(ConstantVelocity, self).__init__()
