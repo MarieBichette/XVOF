@@ -17,147 +17,126 @@ from xvof.src.cell.test_cell.test_variables import TestVariables
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA_elasto.xml"))
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
         self.test_datacontainer = DataContainer(data_file_path)
+
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
-
-        self.test_variables = TestVariables(4, 5)
-        self.test_variables.define_elasto_variables()
 
         self.mask = np.array([True, True, False, False])
 
     def tearDown(self):
         pass
 
-    @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_new_pressure_with_elasticity(self, mock_add_elasticity, mock_apply_eos):
+    def test_compute_new_pressure_with_elasticity(self):
         """
         Test de la méthode compute_new_pressure
         """
-        print "Test " + __name__
-        # L'option élasticité est activée dans le jeu de donnée
-        type(DataContainer().material_target.constitutive_model).elasticity_model = \
-            mock.PropertyMock(return_value=ConstantShearModulus)
+        mask_classic = np.array([True, True, False, False])
+        self.my_cells.density.current_value = np.ones(self.nbr_cells) * 8930.
+        self.my_cells.pressure.current_value = np.ones(self.nbr_cells) * 1.e+5
+        self.my_cells.energy.current_value = np.ones(self.nbr_cells) * 7.5
 
-        # Configuration des mocks
-        mask_classic = self.mask
-        mock_apply_eos.return_value[mask_classic] = self.my_cells.energy.new_value[mask_classic], \
-                                      self.my_cells.pressure.new_value[mask_classic], \
-                                      self.my_cells.sound_velocity.new_value[mask_classic]
-        mock_add_elasticity.return_value[mask_classic] = self.my_cells.energy.new_value[mask_classic]
-        # les valeurs de return permettent juste à la méthode de ne pas planter mais ne sont pas importantes...
+        self.my_cells._deviatoric_stress_new = np.array([[200., -100, -100.],
+                                                         [5., -2.5, -2.5],
+                                                         [100., -50., -50.],
+                                                         [400., -200., -200.]])
+
+        self.my_cells._deviatoric_strain_rate = np.array([[-0.235294,  0.117647,  0.117647],
+                                            [ 0.4444444, -0.2222222, -0.2222222],
+                                            [ 0.      ,  0.      ,  0.      ],
+                                            [ 0.      ,  0.      ,  0.      ]])
+
+        self.my_cells.density.new_value = np.array([8940., 8970, 8920., 9000.])
+        self.my_cells.sound_velocity.new_value = np.zeros([self.nbr_cells])
+        self.my_cells.pressure.new_value = np.zeros([self.nbr_cells])
+        self.my_cells.energy.new_value = np.zeros([self.nbr_cells])
+        self.my_cells.pseudo.new_value = np.zeros([self.nbr_cells])
         dt = 1.
 
         self.my_cells.compute_new_pressure(mask_classic, dt)
-
-        mock_add_elasticity.assert_called_with(dt,
-                                               self.my_cells.density.current_value[mask_classic],
-                                               self.my_cells.density.new_value[mask_classic],
-                                               mock.ANY,
-                                               mock.ANY,
-                                               mock.ANY)
-        # /!\ mock.ANY sert à éviter de faire appel aux quantités déviatoriques car la méthode assert_called_with ne
-        # fonctionne pas sur les arguments de type array de taille > 1 (ValueError). On vérifie quand même que la
-        # méthode add_elasticity est appelée avec une partie des arguments correcte
-
-        mock_apply_eos.assert_called_with(self.my_cells,
-                                          DataContainer().material_target.constitutive_model.eos,
-                                          self.my_cells.density.current_value[mask_classic],
-                                          self.my_cells.density.new_value[mask_classic],
-                                          self.my_cells.pressure.current_value[mask_classic],
-                                          self.my_cells.pressure.new_value[mask_classic],
-                                          self.my_cells.energy.current_value[mask_classic],
-                                          self.my_cells.energy.new_value[mask_classic],
-                                          self.my_cells.pseudo.current_value[mask_classic],
-                                          self.my_cells.sound_velocity.new_value[mask_classic])
-        print "C'est la meilleure vérification qu'on puisse faire mais pas sure que ça suffise..."
-        print "__[OK]"
+        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([]))
+        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([]))
+        np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([]))
 
     def test_compute_shear_modulus(self):
         """
         Test de la méthode compute_shear_modulus
         """
-        print "Test " + __name__
         self.my_cells.compute_shear_modulus()
-        np.testing.assert_allclose(self.my_cells.shear_modulus.new_value, self.test_variables.shear_modulus_init)
-        print "__[OK]"
+        expected_value = self.test_datacontainer.material_target.initial_values.shear_modulus_init
+        np.testing.assert_allclose(self.my_cells.shear_modulus.new_value, np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_yield_stress(self):
         """
         Test de la méthode compute_yield_stress
         """
-        print "Test " + __name__
         self.my_cells.compute_yield_stress()
-        np.testing.assert_allclose(self.my_cells.yield_stress.new_value, self.test_variables.yield_stress_init)
-        print "__[OK]"
+        expected_value = self.test_datacontainer.material_target.initial_values.yield_stress_init
+        np.testing.assert_allclose(self.my_cells.yield_stress.new_value, np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_complete_stress_tensor(self):
         """
         Test de la méthode compute_complete_stress_tensor
         """
-        print "Test " + __name__
-        mask = self.mask
-        self.my_cells._stress = np.copy(self.test_variables.stress_old)
-        self.my_cells._deviatoric_stress_new = np.copy(self.test_variables.deviatoric_stress_new)
-        self.my_cells.pressure.new_value = np.copy(self.test_variables.pressure_new)
-        self.my_cells.pseudo.new_value = np.copy(self.test_variables.pseudo_new)
+        mask = np.array([True, True, False, False])
+        self.my_cells._stress = np.array([[2000., -1000, -1000.],
+                                          [50., -25., -25.],
+                                          [1000., -500., -500.],
+                                          [4000., -2000., -2000.]])
+        self.my_cells._deviatoric_stress_new = np.array([[200., -100, -100.],
+                                                             [5., -2.5, -2.5],
+                                                             [100., -50., -50.],
+                                                             [400., -200., -200.]])
+        self.my_cells.pressure.new_value = np.array([1000, 25, 500, 2000])
+        self.my_cells.pseudo.new_value = np.array([-1, -2, -3, -4])
         self.my_cells.compute_complete_stress_tensor(mask)
-        np.testing.assert_allclose(self.my_cells.stress[mask], self.test_variables.stress_new[mask])
-        np.testing.assert_allclose(self.my_cells.stress[~mask], self.test_variables.stress_old[~mask])
-        print "__[OK]"
+        expected_result = np.array([[-799., -1099, -1099.],
+                                     [-18, -25.5, -25.5],
+                                     [1000., -500., -500.],
+                                     [4000., -2000., -2000.]])
+        np.testing.assert_allclose(self.my_cells.stress, expected_result)
 
-    @mock.patch.object(OneDimensionCell, "compute_shear_modulus", spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionCell, "compute_deviator_strain_rate", spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_deviatoric_stress_tensor(self, mock_compute_D, mock_compute_G):
+
+    def test_compute_deviatoric_stress_tensor(self):
         """
         Test de la méthode compute_deviatoric_stress_tensor
         """
-        print __name__ + " : Test compute deviatoric stress"
-        mask = self.mask
-        dt = self.test_variables.dt
-        coord_noeud_new = np.copy(self.test_variables.node_coord_new)
-        vitesse_noeud_new = np.copy(self.test_variables.node_velocity_new)
-        # Mock topo :
-        topologie = mock.MagicMock(Topology1D)
-        type(topologie).cells_in_contact_with_node = mock.PropertyMock(
-            return_value=np.array([[-1, 0], [0, 1], [1, 2], [2, 3], [3, -1]]))
+        mask = np.array([True, True, True, False])
+        dt = 1.
+        coord_noeud_new = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
+        vitesse_noeud_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
+        topo_ex = Topology1D(5, 4)
+        self.my_cells._deviatoric_stress_current = np.array([[2000., -1000, -1000.],
+                                                             [50., -25., -25.],
+                                                             [1000., -500., -500.],
+                                                             [4000., -2000., -2000.]])
+        self.my_cells.shear_modulus.current_value = np.array([2., 4., 6., 8.])
+        self.my_cells.compute_deviatoric_stress_tensor(mask, topo_ex, coord_noeud_new, vitesse_noeud_new, dt)
+        np.testing.assert_allclose(self.my_cells._deviatoric_stress_new,
+                                   np.array([[ 1999.058824,  -999.529412,  -999.529412],
+                                            [   53.555556,   -26.777778,   -26.777778],
+                                            [1010.66666667,  -505.33333333,  -505.33333333],
+                                            [0., 0., 0.]]), rtol=1.e-05)
 
-        self.my_cells._deviatoric_stress_current = np.copy(self.test_variables.deviatoric_stress_old)
-        self.my_cells.shear_modulus.current_value = np.copy(self.test_variables.shear_modulus_old)
-        self.my_cells._deviatoric_strain_rate = np.copy(self.test_variables.strain_rate_dev_new)
-        mock_compute_D.return_value = self.my_cells._deviatoric_strain_rate
-
-        self.my_cells.compute_deviatoric_stress_tensor(mask, topologie, coord_noeud_new, vitesse_noeud_new, dt)
-
-        mock_compute_G.assert_called_with()
-        mock_compute_D.assert_called_with(mask, dt, topologie, coord_noeud_new, vitesse_noeud_new)
-        np.testing.assert_allclose(self.my_cells._deviatoric_stress_new[mask],
-                                   self.test_variables.deviatoric_stress_new[mask])
-        np.testing.assert_allclose(self.my_cells._deviatoric_stress_new[~mask],
-                                   self.test_variables.deviatoric_stress_old[~mask])
-        print "__[OK]"
-
-    @mock.patch.object(Topology1D, "nodes_belonging_to_cell", new_callable=mock.PropertyMock,
-                       return_value=np.array([[0, 1], [1, 2], [2, 3], [3, 4]]))
-    def test_compute_deviator_strain_rate(self, mock_topologie):
+    def test_compute_deviator_strain_rate(self):
         """
         Test de la méthode  compute_deviatoric_strain_rate
         """
-        print __name__ + " : Test compute deviator strain rate"
         # données d'entrée
-        mask = self.mask
-        dt = self.test_variables.dt
-        coord_noeud_new = np.copy(self.test_variables.node_coord_new)
-        vitesse_noeud_new = np.copy(self.test_variables.node_velocity_new)
+        mask = np.array([True, True, False, False])
+        dt = 1.
+        coord_noeud_new = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
+        vitesse_noeud_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
         topo_ex = Topology1D(5, 4)
         # Test de la méthode compute_deviator
         self.my_cells.compute_deviator_strain_rate(mask, dt, topo_ex, coord_noeud_new, vitesse_noeud_new)
-        np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate[mask],
-                                   self.test_variables.strain_rate_dev_new[mask])
-        print "__[OK]"
+        np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
+                                   np.array([[-0.235294,  0.117647,  0.117647],
+                                            [ 0.4444444, -0.2222222, -0.2222222],
+                                            [ 0.      ,  0.      ,  0.      ],
+                                            [ 0.      ,  0.      ,  0.      ]]), rtol=1.e-05)
 
 if __name__ == "__main__":
     unittest.main()

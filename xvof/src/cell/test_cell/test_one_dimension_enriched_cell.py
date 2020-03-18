@@ -17,7 +17,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def setUp(self):
         """ Préparation des tests """
-        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA_enrichment_hydro.xml"))
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.test_variables = TestVariables(4, 5)

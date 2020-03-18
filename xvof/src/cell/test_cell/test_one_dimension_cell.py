@@ -19,54 +19,11 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
         self.test_cell = Cell(3)
-        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
+        data_file_path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml"))
         self.test_datacontainer = DataContainer(data_file_path)
 
     def tearDown(self):
         pass
-
-    def test_compute_pseudo(self):
-        """
-        Test of compute_pseudo class method
-        """
-        rho_new = np.array([8500., 3500, 2175])
-        rho_old = np.array([8700., 3200, 2171])
-        new_size = np.array([0.025, 0.01, 0.005])
-        sound_speed = np.array([4400, 3200, 1140])
-        dt = 1.2e-08
-        pseudo_a, pseudo_b = 1.2, 0.25
-        result = Cell.compute_pseudo(dt, rho_old, rho_new, new_size, sound_speed, pseudo_a, pseudo_b) 
-        np.testing.assert_allclose(result, [0.00000000e+00, 2.25427729e+13, 2.00897590e+09])
-
-    def test_compute_time_step(self):
-        """
-        Test of compute_time_step class method
-        """
-        cfl, cfl_pseudo = 0.25, 0.1
-        rho_new = np.array([8500., 2175., 3500.])
-        rho_old = np.array([8700., 2174.9, 3200])
-        new_size = np.array([0.025, 0.01, 0.005])
-        sound_speed = np.array([4400., 3200., 1140.])
-        pseudo_old = np.array([1.0e+09, 0.5e+08, 0.3e+08])
-        pseudo_new = np.array([1.5e+09, 1.5e+08, 0.])
-        result = Cell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size, sound_speed, pseudo_old, pseudo_new)    
-        np.testing.assert_allclose(result, [1.41137110e-06, 7.81250000e-07, 1.09649123e-06])
-
-    @mock.patch.object(Topology1D, "nodes_belonging_to_cell", new_callable=mock.PropertyMock, return_value=np.array([[0, 1], [1, 2], [2, 3]]))  
-    def test_compute_size(self, mock_connectivity):
-        """
-        Test of compute_size method
-        """
-        self.test_cell.compute_size(Topology1D(4, 3), np.array([-0.5, 0.1, 0.2, 0.35])) 
-        np.testing.assert_allclose(self.test_cell.size_t, [0.6, 0.1, 0.15])
-   
-    @mock.patch.object(Topology1D, "nodes_belonging_to_cell", new_callable=mock.PropertyMock, return_value=np.array([[0, 1], [1, 2], [2, 3]]))  
-    def test_compute_new_size(self, mock_connectivity):
-        """
-        Test of compute_new_size method
-        """
-        self.test_cell.compute_new_size(Topology1D(4, 3), np.array([-0.5, 0.1, 0.2, 0.35]), np.array([True, False, True])) 
-        np.testing.assert_allclose(self.test_cell.size_t_plus_dt, [0.6, 0., 0.15])
 
     @mock.patch.object(Cell, "size_t", new_callable=mock.PropertyMock, return_value=np.array([0.6, 0.1, 0.15])) 
     @mock.patch.object(geometrical_props, "section", new_callable=mock.PropertyMock, return_value=0.0003141592653589793) 
@@ -77,15 +34,6 @@ class OneDimensionCellTest(unittest.TestCase):
         """
         self.test_cell.compute_mass()
         np.testing.assert_allclose(self.test_cell.mass, [1.5322804 , 0.25538007, 0.3830701])
-
-    @mock.patch.object(Cell, "size_t", new_callable=mock.PropertyMock, return_value=np.array([0.6, 0.1, 0.15]))
-    @mock.patch.object(Cell, "size_t_plus_dt", new_callable=mock.PropertyMock, return_value=np.array([0.8, 0.1, 0.27]))
-    def test_compute_new_density(self, mock_new_size, mock_size):
-        """
-        Test of compute_new_density method 
-        """
-        self.test_cell.compute_new_density(np.array([True, True, True]))
-        np.testing.assert_allclose(self.test_cell.density.new_value, np.array([6096.75, 8129., 4516.11111111]))
 
     @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
     @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
@@ -138,36 +86,6 @@ class OneDimensionCellTest(unittest.TestCase):
                 (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
                 - self.test_cell.energy.current_value)
         np.testing.assert_allclose(func, [0., 0., 0.])
-
-    def test_compute_new_pseudo(self):
-        """   Test of compute_new_pseudo     """
-        mask = [True, True, True]
-        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
-        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
-        self.test_cell.sound_velocity.current_value = np.array([0., 0., 0.])
-        # self.test_datacontainer.numeric.a_pseudo = 0.2
-        # self.test_datacontainer.numeric.b_pseudo = 0.0
-        self.test_cell.pseudo.new_value[mask] = Cell.compute_pseudo(1.0e+06, self.test_cell.density.current_value[mask],
-                                                                      self.test_cell.density.new_value[mask],
-                                                                      self.test_cell.size_t_plus_dt[mask],
-                                                                      self.test_cell.sound_velocity.current_value[mask],
-                                                                      self.test_datacontainer.numeric.a_pseudo,
-                                                                      self.test_datacontainer.numeric.b_pseudo)
-        np.testing.assert_allclose(self.test_cell.pseudo.new_value[mask], np.array([0., 0., 0.]))
-
-    @mock.patch.object(Cell, "size_t_plus_dt", new_callable=mock.PropertyMock, return_value=np.array([1., 1., 1.]))
-    def test_compute_new_time_step(self, mock_size_t):
-        """Test de compute_new_time_step"""
-        self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
-        self.test_cell.density.new_value = np.array([8120., 8440., 9620.])
-        self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
-        self.test_cell.pseudo.current_value = np.array([0., 0., 0.])
-        self.test_cell.pseudo.new_value = np.array([0., 0., 0.])
-        cfl = self.test_datacontainer.numeric.cfl
-        cfl_pseudo = self.test_datacontainer.numeric.cfl_pseudo
-        mask = np.array([False, True, False])
-        self.test_cell.compute_new_time_step(mask)
-        np.testing.assert_array_equal(self.test_cell._dt, 4.) #calcul à faire
 
     @mock.patch.object(Cell, "pressure", new_callable = mock.PropertyMock)
     def test_impose_pressure(self, mock_pressure):
