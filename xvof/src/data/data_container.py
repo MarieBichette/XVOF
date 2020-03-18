@@ -17,12 +17,12 @@ from xvof.src.rupturecriterion.damage_criterion import DamageCriterion
 from xvof.src.rupturecriterion.maximalstress import MaximalStressCriterion
 from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
 from xvof.src.rheology.constantyieldstress import ConstantYieldStress
-from xvof.src.boundary_condition.constantvelocity import ConstantVelocity
-from xvof.src.boundary_condition.constantpressure import ConstantPressure
+from xvof.src.boundary_condition.constant_velocity import ConstantVelocity
+from xvof.src.boundary_condition.constant_pressure import ConstantPressure
 from xvof.src.boundary_condition.march_table import MarchTablePressure
-from xvof.src.boundary_condition.ramppressure import RampPressure
-from xvof.src.boundary_condition.twostepspressure import TwoStepsPressure
-from xvof.src.boundary_condition.creneau_ramp_pressure import CreneauRampPressure
+from xvof.src.boundary_condition.pressure_ramp import PressureRamp
+from xvof.src.boundary_condition.two_steps_pressure import TwoStepsPressure
+from xvof.src.boundary_condition.creneau_ramp_pressure import SuccessivePressureRamp
 from xvof.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
 from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
 from xvof.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
@@ -145,7 +145,7 @@ class DataContainer(object):
         """
         :return: the material properties:
             - initialization pressure, temperature, density and internal energy, yield stress and shear modulus
-            - constitutive model : eos, elasticity model (None si pas d'élasticité), plasticity model(None par défault),
+            - constitutive model : eos, elasticity model (None si pas d'ï¿½lasticitï¿½), plasticity model(None par dï¿½fault),
                                     plasticity criterion
             - failure treatment : bool to activate failure, failure treatment method,
                                   failure treatment value (position of discontinuity
@@ -153,7 +153,7 @@ class DataContainer(object):
             - damage treatment :
 
         """
-        # Vérification de la cohérence du jeu de données :
+        # Vï¿½rification de la cohï¿½rence du jeu de donnï¿½es :
         mat_eos = self.__datadoc.find(material + '/equation-of-state/' + 'coefficients').text
         material_eos = mat_eos.split("_")[0]
         mat_init = self.__datadoc.find(material + '/initialization/' + 'init-thermo').text
@@ -166,12 +166,12 @@ class DataContainer(object):
             pass
 
         if not(material_eos == material_init):
-            raise ValueError("""Incohérence dans le jeu de donnée. Les matériaux renseignés pour l'init ({:}) et
-            l'eos ({:}) sont différents""".format(material_init, material_eos))
+            raise ValueError("""Incohï¿½rence dans le jeu de donnï¿½e. Les matï¿½riaux renseignï¿½s pour l'init ({:}) et
+            l'eos ({:}) sont diffï¿½rents""".format(material_init, material_eos))
         if material_rheology is not None:
             if not(material_eos == material_rheology):
-                raise ValueError("""Incohérence dans le jeu de donnée. Les matériaux renseignés
-                l'eos ({:}) et la rheologie ({:}) sont différents""".format(material_eos, material_rheology))
+                raise ValueError("""Incohï¿½rence dans le jeu de donnï¿½e. Les matï¿½riaux renseignï¿½s
+                l'eos ({:}) et la rheologie ({:}) sont diffï¿½rents""".format(material_eos, material_rheology))
 
         # Grandeurs initiales -----------------------------
         init = initial_values(*self.__getInitialValues(material))
@@ -243,14 +243,14 @@ class DataContainer(object):
             cell_numbers = str_cell_numbers.split(',')
         except ValueError:  # la ligne correspondante ne contient pas de cell id (de type int)
             cell_numbers = None
-        except AttributeError:  # la ligne correspondante est absente ou commentée
+        except AttributeError:  # la ligne correspondante est absente ou commentï¿½e
             cell_numbers = None
         try:
             str_node_numbers = self.__datadoc.find('output/node-for-time-figure').text
             node_numbers = str_node_numbers.split(',')
         except ValueError:  # la ligne correspondante ne contient pas de cell id (de type int)
             node_numbers = None
-        except AttributeError:  # la ligne correspondante est absente ou commentée
+        except AttributeError:  # la ligne correspondante est absente ou commentï¿½e
             node_numbers = None
         #end todo
 
@@ -265,7 +265,7 @@ class DataContainer(object):
                 iteration_period = int(el.find('iteration-period').text)
             else:
                 time_period = float(el.find('time-period').text)
-            # indices spécifiques : pas implémenté et pose pb pour reconstruction des champs
+            # indices spï¿½cifiques : pas implï¿½mentï¿½ et pose pb pour reconstruction des champs
             # if el.find('cell-indexes') is not None:
             #     cell_indexes = [int(ind) for ind in el.find('cell-indexes').text.split(',')]
             # if el.find('node-indexes') is not None:
@@ -313,7 +313,7 @@ class DataContainer(object):
             with open(json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
-                # Lecture des paramètres
+                # Lecture des paramï¿½tres
                 czero = float(coef["ref_sound_velocity"])
                 S1 = float(coef["s1"])
                 S2 = float(coef["s2"])
@@ -322,7 +322,7 @@ class DataContainer(object):
                 grunzero = float(coef["coefficient_gruneisen"])
                 b = float(coef["param_b"])
                 ezero = float(coef["ref_internal_energy"])
-            # Création de l'équation d'état
+            # Crï¿½ation de l'ï¿½quation d'ï¿½tat
             eos = MieGruneisen(czero, S1, S2, S3, rhozero, grunzero, b, ezero)
         else:
             raise NotImplementedError("Only MieGruneisen equation of state is implemented for now")
@@ -334,7 +334,7 @@ class DataContainer(object):
         :param matter: material to be considered
         :type string
         :return: has_failure : booleen pour activer la rupture
-                failure_model : modèle de traitement de la rupture
+                failure_model : modï¿½le de traitement de la rupture
                 failure_treatment_value : position of disconitnuity in cracked element or imposed pressure
                 type_of_enrichment : Hansbo
                 lump_mass_matrix : lumping strategy
@@ -376,7 +376,7 @@ class DataContainer(object):
         Creates the failure criterion model with XDATA input parameters for the material matter
         :param matter: material to be considered
         :type string
-        :return: failure_criterion : critère de rupture
+        :return: failure_criterion : critï¿½re de rupture
                 failure_criterion_value : valeur seuil
         :rtype Criterion, float
         """
@@ -406,7 +406,7 @@ class DataContainer(object):
         """
         Creates the damage model with XDATA input parameters for the material matter
         :param matter (string): material to be considered
-        :return: cohesive_model : modèle de loi cohesive (classe cohesive_model)
+        :return: cohesive_model : modï¿½le de loi cohesive (classe cohesive_model)
         :rtype bool, str, float, float
         """
         repertoire_base = matter + '/failure/damage-treatment/cohesive-model/'
@@ -416,11 +416,11 @@ class DataContainer(object):
         try:
             cohesive_model_name = self.__datadoc.find(repertoire_base + 'name').text
             if cohesive_model_name.lower() not in ["linear", "bilinear", "trilinear"]:
-                raise ValueError("""Le modèle cohésif doit être parmi linear, bilinear, trilinear""")
+                raise ValueError("""Le modï¿½le cohï¿½sif doit ï¿½tre parmi linear, bilinear, trilinear""")
         except AttributeError:
             return None, ""
         if cohesive_model_name != "":
-            # Données de base :
+            # Donnï¿½es de base :
             cohesive_strength = float(self.__datadoc.find(repertoire_base + 'coefficients/cohesive-strength').text)
             critical_separation = float(self.__datadoc.find(repertoire_base + 'coefficients/critical-separation').text)
 
@@ -429,7 +429,7 @@ class DataContainer(object):
             unloading_model_name = self.__datadoc.find(repertoire_base + 'unloading-model/name').text
             if unloading_model_name.lower() not in ["zeroforceunloading", "progressiveunloading",
                                                     "lossofstiffnessunloading"]:
-                raise ValueError(""" Le modèle de décharge doit être dans "zeroforceunloading", "progressiveunloading",
+                raise ValueError(""" Le modï¿½le de dï¿½charge doit ï¿½tre dans "zeroforceunloading", "progressiveunloading",
                 "lossofstiffnessunloading" """)
 
             if unloading_model_name.lower() == "zeroforceunloading":
@@ -480,9 +480,9 @@ class DataContainer(object):
         """
         Reads the elasticity parameters for material matter
         :param matter: material to be considered
-        :return: elasticity_model : modèle d'élasticité
-                 plasticity_model : modèle de plasticité
-                 plasticity_criterion : méthode de calcul pour le critère de plasticité
+        :return: elasticity_model : modï¿½le d'ï¿½lasticitï¿½
+                 plasticity_model : modï¿½le de plasticitï¿½
+                 plasticity_criterion : mï¿½thode de calcul pour le critï¿½re de plasticitï¿½
         :rtype ShearModulus, YieldStress models + VonMisesCriterion
         """
         elasticity_model = None
@@ -491,16 +491,16 @@ class DataContainer(object):
         repertoire_base = matter + '/rheology/'
         yield_stress, shear_modulus = self.__getYieldStressAndShearModulusFromData(matter)
         try:
-            # Elasticité
+            # Elasticitï¿½
             elasticity_model_name = str(self.__datadoc.find(repertoire_base + 'elasticity-model').text)
             if elasticity_model_name != "Linear":
                 raise ValueError("Model {:} not implemented. Choose Linear".format(elasticity_model_name))
             elasticity_model = ConstantShearModulus(shear_modulus)
         except AttributeError:
-            print "Impossible de construire le modèle d'élasticité"
+            print "Impossible de construire le modï¿½le d'ï¿½lasticitï¿½"
             pass
         try:
-            # Plasticité
+            # Plasticitï¿½
             plasticity_model_name = str(self.__datadoc.find(repertoire_base + 'plasticity-model').text)
             if plasticity_model_name != "EPP":
                 raise ValueError("Model {:} not implemented. Choose EPP".format(plasticity_model_name))
@@ -509,7 +509,7 @@ class DataContainer(object):
             if plasticity_criterion_name == "VonMises":
                 plasticity_criterion = VonMisesCriterion()
         except AttributeError:
-            print "Impossible de construire le modèle de plasticité"
+            print "Impossible de construire le modï¿½le de plasticitï¿½"
             pass
         return elasticity_model, plasticity_model, plasticity_criterion
 
@@ -541,8 +541,8 @@ class DataContainer(object):
                 value = float(self.__datadoc.find(info + 'value').text)
                 bc_law = ConstantVelocity(value)
             else:
-                raise ValueError("""Mauvais type de loi de pression en entrée pour {:} avec un type {:}.
-                                 Les possibilités sont : (Constant)""".format(info, type_bc))
+                raise ValueError("""Mauvais type de loi de pression en entrï¿½e pour {:} avec un type {:}.
+                                 Les possibilitï¿½s sont : (Constant)""".format(info, type_bc))
 
         elif type_bc.lower() == "pressure":
             class_name = str(self.__datadoc.find(info + 'bc-law').text)
@@ -563,7 +563,7 @@ class DataContainer(object):
                 time1 = float(self.__datadoc.find(info + 'time-activation-value1').text)
                 time2 = float(self.__datadoc.find(info + 'time-activation-value2').text)
                 # et une rampe entre time-activation-value1 et time-activation-value2
-                bc_law = RampPressure(value1, value2, time1, time2)
+                bc_law = PressureRamp(value1, value2, time1, time2)
 
             elif class_name == "marchtable":
                 file = str(self.__datadoc.find(info + 'value').text)
@@ -577,11 +577,11 @@ class DataContainer(object):
                 time2 = float(self.__datadoc.find(info + 'reach-value2-time').text)
                 time3 = float(self.__datadoc.find(info + 'start-second-ramp-time').text)
                 time4 = float(self.__datadoc.find(info + 'reach-value3-time').text)
-                bc_law = CreneauRampPressure(value1, value2, value3, time1, time2, time3, time4)
+                bc_law = SuccessivePressureRamp(value1, value2, value3, time1, time2, time3, time4)
             else:
-                raise ValueError("""Mauvais type de loi de pression en entrée pour {:} avec un type {:}.
-                                Les possibilités sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
+                raise ValueError("""Mauvais type de loi de pression en entrï¿½e pour {:} avec un type {:}.
+                                Les possibilitï¿½s sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
                                  .format(info, type_bc))
         else:
-            raise(ValueError, """Mauvais type de CL : les possibilités sont (pressure | velocity)""")
+            raise(ValueError, """Mauvais type de CL : les possibilitï¿½s sont (pressure | velocity)""")
         return bc_law

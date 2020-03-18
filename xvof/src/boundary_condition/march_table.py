@@ -1,15 +1,15 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant une pression à partir d'un fichier texte en entrée (table de marche)
+Classe dï¿½finissant une pression ï¿½ partir d'un fichier texte en entrï¿½e (table de marche)
 """
 import numpy as np
-from xvof.src.boundary_condition.pressurelaw import PressureLaw
+from xvof.src.boundary_condition.pressure_law import PressureLaw
 
 
 class MarchTablePressure(PressureLaw):
     """
-    Une pression à deux paliers constants
+    Une pression ï¿½ deux paliers constants
     """
     def __init__(self, data_file):
         super(MarchTablePressure, self).__init__()
@@ -21,9 +21,9 @@ class MarchTablePressure(PressureLaw):
 
     def evaluate(self, time, *args, **kwargs):
         """
-        Evalue la pression à retourner en fonction du temps par rapport à la table de marche
+        Evalue la pression ï¿½ retourner en fonction du temps par rapport ï¿½ la table de marche
         :param time: temps courant
-        :return: la pression à imposer
+        :return: la pression ï¿½ imposer
         """
         if time > self.time_data[-1]:
             pressure = 0
@@ -35,7 +35,7 @@ class MarchTablePressure(PressureLaw):
                 # le temps courant se situe dans la table de marche
                 pressure = self.pressure_data[indice_limite_inf]
             else:
-                # on interpole linéairement la pression entre les deux temps présents dans la table de marche
+                # on interpole linï¿½airement la pression entre les deux temps prï¿½sents dans la table de marche
                 pente = (self.pressure_data[indice_limite_sup] - self.pressure_data[indice_limite_inf]) / \
                         (self.time_data[indice_limite_sup] - self.time_data[indice_limite_inf])
                 pressure = self.pressure_data[indice_limite_inf] + (time - self.time_data[indice_limite_inf]) * pente

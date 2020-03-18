@@ -1,31 +1,31 @@
 #!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 """
-Classe de test du module RampPressure
+Unittest for PressureRamp module
 """
 import unittest
-import xvof.src.boundary_condition.ramppressure as RpPressure
+from xvof.src.boundary_condition.pressure_ramp import PressureRamp
 
 
 class RampPressureTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'RampPressure'
+    Test case utilisï¿½ pour test les fonctions du module 'PressureRamp'
     """
     def setUp(self):
         """
-        Initialisation des tests
+        Tests initialization
         """
         self._first_value = 2.
         self._second_value = 4.
         self._start_time = 1.
         self._end_time = 3.
-        self._pressure = RpPressure.RampPressure(self._first_value, self._second_value, self._start_time, self._end_time)
+        self._pressure = PressureRamp(self._first_value, self._second_value, self._start_time, self._end_time)
 
 
     def test_evaluate_first_value(self):
         """
-        Teste la fonction evaluate de RampPressure pour t < start time
+        Tests the evaluate method of the PressureRamp class for t < start_time
         """
         print __name__ + " : Test evaluate first value"
         value_test = self._pressure.evaluate(self._start_time - 10.)
@@ -35,7 +35,7 @@ class RampPressureTest(unittest.TestCase):
 
     def test_evaluate_second_value(self):
         """
-        Teste la fonction evaluate de RampPressure  pour t > end time
+        Tests the evaluate method of the PressureRamp class for t > end_time
         """
         print __name__ + " : Test evaluate second value"
         value_test = self._pressure.evaluate(self._end_time + 10.)
@@ -44,7 +44,7 @@ class RampPressureTest(unittest.TestCase):
 
     def test_evaluate_medium_value(self):
         """
-        Teste la fonction evaluate de RampPressure  pour t > start time + end time / 2
+        Tests the evaluate method of the PressureRamp class for t > (start_time + end_time) / 2 
         """
         print __name__ + " : Test evaluate medium value"
         value_test = self._pressure.evaluate(0.5 * (self._start_time + self._end_time))
