@@ -6,6 +6,7 @@ one_dimension_cell module unit tests
 import numpy as np
 import unittest
 import mock
+import os
 from xvof.src.cell.one_dimension_cell import OneDimensionCell
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.data.data_container import DataContainer
@@ -15,7 +16,7 @@ from xvof.src.cell.test_cell.test_variables import TestVariables
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA_hydro.xml"
+        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA_hydro.xml"))
         self.test_datacontainer = DataContainer(data_file_path)
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)

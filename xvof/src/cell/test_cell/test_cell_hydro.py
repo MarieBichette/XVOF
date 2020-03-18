@@ -5,6 +5,7 @@ Cell module unit tests
 """
 import numpy as np
 import unittest
+import os
 from xvof.src.cell.cell import Cell
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.node import OneDimensionNode
@@ -19,7 +20,7 @@ class CellTest(unittest.TestCase):
         """
         Tests setup
         """
-        data_file_path = "//home/marie/PycharmProjects/XVOF/xvof.src/0_UNITTEST/XDATA_hydro.xml"
+        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.test_variables = TestVariables(4, 5)
