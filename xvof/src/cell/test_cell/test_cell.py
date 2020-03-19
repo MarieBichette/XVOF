@@ -21,12 +21,13 @@ class CellTest(unittest.TestCase):
         """
         Tests setup
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
         self.nbr_cells = 3
         self.my_cells = Cell(self.nbr_cells)
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
     def test_get_coordinates(self):

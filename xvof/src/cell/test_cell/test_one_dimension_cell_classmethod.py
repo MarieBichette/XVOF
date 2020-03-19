@@ -22,6 +22,7 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
     def test_apply_equation_of_state(self):
@@ -33,7 +34,7 @@ class OneDimensionCellTest(unittest.TestCase):
         pressure_current = np.ones(self.nbr_cells) * 1.e+05
         energy_current = np.ones(self.nbr_cells) * 6.719465
 
-        density_new = np.array([15308.5143, 8930, 5358., 6697.5])
+        density_new = np.array([9000., 8900., 8915., 8920.])
         cson_new = np.zeros([self.nbr_cells])
         pressure_new = np.zeros([self.nbr_cells])
         energy_new = np.zeros([self.nbr_cells])
@@ -46,11 +47,11 @@ class OneDimensionCellTest(unittest.TestCase):
                                          pressure_current, pressure_new,
                                          energy_current, energy_new, pseudo, cson_new)
 
-        expected_energy = np.zeros(4)
-        expected_pressure = np.zeros(4)
-        expected_sound_speed = np.zeros(4)
-        np.testing.assert_allclose(energy_new_value, expected_energy)
-        np.testing.assert_allclose(pressure_new_value, expected_pressure)
+        expected_energy = np.array([487.425148, 94.274747, 28.598207, 16.438778])
+        expected_pressure = np.array([1.103738e+09,  -4.640087e+08,  -2.323383e+08,  -1.549395e+08])
+        expected_sound_speed = np.array([4000.877516, 3926.583447, 3933.306654, 3935.541937])
+        np.testing.assert_allclose(energy_new_value, expected_energy, rtol=1.e-5)
+        np.testing.assert_allclose(pressure_new_value, expected_pressure, rtol=1.e-5)
         np.testing.assert_allclose(sound_velocity_new_value, expected_sound_speed)
         print "__[OK]"
 
@@ -97,7 +98,7 @@ class OneDimensionCellTest(unittest.TestCase):
                                 [u_new[1], u_new[2]],
                                 [u_new[2], u_new[3]],
                                 [u_new[3], u_new[4]]]).reshape((4,2))
-        expected_result = np.array([0., 0., 1.333333333, 0.333333333])
+        expected_result = np.array([0., 0., 2.666667, -1.333333])
         dev_strain_rate = np.zeros(self.nbr_cells)
         dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt, position_new, vitesse_new)
         np.testing.assert_allclose(dev_strain_rate, expected_result, rtol=1.e-05)

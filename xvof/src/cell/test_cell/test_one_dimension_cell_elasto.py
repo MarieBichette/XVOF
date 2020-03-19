@@ -27,6 +27,7 @@ class OneDimensionCellTest(unittest.TestCase):
         self.mask = np.array([True, True, False, False])
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
     def test_compute_new_pressure_with_elasticity(self):
@@ -56,9 +57,10 @@ class OneDimensionCellTest(unittest.TestCase):
         dt = 1.
 
         self.my_cells.compute_new_pressure(mask_classic, dt)
-        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([]))
-        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([]))
-        np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([]))
+        np.testing.assert_allclose(self.my_cells.pressure.new_value,
+                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]))
+        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([17.254756,  163.9763, 0., 0.]))
+        np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([3948.726929,  3974.84139, 0., 0.]))
 
     def test_compute_shear_modulus(self):
         """
@@ -97,7 +99,6 @@ class OneDimensionCellTest(unittest.TestCase):
                                      [1000., -500., -500.],
                                      [4000., -2000., -2000.]])
         np.testing.assert_allclose(self.my_cells.stress, expected_result)
-
 
     def test_compute_deviatoric_stress_tensor(self):
         """
