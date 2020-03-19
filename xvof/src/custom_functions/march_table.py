@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Implements the MarchTablePressure class
+Implements the MarchTable class
 """
 import numpy as np
-from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
+from xvof.src.custom_functions.custom_function import CustomFunction
 
 
-class MarchTablePressure(BoundaryCondition):
+class MarchTable(CustomFunction):
     """
-    This class defines a pressure read from a text file
+    This class defines a value interpolated from a text file
     """
     def __init__(self, data_file):
         self.__data_file = data_file
@@ -18,10 +18,10 @@ class MarchTablePressure(BoundaryCondition):
 
     def evaluate(self, time, *args, **kwargs):
         """
-        Return the value of the pressure for the time given in argument
+        Return the value of the for the time given in argument
 
         :param time: current time
-        :return: the value of the pressure
+        :return: the value 
         """
         if time > self.time_data[-1]:
             pressure = 0

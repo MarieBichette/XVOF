@@ -4,11 +4,11 @@ Unittests of the two_steps_pressure module
 """
 import unittest
 
-import xvof.src.boundary_condition.two_steps_pressure as TwoStpPressure
+from xvof.src.custom_functions.two_steps import TwoSteps
 
-class TwoStepsPressureTest(unittest.TestCase):
+class TwoStepsTest(unittest.TestCase):
     """
-    This class tests the methods of the TwoStepsPressure class
+    This class tests the methods of the TwoSteps class
     """
     def setUp(self):
         """
@@ -17,15 +17,15 @@ class TwoStepsPressureTest(unittest.TestCase):
         self._first_value = 2.
         self._second_value = 4.
         self._critical_time = 0.
-        self._pressure = TwoStpPressure.TwoStepsPressure(self._first_value,
-                                                         self._second_value,
-                                                         self._critical_time)
+        self._function = TwoSteps(self._first_value,
+                                  self._second_value,
+                                  self._critical_time)
 
     def test_evaluate_fisrt_value(self):
         """
         Tests the evaluate method for t < critical_time
         """
-        value_test = self._pressure.evaluate(self._critical_time - 10.)
+        value_test = self._function.evaluate(self._critical_time - 10.)
         self.assertEqual(value_test, self._first_value)
 
 
@@ -33,7 +33,7 @@ class TwoStepsPressureTest(unittest.TestCase):
         """
         Tests the evaluate method for t > critical_time
         """
-        value_test = self._pressure.evaluate(self._critical_time + 10.)
+        value_test = self._function.evaluate(self._critical_time + 10.)
         self.assertEqual(value_test, self._second_value)
 
 

@@ -2,12 +2,12 @@
 """
 Implements the ConstantPressure class
 """
-from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
+from xvof.src.custom_functions.custom_function import CustomFunction
 
 
-class ConstantPressure(BoundaryCondition):
+class ConstantValue(CustomFunction):
     """
-    This class defines a constant pressure boundary condition
+    This class defines a function that returns a constant value
 
          ^
     value|.................
