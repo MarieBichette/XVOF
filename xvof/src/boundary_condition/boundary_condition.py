@@ -2,7 +2,7 @@
 """
 Implements the BoundaryCondition abstact base class
 """
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
 class BoundaryCondition(object):
@@ -10,16 +10,37 @@ class BoundaryCondition(object):
     A generic BoundaryCondition class that should be used to derive
     more specific boundary condition class
     """
-    def __init__(self):
-        self._type = None
+    __metaclass__ = ABCMeta
 
-    def type(self):
-        """
-        Accessor on the boundary condition type (pressure or velocity)
-        :return:
-        """
-        return self._type
+    __types = {"Pressure": [],
+               "Velocity": []}
 
     @abstractmethod
     def evaluate(self, time, *args, **kwargs):  #pylint: disable=missing-docstring
         pass
+
+    @classmethod
+    def register_pressure_bc(cls, bc_obj):
+        """
+        Register the bc_obj as a pressure boundary condition
+        """
+        cls.__types['Pressure'].append(bc_obj)
+
+    @classmethod
+    def register_velocity_bc(cls, bc_obj):
+        """
+        Register the bc_obj as a velocity boundary condition
+        """
+        cls.__types['Velocity'].append(bc_obj)
+
+    def is_pressure_boundary_condition(self):
+        """
+        Return true if the instance is a pressure type boundary conditions
+        """
+        return self in BoundaryCondition.__types['Pressure']
+
+    def is_velocity_boundary_condition(self):
+        """
+        Return true if the instance is a velocity type boundary conditions
+        """
+        return self in BoundaryCondition.__types['Velocity']
