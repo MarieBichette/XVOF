@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Implements the ConstantPressure class
+Implements the ConstantValue class
 """
 from xvof.src.custom_functions.custom_function import CustomFunction
 
