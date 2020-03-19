@@ -201,10 +201,12 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #    APPLY VELOCITY BOUNDARY CONDITIONS        #
         # ---------------------------------------------#
-        if LeftBoundaryCondition.is_velocity_boundary_condition():
-            my_mesh.apply_velocity_boundary_condition('left', LeftBoundaryCondition.evaluate(simulation_time))
-        if RightBoundaryCondition.is_velocity_boundary_condition():
-            my_mesh.apply_velocity_boundary_condition('right', RightBoundaryCondition.evaluate(simulation_time))
+        if left_boundary_condition.is_velocity():
+            my_mesh.apply_velocity_boundary_condition(
+                'left', left_boundary_condition.evaluate(simulation_time))
+        if right_boundary_condition.is_velocity():
+            my_mesh.apply_velocity_boundary_condition(
+                'right', right_boundary_condition.evaluate(simulation_time))
         # ---------------------------------------------#
         #         CONTACT CORRECTION                   #
         # ---------------------------------------------#
@@ -262,10 +264,10 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         LOADING                              #
         # ---------------------------------------------#
-        if LeftBoundaryCondition.is_pressure_boundary_condition():
-            my_mesh.apply_pressure('left', LeftBoundaryCondition.evaluate(simulation_time))
-        if RightBoundaryCondition.is_pressure_boundary_condition():
-            my_mesh.apply_pressure('right', RightBoundaryCondition.evaluate(simulation_time))
+        if left_boundary_condition.is_pressure():
+            my_mesh.apply_pressure('left', left_boundary_condition.evaluate(simulation_time))
+        if right_boundary_condition.is_pressure():
+            my_mesh.apply_pressure('right', right_boundary_condition.evaluate(simulation_time))
         # ---------------------------------------------#
         #         TIME STEP COMPUTATION                #
         # ---------------------------------------------#

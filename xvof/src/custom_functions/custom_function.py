@@ -21,24 +21,32 @@ class CustomFunction(object):
 
     def register_pressure(self):
         """
-        Register the bc_obj as a pressure boundary condition
+        Register the current instance as a pressure
         """
-        CustomFunction.__types['Pressure'].append(self)
+        if self in CustomFunction.__types['Velocity']:
+            raise ValueError("The instance {} is already registered as a velocity"
+                             .format(self))
+        if self not in CustomFunction.__types['Pressure']:
+            CustomFunction.__types['Pressure'].append(self)
 
     def register_velocity(self):
         """
-        Register the bc_obj as a velocity boundary condition
+        Register the current instance as a velocity
         """
-        CustomFunction.__types['Velocity'].append(self)
+        if self in CustomFunction.__types['Pressure']:
+            raise ValueError("The instance {} is already registered as a pressure"
+                             .format(self))
+        if self not in CustomFunction.__types['Velocity']:
+            CustomFunction.__types['Velocity'].append(self)
 
-    def is_pressure_boundary_condition(self):
+    def is_pressure(self):
         """
-        Return true if the instance is a pressure type boundary conditions
+        Return true if the instance is a pressure
         """
         return self in CustomFunction.__types['Pressure']
 
-    def is_velocity_boundary_condition(self):
+    def is_velocity(self):
         """
-        Return true if the instance is a velocity type boundary conditions
+        Return true if the instance is a velocity
         """
         return self in CustomFunction.__types['Velocity']
