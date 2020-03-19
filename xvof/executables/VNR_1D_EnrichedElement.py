@@ -1,18 +1,16 @@
 #!/usr/bin/env python2.7
 """
-:todo: merge with VNR_1D_ClassicalElement
-:todo: increase perf of external solver library
-:todo: correct pb of variable time step
+todo: to complete
 """
-import matplotlib
+import os.path
+import sys
+import time
+import matplotlib  # pylint: disable=unused-import
 #matplotlib.use('Qt4Agg')
 
 
 import matplotlib.pyplot as plt
 import numpy as np
-import time
-import os.path
-import sys
 
 from xvof.src.figure_manager.figure_manager      import FigureManager
 from xvof.src.data.data_container                import DataContainer
@@ -24,77 +22,76 @@ from xvof.src.rupturetreatment.enrichelement     import EnrichElement
 from xvof.src.rupturetreatment.imposedpressure   import ImposedPressure
 
 
-# ------------------------------------------------------------------
-#             PARAMETERS INITIALIZATION
-# ------------------------------------------------------------------
-# ---- # DATA FILES
-#path = os.path.curdir
-path = sys.argv[1]  # prend en argument le chemin vers le cas
-data = DataContainer(os.path.join(path, "XDATA.xml"))
-meshfile = os.path.join(path, "mesh.txt")
-print "Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path)))
+def main():
+    """
+    Launch the program
+    """
+    # ------------------------------------------------------------------
+    #             PARAMETERS INITIALIZATION
+    # ------------------------------------------------------------------
+    # ---- # DATA FILES
+    #path = os.path.curdir
+    path = sys.argv[1]  # prend en argument le chemin vers le cas
+    data = DataContainer(os.path.join(path, "XDATA.xml"))
+    meshfile = os.path.join(path, "mesh.txt")
+    print "Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path)))
 
-# ---- # TIME MANAGEMENT
-FinalTime = data.time.final_time
-InitialTimeStep = data.time.initial_time_step
-TimeStepAfterFailureFactor = data.time.time_step_reduction_factor_for_failure
+    # ---- # TIME MANAGEMENT
+    final_time = data.time.final_time
+    initial_time_step = data.time.initial_time_step
 
-# ---- # LOADING
-LeftBoundaryCondition = data.boundary_condition.left_BC
-RightBoundaryCondition = data.boundary_condition.right_BC
+    # ---- # LOADING
+    left_boundary_condition = data.boundary_condition.left_BC
+    right_boundary_condition = data.boundary_condition.right_BC
 
-# ---- # RUPTURE
-RuptureCriterion = data.material_target.failure_model.failure_criterion
-rupture_treatment = None
-if data.material_target.failure_model.failure_treatment == "ImposedPressure":
-    rupture_treatment = ImposedPressure
-elif data.material_target.failure_model.failure_treatment == "Enrichment":
-    rupture_treatment = EnrichElement
-    type_of_enrichment = data.material_target.failure_model.type_of_enrichment
-    print "Enrichment method : {}".format(type_of_enrichment)
+    # ---- # RUPTURE
+    rupture_criterion = data.material_target.failure_model.failure_criterion
+    rupture_treatment = None
+    if data.material_target.failure_model.failure_treatment == "ImposedPressure":
+        rupture_treatment = ImposedPressure(
+            data.material_target.failure_model.failure_treatment_value)
+    elif data.material_target.failure_model.failure_treatment == "Enrichment":
+        rupture_treatment = EnrichElement(
+            data.material_target.failure_model.failure_treatment_value)
+        type_of_enrichment = data.material_target.failure_model.type_of_enrichment
+        print "Enrichment method : {}".format(type_of_enrichment)
 
-if data.material_target.failure_model.failure_treatment is not None:
-    RuptureTreatment = rupture_treatment(data.material_target.failure_model.failure_treatment_value)
-else:
-    RuptureTreatment = None
+    # ---- # PLASTICITY
+    target_plasticity_criterion = data.material_target.constitutive_model.plasticity_criterion
+    projectile_plasticity_criterion = (
+        data.material_projectile.constitutive_model.plasticity_criterion)
 
-# ---- # PLASTICITY
-PlasticityCriterionTarget = data.material_target.constitutive_model.plasticity_criterion
-PlasticityCriterionProjectile = data.material_projectile.constitutive_model.plasticity_criterion
+    # ---- # OUTPUT
+    images_number = data.output.number_of_images
+    the_output_mng = OutputManager()
 
-# ---- # OUTPUT
-ImagesNumber = data.output.number_of_images
-TheOutputManager = OutputManager()
+    # Initialization for time figure plot
+    cells_for_time_figure = []
+    nodes_for_time_figure = []
+    str_nodes_for_time_figure = data.output.nodes_numbers
+    str_cells_for_time_figure = data.output.cells_numbers
+    try:
+        for cell_number in str_cells_for_time_figure:
+            cells_for_time_figure.append(int(cell_number))
+    except TypeError:
+        pass
 
-# Initialization for time figure plot
-cells_for_time_figure = []
-nodes_for_time_figure = []
-str_nodes_for_time_figure = data.output.nodes_numbers
-str_cells_for_time_figure = data.output.cells_numbers
-try:
-    for cell_number in str_cells_for_time_figure:
-        cells_for_time_figure.append(int(cell_number))
-except TypeError:
-    pass
+    try:
+        for node_number in str_nodes_for_time_figure:
+            nodes_for_time_figure.append(int(node_number))
+    except TypeError:
+        pass
+    history_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
+    history_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
 
-try :
-    for node_number in str_nodes_for_time_figure:
-        nodes_for_time_figure.append(int(node_number))
-except TypeError:
-    pass
-history_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
-history_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
-
-#  =================================================
-#  =================================================
-if __name__ == '__main__':
     np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
     #
     simulation_time = 0.
     step = 0
-    dt = InitialTimeStep
+    dt = initial_time_step  # pylint: disable=invalid-name
     dt_staggered = dt / 2
-    # Le premier increment pour la vitesse a un pas de temps de dt/2 pour tenir compte du fait que les vitesses sont
+    # Le premier increment pour la vitesse a un pas de temps de dt/2 pour
+    # tenir compte du fait que les vitesses sont
     # init a t=0 et pas t = -1/2 dt (pour garderl'ordre 2 a l'init).
     # Le dt_staggered est ensuite remis a dt a la fin de la boucle en temps
     dt_crit = 2 * dt
@@ -102,15 +99,16 @@ if __name__ == '__main__':
     #         MESH CREATION                        #
     # ---------------------------------------------#
     coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,))
-    NumberOfNodes = coord_mesh.shape[0]
-    coord_init = np.zeros([NumberOfNodes, 1], dtype=np.float64, order='C')
+    nodes_number = coord_mesh.shape[0]
+    coord_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
     coord_init[:, 0] = coord_mesh
-    vit_init = np.zeros([NumberOfNodes, 1], dtype=np.float64, order='C')
+    vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
     enrichissement_registration = False
     if data.material_target.failure_model.type_of_enrichment == 'Hansbo':
         enrichissement_registration = True
-    my_mesh = Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init,
-                             enrichment_type=data.material_target.failure_model.type_of_enrichment)
+    my_mesh = Mesh1dEnriched(
+        initial_coordinates=coord_init, initial_velocities=vit_init,
+        enrichment_type=data.material_target.failure_model.type_of_enrichment)
 
     # ---------------------------------------------#
     # Initialisation des vitesses des cibles et projectiles si elles sont dans le JDD
@@ -122,7 +120,7 @@ if __name__ == '__main__':
     try:
         vitesse_cible = data.material_target.initial_values.velocity_init
     except AttributeError:
-      # le projectile n'est pas defini ou le champ vitesse initiale n'est pas defini
+    # le projectile n'est pas defini ou le champ vitesse initiale n'est pas defini
         vitesse_cible = 0
 
     print "Initilisation de la vitesse du projectile : {:} m/s".format(vitesse_projectile)
@@ -133,36 +131,42 @@ if __name__ == '__main__':
     my_mesh.nodes.umundemi[my_mesh.nodes.nodes_in_target, 0] = vitesse_cible
 
     if data.geometric.initial_interface_position is not None:
-        # Le noeud a l'interface entre les deux a comme vitesse une combinaison lineaire entre les deux vitesses
-        # (Option ByVelocity plutot que ByMomentum)
+        # Le noeud a l'interface entre les deux a comme vitesse une combinaison lineaire
+        # entre les deux vitesses (Option ByVelocity plutot que ByMomentum)
         vitesse_interface = 0.5 * (vitesse_cible + vitesse_projectile)
-        if np.where(my_mesh.nodes.nodes_in_target)[0][0] == np.where(my_mesh.nodes.nodes_in_projectile)[0][-1]:
+        if (np.where(my_mesh.nodes.nodes_in_target)[0][0] ==
+                np.where(my_mesh.nodes.nodes_in_projectile)[0][-1]):
             node_interface = np.where(my_mesh.nodes.nodes_in_target)[0][0]
         else:
-            raise ValueError("""Impossible de trouver le noeud de l'interface projectile / cible """)
+            raise ValueError("""Impossible de trouver le noeud de l'interface """
+                             """projectile / cible""")
         my_mesh.nodes.upundemi[node_interface, 0] = vitesse_interface
         my_mesh.nodes.umundemi[node_interface, 0] = vitesse_interface
-        print "Initilisation de la vitesse de l'interface : {:} m/s (noeud {:})".format(vitesse_interface, node_interface)
+        print ("Initilisation de la vitesse de l'interface : {:} m/s (noeud {:})"
+               .format(vitesse_interface, node_interface))
 
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
-    TheFigureManager = FigureManager(my_mesh, dump=data.output.dump)
-    if ImagesNumber != 0:
-        TheFigureManager.set_time_controler(FinalTime / ImagesNumber)
-        TheFigureManager.populate_figs()
+    the_figure_mng = FigureManager(my_mesh, dump=data.output.dump)
+    if images_number != 0:
+        the_figure_mng.set_time_controler(final_time / images_number)
+        the_figure_mng.populate_figs()
 
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    for db_el in DataContainer().output.databases:
-        db = OutputDatabase(db_el.path)
+    for db_el in data.output.databases:
+        output_db = OutputDatabase(db_el.path)
         if db_el.iteration_period is not None:
-            TheOutputManager.register_database_iteration_ctrl(db_el.identifier, db, db_el.iteration_period)
+            the_output_mng.register_database_iteration_ctrl(db_el.identifier, output_db,
+                                                            db_el.iteration_period)
         else:
-            TheOutputManager.register_database_time_ctrl(db_el.identifier, db, db_el.time_period)
-        TheOutputManager.register_all_fields(enrichissement_registration, my_mesh.cells, my_mesh.nodes,
-                                             db_el.identifier, db_el.cell_indexes, db_el.node_indexes)
+            the_output_mng.register_database_time_ctrl(db_el.identifier, output_db,
+                                                       db_el.time_period)
+        the_output_mng.register_all_fields(enrichissement_registration, my_mesh.cells,
+                                           my_mesh.nodes, db_el.identifier,
+                                           db_el.cell_indexes, db_el.node_indexes)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
@@ -175,24 +179,22 @@ if __name__ == '__main__':
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
     # ************************************************* #
-    while simulation_time < FinalTime:
-
-        # import ipdb ; ipdb.set_trace()
-
+    while simulation_time < final_time:
         loop_begin_time = time.time()
         # if step % 1000 == 0:
         msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
-               """ a time step of {:15.9g} seconds"""). \
-            format(step, simulation_time, dt)
+               """ a time step of {:15.9g} seconds""".
+               format(step, simulation_time, dt))
         print msg
 
         # ---------------------------------------------#
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
-        TheOutputManager.update(simulation_time, step, data.material_target.failure_model.type_of_enrichment,
-                                data.material_target.failure_model.failure_treatment_value)
-        #TheFigureManager.update(simulation_time, step)
-        # commente en attendant de retrouver Qt
+        the_output_mng.update(simulation_time, step,
+                              data.material_target.failure_model.type_of_enrichment,
+                              data.material_target.failure_model.failure_treatment_value)
+        #the_figure_mng.update(simulation_time, step)
+        # commente en attendant de retrouver Qt => avec passage python3 + PyQt5
 
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
@@ -234,9 +236,11 @@ if __name__ == '__main__':
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
         if data.material_projectile.constitutive_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(PlasticityCriterionProjectile, my_mesh.cells.cell_in_projectile)
+            my_mesh.get_plastic_cells(projectile_plasticity_criterion,
+                                      my_mesh.cells.cell_in_projectile)
         if data.material_target.constitutive_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(PlasticityCriterionTarget, my_mesh.cells.cell_in_target)
+            my_mesh.get_plastic_cells(target_plasticity_criterion,
+                                      my_mesh.cells.cell_in_target)
         my_mesh.apply_plasticity_treatment(dt)
         # ---------------------------------------------#
         #         PSEUDOVISCOSITY COMPUTATION          #
@@ -253,9 +257,9 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #              RUPTURE                         #
         # ---------------------------------------------#
-        if RuptureTreatment is not None:
-            my_mesh.get_ruptured_cells(RuptureCriterion)
-            my_mesh.apply_rupture_treatment(RuptureTreatment, simulation_time)
+        if rupture_treatment is not None:
+            my_mesh.get_ruptured_cells(rupture_criterion)
+            my_mesh.apply_rupture_treatment(rupture_treatment, simulation_time)
         # ---------------------------------------------#
         #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
@@ -274,7 +278,8 @@ if __name__ == '__main__':
         dt_crit = my_mesh.compute_new_time_step()
         if dt != dt_crit:
             print "Reduction of the time step after failure. New time step is " + str(dt_crit)
-        dt = min(dt, dt_crit)  # reduction du pas de temps apres rupture
+        # reduction du pas de temps apres rupture
+        dt = min(dt, dt_crit)  # pylint: disable=invalid-name
 
         # ---------------------------------------------#
         #                INCREMENTATION                #
@@ -283,7 +288,7 @@ if __name__ == '__main__':
         simulation_time += dt
         if not data.time.is_time_step_constant:
             dt_staggered = 0.5 * (dt_crit + dt)
-            dt = dt_crit
+            dt = dt_crit  # pylint: disable=invalid-name
         else:
             dt_staggered = dt
         step += 1
@@ -297,10 +302,10 @@ if __name__ == '__main__':
         item_time_data.write_fields_history()
         item_time_data.close_file()
 
-
     print 'Done !'
 
-    TheOutputManager.finalize()
+    the_output_mng.finalize()
 
 
-
+if __name__ == "__main__":
+    main()
