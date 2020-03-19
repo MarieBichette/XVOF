@@ -2,12 +2,12 @@
 """
 Implements the PressureRamp class
 """
-from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
+from xvof.src.custom_functions.custom_function import CustomFunction
 
 
-class PressureRamp(BoundaryCondition):
+class Ramp(CustomFunction):
     """
-    A class that defines a ramp between 2 constants steps pressure
+    A class that defines a ramp between 2 constants steps
 
                 ^
     second value|       ...........
@@ -19,12 +19,12 @@ class PressureRamp(BoundaryCondition):
     """
     def __init__(self, first_value, second_value, start_time, end_time):
         """
-        Pressure ramp
+        Ramp
 
-        :param first_value: intial pressure value
-        :param second_value: pressure value to reach
+        :param first_value: intial value
+        :param second_value: value to reach
         :param start_time: time for starting the ramp
-        :param end_time: time for reaching second_value pressure
+        :param end_time: time for reaching second_value
         """
         self.__first_value = first_value
         self.__second_value = second_value

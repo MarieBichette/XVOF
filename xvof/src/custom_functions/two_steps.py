@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Implements the TwoStepsPressure class
+Implements the TwoSteps class
 """
-from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
+from xvof.src.custom_functions.custom_function import CustomFunction
 
 
-class TwoStepsPressure(BoundaryCondition):
+class TwoSteps(CustomFunction):
     """
-    This class defines a 2 constant steps pressure boundary condition
+    This class defines a 2 constant steps function
 
                 ^
     second value|    ...........

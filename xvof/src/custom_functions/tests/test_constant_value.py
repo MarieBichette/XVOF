@@ -4,25 +4,25 @@ Unittests of the constant_pressure module
 """
 import unittest
 
-import xvof.src.boundary_condition.constant_pressure as CstPressure
+from xvof.src.custom_functions.constant_value import ConstantValue
 
 
-class ConstantPressureTest(unittest.TestCase):
+class ConstantValueTest(unittest.TestCase):
     """
-    This class tests the methods of the ConstantPressure class
+    This class tests the methods of the ConstantValue class
     """
     def setUp(self):
         """
         Tests initialization
         """
         self.value = 2.
-        self.pressure = CstPressure.ConstantPressure(self.value)
+        self.function = ConstantValue(self.value)
 
     def test_evaluate(self):
         """
         Tests the evalulate method
         """
-        value_test = self.pressure.evaluate(0)
+        value_test = self.function.evaluate(0)
         self.assertEqual(value_test, self.value)
 
 
