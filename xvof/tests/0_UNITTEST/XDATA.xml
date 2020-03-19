@@ -63,6 +63,7 @@
         <quadratic-pseudo>2.</quadratic-pseudo>
         <cfl>0.34</cfl>
         <cfl-pseudo>0.</cfl-pseudo>
+        <external-solver-library>vnr_internal_energy_evolution.so</external-solver-library>
     </numeric-parameters>
 
     <output>
