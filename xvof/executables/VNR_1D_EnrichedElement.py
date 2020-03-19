@@ -22,6 +22,93 @@ from xvof.src.rupturetreatment.enrichelement     import EnrichElement
 from xvof.src.rupturetreatment.imposedpressure   import ImposedPressure
 
 
+def __create_mesh(meshfile, enrichment_type):
+    """
+    Create a Mesh1D object from meshfile
+
+    :param meshfile: path to the mesh file
+    :param enrichment_type: type of enrichment desired
+    """
+    coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,))
+    nodes_number = coord_mesh.shape[0]
+    coord_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
+    coord_init[:, 0] = coord_mesh
+    vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
+    return Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init,
+                          enrichment_type=enrichment_type)
+
+
+def __init_velocity(nodes, data):
+    """
+    Initialize the nodes velocity
+
+    :param nodes: the nodes
+    :type nodes: Node
+    :param data: Simulation data
+    :type data: DataContainer
+    """
+    try:
+        vitesse_projectile = data.material_projectile.initial_values.velocity_init
+    except AttributeError:
+        vitesse_projectile = 0
+    try:
+        vitesse_cible = data.material_target.initial_values.velocity_init
+    except AttributeError:
+        vitesse_cible = 0
+
+    print "Projectile velocity initialized to : {:} m/s".format(vitesse_projectile)
+    nodes.upundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
+    nodes.umundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
+    print "Target velocity initialized to : {:} m/s".format(vitesse_cible)
+    nodes.upundemi[nodes.nodes_in_target, 0] = vitesse_cible
+    nodes.umundemi[nodes.nodes_in_target, 0] = vitesse_cible
+
+    if data.geometric.initial_interface_position is not None:
+        # Need to find the node at the interface between projectile and target
+        if (np.where(nodes.nodes_in_target)[0][0] ==
+                np.where(nodes.nodes_in_projectile)[0][-1]):
+            node_interface = np.where(nodes.nodes_in_target)[0][0]
+        else:
+            raise ValueError("""Unable to find the node at the interface"""
+                             """projectile / target""")
+        # Node at the interface between projectile and target is initialized
+        # with a linear combination of both velocities
+        vitesse_interface = 0.5 * (vitesse_cible + vitesse_projectile)
+        nodes.upundemi[node_interface, 0] = vitesse_interface
+        nodes.umundemi[node_interface, 0] = vitesse_interface
+        print ("Interface velocity initialized to : {:} m/s (node {:})"
+               .format(vitesse_interface, node_interface))
+
+
+def __init_time_figure_plot(output_data, path):
+    """
+    Initialize the time figure plots
+
+    :param output_data: output data
+    :type output_data: data_container.output_props
+    :param path: path toward the directory holding data file
+    :type path: str
+    :return: the list of nodes or cells that must be followed
+    :rtype: List[TimeData]
+    """
+    cells_for_time_figure = []
+    nodes_for_time_figure = []
+    try:
+        for cell_number in output_data.cells_numbers:
+            cells_for_time_figure.append(int(cell_number))
+    except TypeError:
+        pass
+
+    try:
+        for node_number in output_data.nodes_numbers:
+            nodes_for_time_figure.append(int(node_number))
+    except TypeError:
+        pass
+    h_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
+    h_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
+    return h_list
+
+
 def main():
     """
     Launch the program
@@ -30,8 +117,7 @@ def main():
     #             PARAMETERS INITIALIZATION
     # ------------------------------------------------------------------
     # ---- # DATA FILES
-    #path = os.path.curdir
-    path = sys.argv[1]  # prend en argument le chemin vers le cas
+    path = sys.argv[1]
     data = DataContainer(os.path.join(path, "XDATA.xml"))
     meshfile = os.path.join(path, "mesh.txt")
     print "Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path)))
@@ -56,35 +142,7 @@ def main():
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
         print "Enrichment method : {}".format(type_of_enrichment)
 
-    # ---- # PLASTICITY
-    target_plasticity_criterion = data.material_target.constitutive_model.plasticity_criterion
-    projectile_plasticity_criterion = (
-        data.material_projectile.constitutive_model.plasticity_criterion)
-
     # ---- # OUTPUT
-    images_number = data.output.number_of_images
-    the_output_mng = OutputManager()
-
-    # Initialization for time figure plot
-    cells_for_time_figure = []
-    nodes_for_time_figure = []
-    str_nodes_for_time_figure = data.output.nodes_numbers
-    str_cells_for_time_figure = data.output.cells_numbers
-    try:
-        for cell_number in str_cells_for_time_figure:
-            cells_for_time_figure.append(int(cell_number))
-    except TypeError:
-        pass
-
-    try:
-        for node_number in str_nodes_for_time_figure:
-            nodes_for_time_figure.append(int(node_number))
-    except TypeError:
-        pass
-    history_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
-    history_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
-
-    np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
     #
     simulation_time = 0.
     step = 0
@@ -98,57 +156,20 @@ def main():
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
-    coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,))
-    nodes_number = coord_mesh.shape[0]
-    coord_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
-    coord_init[:, 0] = coord_mesh
-    vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
-    enrichissement_registration = False
-    if data.material_target.failure_model.type_of_enrichment == 'Hansbo':
-        enrichissement_registration = True
-    my_mesh = Mesh1dEnriched(
-        initial_coordinates=coord_init, initial_velocities=vit_init,
-        enrichment_type=data.material_target.failure_model.type_of_enrichment)
+    type_of_enr = data.material_target.failure_model.type_of_enrichment
+    my_mesh = __create_mesh(meshfile, type_of_enr)
+    enrichissement_registration = type_of_enr == 'Hansbo'
 
     # ---------------------------------------------#
-    # Initialisation des vitesses des cibles et projectiles si elles sont dans le JDD
+    # TARGET AND PROJECTILE VELOCITIES INITIALIZATION
     # ---------------------------------------------#
-    try:
-        vitesse_projectile = data.material_projectile.initial_values.velocity_init
-    except AttributeError:
-        vitesse_projectile = 0
-    try:
-        vitesse_cible = data.material_target.initial_values.velocity_init
-    except AttributeError:
-    # le projectile n'est pas defini ou le champ vitesse initiale n'est pas defini
-        vitesse_cible = 0
-
-    print "Initilisation de la vitesse du projectile : {:} m/s".format(vitesse_projectile)
-    my_mesh.nodes.upundemi[my_mesh.nodes.nodes_in_projectile, 0] = vitesse_projectile
-    my_mesh.nodes.umundemi[my_mesh.nodes.nodes_in_projectile, 0] = vitesse_projectile
-    print "Initilisation de la vitesse de la cible : {:} m/s".format(vitesse_cible)
-    my_mesh.nodes.upundemi[my_mesh.nodes.nodes_in_target, 0] = vitesse_cible
-    my_mesh.nodes.umundemi[my_mesh.nodes.nodes_in_target, 0] = vitesse_cible
-
-    if data.geometric.initial_interface_position is not None:
-        # Le noeud a l'interface entre les deux a comme vitesse une combinaison lineaire
-        # entre les deux vitesses (Option ByVelocity plutot que ByMomentum)
-        vitesse_interface = 0.5 * (vitesse_cible + vitesse_projectile)
-        if (np.where(my_mesh.nodes.nodes_in_target)[0][0] ==
-                np.where(my_mesh.nodes.nodes_in_projectile)[0][-1]):
-            node_interface = np.where(my_mesh.nodes.nodes_in_target)[0][0]
-        else:
-            raise ValueError("""Impossible de trouver le noeud de l'interface """
-                             """projectile / cible""")
-        my_mesh.nodes.upundemi[node_interface, 0] = vitesse_interface
-        my_mesh.nodes.umundemi[node_interface, 0] = vitesse_interface
-        print ("Initilisation de la vitesse de l'interface : {:} m/s (noeud {:})"
-               .format(vitesse_interface, node_interface))
+    __init_velocity(my_mesh.nodes, data)
 
     # ---------------------------------------------#
     #  FIGURES MANAGER SETUP                       #
     # ---------------------------------------------#
     the_figure_mng = FigureManager(my_mesh, dump=data.output.dump)
+    images_number = data.output.number_of_images
     if images_number != 0:
         the_figure_mng.set_time_controler(final_time / images_number)
         the_figure_mng.populate_figs()
@@ -156,6 +177,9 @@ def main():
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
+    history_list = __init_time_figure_plot(data.output, path)
+    np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
+    the_output_mng = OutputManager()
     for db_el in data.output.databases:
         output_db = OutputDatabase(db_el.path)
         if db_el.iteration_period is not None:
@@ -235,6 +259,10 @@ def main():
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
+        target_plasticity_criterion = data.material_target.constitutive_model.plasticity_criterion
+        projectile_plasticity_criterion = (
+            data.material_projectile.constitutive_model.plasticity_criterion)
+
         if data.material_projectile.constitutive_model.plasticity_model is not None:
             my_mesh.get_plastic_cells(projectile_plasticity_criterion,
                                       my_mesh.cells.cell_in_projectile)
