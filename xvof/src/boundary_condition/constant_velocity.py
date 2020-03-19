@@ -2,15 +2,14 @@
 """
 Implements the ConstantVelocity class
 """
-from xvof.src.boundary_condition.velocity_law import VelocityLaw
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
-class ConstantVelocity(VelocityLaw):
+class ConstantVelocity(BoundaryCondition):
     """
     That class defines a constant velocity boundary condition
     """
     def __init__(self, value):
-        super(ConstantVelocity, self).__init__()
         self.__value = value
 
     def evaluate(self, time, *args, **kwargs):

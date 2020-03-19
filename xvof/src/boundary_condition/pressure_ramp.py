@@ -2,10 +2,10 @@
 """
 Implements the PressureRamp class
 """
-from xvof.src.boundary_condition.pressure_law import PressureLaw
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
-class PressureRamp(PressureLaw):
+class PressureRamp(BoundaryCondition):
     """
     A class that defines a ramp between 2 constants steps pressure
 
@@ -26,7 +26,6 @@ class PressureRamp(PressureLaw):
         :param start_time: time for starting the ramp
         :param end_time: time for reaching second_value pressure
         """
-        super(PressureRamp, self).__init__()
         self.__first_value = first_value
         self.__second_value = second_value
         self.__start_time = start_time

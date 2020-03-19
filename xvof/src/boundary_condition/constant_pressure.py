@@ -2,10 +2,10 @@
 """
 Implements the ConstantPressure class
 """
-from xvof.src.boundary_condition.pressure_law import PressureLaw
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
-class ConstantPressure(PressureLaw):
+class ConstantPressure(BoundaryCondition):
     """
     This class defines a constant pressure boundary condition
 
@@ -15,10 +15,9 @@ class ConstantPressure(PressureLaw):
          |
          |
          |_________________>
-                  
+
     """
     def __init__(self, value):
-        super(ConstantPressure, self).__init__()
         self.__value = value
 
     def evaluate(self, time, *args, **kwargs):

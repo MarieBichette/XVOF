@@ -1,43 +1,42 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe d�finissant une pression � partir d'un fichier texte en entr�e (table de marche)
+Implements the MarchTablePressure class
 """
 import numpy as np
-from xvof.src.boundary_condition.pressure_law import PressureLaw
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
-class MarchTablePressure(PressureLaw):
+class MarchTablePressure(BoundaryCondition):
     """
-    Une pression � deux paliers constants
+    This class defines a pressure read from a text file
     """
     def __init__(self, data_file):
-        super(MarchTablePressure, self).__init__()
         self.__data_file = data_file
         self.__data = np.loadtxt(self.__data_file)
-        print "Pressure is imposed from file" + self.__data_file
         self.time_data = self.__data[:, 0]
         self.pressure_data = self.__data[:, 1]
 
     def evaluate(self, time, *args, **kwargs):
         """
-        Evalue la pression � retourner en fonction du temps par rapport � la table de marche
-        :param time: temps courant
-        :return: la pression � imposer
+        Return the value of the pressure for the time given in argument
+
+        :param time: current time
+        :return: the value of the pressure
         """
         if time > self.time_data[-1]:
             pressure = 0
         else:
             indice_limite_inf = np.where(self.time_data <= time)[-1][0]
             indice_limite_sup = np.where(self.time_data >= time)[0][0]
-            # import ipdb ; ipdb.set_trace()
             if indice_limite_inf == indice_limite_sup:
-                # le temps courant se situe dans la table de marche
+                # current time is inside the table
                 pressure = self.pressure_data[indice_limite_inf]
             else:
-                # on interpole lin�airement la pression entre les deux temps pr�sents dans la table de marche
-                pente = (self.pressure_data[indice_limite_sup] - self.pressure_data[indice_limite_inf]) / \
-                        (self.time_data[indice_limite_sup] - self.time_data[indice_limite_inf])
-                pressure = self.pressure_data[indice_limite_inf] + (time - self.time_data[indice_limite_inf]) * pente
+                # linear interpolation between the two nearest times present in the table
+                delta_pressure = (self.pressure_data[indice_limite_sup] -
+                                  self.pressure_data[indice_limite_inf])
+                delta_time = self.time_data[indice_limite_sup] - self.time_data[indice_limite_inf]
+                pente = delta_pressure / delta_time
+                pressure = (self.pressure_data[indice_limite_inf] +
+                            (time - self.time_data[indice_limite_inf]) * pente)
         return pressure
-

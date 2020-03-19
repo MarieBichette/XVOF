@@ -2,10 +2,10 @@
 """
 Implements the SuccessivePressureRamp class
 """
-from xvof.src.boundary_condition.pressure_law import PressureLaw
+from xvof.src.boundary_condition.boundary_condition import BoundaryCondition
 
 
-class SuccessivePressureRamp(PressureLaw):
+class SuccessivePressureRamp(BoundaryCondition):
     """
     This class defines a pressure boundary condition that chain two PressureRamp boundary conditions
     """
@@ -16,7 +16,6 @@ class SuccessivePressureRamp(PressureLaw):
         :param second_p_ramp: second pressure ramp
         :type second_p_ramp: PressureRamp
         """
-        super(SuccessivePressureRamp, self).__init__()
         self.__ramp_1 = first_p_ramp
         self.__ramp_2 = second_p_ramp
 
