@@ -20,16 +20,8 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Préparation des tests unitaires
         """
-        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
-        class element:
-            def __init__(self, poz, pressure, pseudo, masse):
-                self.coord = poz
-                self.pression_new = pressure
-                self.pseudo = pseudo
-                self.masse = masse
-
-        self.elem_1 = element(np.array([0.5]), 1.0e+09, 0.5e+09, 1. / 4.)
 
         self.vit_init = np.zeros([2, 1], dtype='float')
         self.vit_init[:, 0] = [1.2e+03, 0.0]
@@ -66,7 +58,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'additional_dof_velocity_new': np.array([[1., ], [3., ]]),
                   'additional_dof_deviatoric_strain_rate': np.array([[4., 3., 8.],]),
                   'additional_dof_yield_stress.current_value': np.array([10.]),
-                  'additional_dof_stress': np.array([[0., 0., 0.]]),
+                  'additional_dof_stress': np.array([[2., 0., 0.]]),
                   '_additional_dof_equivalent_plastic_strain_rate': np.array([0.]),
                   '_additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.], ]),
                   '_additional_dof_velocity_new': np.zeros([2, 1]),
@@ -77,6 +69,18 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   }
         patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
+
+    def tearDown(self):
+        DataContainer.clear()
+        pass
+
+    def test_classical(self):
+        """Test de la propriété classical du module OneDimensionEnrichedNode"""
+        np.testing.assert_array_equal(self.my_nodes.classical, np.array([False, False]))
+
+    def test_enriched(self):
+        """ Test de la propriété enriched du module OneDimensionEnrichedNode"""
+        np.testing.assert_array_equal(self.my_nodes.enriched, np.array([True, True]))
 
     def test_enrichment_concerned(self):
         """
@@ -127,23 +131,16 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         Test de la méthode enriched_nodes_compute_new_force
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        # Mock topo :
-        topo = mock.MagicMock(Topology1D)
-        type(topo).cells_in_contact_with_node = mock.PropertyMock(
-            return_value=np.array([[0, 1], [1, 2]]))
-        # fausse connectivité pour avoir 3 cells (une à gauche et une à droite de la cell rompue)
-        self.mock_discontinuity.mask_disc_nodes = np.array([True, True])
+        topo = Topology1D(2, 1)
         self.mock_discontinuity.position_in_ruptured_element = 0.5
-        self.mock_discontinuity.additional_dof_stress = np.array([[2., 0., 0.]])
-        self.elem_1.pression_new = np.array([2.])
-        vecteur_contrainte_classique = np.array([self.elem_1.pression_new, self.elem_1.pression_new, self.elem_1.pression_new])
+        vecteur_contrainte_classique = np.array([2.])
         self.my_nodes._force = np.array([[1., ], [1., ]])
         self.my_nodes._section = 1.
         self.my_nodes.compute_enriched_nodes_new_force(topo, vecteur_contrainte_classique)
 
-        np.testing.assert_array_almost_equal(
-            self.mock_discontinuity.additional_dof_force, np.array([[-1., ], [1., ]]))
-        np.testing.assert_almost_equal(self.my_nodes._force, np.array([[-1., ], [1., ]]))
+        # np.testing.assert_array_almost_equal(
+        #     self.mock_discontinuity.additional_dof_force, np.array([[-1., ], [1., ]]))
+        np.testing.assert_almost_equal(self.my_nodes._force, np.array([[-1, ], [1., ]]))
 
     # @mock.patch.object(OneDimensionHansboEnrichedNode, "compute_discontinuity_opening", new_callable=mock.PropertyMock)
     # @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
