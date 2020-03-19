@@ -22,7 +22,7 @@ from xvof.src.boundary_condition.constant_pressure import ConstantPressure
 from xvof.src.boundary_condition.march_table import MarchTablePressure
 from xvof.src.boundary_condition.pressure_ramp import PressureRamp
 from xvof.src.boundary_condition.two_steps_pressure import TwoStepsPressure
-from xvof.src.boundary_condition.creneau_ramp_pressure import SuccessivePressureRamp
+from xvof.src.boundary_condition.successive_pressure_ramp import SuccessivePressureRamp
 from xvof.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
 from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
 from xvof.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
@@ -540,6 +540,7 @@ class DataContainer(object):
             if class_name.lower() == "constant":
                 value = float(self.__datadoc.find(info + 'value').text)
                 bc_law = ConstantVelocity(value)
+                bc_law.register_velocity_bc(bc_law)
             else:
                 raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
                                  Les possibilit�s sont : (Constant)""".format(info, type_bc))
@@ -584,6 +585,8 @@ class DataContainer(object):
                 raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
                                 Les possibilit�s sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
                                  .format(info, type_bc))
+
+            bc_law.register_pressure_bc(bc_law)
         else:
             raise(ValueError, """Mauvais type de CL : les possibilit�s sont (pressure | velocity)""")
         return bc_law
