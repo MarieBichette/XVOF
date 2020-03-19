@@ -14,7 +14,7 @@ class Topology1D(Topology):
 
     >>> my_topo = Topology1D(11, 10)
     >>> my_topo.getCellsInContactWithNode(0)
-    array([ 0, -1])
+    array([ -1, 0])
     >>> my_topo.getCellsInContactWithNode(5)
     array([4, 5])
     >>> my_topo.getNodesBelongingToCell(9)
@@ -23,7 +23,7 @@ class Topology1D(Topology):
     array([[0, 1],
            [2, 3]])
     >>> my_topo.cells_in_contact_with_node[:]
-    array([[ 0, -1],
+    array([[ -1, 0],
            [ 0,  1],
            [ 1,  2],
            [ 2,  3],
@@ -66,3 +66,10 @@ class Topology1D(Topology):
             self.addCellInContactWithNode(ind_node_left, ind_cell)
             self.addCellInContactWithNode(ind_node_right, ind_cell)
             self.setNodesBelongingToCell(ind_cell, [ind_node_left, ind_node_right])
+
+        # Avec cette construction, le premier noeud est connecté aux mailles [0, -1]
+        # Or on voudrait que ça soit l'inverse pour le calcul des forces
+        # Donc échange :
+        assert self._cells_in_contact_with_node[0, 1] == -1
+        self._cells_in_contact_with_node[0, 1] = self._cells_in_contact_with_node[0, 0]
+        self._cells_in_contact_with_node[0, 0] = -1
