@@ -18,29 +18,16 @@ from xvof.src.data.data_container import DataContainer
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
-        self.test_cell = Cell(3)
-        data_file_path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml"))
+        data_file_path = os.path.realpath(
+            os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml"))
         self.test_datacontainer = DataContainer(data_file_path)
+        self.test_cell = Cell(3)
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
-    @mock.patch.object(Cell, "size_t", new_callable=mock.PropertyMock, return_value=np.array([0.6, 0.1, 0.15])) 
-    @mock.patch.object(geometrical_props, "section", new_callable=mock.PropertyMock, return_value=0.0003141592653589793) 
-    @mock.patch.object(Field, "current_value", new_callable=mock.PropertyMock, return_value=np.array([8129., 8129., 8129.]))
-    def test_compute_mass(self, mock_density_filed, mock_geom_props, mock_cell):
-        """
-        Test of compute_mass method
-        """
-        self.test_cell.compute_mass()
-        np.testing.assert_allclose(self.test_cell.mass, [1.5322804 , 0.25538007, 0.3830701])
-
-    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
-    def test_compute_new_pressure_internal(self, sound_velocity_mock, pseudo_mock, density_mock, pressure_mock, energy_mock):
+    def test_compute_new_pressure_internal(self):
         """
         Test of compute_new_pressure method with internal solver
         """
@@ -53,7 +40,7 @@ class OneDimensionCellTest(unittest.TestCase):
         self.test_cell.energy.new_value = np.array([0., 0., 0.])
         self.test_cell.pressure.new_value = np.array([0., 0., 0.])
         self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
-        self.test_cell.compute_new_pressure(np.array([True, True, True]))
+        self.test_cell.compute_new_pressure(np.array([True, True, True]), 1.e-6)
         # Function to vanish
         delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
         func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
@@ -61,12 +48,7 @@ class OneDimensionCellTest(unittest.TestCase):
                 - self.test_cell.energy.current_value)
         np.testing.assert_allclose(func, [0., 0., 0.])
 
-    @mock.patch.object(Cell, "energy", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pressure", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "density", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "pseudo", new_callable=mock.PropertyMock)
-    @mock.patch.object(Cell, "sound_velocity", new_callable=mock.PropertyMock)
-    def test_compute_new_pressure_external(self, sound_velocity_mock, pseudo_mock, density_mock, pressure_mock, energy_mock):
+    def test_compute_new_pressure_external(self):
         """
         Test of compute_new_pressure method with external solver
         """
@@ -79,20 +61,13 @@ class OneDimensionCellTest(unittest.TestCase):
         self.test_cell.energy.new_value = np.array([0., 0., 0.])
         self.test_cell.pressure.new_value = np.array([0., 0., 0.])
         self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
-        self.test_cell.compute_new_pressure(np.array([True, True, True]))
+        self.test_cell.compute_new_pressure(np.array([True, True, True]), 1.e-6)
         # Function to vanish
         delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
         func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
                 (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
                 - self.test_cell.energy.current_value)
         np.testing.assert_allclose(func, [0., 0., 0.])
-
-    @mock.patch.object(Cell, "pressure", new_callable = mock.PropertyMock)
-    def test_impose_pressure(self, mock_pressure):
-        """Test de impose_pressure"""
-        self.test_cell.pressure.new_value = np.array([1., 2., 3.])
-        self.test_cell.impose_pressure(1, 4.)
-        np.testing.assert_array_equal(self.test_cell.pressure.new_value, np.array([1., 4., 3.]))
 
 
 if __name__ == "__main__":
