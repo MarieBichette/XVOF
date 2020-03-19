@@ -17,12 +17,11 @@ from xvof.src.rupturecriterion.damage_criterion import DamageCriterion
 from xvof.src.rupturecriterion.maximalstress import MaximalStressCriterion
 from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
 from xvof.src.rheology.constantyieldstress import ConstantYieldStress
-from xvof.src.boundary_condition.constant_velocity import ConstantVelocity
-from xvof.src.boundary_condition.constant_pressure import ConstantPressure
-from xvof.src.boundary_condition.march_table import MarchTablePressure
-from xvof.src.boundary_condition.pressure_ramp import PressureRamp
-from xvof.src.boundary_condition.two_steps_pressure import TwoStepsPressure
-from xvof.src.boundary_condition.successive_pressure_ramp import SuccessivePressureRamp
+from xvof.src.custom_functions.constant_value import ConstantValue
+from xvof.src.custom_functions.march_table import MarchTable
+from xvof.src.custom_functions.ramp import Ramp
+from xvof.src.custom_functions.two_steps import TwoSteps
+from xvof.src.custom_functions.successive_ramp import SuccessiveRamp
 from xvof.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
 from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
 from xvof.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
@@ -539,8 +538,8 @@ class DataContainer(object):
 
             if class_name.lower() == "constant":
                 value = float(self.__datadoc.find(info + 'value').text)
-                bc_law = ConstantVelocity(value)
-                bc_law.register_velocity_bc(bc_law)
+                bc_law = ConstantValue(value)
+                bc_law.register_velocity()
             else:
                 raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
                                  Les possibilit�s sont : (Constant)""".format(info, type_bc))
@@ -550,13 +549,13 @@ class DataContainer(object):
 
             if class_name.lower() == "constant":
                 value = float(self.__datadoc.find(info + 'value').text)
-                bc_law = ConstantPressure(value)
+                bc_law = ConstantValue(value)
 
             elif class_name.lower() == "twostep":
                 value1 = float(self.__datadoc.find(info + 'value1').text)  # 1st value
                 value2 = float(self.__datadoc.find(info + 'value2').text)  # 2nd value
                 time = float(self.__datadoc.find(info + 'time-activation').text)  # time
-                bc_law = TwoStepsPressure(value1, value2, time)
+                bc_law = TwoSteps(value1, value2, time)
 
             elif class_name.lower() == "ramp":
                 value1 = float(self.__datadoc.find(info + 'value1').text)
@@ -564,11 +563,11 @@ class DataContainer(object):
                 time1 = float(self.__datadoc.find(info + 'time-activation-value1').text)
                 time2 = float(self.__datadoc.find(info + 'time-activation-value2').text)
                 # et une rampe entre time-activation-value1 et time-activation-value2
-                bc_law = PressureRamp(value1, value2, time1, time2)
+                bc_law = Ramp(value1, value2, time1, time2)
 
             elif class_name == "marchtable":
                 file = str(self.__datadoc.find(info + 'value').text)
-                bc_law = MarchTablePressure(file)
+                bc_law = MarchTable(file)
 
             elif class_name == "creneauramp":
                 value1 = float(self.__datadoc.find(info + 'initial-value').text)
@@ -578,15 +577,15 @@ class DataContainer(object):
                 time2 = float(self.__datadoc.find(info + 'reach-value2-time').text)
                 time3 = float(self.__datadoc.find(info + 'start-second-ramp-time').text)
                 time4 = float(self.__datadoc.find(info + 'reach-value3-time').text)
-                first_ramp = PressureRamp(value1, value2, time1, time2)
-                second_ramp = PressureRamp(value2, value3, time3, time4)
-                bc_law = SuccessivePressureRamp(first_ramp, second_ramp)
+                first_ramp = Ramp(value1, value2, time1, time2)
+                second_ramp = Ramp(value2, value3, time3, time4)
+                bc_law = SuccessiveRamp(first_ramp, second_ramp)
             else:
                 raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
                                 Les possibilit�s sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
                                  .format(info, type_bc))
 
-            bc_law.register_pressure_bc(bc_law)
+            bc_law.register_pressure()
         else:
             raise(ValueError, """Mauvais type de CL : les possibilit�s sont (pressure | velocity)""")
         return bc_law
