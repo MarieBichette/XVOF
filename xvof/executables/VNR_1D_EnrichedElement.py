@@ -201,9 +201,9 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #    APPLY VELOCITY BOUNDARY CONDITIONS        #
         # ---------------------------------------------#
-        if LeftBoundaryCondition.type() == "velocity":
+        if LeftBoundaryCondition.is_velocity_boundary_condition():
             my_mesh.apply_velocity_boundary_condition('left', LeftBoundaryCondition.evaluate(simulation_time))
-        if RightBoundaryCondition.type() == "velocity":
+        if RightBoundaryCondition.is_velocity_boundary_condition():
             my_mesh.apply_velocity_boundary_condition('right', RightBoundaryCondition.evaluate(simulation_time))
         # ---------------------------------------------#
         #         CONTACT CORRECTION                   #
@@ -262,9 +262,9 @@ if __name__ == '__main__':
         # ---------------------------------------------#
         #         LOADING                              #
         # ---------------------------------------------#
-        if LeftBoundaryCondition.type() == "pressure":
+        if LeftBoundaryCondition.is_pressure_boundary_condition():
             my_mesh.apply_pressure('left', LeftBoundaryCondition.evaluate(simulation_time))
-        if RightBoundaryCondition.type() == "pressure":
+        if RightBoundaryCondition.is_pressure_boundary_condition():
             my_mesh.apply_pressure('right', RightBoundaryCondition.evaluate(simulation_time))
         # ---------------------------------------------#
         #         TIME STEP COMPUTATION                #
