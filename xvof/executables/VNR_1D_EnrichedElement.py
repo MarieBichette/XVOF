@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import os.path
+import sys
 
 from xvof.src.figure_manager.figure_manager      import FigureManager
 from xvof.src.data.data_container                import DataContainer
@@ -27,8 +28,8 @@ from xvof.src.rupturetreatment.imposedpressure   import ImposedPressure
 #             PARAMETERS INITIALIZATION
 # ------------------------------------------------------------------
 # ---- # DATA FILES
-path = os.path.curdir
-#path = sys.argv[1]  # prend en argument le chemin vers le cas
+#path = os.path.curdir
+path = sys.argv[1]  # prend en argument le chemin vers le cas
 data = DataContainer(os.path.join(path, "XDATA.xml"))
 meshfile = os.path.join(path, "mesh.txt")
 print "Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path)))
