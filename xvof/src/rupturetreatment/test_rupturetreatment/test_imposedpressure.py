@@ -23,7 +23,7 @@ class ImposedPressureTest(unittest.TestCase):
         Préparation du test
         """
         # Création d'un DataContainer bidon :
-        data_file_path = os.path.realpath(os.path.join(os.getcwd(), "../tests/0_UNITTEST/XDATA.xml"))
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         # Préparation du test
