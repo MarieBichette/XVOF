@@ -36,6 +36,7 @@ class OneDimensionCell(Cell):
                             'OldEnergy': energy}
             cell._function_to_vanish.setVariables(my_variables)
             energy_new_value = cell._solver.computeSolution(energy)
+
             # Eos call to determine final pressure and sound speed values
             shape = energy_new.shape
             pressure_new_value = np.zeros(shape, dtype=np.float64, order='C')
@@ -281,8 +282,9 @@ class OneDimensionCell(Cell):
                                                                                      self._deviatoric_strain_rate[mask_classic, :])
 
         # Appel de l'équation d'état sur le projectile:
-        if DataContainer().data_contains_a_projectile:
-            mask = np.logical_and(mask_classic, self.cell_in_projectile)
+        mask = np.logical_and(mask_classic, self.cell_in_projectile)
+        if DataContainer().data_contains_a_projectile and mask.any():
+            # Not sure there is cells in the intersection mask_classic / projectile => test it before starting Newton
             self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
             OneDimensionCell.apply_equation_of_state(self, DataContainer().material_projectile.constitutive_model.eos,
                                                      self.density.current_value[mask], self.density.new_value[mask],
@@ -292,14 +294,16 @@ class OneDimensionCell(Cell):
 
         # Appel de l'équation d'état sur la cible
         mask = np.logical_and(mask_classic, self.cell_in_target)
-        self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
-            OneDimensionCell.apply_equation_of_state(self, DataContainer().material_target.constitutive_model.eos,
-                                                     self.density.current_value[mask],
-                                                     self.density.new_value[mask],
-                                                     self.pressure.current_value[mask], self.pressure.new_value[mask],
-                                                     self.energy.current_value[mask], self.energy.new_value[mask],
-                                                     self.pseudo.current_value[mask],
-                                                     self.sound_velocity.new_value[mask])
+        if DataContainer().data_contains_a_target and mask.any():
+            # Not sure there is cells in the intersection mask_classic / target => test it before starting Newton
+            self.energy.new_value[mask], self.pressure.new_value[mask], self.sound_velocity.new_value[mask] = \
+                OneDimensionCell.apply_equation_of_state(self, DataContainer().material_target.constitutive_model.eos,
+                                                         self.density.current_value[mask],
+                                                         self.density.new_value[mask],
+                                                         self.pressure.current_value[mask], self.pressure.new_value[mask],
+                                                         self.energy.current_value[mask], self.energy.new_value[mask],
+                                                         self.pseudo.current_value[mask],
+                                                         self.sound_velocity.new_value[mask])
 
     def compute_size(self, topologie, vecteur_coord_noeuds):
         """
@@ -381,7 +385,12 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-        if DataContainer().material_target.constitutive_model.elasticity_model is not None:
+        elasticity_activated = (DataContainer().material_target.constitutive_model.elasticity_model is not None or
+                                DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        plasticity_activated = (DataContainer().material_target.constitutive_model.plasticity_model is not None or
+                                DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+        import ipdb ; ipdb.set_trace()
+        if elasticity_activated or plasticity_activated:
             self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
 
     def compute_deviatoric_stress_tensor(self, mask, topologie, coord_noeud_new, vitesse_noeud_new, dt):
