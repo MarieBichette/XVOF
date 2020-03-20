@@ -24,8 +24,6 @@
             <rheology>
                 <coefficients>Cuivre_EPP.json</coefficients>
                 <elasticity-model>Linear</elasticity-model>
-                <plasticity-criterion>VonMises</plasticity-criterion>
-                <plasticity-model>EPP</plasticity-model>
             </rheology>
         </projectile>
 
