@@ -10,7 +10,6 @@ import os
 from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xvof.src.data.data_container import DataContainer
 from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):
@@ -19,11 +18,9 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         """ Préparation des tests """
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
+        self.nbr_cells = 4
 
-        self.test_variables = TestVariables(4, 5)
-        self.test_variables.define_elasto_variables()
-
-        self.my_elements = OneDimensionEnrichedCell(self.test_variables.nb_cells)
+        self.my_elements = OneDimensionEnrichedCell(self.nbr_cells)
 
     def tearDown(self):
         DataContainer.clear()
@@ -33,7 +30,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         """
         Test la propriété classical
         """
-        np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.test_variables.nb_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
         np.testing.assert_array_equal(self.my_elements.classical, np.array([False, True, True, True]))
         self.my_elements.classical[0] = True
@@ -42,7 +39,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         """
         Test la propriété enriched
         """
-        np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.test_variables.nb_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
         np.testing.assert_array_equal(self.my_elements.enriched, np.array([True, False, False, False]))
         self.my_elements.classical[0] = True
