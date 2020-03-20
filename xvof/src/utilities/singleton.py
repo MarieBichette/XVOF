@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
 Implementing Singleton metaclass
-From Python Cookbook 3rd edition Chapter 9.13 "Using metaclass to control instance creation"
+From https://stackoverflow.com/questions/50065276/clearing-a-metaclass-singleton"
 
 >>> class Spam(object):
 ...     __metaclass__ = Singleton
@@ -35,22 +35,3 @@ class Singleton(type):
             del Singleton._instances[cls]
         except KeyError:
             pass
-
-# class Singleton(type):
-#     """
-#     A metaclass implementing singleton pattern
-#     """
-#
-#     def __init__(self, *args, **kwargs):
-#         self.__instance = None
-#         super(Singleton, self).__init__(*args, **kwargs)
-#
-#     def __call__(self, *args, **kwargs):
-#         if self.__instance is None:
-#             self.__instance = super(Singleton, self).__call__(*args, **kwargs)
-#         return self.__instance
-#
-#     @classmethod
-#     def destroy(cls):
-#         print("Suppression de la classe singleton")
-#         del cls._instances[cls]
