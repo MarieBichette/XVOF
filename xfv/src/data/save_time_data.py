@@ -1,8 +1,7 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe définissant une fichier contenant les champs d'un noeud ou d'un élément en fonction du temps
-Extraction des données d'un élément ou un noeud et enregistrement dans un fichier .dat
+Classe dï¿½finissant une fichier contenant les champs d'un noeud ou d'un ï¿½lï¿½ment en fonction du temps
+Extraction des donnï¿½es d'un ï¿½lï¿½ment ou un noeud et enregistrement dans un fichier .dat
 """
 import os
 from abc import ABCMeta, abstractmethod
@@ -33,7 +32,7 @@ class TimeData(object):
     @abstractmethod
     def add_time_step_fields(self):
         """
-        stocke les données du pas de temps actuel dans des listes
+        stocke les donnï¿½es du pas de temps actuel dans des listes
         """
         pass
 
@@ -46,19 +45,19 @@ class TimeData(object):
 
     def close_file(self):
         """
-        Ferme le fichier associé
+        Ferme le fichier associï¿½
         """
         self._fd.close()
 
 
 class CellTimeData(TimeData):
     """
-    Classe définissant un jeu de donnée time history pour un élément
+    Classe dï¿½finissant un jeu de donnï¿½e time history pour un ï¿½lï¿½ment
     """
     def __init__(self, id_number, o_path):
         """
         initialisation comme particularisation de TimeData
-        :param id_number: numéro de l'élément
+        :param id_number: numï¿½ro de l'ï¿½lï¿½ment
         :param o_path: chemin pour enregistrer dans le bon dossier
         """
         super(CellTimeData, self).__init__("cell", id_number, o_path)
@@ -67,7 +66,7 @@ class CellTimeData(TimeData):
     @property
     def header(self):
         """
-        crée le fichier pour cell time history
+        crï¿½e le fichier pour cell time history
         :return:
         """
         msg = "---Time History for cell :" + str(self._item_id) + os.linesep
@@ -103,13 +102,13 @@ class CellTimeData(TimeData):
 
 class NodeTimeData(TimeData):
     """
-    Classe définissant un jeu de donnée time history pour un élément
+    Classe dï¿½finissant un jeu de donnï¿½e time history pour un ï¿½lï¿½ment
     """
 
     def __init__(self, id_number, o_path):
         """
         initialisation comme particularisation de TimeData
-        :param id_number: numéro du noeud
+        :param id_number: numï¿½ro du noeud
         :param o_path: chemin pour enregistrer dans le bon dossier
         """
         super(NodeTimeData, self).__init__("node", id_number, o_path)
@@ -119,7 +118,7 @@ class NodeTimeData(TimeData):
     @property
     def header(self):
         """
-        crée le fichier pour cell time history
+        crï¿½e le fichier pour cell time history
         :return:
         """
         msg = "---Time History for node :" + str(self._item_id) + os.linesep
