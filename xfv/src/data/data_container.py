@@ -74,7 +74,6 @@ class DataContainer(object):
         self.datafile_path = datafile_path
         self.project_dir = os.path.commonprefix([os.path.abspath(self.datafile_path),
                                                  os.path.abspath(__file__)])
-        # self.project_dir = os.path.split(os.path.dirname(os.path.abspath(self.datafile_path)))[0]
         self.__datadoc = et.parse(datafile_path)
         self.numeric = numerical_props(*self.__fillInNumericalProperties())
         self.geometric = geometrical_props(*self.__fillInGeometricalProperties())
