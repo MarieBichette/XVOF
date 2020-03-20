@@ -389,7 +389,6 @@ class OneDimensionCell(Cell):
                                 DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
         plasticity_activated = (DataContainer().material_target.constitutive_model.plasticity_model is not None or
                                 DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
-        import ipdb ; ipdb.set_trace()
         if elasticity_activated or plasticity_activated:
             self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
 
