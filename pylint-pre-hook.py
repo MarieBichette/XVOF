@@ -44,6 +44,7 @@ def run():
     """Verify changed python files using pylint."""
     # Get all changed files' paths.
     try:
+        # changed_files = check_output(["git", "diff", "--staged", "--name-only", "HEAD", ])
         changed_files = check_output(["git", "diff", "--staged", "--name-only", "HEAD", ])
     except CalledProcessError:
         _print_error("Couldn't get list of changed files")
