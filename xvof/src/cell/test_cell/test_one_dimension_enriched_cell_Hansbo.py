@@ -77,7 +77,9 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
-
+    def tearDown(self):
+        DataContainer.clear()
+        pass
 
     def test_initialize_additional_dof(self):
         """ Test la méthode initialize_additional_dof"""

@@ -6,10 +6,12 @@ Classe de test du module node1d
 import numpy as np
 import unittest
 import mock
+import os
 
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.node.one_dimension_node import OneDimensionNode
 from xvof.src.mass_matrix.mass_matrix_utilities import inverseMasse
+from xvof.src.data.data_container import DataContainer
 
 
 class Node1dTest(unittest.TestCase):
@@ -20,6 +22,9 @@ class Node1dTest(unittest.TestCase):
         """
         Préparation des tests
         """
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        self.test_datacontainer = DataContainer(data_file_path)
+
         class element:
             def __init__(self, poz, pressure, pseudo, masse):
                 self.coord = poz
@@ -34,13 +39,15 @@ class Node1dTest(unittest.TestCase):
                                          np.array([[0., ], [0., ], [0., ], [0., ]], ndmin=2),
                                          section=1.0e-06)
 
+    def tearDown(self):
+        DataContainer.clear()
+        pass
+
     def test_compute_new_force(self):
         """
         Test de la méthode Node1d.compute_new_force()
         """
-        topo = mock.MagicMock(Topology1D)
-        type(topo).cells_in_contact_with_node = mock.PropertyMock(return_value=np.array([[-1, 0], [0, 1], [1, 2], [2, -1]]))
-        topo.getCellsInContactWithNode.side_effect = [np.array([0, -1]), np.array([2, -1])]
+        topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new, self.elem_1.pression_new, self.elem_2.pression_new])
         self.my_nodes.compute_new_force(topo, vecteur_contrainte)
         np.testing.assert_array_equal(self.my_nodes.force.flatten(), np.array([2500., -1500., 1000., -2000.]))
@@ -49,15 +56,12 @@ class Node1dTest(unittest.TestCase):
         """
         Test de la méthode Node1d.compute_new_velocity()
         """
-        topo = mock.MagicMock(Topology1D)
-        type(topo).cells_in_contact_with_node = mock.PropertyMock(
-            return_value=np.array([[-1, 0], [0, 1], [1, 2], [2, 3]]))
-        topo.getCellsInContactWithNode.side_effect = [np.array([0, -1]), np.array([2, -1])]
+        topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new, self.elem_1.pression_new, self.elem_2.pression_new])
         self.my_nodes.compute_new_force(topo, vecteur_contrainte)  # Vérifiée par test dans test_node.py
         mask = np.empty([4], dtype=bool)
         mask[:] = True
-        mass_matrix = np.array([[1./8.,], [1./4.,], [3./8.,], [1./4.,]])
+        mass_matrix = np.array([[1./8., ], [1./4., ], [3./8., ], [1./4., ]])
         inv_mass_matrix = inverseMasse(mass_matrix)
         self.my_nodes.compute_new_velocity(1.0e-03, mask, inv_mass_matrix)
         np.testing.assert_allclose(self.my_nodes.upundemi.flatten(), np.array([20., -6., 2.6666667, -8.]))
@@ -66,11 +70,7 @@ class Node1dTest(unittest.TestCase):
         """
         Test de la methode apply_pressure() de one_dimension_node
         """
-        topo = mock.MagicMock(Topology1D)
-        type(topo).cells_in_contact_with_node = mock.PropertyMock(
-            return_value=np.array([[-1, 0], [0, 1], [1, 2], [2, 3]]))
-        topo.getCellsInContactWithNode.side_effect = [np.array([0, -1]), np.array([2, -1])]
-
+        topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new, self.elem_1.pression_new, self.elem_2.pression_new])
         self.my_nodes.compute_new_force(topo, vecteur_contrainte)  # Vérifiée par test dans test_node.py
 

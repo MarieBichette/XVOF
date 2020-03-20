@@ -82,6 +82,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         Compute the new nodes coordinates after enrichment
         :param delta_t: float, time step
         """
+        # Rien ne change dans le calcul de la position des noeuds enrichis.
+        # Rappel : les coordonnées enrichies n'existent pas
         OneDimensionNode.compute_new_coodinates(self, delta_t)
 
     def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrice_couplage):
@@ -99,92 +101,44 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
                                                                 self._force[mask_disc]) * delta_t
             self._upundemi[mask_disc] += np.dot(inv_matrice_couplage, disc.additional_dof_force) * delta_t
 
-    # def compute_enriched_nodes_new_force(self, topology, contrainte):
-    #     """
-    #     Compute the enriched force on enriched nodes and apply correction for classical force on enriched nodes
-    #     (classical ddl)
-    #     :param topology: Topology1D, give the connectivity of nodes
-    #     :param contrainte : vecteur contrainte, array de taille (:,3)
-    #     """
-    #     for disc in Discontinuity.discontinuity_list():
-    #         connect = topology.cells_in_contact_with_node[disc.mask_disc_nodes]
-    #         connectivity = np.unique(connect)
-    #         epsilon = disc.position_in_ruptured_element
-    #
-    #         if len(connectivity) != 3:  # la cell rompue a un élément à gauche et un élément à droite
-    #             raise NotImplementedError(
-    #                 """Ne sait pas traiter le cas où la discontinuité se situe au bord du maillage""")
-    #
-    #         contrainte_locale = contrainte[connectivity]
-    #
-    #         p0 = contrainte_locale[0]
-    #         p2 = contrainte_locale[2]
-    #
-    #         sigma1G = contrainte_locale[1]
-    #         sigma1D = - disc.additional_dof_stress[:,0]
-    #
-    #         F1g = sigma1G * epsilon - p0
-    #         F2g = - sigma1G * epsilon
-    #         F2d = p2 - sigma1D * (1 - epsilon)
-    #         F1d = sigma1D * (1 - epsilon)
-    #
-    #         disc.additional_dof_force[0] = F2g * self.section
-    #         disc.additional_dof_force[1] = F1d * self.section
-    #         self._force[disc.mask_in_nodes] = F1g * self.section  # écrase la valeur classique calculée juste avant
-    #         self._force[disc.mask_out_nodes] = F2d * self.section  # écrase la valeur classique calculée juste avant
-
     def compute_enriched_nodes_new_force(self, topology, contrainte):
         """
         Compute the enriched force on enriched nodes and apply correction for classical force on enriched nodes
         (classical ddl)
         :param topology: Topology1D, give the connectivity of nodes
-        :param contrainte : vecteur contrainte, array de taille (:,3)
-        """
-        for enriched_node in np.where(self.enriched)[0]:
-            connectivity_cell = topology.getCellsInContactWithNode(enriched_node)
-
-            if len(connectivity_cell) != 2:  # le noeud rompu a un élément à gauche et un élément à droite
-                raise NotImplementedError(
-                    """Ne sait pas traiter le cas où la discontinuité se situe au bord du maillage""")
-
-            # Cell à gauche du noeud courant :
-            cell_g = connectivity_cell[0]
-            disc_g = Discontinuity.get_discontinuity_associated_with_cell(cell_g)
-            if disc_g is not None:
-                epsilon = disc_g.position_in_ruptured_element
-                sigma_g = disc_g.additional_dof_stress[:, 0] * (1 - epsilon)
-            else:
-                sigma_g = contrainte[cell_g]
-
-            # Cell à droite du noeud courant :
-            cell_d = connectivity_cell[1]
-            disc_d = Discontinuity.get_discontinuity_associated_with_cell(cell_d)
-            if disc_d is not None:
-                epsilon = disc_d.position_in_ruptured_element
-                sigma_d = contrainte[cell_d] * epsilon
-            else:
-                sigma_d = contrainte[cell_d]
-
-            self._force[enriched_node] = (sigma_d - sigma_g) * self.section
-            # écrase la valeur classique calculée juste avant dans la partie node classique
-
-        # Calcul des dof enrichis relatifs à la discontinuité
-        self.compute_enriched_forces_additional_dof(contrainte)
-
-    def compute_enriched_forces_additional_dof(self, contrainte):
-        """
-        Calcul des forces enrichies pour les ddl enrichi uniquement
-        :return:
+        :param contrainte : vecteur contrainte xx, array de taille (nb_cell, 1)
         """
         for disc in Discontinuity.discontinuity_list():
+            connectivity = topology.getCellsInContactWithNode(topology.getNodesBelongingToCell(disc.ruptured_cell_id))
+            assert connectivity.size == 4
+            connectivity = connectivity.reshape(2, 2)
             epsilon = disc.position_in_ruptured_element
-            cell_courante = disc.ruptured_cell_id
+            node_left_connectivity = connectivity[0]
+            node_right_connectivity = connectivity[1]
 
-            sigma1G = contrainte[cell_courante]
-            sigma1D = disc.additional_dof_stress[:, 0]
+            assert node_left_connectivity[1] == node_right_connectivity[0]
+            cell0 = node_left_connectivity[0]
+            cell1 = node_left_connectivity[1]
+            cell2 = node_right_connectivity[1]
 
-            disc.additional_dof_force[0] = - sigma1G * epsilon * self.section
-            disc.additional_dof_force[1] = sigma1D * (1 - epsilon) * self.section
+            sigma0, sigma2 = np.array([0.]), np.array([0.])
+            if cell0 != -1:
+                sigma0 = contrainte[cell0]
+            if cell2 != -1:
+                sigma2 = contrainte[cell2]
+
+            sigma1G = contrainte[cell1]
+            sigma1D = disc.additional_dof_stress[:,0]
+
+            F1g = sigma1G * epsilon - sigma0
+            F2g = - sigma1G * epsilon
+            F2d = sigma2 - sigma1D * (1 - epsilon)
+            F1d = sigma1D * (1 - epsilon)
+
+            disc.additional_dof_force[0] = F2g * self.section
+            disc.additional_dof_force[1] = F1d * self.section
+            self._force[disc.mask_in_nodes] = F1g * self.section  # écrase la valeur classique calculée juste avant
+            self._force[disc.mask_out_nodes] = F2d * self.section  # écrase la valeur classique calculée juste avant
 
     def compute_discontinuity_opening(self):
         """

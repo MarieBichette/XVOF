@@ -81,7 +81,7 @@ class OneDimensionNode(Node):
 
         ind_node = 0
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)
-        self._force[ind_node] = contrainte[elements_voisins][0] * self.section
+        self._force[ind_node] = contrainte[elements_voisins][1] * self.section
 
         ind_node = self.number_of_nodes - 1
         elements_voisins = topologie.getCellsInContactWithNode(ind_node)

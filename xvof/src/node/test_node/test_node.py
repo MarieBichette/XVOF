@@ -5,7 +5,10 @@ Classe de test du module node
 """
 import numpy as np
 import unittest
+import os
+
 import xvof.src.node.node as nd
+from xvof.src.data.data_container import DataContainer
 
 
 class NodeTest(unittest.TestCase):
@@ -16,6 +19,9 @@ class NodeTest(unittest.TestCase):
         """
         Initialisation des tests
         """
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        self.test_datacontainer = DataContainer(data_file_path)
+
         class Element:
             def __init__(self, masse):
                 self.masse = masse
@@ -26,6 +32,10 @@ class NodeTest(unittest.TestCase):
         self.poz_init = np.array([0.5, 0.025, -0.1], ndmin=2)
         # Création d'un noeud en 3D :
         self.my_node = nd.Node(1, position_initiale=self.poz_init, vitesse_initiale=self.vit_init, dim=3)
+
+    def tearDown(self):
+        DataContainer.clear()
+        pass
 
     def test_init(self):
         """

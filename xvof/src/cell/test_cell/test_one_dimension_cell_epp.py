@@ -22,6 +22,7 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
     def test_apply_plastic_corrector_on_deviatoric_stress_tensor(self):

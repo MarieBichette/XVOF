@@ -23,7 +23,7 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        DataContainer.clear()
         pass
 
     def test_compute_size(self):
@@ -46,28 +46,29 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells._size_t = np.array([0.5, 0.05, 0.05, 0.25])
         node_new_coord = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
         self.my_cells.compute_new_size(topo, node_new_coord, mask)
-        np.testing.assert_allclose(self.my_cells.size_t_plus_dt[mask], np.array([0.35, 0.1, 0.25, 0.4]))
+        np.testing.assert_allclose(self.my_cells.size_t_plus_dt, np.array([0.35, 0.1, 0., 0.]))
 
-    @mock.patch.object(geometrical_props, "section", new_callable=mock.PropertyMock, return_value=0.0003141592653589793)
-    def test_compute_mass(self, mock_geom_props):
+    def test_compute_mass(self):
         """
         Test of compute_mass method
         """
+        assert self.test_datacontainer.geometric.section == 0.000003141592653589793
         self.my_cells.density.current_value = np.array([8129., 8129., 8129., 8129.])
         self.my_cells._size_t = np.array([0.6, 0.1, 0.15, 0.6])
-        self.test_cell.compute_mass()
-        np.testing.assert_allclose(self.test_cell.mass, [1.5322804 , 0.25538007, 0.3830701, 1.5322804])
+        self.my_cells.compute_mass()
+        np.testing.assert_allclose(self.my_cells.mass,
+                                   np.array([0.015323,  0.002554,  0.003831,  0.015323]), rtol=1.e-4)
 
     def test_compute_new_density(self):
         """
         Test of compute_new_density method
         """
-        self.my_cells.density.current_value = np.ones(self.nb_cells) * 8930.
-        self.my_cells._size_t = np.array([0.6, 0.1, 0.15])
-        self.my_cells._size_t_plus_dt = np.array([0.8, 0.1, 0.27])
+        self.my_cells.density.current_value = np.ones(self.nbr_cells) * 8930.
+        self.my_cells._size_t = np.array([0.6, 0.1, 0.15, 0.6])
+        self.my_cells._size_t_plus_dt = np.array([0.8, 0.1, 0.27, 0.8])
         mask = np.array([True, True, True, False])
         self.my_cells.compute_new_density(mask)
-        np.testing.assert_allclose(self.my_cells.density.new_value, np.array([6096.75, 8129., 4516.11111111, 8930.]))
+        np.testing.assert_allclose(self.my_cells.density.new_value, np.array([6697.5,  8930., 4961.111111, 8930.]))
 
     def test_compute_new_pressure_without_elasticity(self):
         """
@@ -76,39 +77,35 @@ class OneDimensionCellTest(unittest.TestCase):
         mask = np.array([True, True, True, False])
         dt = 1.
 
-        self.my_cells.density.current_value = np.copy(self.test_variables.density_old)
-        self.my_cells.pressure.current_value = np.copy(self.test_variables.pressure_old)
-        self.my_cells.energy.current_value = np.copy(self.test_variables.energy_old)
+        self.my_cells.density.current_value = np.ones(self.nbr_cells) * 8930.
+        self.my_cells.pressure.current_value = np.ones(self.nbr_cells) * 1.e+5
+        self.my_cells.energy.current_value = np.ones(self.nbr_cells) * 6.5
 
-        self.my_cells.density.new_value = np.copy(self.test_variables.density_new)
+        self.my_cells.density.new_value = np.array([9000., 8900., 8915., 8920.])
         self.my_cells.sound_velocity.new_value = np.zeros([self.nbr_cells])
         self.my_cells.pressure.new_value = np.zeros([self.nbr_cells])
         self.my_cells.energy.new_value = np.zeros([self.nbr_cells])
         self.my_cells.pseudo.new_value = np.zeros([self.nbr_cells])
 
         self.my_cells.compute_new_pressure(mask, dt)
-        mock_add_elasticity.assert_not_called()
-
-        np.testing.assert_allclose(self.my_cells.energy.new_value[mask], self.test_variables.energy_new[mask])
-        np.testing.assert_allclose(self.my_cells.energy.new_value[~mask], self.test_variables.energy_old[~mask])
-        np.testing.assert_allclose(self.my_cells.pressure.new_value[mask], self.test_variables.pressure_new[mask])
-        np.testing.assert_allclose(self.my_cells.pressure.new_value[~mask], self.test_variables.pressure_old[~mask])
+        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([2000., 4000, 8000., 4000.]))
+        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([2000., 4000, 8000., 4000.]))
 
     def test_compute_new_pseudo(self):
         """
         Test of compute_new_pseudo
         """
-        mask = [True, True, False, False]
-        self.my_cells.density.current_value = np.array([8000., 8500., 9500., 8000.])
-        self.my_cells.density.new_value = np.array([8120., 8440., 9620., 8120.])
-        self.my_cells.sound_velocity.current_value = np.array([300., 300., 300., 300.])
-        self.my_cells.pseudo.new_value = np.array([1.e+9, 2.e+9, 3.e+9, 1.e+9])
-        self.my_cells._size_t_plus_dt = np.array([1., 1., 2., 1.])
-        assert self.test_datacontainer.numeric.a_pseudo == 2.
-        assert self.test_datacontainer.numeric.b_pseudo == 0.2
-        self.my_cells.pseudo.new_value[mask] = self.my_cells.compute_new_pseudo(2., mask)
-        np.testing.assert_allclose(self.my_cells.pseudo.new_value[mask],
-                                   np.array([0.446760955365777, 0.2125398482595006, 3.e+9, 1.e+9]))
+        mask = np.array([False, True, True, True])
+        self.my_cells.density.current_value = np.array([8700., 3200, 2171, 8700.])
+        self.my_cells.density.new_value = np.array([8800., 3500, 2175, 8500.])
+        self.my_cells.sound_velocity.current_value = np.array([4400, 3200, 1140, 4400])
+        self.my_cells._size_t_plus_dt = np.array([0.025, 0.01, 0.005, 0.025])
+        self.my_cells.pseudo.new_value = np.ones(self.nbr_cells) * -1
+        assert self.test_datacontainer.numeric.a_pseudo == 1.2
+        assert self.test_datacontainer.numeric.b_pseudo == 0.25
+        self.my_cells.compute_new_pseudo(1.2e-08, mask)
+        np.testing.assert_allclose(self.my_cells.pseudo.new_value,
+                                   np.array([-1., 2.25427729e+13, 2.00897590e+09, 0.]))
 
     def test_compute_new_time_step(self):
         """
@@ -131,24 +128,31 @@ class OneDimensionCellTest(unittest.TestCase):
         """
         Test de la méthode compute_complete_stress_tensor
         """
-        mask = self.mask
-        self.my_cells.energy.current_value = np.copy(self.test_variables.energy_old)
-        self.my_cells._deviatoric_strain_rate = np.copy(self.test_variables.deviatoric_strain_rate)
-        self.my_cells._deviatoric_stress_new = np.copy(self.test_variables.deviatoric_stress_new)
-        self.my_cells._deviatoric_stress_current = np.copy(self.test_variables.deviatoric_stress_current)
-        self.my_cells.pressure.new_value = np.copy(self.test_variables.pressure_new)
-        self.my_cells.pseudo.new_value = np.copy(self.test_variables.pseudo_new)
+        mask = np.array([True, True, False, False])
+        self.my_cells._stress = np.array([[2000., -1000, -1000.],
+                                          [50., -25., -25.],
+                                          [1000., -500., -500.],
+                                          [4000., -2000., -2000.]])
+        self.my_cells._deviatoric_stress_new = np.array([[200., -100, -100.],
+                                                         [5., -2.5, -2.5],
+                                                         [100., -50., -50.],
+                                                         [400., -200., -200.]])
+        self.my_cells.pressure.new_value = np.array([1000, 25, 500, 2000])
+        self.my_cells.pseudo.new_value = np.array([-1, -2, -3, -4])
         self.my_cells.compute_complete_stress_tensor(mask)
-        np.testing.assert_allclose(self.my_cells.stress[mask], self.test_variables.stress_new[mask])
+        expected_result = np.array([[-999., -999, -999.],
+                                    [-23, -23, -23],
+                                    [1000., -500., -500.],
+                                    [4000., -2000., -2000.]])
+        np.testing.assert_allclose(self.my_cells.stress, expected_result)
 
     def test_impose_pressure(self):
         """
         Test de impose_pressure
         """
-        self.my_cells.pressure.new_value = np.copy(self.test_variables.pressure_new)
+        self.my_cells.pressure.new_value = np.array([2000., 4000, 8000., 4000.])
         self.my_cells.impose_pressure(0, -1.)
-        np.testing.assert_array_equal(self.my_cells.pressure.new_value[1:], self.test_variables.pressure_new[1:])
-        np.testing.assert_array_equal(self.my_cells.pressure.new_value[0], np.array([-1.]))
+        np.testing.assert_array_equal(self.my_cells.pressure.new_value, np.array([-1, 4000, 8000., 4000.]))
 
 if __name__ == "__main__":
     unittest.main()

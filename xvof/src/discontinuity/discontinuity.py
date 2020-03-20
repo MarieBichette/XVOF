@@ -24,6 +24,13 @@ class Discontinuity(object):
         :param mask_out_nodes: enriched nodes on the right of the discontinuity
         :param discontiuity_position_in_ruptured_element ; position of the discontiuity in the ruptured element
         """
+        # Vérification d'usage :
+        if discontiuity_position_in_ruptured_element > 1 or discontiuity_position_in_ruptured_element < 0:
+            raise ValueError("""Discontinuity position in cracked cell must be between 0 and 1""")
+
+        if np.array([a in np.where(mask_out_nodes)[0] for a in np.where(mask_in_nodes)[0]]).any():
+            raise ValueError("""A node cannot be both inside and outside the discontinuity""")
+
         Discontinuity.__discontinuity_list.append(self)
         self.__label = len(Discontinuity.__discontinuity_list)
         self.__mask_in_nodes = mask_in_nodes
@@ -95,6 +102,7 @@ class Discontinuity(object):
         :param cell_id: cell id à retrouver
         :return: Discontinuity qui matche
         """
+        if cell_id == -1: return None
         try_index = 0
         while try_index < Discontinuity.discontinuity_number():
             disc = Discontinuity.discontinuity_list()[try_index]

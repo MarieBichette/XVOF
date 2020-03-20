@@ -379,8 +379,10 @@ class OneDimensionCell(Cell):
         :param mask : array of boolean to identify classical cells
         """
         for i in range(0, 3):
-            self._stress[mask, i] = self._deviatoric_stress_new[mask, i] - \
-                                (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
+            self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
+
+        if DataContainer().material_target.constitutive_model.elasticity_model is not None:
+            self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
 
     def compute_deviatoric_stress_tensor(self, mask, topologie, coord_noeud_new, vitesse_noeud_new, dt):
         """

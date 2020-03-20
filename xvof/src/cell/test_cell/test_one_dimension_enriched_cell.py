@@ -26,6 +26,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         self.my_elements = OneDimensionEnrichedCell(self.test_variables.nb_cells)
 
     def tearDown(self):
+        DataContainer.clear()
         pass
 
     def test_classical(self):

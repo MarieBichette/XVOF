@@ -6,8 +6,11 @@ Classe de test du module OneDimensionEnrichedNode
 import numpy as np
 import unittest
 import mock
+import os
+
 from xvof.src.discontinuity.discontinuity import Discontinuity
 from xvof.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xvof.src.data.data_container import DataContainer
 
 
 class OneDimensionEnrichedNodeTest(unittest.TestCase):
@@ -18,12 +21,19 @@ class OneDimensionEnrichedNodeTest(unittest.TestCase):
         """
         Préparation des tests unitaires
         """
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        self.test_datacontainer = DataContainer(data_file_path)
+
         self.vit_init = np.zeros([4, 1], dtype='float')
         self.vit_init[:, 0] = [-1.5e+03, 1.2e+03, 0.0, 0.3e+03]
         self.poz_init = np.zeros([4, 1], dtype='float')
         self.poz_init[:, 0] = [0., 1., 2., 3.]
         self.my_nodes = OneDimensionEnrichedNode(4, self.poz_init, self.vit_init, section=1.0e-06)
         self.my_nodes._classical = np.array([True, False, False, True])
+
+    def tearDown(self):
+        DataContainer.clear()
+        pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_additional_dof_new_velocity(self, mock_disc_list):
