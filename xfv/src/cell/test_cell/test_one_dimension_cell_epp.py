@@ -8,7 +8,6 @@ import unittest
 import os
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
-from xfv.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):
@@ -27,7 +26,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_apply_plastic_corrector_on_deviatoric_stress_tensor(self):
         """
-        Test de la méthode apply_plastic_corrector_on_deviatoric_stress_tensor
+        Test de la mï¿½thode apply_plastic_corrector_on_deviatoric_stress_tensor
         """
         mask = np.array([True, True, True, False])
         self.my_cells._deviatoric_stress_new = np.array([[8e+9, -4e+9, -4e+9],
@@ -45,7 +44,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_equivalent_plastic_strain_rate(self):
         """
-        Test de la méthode compute_equivalent_plastic_strain_rate
+        Test de la mï¿½thode compute_equivalent_plastic_strain_rate
         """
         mask = np.array([True, True, True, False])
         dt = 1.

@@ -9,10 +9,6 @@ import numpy as np
 from xfv.src.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
 from xfv.src.solver.newtonraphsonbase import NewtonRaphsonBase
 
-# EPSILON = 1.0e-09
-# PRECISION = 1.0e-10
-# EPSILON = 1.0e-08
-# PRECISION = 1.0e-09
 EPSILON = 1.0e-06
 PRECISION = 1.0e-08  # valeurs par défaut dans A1 et dans A3
 
@@ -33,30 +29,39 @@ class NewtonRaphson(NewtonRaphsonBase):
         """
         Algorithme de Newton-Raphson
         """
+        if init_variable.size == 0:  # this case should never append but has been discovered in Unittests...
+            msg = "Initialization variable for Newton has null size. Impossible to start Newton procedure."
+            raise ValueError(msg)
+
         # Variable du Newton
         var_i = init_variable
         var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
-        # Critère de convergence
-        not_conv = np.array([True for i in xrange(len(var_i))])
-        # Nombre d'itérations
-        nit = 0
-        #
+
+        # Newton's parameters initialization
+        not_conv = np.array([True for i in xrange(len(var_i))])  # Convergence criterion cell by cell
+        nit = 0  # Number of iterations
+        res = 0.  # result
+        delta = 0.  # increment
+        func_i = 0.  # function evaluation
+
         while not_conv.any() and nit < self.nb_iterations_max:
             (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i, not_conv)
             # Correction
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
             var_iplus1[not_conv] = var_i[not_conv] + delta
-            nit += 1
             not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
             if not not_conv.any():
                 res = var_i
                 break
-            # Incrémentation
+            # Increment
             var_i = var_iplus1
+            nit += 1
+
+        # Error if non convergence
         if nit == self.nb_iterations_max:
-            print "Erreur de convergence du NR"
-            print "func_i=", func_i
-            print "delta=", delta
-            print "nit=", nit
-            raise ValueError()
+            msg = "Erreur de convergence du NR"
+            msg += "func_i=", func_i
+            msg += "delta=", delta
+            msg += "nit=", nit
+            raise ValueError(msg)
         return res

@@ -20,9 +20,9 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
 
     def setUp(self):
         """
-        Préparation des tests
+        Prï¿½paration des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_elasto.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.my_cells = OneDimensionHansboEnrichedCell(1)
@@ -74,7 +74,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
@@ -82,7 +82,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         pass
 
     def test_initialize_additional_dof(self):
-        """ Test la méthode initialize_additional_dof"""
+        """ Test la mï¿½thode initialize_additional_dof"""
         # todo : coder
 
 
@@ -93,65 +93,30 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         Test de la reconstruction des champs enrichis
         On prend l'exemple de la pression mais le test est valable pour tous les champs.
         """
-        # configuration de la première discontinuité
+        # configuration de la premiï¿½re discontinuitï¿½
         config = {'label': 1,
                   'ruptured_cell_id': np.array([0]),
                   'additional_dof_pressure.current_value': np.array([1.e+09])}
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_1 = patcher.start()
-        # configuration de la deuxième discontinuité
+        # configuration de la deuxiï¿½me discontinuitï¿½
         config = {'label': 2,
                   'ruptured_cell_id': np.array([1]),
                   'additional_dof_pressure.current_value': np.array([5.e+09])}
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_2 = patcher.start()
 
         # on a besoin de faire comme si on avait 2 cells classiques qui rompent
         type(self.my_cells.pressure).current_value = mock.PropertyMock(return_value=np.array([1., 2.]))
 
         Discontinuity.discontinuity_list.return_value = [discontinuity_2, discontinuity_1]
-        # le champ de pression est composé de :
-        # - valeur champ de pression à gauche pour cell 0
-        # - valeur champ de pression à droite disc 0
-        # - valeur champ de pression à gauche pour cell 1
-        # - valeur champ de pression "à droite" pour disc 1
+        # le champ de pression est composï¿½ de :
+        # - valeur champ de pression ï¿½ gauche pour cell 0
+        # - valeur champ de pression ï¿½ droite disc 0
+        # - valeur champ de pression ï¿½ gauche pour cell 1
+        # - valeur champ de pression "ï¿½ droite" pour disc 1
         exact_field = np.array([1., 1.e+09, 2., 5.e+09])
         np.testing.assert_allclose(self.my_cells.pressure_field, exact_field)
-
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos, mock_disc_list):
-        """
-        Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
-        """
-        # L'option élasticité est désactivée dans le jeu de donnée
-        type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
-
-        # Configuration des mocks
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        mock_eos.return_value = self.my_cells.energy.new_value, self.my_cells.pressure.new_value,\
-                                self.my_cells.sound_velocity.new_value
-
-        self.my_cells.compute_enriched_elements_new_pressure(1.)
-
-        mock_elasto.assert_not_called()
-
-        mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-                                self.my_cells.density.current_value, self.my_cells.density.new_value,
-                                self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
-                                self.my_cells.energy.current_value, self.my_cells.energy.new_value,
-                                self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
-
-        mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-                                self.mock_discontinuity.additional_dof_density.current_value,
-                                self.mock_discontinuity.additional_dof_density.new_value,
-                                self.mock_discontinuity.additional_dof_pressure.current_value,
-                                self.mock_discontinuity.additional_dof_pressure.new_value,
-                                self.mock_discontinuity.additional_dof_energy.current_value,
-                                self.mock_discontinuity.additional_dof_energy.new_value,
-                                self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
-                                self.mock_discontinuity.additional_dof_sound_velocity.new_value)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)
@@ -159,9 +124,9 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     def test_compute_enriched_elements_new_pressure_with_elasticity(self, mock_add_elasticity,
                                                                     mock_apply_eos, mock_disc_list):
         """
-        Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
+        Test de la mï¿½thode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option élasticité est activée dans le jeu de donnée
+        # L'option ï¿½lasticitï¿½ est activï¿½e dans le jeu de donnï¿½e
         type(DataContainer().material_target.constitutive_model).elasticity_model = \
             mock.PropertyMock(return_value=ConstantShearModulus)
 
@@ -170,7 +135,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         mock_apply_eos.return_value = self.my_cells.energy.new_value, self.my_cells.pressure.new_value,\
                                       self.my_cells.sound_velocity.new_value
         mock_add_elasticity.return_value = self.my_cells.energy.new_value
-        # les valeurs de return permettent juste à la méthode dene pas planter mais ne sont pas importantes...
+        # les valeurs de return permettent juste ï¿½ la mï¿½thode dene pas planter mais ne sont pas importantes...
         dt = 1
 
         self.my_cells.compute_enriched_elements_new_pressure(dt)
@@ -204,7 +169,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     def test_compute_enriched_elements_new_part_size(self, mock_compute_size, mock_disc_border_velocity,
                                                      mock_disc_list):
         """
-        Test de la méthode compute_enriched_elements_new_part_size pour OneDimensionEnrichedHansboCell
+        Test de la mï¿½thode compute_enriched_elements_new_part_size pour OneDimensionEnrichedHansboCell
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         vecteur_vitesse_noeuds = np.array([[1., ], [1.5, ]])
@@ -263,7 +228,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(OneDimensionCell, "compute_time_step", spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_time_step(self, mock_compute_dt, mock_disc_list):
         """
-        Test de la méthode compute_enriched_elements_new_time_step
+        Test de la mï¿½thode compute_enriched_elements_new_time_step
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_compute_dt.return_value = np.array([0.])
@@ -290,7 +255,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_stress_tensor(self, mock_disc_list):
         """
-        Test de la méthode compute_enriched_stress_tensor
+        Test de la mï¿½thode compute_enriched_stress_tensor
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         exact_stress_gauche = np.array([[1., -1., 2.]])
@@ -308,7 +273,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_stress_tensor()
 
-        # Vérification
+        # Vï¿½rification
         np.testing.assert_allclose(self.my_cells.stress, exact_stress_gauche)
         np.testing.assert_allclose(self.mock_discontinuity.additional_dof_stress, exact_stress_droite)
 
@@ -319,7 +284,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                        spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_deviatoric_strain_rate(self, mock_compute_D, mock_disc_borders, mock_disc_list):
         """
-        Test de la méthode compute_enriched_deviatoric_strain_rate
+        Test de la mï¿½thode compute_enriched_deviatoric_strain_rate
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         dt = 1.
@@ -345,7 +310,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     def test_compute_enriched_deviatoric_stress_tensor(self, mock_compute_G,
                                                        mock_compute_D, mock_disc_list):
         """
-        Test de la méthode compute_enriched_deviatoric_stress_tensor
+        Test de la mï¿½thode compute_enriched_deviatoric_stress_tensor
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mask = np.array([True])
@@ -379,7 +344,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_shear_modulus(self, mock_disc_list):
         """
-        Test de la méthode compute_enriched_shear_modulus
+        Test de la mï¿½thode compute_enriched_shear_modulus
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
 
@@ -393,7 +358,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_equivalent_plastic_strain_rate(self, mock_disc_list):
         """
-        Test de la méthode compute_enriched_equivalent_plastic_strain_rate
+        Test de la mï¿½thode compute_enriched_equivalent_plastic_strain_rate
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mask = np.array([True])
@@ -419,7 +384,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self, mock_disc_list):
         """
-        Test dela méthode apply_plastic_correction_on_enriched_deviatoric_stress_tensor
+        Test dela mï¿½thode apply_plastic_correction_on_enriched_deviatoric_stress_tensor
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mask = np.array([True])
@@ -442,7 +407,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_yield_stress(self, mock_disc_list):
         """
-        Test de la méthode compute_enriched_shear_modulus
+        Test de la mï¿½thode compute_enriched_shear_modulus
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
 

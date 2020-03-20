@@ -10,20 +10,17 @@ import os
 from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def setUp(self):
-        """ Préparation des tests """
+        """ Prï¿½paration des tests """
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
+        self.nbr_cells = 4
 
-        self.test_variables = TestVariables(4, 5)
-        self.test_variables.define_elasto_variables()
-
-        self.my_elements = OneDimensionEnrichedCell(self.test_variables.nb_cells)
+        self.my_elements = OneDimensionEnrichedCell(self.nbr_cells)
 
     def tearDown(self):
         DataContainer.clear()
@@ -31,25 +28,25 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def test_classical(self):
         """
-        Test la propriété classical
+        Test la propriï¿½tï¿½ classical
         """
-        np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.test_variables.nb_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
         np.testing.assert_array_equal(self.my_elements.classical, np.array([False, True, True, True]))
         self.my_elements.classical[0] = True
 
     def test_enriched(self):
         """
-        Test la propriété enriched
+        Test la propriï¿½tï¿½ enriched
         """
-        np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.test_variables.nb_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
         np.testing.assert_array_equal(self.my_elements.enriched, np.array([True, False, False, False]))
         self.my_elements.classical[0] = True
 
     def test_compute_new_left_right_size(self):
         """
-        Test de la méthode compute_new_left_right_size
+        Test de la mï¿½thode compute_new_left_right_size
         """
         disc = mock.MagicMock(Discontinuity)
         type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.0]))
@@ -64,7 +61,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def test_compute_new_left_right_density(self):
         """
-        Test de la méthode compute_new_left_right_density
+        Test de la mï¿½thode compute_new_left_right_density
         """
         disc = mock.MagicMock(Discontinuity)
         type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.]))

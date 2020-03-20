@@ -10,7 +10,6 @@ import os
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
-from xfv.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):
@@ -72,7 +71,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_new_pressure_without_elasticity(self):
         """
-        Test de la méthode compute_new_pressure
+        Test de la mï¿½thode compute_new_pressure
         """
         mask = np.array([True, True, True, False])
         dt = 1.
@@ -88,8 +87,9 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.pseudo.new_value = np.zeros([self.nbr_cells])
 
         self.my_cells.compute_new_pressure(mask, dt)
-        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([2000., 4000, 8000., 4000.]))
-        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([2000., 4000, 8000., 4000.]))
+        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([487.203942, 94.056026, 28.379115, 0.]))
+        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([1.103734e+09, -4.640127e+08,
+                                                                               -2.323423e+08, 0.]), rtol=1e-5)
 
     def test_compute_new_pseudo(self):
         """
@@ -109,7 +109,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_new_time_step(self):
         """
-        Test de la méthode compute_enriched_elements_new_time_step
+        Test de la mï¿½thode compute_enriched_elements_new_time_step
         """
         self.my_cells.density.current_value = np.array([8000., 8500., 9500., 8000.])
         self.my_cells.density.new_value = np.array([8120., 8440., 9000., 8120.])
@@ -126,7 +126,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_complete_stress_tensor_hydro(self):
         """
-        Test de la méthode compute_complete_stress_tensor
+        Test de la mï¿½thode compute_complete_stress_tensor
         """
         mask = np.array([True, True, False, False])
         self.my_cells._stress = np.array([[2000., -1000, -1000.],

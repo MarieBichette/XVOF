@@ -21,12 +21,6 @@
                 <name>Mie-Gruneisen</name>
                 <coefficients>Cuivre_MieGruneisen.json</coefficients>
             </equation-of-state>
-            <rheology>
-                <coefficients>Cuivre_EPP.json</coefficients>
-                <elasticity-model>Linear</elasticity-model>
-                <plasticity-criterion>VonMises</plasticity-criterion>
-                <plasticity-model>EPP</plasticity-model>
-            </rheology>
         </projectile>
 
         <target>

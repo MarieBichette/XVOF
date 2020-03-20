@@ -8,7 +8,6 @@ import unittest
 import os
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
-from xfv.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):
@@ -29,7 +28,6 @@ class OneDimensionCellTest(unittest.TestCase):
         """
         Test of apply_equation_of_state class method
         """
-        print "Test apply_equation_of_state"
         density_current = np.ones(self.nbr_cells) * 8930.
         pressure_current = np.ones(self.nbr_cells) * 1.e+05
         energy_current = np.ones(self.nbr_cells) * 6.719465
@@ -53,11 +51,10 @@ class OneDimensionCellTest(unittest.TestCase):
         np.testing.assert_allclose(energy_new_value, expected_energy, rtol=1.e-5)
         np.testing.assert_allclose(pressure_new_value, expected_pressure, rtol=1.e-5)
         np.testing.assert_allclose(sound_velocity_new_value, expected_sound_speed)
-        print "__[OK]"
 
     def test_add_elastic_energy_method(self):
         """
-        Test de la méthode add_elastic_energy_method
+        Test de la mï¿½thode add_elastic_energy_method
         """
         dt = 1.
         density_current = np.ones(self.nbr_cells) * 8930.
@@ -89,7 +86,7 @@ class OneDimensionCellTest(unittest.TestCase):
         dt = 1.
         x_new = np.array([[-0.5, ], [0.1, ], [0.2, ], [0.35, ], [0.65, ]])
         u_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
-        # Reconstruction des array donnés par la topologie
+        # Reconstruction des array donnï¿½s par la topologie
         position_new = np.array([[x_new[0], x_new[1]],
                                  [x_new[1], x_new[2]],
                                  [x_new[2], x_new[3]],

@@ -190,10 +190,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             plasticity_activated = np.logical_or(
                 (DataContainer().material_target.constitutive_model.plasticity_model is not None),
                 (DataContainer().material_projectile.constitutive_model.plasticity_model is not None))
+
             if elasticity_activated or plasticity_activated:
-                # si l'élasticité n'est pas activée, les grandeurs élastiques restent nulles.
-                # L'opération est transparente pour les matériaux hydro.
-                # Donc on peut ne pas distinguer les matériaux.
                 self.energy.current_value[mask] += \
                     OneDimensionCell.add_elastic_energy_method(dt,
                                                                self.density.current_value[mask],

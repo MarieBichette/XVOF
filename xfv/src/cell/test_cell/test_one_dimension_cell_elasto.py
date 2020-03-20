@@ -12,7 +12,7 @@ from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
-from xfv.src.cell.test_cell.test_variables import TestVariables
+
 
 class OneDimensionCellTest(unittest.TestCase):
 
@@ -32,7 +32,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_new_pressure_with_elasticity(self):
         """
-        Test de la méthode compute_new_pressure
+        Test de la mï¿½thode compute_new_pressure
         """
         mask_classic = np.array([True, True, False, False])
         self.my_cells.density.current_value = np.ones(self.nbr_cells) * 8930.
@@ -58,13 +58,13 @@ class OneDimensionCellTest(unittest.TestCase):
 
         self.my_cells.compute_new_pressure(mask_classic, dt)
         np.testing.assert_allclose(self.my_cells.pressure.new_value,
-                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]))
+                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]), rtol=1.e-5)
         np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([17.254756,  163.9763, 0., 0.]))
         np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([3948.726929,  3974.84139, 0., 0.]))
 
     def test_compute_shear_modulus(self):
         """
-        Test de la méthode compute_shear_modulus
+        Test de la mï¿½thode compute_shear_modulus
         """
         self.my_cells.compute_shear_modulus()
         expected_value = self.test_datacontainer.material_target.initial_values.shear_modulus_init
@@ -72,7 +72,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_yield_stress(self):
         """
-        Test de la méthode compute_yield_stress
+        Test de la mï¿½thode compute_yield_stress
         """
         self.my_cells.compute_yield_stress()
         expected_value = self.test_datacontainer.material_target.initial_values.yield_stress_init
@@ -80,7 +80,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_complete_stress_tensor(self):
         """
-        Test de la méthode compute_complete_stress_tensor
+        Test de la mï¿½thode compute_complete_stress_tensor
         """
         mask = np.array([True, True, False, False])
         self.my_cells._stress = np.array([[2000., -1000, -1000.],
@@ -102,7 +102,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_deviatoric_stress_tensor(self):
         """
-        Test de la méthode compute_deviatoric_stress_tensor
+        Test de la mï¿½thode compute_deviatoric_stress_tensor
         """
         mask = np.array([True, True, True, False])
         dt = 1.
@@ -123,15 +123,15 @@ class OneDimensionCellTest(unittest.TestCase):
 
     def test_compute_deviator_strain_rate(self):
         """
-        Test de la méthode  compute_deviatoric_strain_rate
+        Test de la mï¿½thode  compute_deviatoric_strain_rate
         """
-        # données d'entrée
+        # donnï¿½es d'entrï¿½e
         mask = np.array([True, True, False, False])
         dt = 1.
         coord_noeud_new = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
         vitesse_noeud_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
         topo_ex = Topology1D(5, 4)
-        # Test de la méthode compute_deviator
+        # Test de la mï¿½thode compute_deviator
         self.my_cells.compute_deviator_strain_rate(mask, dt, topo_ex, coord_noeud_new, vitesse_noeud_new)
         np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
                                    np.array([[-0.235294,  0.117647,  0.117647],

@@ -15,6 +15,8 @@ from xfv.src.fields.field import Field
 from xfv.src.data.data_container import DataContainer
 
 
+# TODO : move to the package solver !
+
 class OneDimensionCellTest(unittest.TestCase):
 
     def setUp(self):
@@ -46,7 +48,8 @@ class OneDimensionCellTest(unittest.TestCase):
         func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
                 (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
                 - self.test_cell.energy.current_value)
-        np.testing.assert_allclose(func, [0., 0., 0.])
+        np.testing.assert_allclose(func, np.array([-1001570.197044, -49979.091163, -24011029.653135]))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
