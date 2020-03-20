@@ -109,7 +109,35 @@ def __init_time_figure_plot(output_data, path):
     return h_list
 
 
-def main():
+def __init_output(output_data, type_of_enrichment, mesh):
+    """
+    Returns the OutputManager initialized
+
+    :param output_data: output data
+    :type output_data: data_container.output_props
+    :param type_of_enrichment: type of enrichment
+    :type type_of_enrichment: str
+    :param mesh: the mesh
+    :type mesh: Mesh1DEnriched
+    """
+    enrichment_registration = type_of_enrichment == 'Hansbo'
+    np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
+    the_output_mng = OutputManager()
+    for db_el in output_data.databases:
+        output_db = OutputDatabase(db_el.path)
+        if db_el.iteration_period is not None:
+            the_output_mng.register_database_iteration_ctrl(db_el.identifier, output_db,
+                                                            db_el.iteration_period)
+        else:
+            the_output_mng.register_database_time_ctrl(db_el.identifier, output_db,
+                                                       db_el.time_period)
+        the_output_mng.register_all_fields(enrichment_registration, mesh.cells,
+                                           mesh.nodes, db_el.identifier,
+                                           db_el.cell_indexes, db_el.node_indexes)
+    return the_output_mng
+
+
+def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Launch the program
     """
@@ -178,19 +206,7 @@ def main():
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
     history_list = __init_time_figure_plot(data.output, path)
-    np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
-    the_output_mng = OutputManager()
-    for db_el in data.output.databases:
-        output_db = OutputDatabase(db_el.path)
-        if db_el.iteration_period is not None:
-            the_output_mng.register_database_iteration_ctrl(db_el.identifier, output_db,
-                                                            db_el.iteration_period)
-        else:
-            the_output_mng.register_database_time_ctrl(db_el.identifier, output_db,
-                                                       db_el.time_period)
-        the_output_mng.register_all_fields(enrichissement_registration, my_mesh.cells,
-                                           my_mesh.nodes, db_el.identifier,
-                                           db_el.cell_indexes, db_el.node_indexes)
+    the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
@@ -203,6 +219,15 @@ def main():
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
     # ************************************************* #
+    simulation_time = 0.
+    step = 0
+    dt = initial_time_step  # pylint: disable=invalid-name
+    dt_staggered = dt / 2
+    # Le premier increment pour la vitesse a un pas de temps de dt/2 pour
+    # tenir compte du fait que les vitesses sont
+    # init a t=0 et pas t = -1/2 dt (pour garder l'ordre 2 a l'init).
+    # Le dt_staggered est ensuite remis a dt a la fin de la boucle en temps
+    dt_crit = 2 * dt
     while simulation_time < final_time:
         loop_begin_time = time.time()
         # if step % 1000 == 0:
@@ -259,15 +284,14 @@ def main():
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
-        target_plasticity_criterion = data.material_target.constitutive_model.plasticity_criterion
-        projectile_plasticity_criterion = (
-            data.material_projectile.constitutive_model.plasticity_criterion)
+        target_model = data.material_target.constitutive_model
+        projectile_model = data.material_projectile.constitutive_model
 
-        if data.material_projectile.constitutive_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(projectile_plasticity_criterion,
+        if projectile_model.plasticity_model is not None:
+            my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
                                       my_mesh.cells.cell_in_projectile)
-        if data.material_target.constitutive_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(target_plasticity_criterion,
+        if target_model.plasticity_model is not None:
+            my_mesh.get_plastic_cells(target_model.plasticity_criterion,
                                       my_mesh.cells.cell_in_target)
         my_mesh.apply_plasticity_treatment(dt)
         # ---------------------------------------------#
@@ -304,6 +328,7 @@ def main():
         #         TIME STEP COMPUTATION                #
         # ---------------------------------------------#
         dt_crit = my_mesh.compute_new_time_step()
+        dt = min(dt, dt_crit)  # pylint: disable=invalid-name
         if dt != dt_crit:
             print "Reduction of the time step after failure. New time step is " + str(dt_crit)
         # reduction du pas de temps apres rupture
