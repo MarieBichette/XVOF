@@ -16,18 +16,30 @@ from xvof.src.data.data_container import DataContainer
 
 # TODO : fix external library path
 
-class OneDimensionCellTest(unittest.TestCase):
 
-    @unittest.skip("Solve path to external lib")
+class OneDimensionCellExternalLibTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("Appel de setUpForClass")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml")
+        DataContainer(data_file_path)
+        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+
+    @classmethod
+    def tearDownClass(cls):
+        print("Appel de tearDownForClass")
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
+
     def setUp(self):
-        data_file_path = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA.xml"))
-        self.test_datacontainer = DataContainer(data_file_path)
         self.test_cell = Cell(3)
 
-    @unittest.skip("Solve path to external lib")
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     @unittest.skip("Solve path to external lib")

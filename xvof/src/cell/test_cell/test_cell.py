@@ -17,17 +17,31 @@ from xvof.src.data.data_container import DataContainer
 
 class CellTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("Appel de setUpForClass")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
+        DataContainer(data_file_path)
+        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+
+    @classmethod
+    def tearDownClass(cls):
+        print("Appel de tearDownForClass")
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
+
     def setUp(self):
         """
         Tests setup
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
         self.nbr_cells = 3
         self.my_cells = Cell(self.nbr_cells)
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_get_coordinates(self):
@@ -38,7 +52,6 @@ class CellTest(unittest.TestCase):
         my_topo = Topology1D(4, 3)
         cell_coord = Cell.get_coordinates(3, my_topo, nodes.xt)
         np.testing.assert_allclose(cell_coord, np.array([[-0.2], [0.15], [0.275]]))
-
 
     def test_increment_variables(self):
         """
@@ -61,7 +74,9 @@ class CellTest(unittest.TestCase):
         np.testing.assert_allclose(self.my_cells.yield_stress.current_value, np.array([1., 2., 3.]))
 
     def test_str(self):
-        """Teste la réponse de __str__ de la classe Cell"""
+        """
+        Teste la réponse de __str__ de la classe Cell
+        """
         message = self.my_cells.__str__()
         answer = "Number of cells: 3"
         self.assertEqual(message.split(), answer.split())

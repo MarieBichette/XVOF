@@ -16,15 +16,29 @@ from xvof.src.discontinuity.discontinuity import Discontinuity
 from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
-class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
+class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("Appel de setUpForClass")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
+        DataContainer(data_file_path)
+        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+
+    @classmethod
+    def tearDownClass(cls):
+        print("Appel de tearDownForClass")
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
         """
         Préparation des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
         self.my_cells._external_library = None
@@ -78,7 +92,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_initialize_additional_dof(self):

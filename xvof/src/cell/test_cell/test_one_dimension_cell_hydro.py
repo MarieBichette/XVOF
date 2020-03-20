@@ -12,17 +12,31 @@ from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.data.data_container import DataContainer
 
 
-class OneDimensionCellTest(unittest.TestCase):
+class OneDimensionCellHydroTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("Appel de setUpForClass")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        DataContainer(data_file_path)
+        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+
+    @classmethod
+    def tearDownClass(cls):
+        print("Appel de tearDownForClass")
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_compute_size(self):
@@ -51,7 +65,7 @@ class OneDimensionCellTest(unittest.TestCase):
         """
         Test of compute_mass method
         """
-        assert self.test_datacontainer.geometric.section == 0.000003141592653589793
+        assert DataContainer().geometric.section == 0.000003141592653589793
         self.my_cells.density.current_value = np.array([8129., 8129., 8129., 8129.])
         self.my_cells._size_t = np.array([0.6, 0.1, 0.15, 0.6])
         self.my_cells.compute_mass()
@@ -101,8 +115,8 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.sound_velocity.current_value = np.array([4400, 3200, 1140, 4400])
         self.my_cells._size_t_plus_dt = np.array([0.025, 0.01, 0.005, 0.025])
         self.my_cells.pseudo.new_value = np.ones(self.nbr_cells) * -1
-        assert self.test_datacontainer.numeric.a_pseudo == 1.2
-        assert self.test_datacontainer.numeric.b_pseudo == 0.25
+        assert DataContainer().numeric.a_pseudo == 1.2
+        assert DataContainer().numeric.b_pseudo == 0.25
         self.my_cells.compute_new_pseudo(1.2e-08, mask)
         np.testing.assert_allclose(self.my_cells.pseudo.new_value,
                                    np.array([-1., 2.25427729e+13, 2.00897590e+09, 0.]))
@@ -117,8 +131,8 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.pseudo.current_value = np.array([0., 0., 0., 0.])
         self.my_cells.pseudo.new_value = np.array([1., 1., 1., 1.])
         self.my_cells._size_t_plus_dt = np.array([1., 1., 2., 1.])
-        assert self.test_datacontainer.numeric.cfl == 0.34
-        assert self.test_datacontainer.numeric.cfl_pseudo == 0.
+        assert DataContainer().numeric.cfl == 0.34
+        assert DataContainer().numeric.cfl_pseudo == 0.
         self.my_cells._dt = np.array([1., 2., 5., 6.])
         mask = np.array([False, True, True, False])
         self.my_cells.compute_new_time_step(mask)

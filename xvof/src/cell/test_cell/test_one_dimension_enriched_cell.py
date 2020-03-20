@@ -14,16 +14,31 @@ from xvof.src.discontinuity.discontinuity import Discontinuity
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):
 
-    def setUp(self):
-        """ Préparation des tests """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-        self.nbr_cells = 4
+    @classmethod
+    def setUpClass(cls):
+        print("Appel de setUpForClass")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
+        DataContainer(data_file_path)
+        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
+        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
+        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
 
+    @classmethod
+    def tearDownClass(cls):
+        print("Appel de tearDownForClass")
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
+
+    def setUp(self):
+        """
+        Préparation des tests
+        """
+        self.nbr_cells = 4
         self.my_elements = OneDimensionEnrichedCell(self.nbr_cells)
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_classical(self):
