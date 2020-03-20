@@ -9,26 +9,26 @@ import os.path
 import json
 import lxml.etree as et
 
-from xvof.src.equationsofstate.miegruneisen import MieGruneisen
-from xvof.src.plasticitycriterion.vonmises import VonMisesCriterion
-from xvof.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
-from xvof.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xvof.src.rupturecriterion.damage_criterion import DamageCriterion
-from xvof.src.rupturecriterion.maximalstress import MaximalStressCriterion
-from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
-from xvof.src.rheology.constantyieldstress import ConstantYieldStress
-from xvof.src.custom_functions.constant_value import ConstantValue
-from xvof.src.custom_functions.march_table import MarchTable
-from xvof.src.custom_functions.ramp import Ramp
-from xvof.src.custom_functions.two_steps import TwoSteps
-from xvof.src.custom_functions.successive_ramp import SuccessiveRamp
-from xvof.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
-from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
-from xvof.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
-from xvof.src.cohesive_model.progressive_unloading_model import ProgressiveUnloadingModel
-from xvof.src.cohesive_model.zero_force_unloading_model import ZeroForceUnloadingModel
-from xvof.src.cohesive_model.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
-from xvof.src.utilities.singleton import Singleton
+from xfv.src.equationsofstate.miegruneisen import MieGruneisen
+from xfv.src.plasticitycriterion.vonmises import VonMisesCriterion
+from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
+from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
+from xfv.src.rupturecriterion.damage_criterion import DamageCriterion
+from xfv.src.rupturecriterion.maximalstress import MaximalStressCriterion
+from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
+from xfv.src.rheology.constantyieldstress import ConstantYieldStress
+from xfv.src.custom_functions.constant_value import ConstantValue
+from xfv.src.custom_functions.march_table import MarchTable
+from xfv.src.custom_functions.ramp import Ramp
+from xfv.src.custom_functions.two_steps import TwoSteps
+from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
+from xfv.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
+from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
+from xfv.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
+from xfv.src.cohesive_model.progressive_unloading_model import ProgressiveUnloadingModel
+from xfv.src.cohesive_model.zero_force_unloading_model import ZeroForceUnloadingModel
+from xfv.src.cohesive_model.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
+from xfv.src.utilities.singleton import Singleton
 
 numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
 

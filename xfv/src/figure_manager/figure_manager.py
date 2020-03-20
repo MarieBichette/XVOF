@@ -1,8 +1,8 @@
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant le gestionnaire d'images
+Classe dï¿½finissant le gestionnaire d'images
 
-@todo: Hériter de la classe Figure
+@todo: Hï¿½riter de la classe Figure
 @todo: translate in english
 @todo: incorporate the calculation of the time at which images have to be shown (move from Vnr1D...py)
 """
@@ -11,8 +11,8 @@ import numpy as np
 import os
 from collections import namedtuple
 from physic_figure import PhysicFigure
-from xvof.src.utilities.singleton import Singleton
-from xvof.src.output_manager.outputtimecontroler import OutputTimeControler
+from xfv.src.utilities.singleton import Singleton
+from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
 
 max_coord = 0.015
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
@@ -65,7 +65,7 @@ class FigureManager(object):
         self.__time_ctrl = OutputTimeControler(identifier="FigureManager", iteration_period=deltat_it)
 
     def update_fields(self):
-        """ MAJ des champs par appel des propriétés du maillage"""
+        """ MAJ des champs par appel des propriï¿½tï¿½s du maillage"""
         self.__champs_mailles = \
              {CellPositionField: self.__mesh_instance.cells_coordinates[:],
              PressureField: self.__mesh_instance.pressure_field,
@@ -81,7 +81,7 @@ class FigureManager(object):
 
     def create_figure_for_cell_field(self, field_X, field_Y):
         """
-        Création des figures pour les champs aux mailles
+        Crï¿½ation des figures pour les champs aux mailles
         (l'axe des X est donc l'abscisse des mailles)
         """
         try:
@@ -106,7 +106,7 @@ class FigureManager(object):
 
     def create_figure_for_node_field(self, field_X, field_Y):
         """
-        Création des figures pour les champs aux noeuds
+        Crï¿½ation des figures pour les champs aux noeuds
         (l'axe des X est donc l'abscisse des noeuds)
         """
         try:
@@ -131,7 +131,7 @@ class FigureManager(object):
 
     def populate_figs(self):
         """
-        Création des figures associées à chacun des champs et ajout à
+        Crï¿½ation des figures associï¿½es ï¿½ chacun des champs et ajout ï¿½
         la liste des figures
         """
         champ_X = CellPositionField
@@ -178,13 +178,13 @@ class FigureManager(object):
 
     def create_reps(self):
         """
-        Création des répertoires où sont stockées les figures
+        Crï¿½ation des rï¿½pertoires oï¿½ sont stockï¿½es les figures
         """
         for (_, _, field) in self.__figures_mailles + self.__figures_noeuds:
             path = field.results_path
             if os.path.exists(path):
-                msg = "Le chemin {:} existe déjà !".format(path)
-                msg+= "\n Abandon pour éviter d'écraser les données"
+                msg = "Le chemin {:} existe dï¿½jï¿½ !".format(path)
+                msg+= "\n Abandon pour ï¿½viter d'ï¿½craser les donnï¿½es"
                 raise SystemExit(msg)
             else:
                 os.makedirs(path)

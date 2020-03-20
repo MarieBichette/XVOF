@@ -10,9 +10,9 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
-from xvof.executables.space_time_diagram_utilities import SpaceTimeDiagramUtilities
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.executables.space_time_diagram_utilities import SpaceTimeDiagramUtilities
 
 # ----------------------------------------------------------------
 # Quelques paramètres

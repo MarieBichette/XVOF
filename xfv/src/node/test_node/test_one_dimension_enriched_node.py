@@ -8,9 +8,9 @@ import unittest
 import mock
 import os
 
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
-from xvof.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionEnrichedNodeTest(unittest.TestCase):

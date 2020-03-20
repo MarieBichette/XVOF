@@ -5,7 +5,7 @@ Implementing field manager class
 :todo: Use Singleton metaclass
 """
 from collections import OrderedDict
-from xvof.src.fields.enrichedfield import EnrichedField
+from xfv.src.fields.enrichedfield import EnrichedField
 
 
 class FieldManager(OrderedDict):
@@ -26,7 +26,7 @@ class FieldManager(OrderedDict):
         if key not in self.keys() or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
             super(FieldManager, self).__setitem__(key, value)
         else:
-            raise KeyError("Le champ {:s} existe déjà dans le gestionnaire!".format(key))
+            raise KeyError("Le champ {:s} existe dï¿½jï¿½ dans le gestionnaire!".format(key))
 
     def __str__(self):
         """

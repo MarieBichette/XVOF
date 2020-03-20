@@ -4,11 +4,11 @@ Implementing the Element1dEnriched class for Hansbo&Hansbo enrichment
 """
 import numpy as np
 
-from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.data.data_container import DataContainer
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.utilities.stress_invariants_calculation import compute_J2
+from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.utilities.stress_invariants_calculation import compute_J2
 
 
 # noinspection PyArgumentList

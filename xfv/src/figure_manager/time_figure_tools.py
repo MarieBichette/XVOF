@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 #  -*- coding: iso-8859-1 -*-
 """
-Classe définissant les outils pour images temporelles
+Classe dï¿½finissant les outils pour images temporelles
 
 """
 import os
@@ -9,8 +9,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.src.figure_manager.time_figure import TimeFigure, Time_Field
-from xvof.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
+from xfv.src.figure_manager.time_figure import TimeFigure, Time_Field
+from xfv.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
 
 # -- Rappel : Time_Field = namedtuple("Time_Field", ["label","title","application", "colonne_history"])
 DensityField = Time_Field("Density [$kg/m^3$]", "Density", "cell", 1)
@@ -22,7 +22,7 @@ VelocityField = Time_Field("Vitesse [m/s]", "NodeVelocity", "node", 6)
 DeviatoricStressField = Time_Field("Deviateur $S_{xx}$ [$Pa$]", "DeviatoricStress", "cell", 7)
 StressField = Time_Field("contraintes $\sigma_{xx}$ [$Pa$]", "Stress", "cell", 8)
 EquivalentPlasticStrainRate = Time_Field("Equivalent plastic strain rate", "EquivalentPlasticStrainRate", "cell", 9)
-# les field.title correspondent aux noms des fields enregistrés dans la bande hdf5
+# les field.title correspondent aux noms des fields enregistrï¿½s dans la bande hdf5
 
 cell_field_list = [DensityField, PressureField, EnergyField, PseudoViscosityField,
                    DeviatoricStressField, StressField, EquivalentPlasticStrainRate]
@@ -63,7 +63,7 @@ class TimeFigureTools:
             item_history = np.array(time, field)
 
         elif self.data_file.split('.')[-1] == "hdf5":
-            field = field.title  # compatibilité des deux noms de champs
+            field = field.title  # compatibilitï¿½ des deux noms de champs
             path_to_db = os.path.join(self.history_directory, self.data_file)
             item_history = read_database_in_array(path_to_db, self.id_number, field)
             print "Read data in {:}".format(path_to_db)

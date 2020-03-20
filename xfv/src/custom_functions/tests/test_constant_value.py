@@ -4,7 +4,7 @@ Unittests of the constant_pressure module
 """
 import unittest
 
-from xvof.src.custom_functions.constant_value import ConstantValue
+from xfv.src.custom_functions.constant_value import ConstantValue
 
 
 class ConstantValueTest(unittest.TestCase):

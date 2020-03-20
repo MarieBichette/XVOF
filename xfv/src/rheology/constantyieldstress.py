@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Implementation d'une classe de limite d'élasticité constant
+Implementation d'une classe de limite d'ï¿½lasticitï¿½ constant
 """
 
-from xvof.src.rheology.yieldstress import YieldStress
+from xfv.src.rheology.yieldstress import YieldStress
 
 
 class ConstantYieldStress(YieldStress):

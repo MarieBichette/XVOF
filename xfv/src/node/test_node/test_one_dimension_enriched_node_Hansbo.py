@@ -7,10 +7,10 @@ import numpy as np
 import unittest
 import mock
 import os
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.data.data_container import DataContainer
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """
@@ -67,7 +67,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   # 'discontinuity_opening.current_value': 0.5,
                   # 'discontinuity_opening.new_value': 0.5
                   }
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):

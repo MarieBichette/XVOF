@@ -10,9 +10,9 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.figure_manager.time_figure_manager import TimeFigureManager
-from xvof.src.figure_manager.time_figure_tools import TimeFigureTools, DensityField
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.figure_manager.time_figure_manager import TimeFigureManager
+from xfv.src.figure_manager.time_figure_tools import TimeFigureTools, DensityField
 
 
 def translate_epsilon_to_case(case_name_base, epsilon):

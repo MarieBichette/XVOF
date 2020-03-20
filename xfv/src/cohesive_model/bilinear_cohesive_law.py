@@ -2,8 +2,8 @@
 """
 Definition of BilinearCohesiveZoneModel
 """
-from xvof.src.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
-from xvof.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
+from xfv.src.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
+from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
 
 
 class BilinearCohesiveZoneModel(CohesiveZoneModelBase):

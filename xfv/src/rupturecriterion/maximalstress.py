@@ -3,7 +3,7 @@
 """
 Implementation of MaximalStressCriterion class
 """
-from xvof.src.rupturecriterion.rupturecriterion import RuptureCriterion
+from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
 class MaximalStressCriterion(RuptureCriterion):

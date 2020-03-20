@@ -4,8 +4,8 @@ Implementing the Element1dEnriched class
 """
 import numpy as np
 import os
-from xvof.src.cell import OneDimensionCell
-from xvof.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.cell import OneDimensionCell
+from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
 class OneDimensionEnrichedCell(OneDimensionCell):

@@ -5,13 +5,13 @@ Unit tests for enriched_field class
 """
 import numpy as np
 import unittest
-import xvof.src.fields.enrichedfield as enr_field
+import xfv.src.fields.enrichedfield as enr_field
 
 
 class EnrichedFieldTest(unittest.TestCase):
     """
     Classe test pour EnrichedField.
-    Les proprétés sont testées dans utilities
+    Les proprï¿½tï¿½s sont testï¿½es dans utilities
     """
 
     def setUp(self):

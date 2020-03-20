@@ -177,7 +177,7 @@ if __name__ == '__main__':
     elif option == "create":
         print "Cette fonctionnalité va maintenant vous guider dans la création d'un nouveau cas : "
         name = raw_input("- Nom du cas : ")
-        directory = raw_input("- Répertoire (à partir du répertoire xvof.src) : ")
+        directory = raw_input("- Répertoire (à partir du répertoire xfv.src) : ")
         print "Options pour les tracés : "
         label = raw_input("- Légende : ")
         color = raw_input("- Couleur : ")

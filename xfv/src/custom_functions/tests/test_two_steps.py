@@ -4,7 +4,7 @@ Unittests of the two_steps_pressure module
 """
 import unittest
 
-from xvof.src.custom_functions.two_steps import TwoSteps
+from xfv.src.custom_functions.two_steps import TwoSteps
 
 class TwoStepsTest(unittest.TestCase):
     """

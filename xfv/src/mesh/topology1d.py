@@ -1,16 +1,16 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe gérant la topologie 1D du maillage
+Classe gï¿½rant la topologie 1D du maillage
 """
 import numpy as np
 
-from xvof.src.mesh.topology import Topology
+from xfv.src.mesh.topology import Topology
 
 
 class Topology1D(Topology):
     """
-    Spécialisation 1D de topology
+    Spï¿½cialisation 1D de topology
 
     >>> my_topo = Topology1D(11, 10)
     >>> my_topo.getCellsInContactWithNode(0)
@@ -46,7 +46,7 @@ class Topology1D(Topology):
 
     def addCellInContactWithNode(self, ind_node, ind_cell):
         """
-        Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
+        Ajoute l'indice, 'ind_cell', de la maille ï¿½ la liste des mailles en contact
         avec le noeud d'indice 'ind_node'
         """
         Topology.addCellInContactWithNode(self,ind_node, ind_cell)
@@ -58,7 +58,7 @@ class Topology1D(Topology):
 
     def _generateMesh(self, nbr_of_cells):
         """
-        Generation du maillage (connectivité mailles <--> noeuds)
+        Generation du maillage (connectivitï¿½ mailles <--> noeuds)
         """
         for ind_cell in xrange(nbr_of_cells):
             ind_node_left = ind_cell
@@ -67,9 +67,9 @@ class Topology1D(Topology):
             self.addCellInContactWithNode(ind_node_right, ind_cell)
             self.setNodesBelongingToCell(ind_cell, [ind_node_left, ind_node_right])
 
-        # Avec cette construction, le premier noeud est connecté aux mailles [0, -1]
-        # Or on voudrait que ça soit l'inverse pour le calcul des forces
-        # Donc échange :
+        # Avec cette construction, le premier noeud est connectï¿½ aux mailles [0, -1]
+        # Or on voudrait que ï¿½a soit l'inverse pour le calcul des forces
+        # Donc ï¿½change :
         assert self._cells_in_contact_with_node[0, 1] == -1
         self._cells_in_contact_with_node[0, 1] = self._cells_in_contact_with_node[0, 0]
         self._cells_in_contact_with_node[0, 0] = -1

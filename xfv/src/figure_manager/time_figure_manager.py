@@ -1,16 +1,16 @@
 #!/usr/bin/env python2.7
 #  -*- coding: iso-8859-1 -*-
 """
-Classe définissant les outils pour images temporelles
+Classe dï¿½finissant les outils pour images temporelles
 
 """
 import matplotlib.pyplot as plt
 import numpy as np
 from pylab import rcParams
 
-import xvof.src.utilities.case_definition as case_path
-from xvof.src.figure_manager.time_figure import TimeFigure
-from xvof.src.figure_manager.time_figure_tools import TimeFigureTools
+import xfv.src.utilities.case_definition as case_path
+from xfv.src.figure_manager.time_figure import TimeFigure
+from xfv.src.figure_manager.time_figure_tools import TimeFigureTools
 
 
 class TimeFigureManager:
@@ -27,7 +27,7 @@ class TimeFigureManager:
         self.case = case
         self.case_ref = case_ref
         self.data_file = data_file_name
-        # Création des case_tools
+        # Crï¿½ation des case_tools
         self.time_fig_tools = TimeFigureTools(self.case, self.item, self.id_item, self.data_file)
         self.ref_tools = TimeFigureTools(self.case_ref, self.item, self.id_item, self.data_file)
 
@@ -43,7 +43,7 @@ class TimeFigureManager:
     #     """
     #     gaucheTools = TimeFigureTools(self.case, self.item, self.id_item -1, self.extension_file)
     #     gaucheTools.plot_data_history(field, my_label="Gauche", my_color="blue")
-    #     # Partie droite déclarée dans le init de figure manager
+    #     # Partie droite dï¿½clarï¿½e dans le init de figure manager
     #     self.time_fig_tools.plot_data_history(field, my_label="Droite", my_color="orange")
 
     def compare_time_fields(self, field):
@@ -70,7 +70,7 @@ class TimeFigureManager:
             error_table = np.abs(item_field - ref_item_field)
 
         if compute_error_index == 1:
-            print "Compute erreur adimensionnée par max du champ (en valeur absolue)"
+            print "Compute erreur adimensionnï¿½e par max du champ (en valeur absolue)"
             error_table = (np.abs(item_field - ref_item_field)) / max(np.abs(ref_item_field - ref_item_field[0]))
 
         if compute_error_index == 2:
@@ -81,8 +81,8 @@ class TimeFigureManager:
 
     # def write_error_mass_case(self, critere):
     #     """
-    #     Ecrit dans le shell les résultats de l'erreur
-    #     :param critere : float : critere de coloration des résultats (pour affichage en vert / rouge)
+    #     Ecrit dans le shell les rï¿½sultats de l'erreur
+    #     :param critere : float : critere de coloration des rï¿½sultats (pour affichage en vert / rouge)
     #     """
     #     self.time_fig_tools.find_field_list()
     #     error = self.compute_time_error_single()
@@ -97,7 +97,7 @@ class TimeFigureManager:
         """
         Trace l'erreur entre xfem et ref en fonctiondu temps pour matrice masse = case
         :param field : field of interest
-        :param compute_error_index : entier qui définit la méthode de calcul de l'erreur
+        :param compute_error_index : entier qui dï¿½finit la mï¿½thode de calcul de l'erreur
         :param my_label : label for legend
         :param my_color : color for the graph
         :param my_linestyle: line style of the plot

@@ -5,17 +5,17 @@ Classe de test du module Topology1d
 """
 import unittest
 import os
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.data.data_container import DataContainer
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.data.data_container import DataContainer
 
 
 class Topology1dTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'Topology1d'
+    Test case utilisï¿½ pour test les fonctions du module 'Topology1d'
     """
     def setUp(self):
         """
-        Préparation des tests
+        Prï¿½paration des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
@@ -28,7 +28,7 @@ class Topology1dTest(unittest.TestCase):
     def test_elements_voisins(self):
         """ Test de Node1d.elements_voisins = """
         #
-        # En 1D affecter plus de deux éléments à un noeud doit lever
+        # En 1D affecter plus de deux ï¿½lï¿½ments ï¿½ un noeud doit lever
         # une exception de type SystemExit
         #
         with self.assertRaises(IndexError):

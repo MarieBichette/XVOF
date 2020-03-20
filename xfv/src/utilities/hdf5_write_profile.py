@@ -11,19 +11,19 @@ case (optional) : list
 import os
 import sys
 
-import xvof.src.figure_manager.time_figure_tools as fig_tools
-import xvof.src.utilities.case_definition as case_path
-from xvof.src.output_figure.hdf5_posttreatment_tools import write_profile_from_db, write_evolution_from_db
+import xfv.src.figure_manager.time_figure_tools as fig_tools
+import xfv.src.utilities.case_definition as case_path
+from xfv.src.output_figure.hdf5_posttreatment_tools import write_profile_from_db, write_evolution_from_db
 
 # -----------------------------------------
 # Read user instructions
 # -----------------------------------------
 if not len(sys.argv) == 5:
     raise ValueError("Ce script attend comme  arguments  : "
-                     "\n les champs à tracer (ex: PressureField, VelocityField, DensityField)"
-                     "\n et une liste des cas à traiter"
-                     " le type de donnees à écrire : profile ou evolution"
-                     " une liste de temps à écrire pour 'profile' ou de item_id pour 'evolution'")
+                     "\n les champs ï¿½ tracer (ex: PressureField, VelocityField, DensityField)"
+                     "\n et une liste des cas ï¿½ traiter"
+                     " le type de donnees ï¿½ ï¿½crire : profile ou evolution"
+                     " une liste de temps ï¿½ ï¿½crire pour 'profile' ou de item_id pour 'evolution'")
 
 # Field to be analyzed
 field_list = sys.argv[1].split(',')

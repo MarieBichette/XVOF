@@ -3,7 +3,7 @@
 Unittest for pressure_ramp module
 """
 import unittest
-from xvof.src.custom_functions.ramp import Ramp
+from xfv.src.custom_functions.ramp import Ramp
 
 
 class RampTest(unittest.TestCase):

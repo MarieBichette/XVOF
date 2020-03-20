@@ -33,11 +33,11 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib2tikz import save as tikz_save
 
-import xvof.src.figure_manager.time_figure_tools as fig_tools_path
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.figure_manager.time_figure_manager import TimeFigureManager
-from xvof.src.figure_manager.time_figure_tools import TimeFigureTools
-from xvof.src.output_figure.profile_tools import A3_list, plot_field_from_txt_file, get_field_from_txt_file
+import xfv.src.figure_manager.time_figure_tools as fig_tools_path
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.figure_manager.time_figure_manager import TimeFigureManager
+from xfv.src.figure_manager.time_figure_tools import TimeFigureTools
+from xfv.src.output_figure.profile_tools import A3_list, plot_field_from_txt_file, get_field_from_txt_file
 
 # -----------------------------------------
 # Initialize treatment and legend

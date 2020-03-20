@@ -3,7 +3,7 @@
 """
 Implementation of MinimumPressureCriterion class
 """
-from xvof.src.rupturecriterion.rupturecriterion import RuptureCriterion
+from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
 class MinimumPressureCriterion(RuptureCriterion):

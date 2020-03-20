@@ -6,12 +6,12 @@ Classe de test du module node
 import numpy as np
 import unittest
 import mock
-from xvof.src.cell.cell import Cell
-from xvof.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
+from xfv.src.cell.cell import Cell
+from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 
 class MinimumPressureTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'ConstantPressure'
+    Test case utilisï¿½ pour test les fonctions du module 'ConstantPressure'
     """
     def setUp(self):
         """

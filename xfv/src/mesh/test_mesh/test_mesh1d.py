@@ -7,15 +7,15 @@ import numpy as np
 import unittest
 import mock
 
-from xvof.src.mesh.mesh1d import Mesh1d
+from xfv.src.mesh.mesh1d import Mesh1d
 
 class Mesh1dTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'Mesh1d'
+    Test case utilisï¿½ pour test les fonctions du module 'Mesh1d'
     """
     def setUp(self):
         """
-        Préparation des tests unitaires
+        Prï¿½paration des tests unitaires
         """
         coord_init = np.array([0., 1., 2., 3.])
         vit_init = np.zeros(4)

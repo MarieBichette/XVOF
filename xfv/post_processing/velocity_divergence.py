@@ -13,9 +13,9 @@ from matplotlib2tikz import save as tikz_save
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
-from xvof.src.utilities.velocity_data_posttraitment import compute_velocity_divergence_at_time, \
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.src.utilities.velocity_data_posttraitment import compute_velocity_divergence_at_time, \
     compute_velocity_on_discontinuity_borders_at_time
 
 msg = "Mini programme pour tracer la divergence du champ de vitesse ou le champ de vitesse sur les bords de la disc\n" \

@@ -4,10 +4,10 @@
 A class defining one dimension enriched nodes
 """
 import numpy as np
-from xvof.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
-from xvof.src.node.one_dimension_node import OneDimensionNode
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.data.data_container import DataContainer
+from xfv.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
+from xfv.src.node.one_dimension_node import OneDimensionNode
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):

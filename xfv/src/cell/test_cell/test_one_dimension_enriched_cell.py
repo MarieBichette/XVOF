@@ -7,10 +7,10 @@ import numpy as np
 import unittest
 import mock
 import os
-from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.src.data.data_container import DataContainer
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.cell.test_cell.test_variables import TestVariables
+from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xfv.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):

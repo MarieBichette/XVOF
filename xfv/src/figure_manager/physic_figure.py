@@ -1,12 +1,12 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe définissant une figure
+Classe dï¿½finissant une figure
 """
 import matplotlib.pyplot as plt
 from os import sep
 import numpy as np
-from xvof.src.data.data_container import DataContainer
+from xfv.src.data.data_container import DataContainer
 
 
 class PhysicFigure(object):
@@ -24,7 +24,7 @@ class PhysicFigure(object):
         self._title = titre
         self._fig.canvas.draw()
         self._save_path = save_path
-        self.interface_id = interface_id # pour séparer cible et projectile
+        self.interface_id = interface_id # pour sï¿½parer cible et projectile
         plt.show(block=False)
 
         # x = np.array([0, 0.01])
@@ -43,8 +43,8 @@ class PhysicFigure(object):
 
     def update(self, X=None, Y=None, title_comp=None):
         """
-        Mise à jour de l'image pour avoir une animation
-        Sauvegarde de l'image si présence d'un path
+        Mise ï¿½ jour de l'image pour avoir une animation
+        Sauvegarde de l'image si prï¿½sence d'un path
         """
         if X is not None:
             self._line_target.set_xdata(X[self.interface_id:])

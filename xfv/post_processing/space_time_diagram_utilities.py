@@ -7,8 +7,8 @@ from __future__ import print_function
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from xvof.src.data.data_container import DataContainer
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.src.data.data_container import DataContainer
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
 class SpaceTimeDiagramUtilities:

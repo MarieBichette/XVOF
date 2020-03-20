@@ -7,8 +7,8 @@ import numpy as np
 import unittest
 import os
 
-import xvof.src.node.node as nd
-from xvof.src.data.data_container import DataContainer
+import xfv.src.node.node as nd
+from xfv.src.data.data_container import DataContainer
 
 
 class NodeTest(unittest.TestCase):

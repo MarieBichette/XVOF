@@ -4,12 +4,12 @@
 Classe de test du module ImposedPressure
 """
 import unittest
-import xvof.src.rupturetreatment.imposedpressure as IP
+import xfv.src.rupturetreatment.imposedpressure as IP
 import numpy as np
 import os
 
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.data.data_container import DataContainer
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.data.data_container import DataContainer
 
 
 class ImposedPressureTest(unittest.TestCase):

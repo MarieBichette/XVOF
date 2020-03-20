@@ -2,7 +2,7 @@
 """
 Implements the TwoSteps class
 """
-from xvof.src.custom_functions.custom_function import CustomFunction
+from xfv.src.custom_functions.custom_function import CustomFunction
 
 
 class TwoSteps(CustomFunction):

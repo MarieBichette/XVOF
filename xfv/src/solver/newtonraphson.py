@@ -6,8 +6,8 @@ Classe définissant un solveur non linéaire de type Newton Raphson
 :todo: Mettre les critères de convergence dans le XML des données
 """
 import numpy as np
-from xvof.src.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
-from xvof.src.solver.newtonraphsonbase import NewtonRaphsonBase
+from xfv.src.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
+from xfv.src.solver.newtonraphsonbase import NewtonRaphsonBase
 
 # EPSILON = 1.0e-09
 # PRECISION = 1.0e-10

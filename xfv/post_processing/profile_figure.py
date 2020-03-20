@@ -21,11 +21,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib2tikz import save as tikz_save
 
-import xvof.src.figure_manager.time_figure_tools as fig_tools_path
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.output_figure.profile_tools import get_error_value, plot_field_with_rectangle_shapes, read_hdf5_file, \
+import xfv.src.figure_manager.time_figure_tools as fig_tools_path
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.output_figure.profile_tools import get_error_value, plot_field_with_rectangle_shapes, read_hdf5_file, \
     initialize_profile_figure
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 # -----------------------------------------
 # Read user instructions
@@ -144,8 +144,8 @@ for my_case in case_list:
                 # Initial values
                 coord_init, field_value_init = read_hdf5_file(my_hd_ref, field, 0.)
 
-                # Delete last node data in reference because this node does not correspond to any true node in xvof bar
-                # (mandatory to get equivalent array size between xvof_left and reference
+                # Delete last node data in reference because this node does not correspond to any true node in xfv bar
+                # (mandatory to get equivalent array size between xfv_left and reference
                 if field in ['NodeVelocity', 'NodeCoordinates']:
                     coord_ref = coord_ref[:-1]
                     field_value_ref = field_value_ref[:-1]

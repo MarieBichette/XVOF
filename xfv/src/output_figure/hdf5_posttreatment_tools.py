@@ -6,7 +6,7 @@ Tools for posttreat the hdf5 band to write the true fields for cells and nodes s
 
 import os
 import numpy as np
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
 def read_database_at_time_t(path_to_hdf5_db, id_item, field, t):

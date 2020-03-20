@@ -10,11 +10,11 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.src.utilities.case_definition import CaseManager
-from xvof.src.figure_manager.time_figure_tools import PressureField, DeviatoricStressField, PseudoViscosityField
-from xvof.src.output_figure.profile_tools import get_error_value, initialize_profile_figure,read_hdf5_file, \
+from xfv.src.utilities.case_definition import CaseManager
+from xfv.src.figure_manager.time_figure_tools import PressureField, DeviatoricStressField, PseudoViscosityField
+from xfv.src.output_figure.profile_tools import get_error_value, initialize_profile_figure,read_hdf5_file, \
                                             A3_list, plot_field_from_txt_file, get_field_from_txt_file
-from xvof.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 # Fields to be compared ----------------
 field = PressureField
@@ -63,15 +63,15 @@ if t not in [0., 1.e-06, 2.e-06, 4.e-06, 6.e-06, 8.e-06, 10.e-06]:
 # Traitement cas 1
 case_one = CaseManager().find_case(physic_case_one)
 file_name = "all_fields.hdf5"
-path_to_xvof = os.path.join("./",case_one.directory_name, file_name)
-my_hd = OutputDatabaseExploit(path_to_xvof)
+path_to_xfv = os.path.join("./",case_one.directory_name, file_name)
+my_hd = OutputDatabaseExploit(path_to_xfv)
 coord_1, field_value_1 = read_hdf5_file(my_hd, field.title, t)
 
 # Traitement cas 2
 case_two = CaseManager().find_case(physic_case_two)
 file_name = "all_fields.hdf5"
-path_to_xvof = os.path.join("./",case_two.directory_name, file_name)
-my_hd = OutputDatabaseExploit(path_to_xvof)
+path_to_xfv = os.path.join("./",case_two.directory_name, file_name)
+my_hd = OutputDatabaseExploit(path_to_xfv)
 coord_2, field_value_2 = read_hdf5_file(my_hd, field.title, t)
 
 # Moyenne des deux cas XVOF :

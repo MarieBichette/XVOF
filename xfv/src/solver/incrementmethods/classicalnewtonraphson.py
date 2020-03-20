@@ -3,7 +3,7 @@
 """
 Classe définissant la correction classique appliquée sur la variable d'un Newton Raphson
 """
-from xvof.src.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphsonIncrementBase
+from xfv.src.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphsonIncrementBase
 
 
 class ClassicalNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):

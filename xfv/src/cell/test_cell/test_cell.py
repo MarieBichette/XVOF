@@ -8,11 +8,11 @@ import unittest
 import mock
 import os
 
-from xvof.src.cell.cell import Cell
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.node import OneDimensionNode
-from xvof.src.utilities.testing import captured_output
-from xvof.src.data.data_container import DataContainer
+from xfv.src.cell.cell import Cell
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.node import OneDimensionNode
+from xfv.src.utilities.testing import captured_output
+from xfv.src.data.data_container import DataContainer
 
 
 class CellTest(unittest.TestCase):

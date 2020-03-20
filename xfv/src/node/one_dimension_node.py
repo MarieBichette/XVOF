@@ -3,9 +3,9 @@
 """
 Module définissant la classe Node1d
 """
-from xvof.src.mass_matrix.mass_matrix_utilities import multiplicationMasse
-from xvof.src.data.data_container import DataContainer
-from xvof.src.node import Node
+from xfv.src.mass_matrix.mass_matrix_utilities import multiplicationMasse
+from xfv.src.data.data_container import DataContainer
+from xfv.src.node import Node
 import numpy as np
 
 

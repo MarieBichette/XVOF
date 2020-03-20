@@ -3,7 +3,7 @@
 Implementing MieGruneisen class
 
 >>> import numpy as np
->>> from xvof.src.equationsofstate.miegruneisen import MieGruneisen
+>>> from xfv.src.equationsofstate.miegruneisen import MieGruneisen
 >>> my_eos = MieGruneisen(3980, 1.58, 0, 0, 8129, 1.6, 0.5, 0)
 >>> print my_eos # doctest:+NORMALIZE_WHITESPACE
 EquationOfState : MieGruneisen
@@ -38,7 +38,7 @@ import numpy as np
 import os
 from collections import namedtuple
 
-from xvof.src.equationsofstate.equationofstatebase import EquationOfStateBase
+from xfv.src.equationsofstate.equationofstatebase import EquationOfStateBase
 
 # Deactivate pylint warnings due to NotImplementedError
 # pylint: disable=R0921

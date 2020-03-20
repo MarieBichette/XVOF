@@ -5,12 +5,12 @@ Base class for one dimensional mesh
 """
 import numpy as np
 
-from xvof.src.utilities.profilingperso import timeit_file
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.data.data_container import DataContainer
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.node.one_dimension_node import OneDimensionNode
-from xvof.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
+from xfv.src.utilities.profilingperso import timeit_file
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.data.data_container import DataContainer
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.node.one_dimension_node import OneDimensionNode
+from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 
 
 class Mesh1d(object):
@@ -78,7 +78,7 @@ class Mesh1d(object):
             print 'applying mass matrix correction on last cells compatible with {} analyis'.format(
                 self.mass_matrix.correction_on_cell_500)
             self.mask_last_nodes_of_ref = np.empty([self.nodes.number_of_nodes], dtype=bool)
-            self.mask_last_nodes_of_ref[:] = False  # mask pour identifier derniers éléments de la barre de référence
+            self.mask_last_nodes_of_ref[:] = False  # mask pour identifier derniers ï¿½lï¿½ments de la barre de rï¿½fï¿½rence
             self.mask_last_nodes_of_ref[-2] = True
             self.mask_last_nodes_of_ref[-1] = True
             if self.mass_matrix.correction_on_cell_500.lower() == 'xfem':
@@ -87,7 +87,7 @@ class Mesh1d(object):
                                                                          self.__topology)
             self.inverse_correction = self.mass_matrix.inverse_correction_mass_matrix
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_velocities(self, delta_t):
         """
         Computation of nodes velocities at t+dt
@@ -97,7 +97,7 @@ class Mesh1d(object):
         """
         self.nodes.compute_new_velocity(delta_t, self._all_nodes, self.mass_matrix.inverse_mass_matrix)
 
-        # on applique la correction sur le dernier élément de la matrice de référence :
+        # on applique la correction sur le dernier ï¿½lï¿½ment de la matrice de rï¿½fï¿½rence :
         if self.mass_matrix.correction_on_cell_500 is not None:
             self.nodes.apply_correction_reference_bar(delta_t,
                                                       self.inverse_correction,
@@ -105,7 +105,7 @@ class Mesh1d(object):
                                                                               [self.mask_last_nodes_of_ref],
                                                       mask=self.mask_last_nodes_of_ref)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):
         """
         Computation of nodes coordinates at t+dt
@@ -115,7 +115,7 @@ class Mesh1d(object):
         """
         self.nodes.compute_new_coodinates(delta_t)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
@@ -123,28 +123,28 @@ class Mesh1d(object):
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_sizes(self):
         """
         Computation of cells sizes at t+dt
         """
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self._all_cells)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
         """
         self.cells.compute_new_density(mask=self._all_cells)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_pressures(self):
         """
         Computation of cells pressure at t+dt
         """
         self.cells.compute_new_pressure(mask=~self.__ruptured_cells)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
         Computation of cells artificial viscosity at t+dt
@@ -154,14 +154,14 @@ class Mesh1d(object):
         """
         self.cells.compute_new_pseudo(delta_t, mask=self._all_cells)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
         """
         self.nodes.compute_new_force(self.__topology, self.cells.pressure.new_value, self.cells.pseudo.new_value)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def increment(self):
         """
         Moving to next time step
@@ -169,7 +169,7 @@ class Mesh1d(object):
         self.nodes.increment()
         self.cells.increment_variables()
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_elasticity(self, delta_t):
         """
         Compute the complete stress tensor by assembling pressure and stress deviator
@@ -179,7 +179,7 @@ class Mesh1d(object):
 
         self.cells.compute_complete_stress_tensor(mask=self._all_cells)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_time_step(self):
         """
         Computation of new time step
@@ -188,7 +188,7 @@ class Mesh1d(object):
         return self.cells.dt.min()
 
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
@@ -205,7 +205,7 @@ class Mesh1d(object):
         else:
             self.nodes.apply_pressure(-1, -pressure)
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
@@ -215,7 +215,7 @@ class Mesh1d(object):
         """
         self.__ruptured_cells = np.logical_or(self.__ruptured_cells, rupture_criterion.checkCriterion(self.cells))
 
-    @timeit_file("/tmp/profil_xvof.src.txt")
+    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_rupture_treatment(self, treatment):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion

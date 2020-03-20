@@ -8,9 +8,9 @@ from abc import abstractmethod
 from copy import deepcopy
 import os
 
-from xvof.src.data.data_container import DataContainer
-from xvof.src.fields.field import Field
-from xvof.src.fields.fieldsmanager import FieldManager
+from xfv.src.data.data_container import DataContainer
+from xfv.src.fields.field import Field
+from xfv.src.fields.fieldsmanager import FieldManager
 
 
 class Cell(object):
@@ -61,7 +61,7 @@ class Cell(object):
         self.cell_in_target = np.zeros(self.number_of_cells, dtype='bool')
         self.cell_in_projectile = np.zeros(self.number_of_cells, dtype='bool')
 
-        # initialisation par défaut avec material_target ---------------------
+        # initialisation par dï¿½faut avec material_target ---------------------
         # hydro :
         material_data = DataContainer().material_target.initial_values
         self._fields_manager["Density"] = Field(self._nbr_of_cells, material_data.rho_init, material_data.rho_init)
@@ -76,26 +76,26 @@ class Cell(object):
 
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
-        Initialisation des champs aux mailles et des caractéristiques cell_in_target et cell_in_projectile
+        Initialisation des champs aux mailles et des caractï¿½ristiques cell_in_target et cell_in_projectile
         :param mask_node_target: tableau de bool pour les noeuds dans la cible
         :param mask_node_projectile: tableau de bool pour les noeuds dans le projectile
-        :param topology: Topologie donnant les tableaux de connectivité
+        :param topology: Topologie donnant les tableaux de connectivitï¿½
         :return:
         """
         # Partie mask_cible
         indice_noeuds = np.where(mask_node_target)[0]
         cell_target = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
-        # on élimine les noeuds extrêmes :
-        # 1 pour ne pas prendre la dernière maille du projectile qui est connectée aussi à un noeud target
-        # -1 pour ne pas prendre la maille connectéee au dernier noeud de la cible, qui n'existe pas
+        # on ï¿½limine les noeuds extrï¿½mes :
+        # 1 pour ne pas prendre la derniï¿½re maille du projectile qui est connectï¿½e aussi ï¿½ un noeud target
+        # -1 pour ne pas prendre la maille connectï¿½ee au dernier noeud de la cible, qui n'existe pas
         self.cell_in_target[cell_target] = True
 
         # Partie mask_projectile
         indice_noeuds = np.where(mask_node_projectile)[0]
         cell_projectile = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
-        # on élimine les noeuds extrêmes :
-        # -1 pour ne pas prendre la première maille de la cible qui est aussi connectée à un noeud projectile
-        # 1 pour ne pas prendre la maille connectéee au premier noeud du projectile, qui n'existe pas
+        # on ï¿½limine les noeuds extrï¿½mes :
+        # -1 pour ne pas prendre la premiï¿½re maille de la cible qui est aussi connectï¿½e ï¿½ un noeud projectile
+        # 1 pour ne pas prendre la maille connectï¿½ee au premier noeud du projectile, qui n'existe pas
         self.cell_in_projectile[cell_projectile] = True
 
         try:
@@ -104,11 +104,11 @@ class Cell(object):
             print "Cells in the target : de {:} a {:}".format(np.where(self.cell_in_target)[0][0],
                                                               np.where(self.cell_in_target)[0][-1])
         except IndexError:
-            # pour gérer  les exceptions où il n'y a pas de projectile ou de target (cas tableau vide [index])
+            # pour gï¿½rer  les exceptions oï¿½ il n'y a pas de projectile ou de target (cas tableau vide [index])
             pass
 
-        # correction de l'init si materiau projectile déclaré dans XDATA.xml
-        # (le mask est vide si pas de projectile donc transparent quand il n'y a pas de projectile déclaré)
+        # correction de l'init si materiau projectile dï¿½clarï¿½ dans XDATA.xml
+        # (le mask est vide si pas de projectile donc transparent quand il n'y a pas de projectile dï¿½clarï¿½)
         material_data = DataContainer().material_projectile.initial_values
         self.density.current_value[self.cell_in_projectile] = material_data.rho_init
         self.density.new_value[self.cell_in_projectile] = material_data.rho_init

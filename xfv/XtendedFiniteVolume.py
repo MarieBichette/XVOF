@@ -12,14 +12,14 @@ import matplotlib  # pylint: disable=unused-import
 import matplotlib.pyplot as plt
 import numpy as np
 
-from xvof.src.figure_manager.figure_manager      import FigureManager
-from xvof.src.data.data_container                import DataContainer
-from xvof.src.mesh.mesh1denriched                import Mesh1dEnriched
-from xvof.src.data.save_time_data                import CellTimeData, NodeTimeData
-from xvof.src.output_manager.outputmanager       import OutputManager
-from xvof.src.output_manager.outputdatabase      import OutputDatabase
-from xvof.src.rupturetreatment.enrichelement     import EnrichElement
-from xvof.src.rupturetreatment.imposedpressure   import ImposedPressure
+from xfv.src.figure_manager.figure_manager      import FigureManager
+from xfv.src.data.data_container                import DataContainer
+from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
+from xfv.src.data.save_time_data                import CellTimeData, NodeTimeData
+from xfv.src.output_manager.outputmanager       import OutputManager
+from xfv.src.output_manager.outputdatabase      import OutputDatabase
+from xfv.src.rupturetreatment.enrichelement     import EnrichElement
+from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
 
 
 def __create_mesh(meshfile, enrichment_type):
@@ -169,24 +169,11 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
             data.material_target.failure_model.failure_treatment_value)
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
         print "Enrichment method : {}".format(type_of_enrichment)
-
-    # ---- # OUTPUT
-    #
-    simulation_time = 0.
-    step = 0
-    dt = initial_time_step  # pylint: disable=invalid-name
-    dt_staggered = dt / 2
-    # Le premier increment pour la vitesse a un pas de temps de dt/2 pour
-    # tenir compte du fait que les vitesses sont
-    # init a t=0 et pas t = -1/2 dt (pour garderl'ordre 2 a l'init).
-    # Le dt_staggered est ensuite remis a dt a la fin de la boucle en temps
-    dt_crit = 2 * dt
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
     type_of_enr = data.material_target.failure_model.type_of_enrichment
     my_mesh = __create_mesh(meshfile, type_of_enr)
-    enrichissement_registration = type_of_enr == 'Hansbo'
 
     # ---------------------------------------------#
     # TARGET AND PROJECTILE VELOCITIES INITIALIZATION
@@ -331,8 +318,6 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         dt = min(dt, dt_crit)  # pylint: disable=invalid-name
         if dt != dt_crit:
             print "Reduction of the time step after failure. New time step is " + str(dt_crit)
-        # reduction du pas de temps apres rupture
-        dt = min(dt, dt_crit)  # pylint: disable=invalid-name
 
         # ---------------------------------------------#
         #                INCREMENTATION                #

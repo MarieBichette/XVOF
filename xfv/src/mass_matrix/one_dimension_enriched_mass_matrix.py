@@ -5,7 +5,7 @@ Implementing the OneDimensionEnrichedMassMatrix class
 """
 import numpy as np
 
-from xvof.src.mass_matrix.mass_matrix_utilities import SymNDArray, inverseMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import SymNDArray, inverseMasse
 
 
 class OneDimensionEnrichedMassMatrix(object):

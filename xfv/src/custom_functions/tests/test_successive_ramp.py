@@ -4,8 +4,8 @@ Unittests of the successive_pressure_ramp module
 """
 import unittest
 
-from xvof.src.custom_functions.successive_ramp import SuccessiveRamp
-from xvof.src.custom_functions.ramp import Ramp
+from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
+from xfv.src.custom_functions.ramp import Ramp
 
 
 class SuccessiveRampTest(unittest.TestCase):

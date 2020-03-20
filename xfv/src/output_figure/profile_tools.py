@@ -7,7 +7,7 @@ tools to plot field profile and comparison between profiles
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Equivalence field name between fields from xvof.src and fields from A3
+# Equivalence field name between fields from xfv.src and fields from A3
 A3_list = {'Pressure':'pressure',
            'DeviatoricStress': 'deviatoricstresstensor_1',
            'EquivalentPlasticStrainRate': 'equivalentplasticstrainrate',
@@ -46,8 +46,8 @@ def get_error_value(coord_ref, field_ref, coord, field_value, error_calcul='abso
     Compute the error in profile
     :param coord_ref: coordinates (reference)
     :param field_ref: field value (reference)
-    :param coord: coordinates from xvof.src
-    :param field_value: field value from xvof.src
+    :param coord: coordinates from xfv.src
+    :param field_value: field value from xfv.src
     :param error_calcul : 'absolute' or 'relative'
     :return: err_x, err_y, interpolated coordinates and error in field value
     """

@@ -4,9 +4,9 @@
 A module implementing the Discontinuity class
 """
 import numpy as np
-from xvof.src.data.data_container import DataContainer
-from xvof.src.fields.field import Field
-from xvof.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import OneDimensionHansboEnrichedMassMatrix
+from xfv.src.data.data_container import DataContainer
+from xfv.src.fields.field import Field
+from xfv.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import OneDimensionHansboEnrichedMassMatrix
 
 
 class Discontinuity(object):
@@ -24,7 +24,7 @@ class Discontinuity(object):
         :param mask_out_nodes: enriched nodes on the right of the discontinuity
         :param discontiuity_position_in_ruptured_element ; position of the discontiuity in the ruptured element
         """
-        # Vérification d'usage :
+        # Vï¿½rification d'usage :
         if discontiuity_position_in_ruptured_element > 1 or discontiuity_position_in_ruptured_element < 0:
             raise ValueError("""Discontinuity position in cracked cell must be between 0 and 1""")
 
@@ -67,7 +67,7 @@ class Discontinuity(object):
         self._additional_dof_plastic_strain_rate = np.zeros([1, 3])
         self.plastic_cells = False  # La partie droite de la cell rompue est plastique
 
-        # endommagement avec modèle cohésif (créé tout le temps mais reste à 0 si pas d'endommagement dans XDATA.xml...
+        # endommagement avec modï¿½le cohï¿½sif (crï¿½ï¿½ tout le temps mais reste ï¿½ 0 si pas d'endommagement dans XDATA.xml...
         if DataContainer().material_target.damage_model.cohesive_model is not None:
             cohesive_strength = DataContainer().material_target.damage_model.cohesive_model.cohesive_strength
         else:
@@ -79,10 +79,10 @@ class Discontinuity(object):
 
         if DataContainer().material_target.damage_model.cohesive_model is not None:
             self.history_min_cohesive_force = cohesive_strength
-        else:  # dans le cas où  pas de czm activé : czm_model= None
+        else:  # dans le cas oï¿½  pas de czm activï¿½ : czm_model= None
             self.history_min_cohesive_force = 0.
 
-        # création de la matrice de masse associée à la discontinuité
+        # crï¿½ation de la matrice de masse associï¿½e ï¿½ la discontinuitï¿½
         if DataContainer().material_target.failure_model.type_of_enrichment == "Hansbo":
             self.mass_matrix_enriched = OneDimensionHansboEnrichedMassMatrix(
                 lump=DataContainer().material_target.failure_model.lump_mass_matrix)
@@ -98,8 +98,8 @@ class Discontinuity(object):
     @classmethod
     def get_discontinuity_associated_with_cell(cls, cell_id):
         """
-        Parcourt lacollection des discontinuités à la recherche de celle qui contient la cell_id en argument
-        :param cell_id: cell id à retrouver
+        Parcourt lacollection des discontinuitï¿½s ï¿½ la recherche de celle qui contient la cell_id en argument
+        :param cell_id: cell id ï¿½ retrouver
         :return: Discontinuity qui matche
         """
         if cell_id == -1: return None

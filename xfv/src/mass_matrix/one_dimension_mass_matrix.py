@@ -5,8 +5,8 @@ Implementing the OneDimensionMassMatrix class
 """
 
 import numpy as np
-from xvof.src.mass_matrix.mass_matrix import compute_wilkins_mass_matrix
-from xvof.src.mass_matrix.mass_matrix_utilities import inverseMasse
+from xfv.src.mass_matrix.mass_matrix import compute_wilkins_mass_matrix
+from xfv.src.mass_matrix.mass_matrix_utilities import inverseMasse
 
 
 class OneDimensionMassMatrix(object):

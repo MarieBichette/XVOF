@@ -7,12 +7,12 @@ import numpy as np
 import unittest
 import mock
 import os
-from xvof.src.cell.cell import Cell
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.data.data_container import DataContainer
-from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
-from xvof.src.cell.test_cell.test_variables import TestVariables
+from xfv.src.cell.cell import Cell
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.data.data_container import DataContainer
+from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
+from xfv.src.cell.test_cell.test_variables import TestVariables
 
 class OneDimensionCellTest(unittest.TestCase):
 

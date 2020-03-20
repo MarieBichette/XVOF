@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import matplotlib2tikz
 
-from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
+from xfv.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
 ####################################################
@@ -18,7 +18,7 @@ from xvof.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 def compute_error(cell_id, data, ref_data):
     """
-    Norme infinie de l'écart entre data et ref_data à un temps donné
+    Norme infinie de l'ï¿½cart entre data et ref_data ï¿½ un temps donnï¿½
     :param cell_id:
     :param data:
     :param ref_data:
@@ -26,7 +26,7 @@ def compute_error(cell_id, data, ref_data):
     """
 
     # if len(data) != len(ref_data):
-    #     raise ValueError("""Impossible de calculer la norme de l'erreur si data et ref_data n'ont pas la même taillle""")
+    #     raise ValueError("""Impossible de calculer la norme de l'erreur si data et ref_data n'ont pas la mï¿½me taillle""")
 
     global_error = 0.
 
@@ -41,7 +41,7 @@ def compute_error(cell_id, data, ref_data):
         x_target = data[cell_id * factor]
         x_ref = ref_data[cell_id]
 
-        if abs(x_ref) > 0.01 * ref_max:  # pour éviter les cas pathologiques où le champ = 0 (=> diviser par 0)
+        if abs(x_ref) > 0.01 * ref_max:  # pour ï¿½viter les cas pathologiques oï¿½ le champ = 0 (=> diviser par 0)
             error = abs((x_target - x_ref) / x_ref)
             global_error += error
 
@@ -53,7 +53,7 @@ def compute_error(cell_id, data, ref_data):
 ####################################################
 def find_time_min_density(ref_hd):
     """
-    Identification du temps où le choc arrive sur la dernière maille de la ref = equiv de la maille rompue
+    Identification du temps oï¿½ le choc arrive sur la derniï¿½re maille de la ref = equiv de la maille rompue
     :param ref_hd:
     :return:
     """
@@ -74,7 +74,7 @@ def find_time_min_density(ref_hd):
 field = "Pressure"
 
 ####################################################
-# Initialisation des tableaux contenant les résultats
+# Initialisation des tableaux contenant les rï¿½sultats
 ####################################################
 maillage = np.arange(4)
 print "maillage = "
@@ -88,7 +88,7 @@ erreur_maillage_menouillard = np.zeros_like(taille_maillage)
 
 
 ####################################################
-# Lecture des fichiers hdf5 pour référence
+# Lecture des fichiers hdf5 pour rï¿½fï¿½rence
 ####################################################
 dir_to_db = "Ref_maillage_0"
 path_to_db = os.path.join(dir_to_db, "all_fields.hdf5")
@@ -105,7 +105,7 @@ for i in maillage:
 
 ########################################################################
 
-    print "Maillage de référence : "
+    print "Maillage de rï¿½fï¿½rence : "
     dir_to_db = "Ref_maillage_" + str(i)
     path_to_db = os.path.join(dir_to_db, "all_fields.hdf5")
     my_hd = OutputDatabaseExploit(path_to_db)
@@ -166,7 +166,7 @@ ordre1= y1 * taille_maillage
 ordre2 = y2 * taille_maillage * taille_maillage
 
 ####################################################
-# Tracé des données
+# Tracï¿½ des donnï¿½es
 ####################################################
 fig = plt.figure(1)
 fig.patch.set_color("white")
@@ -174,22 +174,22 @@ fig.suptitle("Etude de convergence a t = {:}".format(time), fontsize=20, fontwei
 plt.xlabel("Taille de maille [m]")
 plt.ylabel("Erreur relative sur {:}".format(field))
 
-# tracé enr somme
+# tracï¿½ enr somme
 plt.plot(taille_maillage, erreur_maillage_somme, linestyle="-", marker=".", color="red", label="enr somme")
 
-# tracé enr menouillard
+# tracï¿½ enr menouillard
 plt.plot(taille_maillage, erreur_maillage_menouillard, linestyle="-", marker=".", color="green", label="enr menouillard")
 
-# tracé ref
+# tracï¿½ ref
 plt.plot(taille_maillage, erreur_maillage_ref, linestyle="-", marker=".", color="blue", label="ref")
 
-# tracé ordre 0.5
+# tracï¿½ ordre 0.5
 #plt.plot(taille_maillage, ordre05, color="black", label="ordre 0.5")
 
-# tracé ordre 1
+# tracï¿½ ordre 1
 plt.plot(taille_maillage, ordre1, color="orange", label="ordre 1")
 
-# tracé ordre 2
+# tracï¿½ ordre 2
 plt.plot(taille_maillage, ordre2, color="black", label="ordre 2")
 
 plt.loglog()

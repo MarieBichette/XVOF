@@ -8,10 +8,10 @@ import unittest
 import mock
 import os
 
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.node.one_dimension_node import OneDimensionNode
-from xvof.src.mass_matrix.mass_matrix_utilities import inverseMasse
-from xvof.src.data.data_container import DataContainer
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.node.one_dimension_node import OneDimensionNode
+from xfv.src.mass_matrix.mass_matrix_utilities import inverseMasse
+from xfv.src.data.data_container import DataContainer
 
 
 class Node1dTest(unittest.TestCase):
