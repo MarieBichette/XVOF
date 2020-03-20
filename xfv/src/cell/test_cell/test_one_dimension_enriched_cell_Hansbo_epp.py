@@ -20,17 +20,11 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("Appel de setUpForClass")
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
         DataContainer(data_file_path)
-        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
 
     @classmethod
     def tearDownClass(cls):
-        print("Appel de tearDownForClass")
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
         pass
@@ -139,10 +133,6 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         """
         Test de la m�thode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option �lasticit� est activ�e dans le jeu de donn�e
-        type(DataContainer().material_target.constitutive_model).elasticity_model = \
-            mock.PropertyMock(return_value=ConstantShearModulus)
-
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_apply_eos.return_value = self.my_cells.energy.new_value, self.my_cells.pressure.new_value,\

@@ -20,17 +20,11 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("Appel de setUpForClass")
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         DataContainer(data_file_path)
-        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
 
     @classmethod
     def tearDownClass(cls):
-        print("Appel de tearDownForClass")
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
         pass
@@ -100,9 +94,6 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         """
         Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option élasticité est désactivée dans le jeu de donnée
-        type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
-
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_eos.side_effect = [[self.my_cells.energy.new_value,

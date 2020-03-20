@@ -18,17 +18,11 @@ class OneDimensionCellElastoTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("Appel de setUpForClass")
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
         DataContainer(data_file_path)
-        print(DataContainer().material_target.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
-        print(DataContainer().material_target.constitutive_model.plasticity_model is not None)
-        print(DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
 
     @classmethod
     def tearDownClass(cls):
-        print("Appel de tearDownForClass")
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
         pass
