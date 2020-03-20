@@ -74,7 +74,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
@@ -97,13 +97,13 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         config = {'label': 1,
                   'ruptured_cell_id': np.array([0]),
                   'additional_dof_pressure.current_value': np.array([1.e+09])}
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_1 = patcher.start()
         # configuration de la deuxi�me discontinuit�
         config = {'label': 2,
                   'ruptured_cell_id': np.array([1]),
                   'additional_dof_pressure.current_value': np.array([5.e+09])}
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_2 = patcher.start()
 
         # on a besoin de faire comme si on avait 2 cells classiques qui rompent

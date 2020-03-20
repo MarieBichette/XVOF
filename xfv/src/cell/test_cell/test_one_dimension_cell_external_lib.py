@@ -10,7 +10,6 @@ import os
 
 from xfv.src.cell.one_dimension_cell import OneDimensionCell as Cell
 from xfv.src.mesh.topology1d import Topology1D
-from xfv.src.data.data_container import geometrical_props
 from xfv.src.fields.field import Field
 from xfv.src.data.data_container import DataContainer
 

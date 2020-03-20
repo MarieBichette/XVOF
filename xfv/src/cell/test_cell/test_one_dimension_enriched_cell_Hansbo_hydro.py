@@ -7,20 +7,20 @@ import numpy as np
 import unittest
 import mock
 import os
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.data.data_container import DataContainer
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
+from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
 class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
 
     def setUp(self):
         """
-        Préparation des tests
+        Prï¿½paration des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
@@ -73,7 +73,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
@@ -85,9 +85,9 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
     @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos, mock_disc_list):
         """
-        Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
+        Test de la mï¿½thode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option élasticité est désactivée dans le jeu de donnée
+        # L'option ï¿½lasticitï¿½ est dï¿½sactivï¿½e dans le jeu de donnï¿½e
         type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
 
         # Configuration des mocks
