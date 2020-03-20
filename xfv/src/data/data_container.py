@@ -30,88 +30,96 @@ from xfv.src.cohesive_model.zero_force_unloading_model import ZeroForceUnloading
 from xfv.src.cohesive_model.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
 from xfv.src.utilities.singleton import Singleton
 
-numerical_props = namedtuple("numerical_props", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
+NumericalProps = namedtuple("NumericalProps", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
 
-boundary_conditions_props = namedtuple("boundary_conditions_props", ["left_BC", "right_BC"])
+BoundaryConditionsProps = namedtuple("BoundaryConditionsProps", ["left_BC", "right_BC"])
 
-geometrical_props = namedtuple("geometrical_props", ["section", "initial_interface_position"])
+GeometricalProps = namedtuple("GeometricalProps", ["section", "initial_interface_position"])
 
-material_props = namedtuple("material_props", ["initial_values", "constitutive_model", "failure_model", "damage_model"])
+MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
+                                             "failure_model", "damage_model"])
 
-initial_values = namedtuple("initial_values", ["velocity_init", "pression_init", "temp_init", "rho_init", "energie_init",
-                                               "yield_stress_init", "shear_modulus_init"])
+InitialValues = namedtuple("InitialValues", ["velocity_init", "pression_init", "temp_init",
+                                             "rho_init", "energie_init",
+                                             "yield_stress_init", "shear_modulus_init"])
 
-constitutive_model = namedtuple("constitutive_model", ["eos", "elasticity_model",
-                                                       "plasticity_model", "plasticity_criterion"])
+ConstitutiveModel = namedtuple("ConstitutiveModel", ["eos", "elasticity_model",
+                                                     "plasticity_model", "plasticity_criterion"])
 
-failure_model = namedtuple("failure_model", ["failure_treatment", "failure_treatment_value",
-                                               "type_of_enrichment", "lump_mass_matrix",
-                                               "failure_criterion", "failure_criterion_value"])
+FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatment_value",
+                                           "type_of_enrichment", "lump_mass_matrix",
+                                           "failure_criterion", "failure_criterion_value"])
 
-damage_model = namedtuple("damage_model", ["cohesive_model", "name"])
-
-
-time_props = namedtuple("time_props", ['initial_time_step', 'final_time', 'is_time_step_constant',
-                                       "time_step_reduction_factor_for_failure"])
-
-output_props = namedtuple("output_props", ['number_of_images', 'dump', 'cells_numbers', 'nodes_numbers', 'databases'])
-
-database_props = namedtuple("database_props",
-                            ["identifier", "path", "time_period", "iteration_period", "cell_indexes", "node_indexes"])
+DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 
 
-class DataContainer(object):
+TimeProps = namedtuple("TimeProps", ['initial_time_step', 'final_time', 'is_time_step_constant',
+                                     "time_step_reduction_factor_for_failure"])
+
+OutputProps = namedtuple("OutputProps", ['number_of_images', 'dump', 'cells_numbers',
+                                         'nodes_numbers', 'databases'])
+
+DatabaseProps = namedtuple("DatabaseProps",
+                           ["identifier", "path", "time_period", "iteration_period",
+                            "cell_indexes", "node_indexes"])
+
+
+class DataContainer(object):  # pylint: disable=too-many-instance-attributes
     """
     Contains the data read from the datafile
     """
     __metaclass__ = Singleton
 
-    def __init__(self, datafile_path):
+    def __init__(self, datafile_path=None):
         """
         Constructor
         """
         print "Opening data file : {:s}".format(os.path.abspath(datafile_path))
-        self.datafile_path = datafile_path
-        self.project_dir = os.path.commonprefix([os.path.abspath(self.datafile_path),
+        self.project_dir = os.path.commonprefix([os.path.abspath(datafile_path),
                                                  os.path.abspath(__file__)])
-        # self.project_dir = os.path.split(os.path.dirname(os.path.abspath(self.datafile_path)))[0]
+        # self.project_dir = os.path.split(os.path.dirname(os.path.abspath(datafile_path)))[0]
         self.__datadoc = et.parse(datafile_path)
-        self.numeric = numerical_props(*self.__fillInNumericalProperties())
-        self.geometric = geometrical_props(*self.__fillInGeometricalProperties())
-        self.time = time_props(*self.__fillInTimeProperties())
-        self.output = output_props(*self.__fillInOutputProperties())
-        self.boundary_condition = boundary_conditions_props(*self.__fillInBCProperties())
+        self.numeric = NumericalProps(*self.__fill_in_numerical_props())
+        self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
+        self.time = TimeProps(*self.__fill_in_time_props())
+        self.output = OutputProps(*self.__fill_in_output_props())
+        self.boundary_condition = BoundaryConditionsProps(*self.__fill_in_bc_props())
 
         # test si on a un projectile et une cible ou si on a qu'un bloc matter
         try:
-            blabla = self.__datadoc.find("matter/projectile/").text
+            _ = self.__datadoc.find("matter/projectile/").text
             self.data_contains_a_projectile = True
         except AttributeError:
             self.data_contains_a_projectile = False
         try:
-            bla = self.__datadoc.find("matter/target/").text
+            _ = self.__datadoc.find("matter/target/").text
             self.data_contains_a_target = True
         except AttributeError:
             self.data_contains_a_target = False
 
+        self.material_projectile = None
         if self.data_contains_a_projectile:
-            self.material_projectile = material_props(*self.__fillInMaterialProperties("matter/projectile"))
+            self.material_projectile = MaterialProps(
+                *self.__fill_in_material_props("matter/projectile"))
+
+        self.material_target = None
         if self.data_contains_a_target:
-            self.material_target = material_props(*self.__fillInMaterialProperties("matter/target"))
+            self.material_target = MaterialProps(*self.__fill_in_material_props("matter/target"))
 
         if not (self.data_contains_a_projectile or self.data_contains_a_target):
-            self.material_target = material_props(*self.__fillInMaterialProperties("matter"))
-            self.material_projectile = self.material_target  # astuce pour initilialiser un projectile fictif et ne pas changer la structure du code
+            self.material_target = MaterialProps(*self.__fill_in_material_props("matter"))
+            # astuce pour initilialiser un projectile fictif et ne pas changer la structure du code
+            self.material_projectile = self.material_target
 
-    def __fillInBCProperties(self):
+    def __fill_in_bc_props(self):
         """
         :return: the pressure to be applied on the boundary of geometry
         """
-        left_boundary = self.__getBoundaryConditionDefiniton('boundary-conditions/left-boundary/')
-        right_boundary = self.__getBoundaryConditionDefiniton('boundary-conditions/right-boundary/')
+        left_boundary = self.__get_boundary_condition_def('boundary-conditions/left-boundary/')
+        right_boundary = self.__get_boundary_condition_def('boundary-conditions/right-boundary/')
         return left_boundary, right_boundary
 
-    def __fillInNumericalProperties(self):
+    def __fill_in_numerical_props(self):
         """
         :return: the numerical properties :
             - linear and quadratic artifical viscosity coefficients;
@@ -124,7 +132,7 @@ class DataContainer(object):
         cfl_pseudo = float(self.__datadoc.find('numeric-parameters/cfl-pseudo').text)
         return a_pseudo, b_pseudo, cfl, cfl_pseudo
 
-    def __fillInGeometricalProperties(self):
+    def __fill_in_geometrical_props(self):
         """
         :return: the geometric properties:
             - area of the cell;
@@ -134,77 +142,83 @@ class DataContainer(object):
         section = float(self.__datadoc.find('geometry/section').text)
         initial_interface_position = 0.
         try:
-            initial_interface_position = float(self.__datadoc.find('geometry/initial-interface-position').text)
+            initial_interface_position = float(
+                self.__datadoc.find('geometry/initial-interface-position').text)
         except AttributeError:
             pass
 
         return section, initial_interface_position
 
-    def __fillInMaterialProperties(self, material="matter/target"):
+    def __check_material_consistency(self, material="matter/target"):
         """
-        :return: the material properties:
-            - initialization pressure, temperature, density and internal energy, yield stress and shear modulus
-            - constitutive model : eos, elasticity model (None si pas d'�lasticit�), plasticity model(None par d�fault),
-                                    plasticity criterion
-            - failure treatment : bool to activate failure, failure treatment method,
-                                  failure treatment value (position of discontinuity
-                                  in failured element or imposed pressure value) , typeof enrichment chosen, mass lumping technique
-            - damage treatment :
-
+        Check the coherence of the data
         """
-        # V�rification de la coh�rence du jeu de donn�es :
-        mat_eos = self.__datadoc.find(material + '/equation-of-state/' + 'coefficients').text
-        material_eos = mat_eos.split("_")[0]
-        mat_init = self.__datadoc.find(material + '/initialization/' + 'init-thermo').text
-        material_init = mat_init.split("_")[0]
+        # Vérification de la cohérence du jeu de données :
+        material_eos = self.__datadoc.find(material + '/equation-of-state/' + 'coefficients').text
+        material_eos = material_eos.split("_")[0]
+        material_init = self.__datadoc.find(material + '/initialization/' + 'init-thermo').text
+        material_init = material_init.split("_")[0]
         material_rheology = None
         try:
-            mat_rheo = self.__datadoc.find(material + '/rheology/' + 'coefficients').text
-            material_rheology = mat_rheo.split("_")[0]
+            material_rheology = self.__datadoc.find(material + '/rheology/' + 'coefficients').text
+            material_rheology = material_rheology.split("_")[0]
         except AttributeError:
             pass
 
-        if not(material_eos == material_init):
-            raise ValueError("""Incoh�rence dans le jeu de donn�e. Les mat�riaux renseign�s pour l'init ({:}) et
-            l'eos ({:}) sont diff�rents""".format(material_init, material_eos))
-        if material_rheology is not None:
-            if not(material_eos == material_rheology):
-                raise ValueError("""Incoh�rence dans le jeu de donn�e. Les mat�riaux renseign�s
-                l'eos ({:}) et la rheologie ({:}) sont diff�rents""".format(material_eos, material_rheology))
+        if not material_eos == material_init:
+            raise ValueError("""Incohérence dans le jeu de données. """
+                             """Les matériaux renseignés pour l'init ({:}) et
+                                l'eos ({:}) sont différents""".format(
+                                    material_init, material_eos))
+        if material_rheology is not None and not material_eos == material_rheology:
+            raise ValueError("""Incohérence dans le jeu de données. Les matériaux renseignés
+                                 pour l'eos ({:}) et la rheologie ({:}) sont différents""".format(
+                                     material_eos, material_rheology))
 
-        # Grandeurs initiales -----------------------------
-        init = initial_values(*self.__getInitialValues(material))
+    def __fill_in_material_props(self, material="matter/target"):
+        """
+        :return: the material properties:
+            - initialization pressure, temperature, density and internal energy,
+              yield stress and shear modulus
+            - constitutive model : eos, elasticity model (None si pas d'élasticité),
+                                   plasticity model(None par défault),
+                                   plasticity criterion
+            - failure treatment : bool to activate failure, failure treatment method,
+                                  failure treatment value (position of discontinuity
+                                  in failured element or imposed pressure value) ,
+                                  typeof enrichment chosen, mass lumping technique
+            - damage treatment :
 
-        # Constitutive model ----------------------------------
-        eos = self.__getEquationOfStateProperties(material)
-        elasticity_model, plasticity_model, plasticity_criterion = self.__getRheologyProperties(material)
-        behavior = constitutive_model(eos, elasticity_model, plasticity_model, plasticity_criterion)
+        """
+        init = InitialValues(*self.__get_initial_values(material))
 
-        # failure treatment ------------------------------------
+        behavior = ConstitutiveModel(
+            self.__get_equation_of_state_props(material),
+            *self.__get_rheology_props(material))
+
         failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = \
-            self.__getFailureProperties(material)
-        failure_criterion, failure_criterion_value = self.__getFailureCriterionProperties(material)
+            self.__get_failure_props(material)
+        failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
 
-        failure = failure_model(failure_treatment, failure_treatment_value, type_of_enrichment,
-                                lump_mass_matrix, failure_criterion, failure_criterion_value)
+        failure = FailureModel(failure_treatment, failure_treatment_value, type_of_enrichment,
+                               lump_mass_matrix, failure_criterion, failure_criterion_value)
 
         if failure.failure_treatment is not None and failure_criterion is None:
             raise ValueError("Failure criterion expected. "
-                             "No failure criterion is specified or specified criterion not understood")
+                             "No failure criterion is specified or "
+                             "specified criterion not understood")
 
-        # Damage Law-----------------------------------
-        damage = damage_model(*self.__getDamageProperties(material))
+        damage = DamageModel(*self.__get_damage_props(material))
 
         if failure.failure_treatment is not None and damage.cohesive_model is not None:
-            if failure_criterion_value != damage.cohesive_model.cohesive_strength and \
-                            type(failure_criterion) == MaximalStressCriterion:
+            if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
+                    isinstance(failure_criterion, MaximalStressCriterion)):
                 print "Failure criterion value and cohesive strength have different value. " \
                       "This may result in errors in the future"
 
-        # Return ---------------------------------------------------
         return init, behavior, failure, damage
 
-    def __fillInTimeProperties(self):
+    def __fill_in_time_props(self):
         """
         :return: time properties :
             - initial time step
@@ -214,32 +228,32 @@ class DataContainer(object):
         """
         initial_time_step = float(self.__datadoc.find('time-management/initial-time-step').text)
         final_time = float(self.__datadoc.find('time-management/final-time').text)
+        cst_dt = False
         if self.__datadoc.find('time-management/constant-time-step') is not None:
-            cst_dt = True if self.__datadoc.find('time-management/constant-time-step').text == "True" else False
-        else:
-            cst_dt = False
+            cst_dt = self.__datadoc.find('time-management/constant-time-step').text == "True"
         try:
-            time_step_reduction = float(self.__datadoc.find('time-management/time-step-reduction-factor-for-failure').text)
+            time_step_reduction = float(
+                self.__datadoc.find('time-management/time-step-reduction-factor-for-failure').text)
         except AttributeError:
             time_step_reduction = None
         return initial_time_step, final_time, cst_dt, time_step_reduction
 
-    def __fillInOutputProperties(self):
+    def __fill_in_output_props(self):
         """
         :return:
             - number of images
             -cell_number / node_number : cell / node selected for extraction of time history
             - is display of times figures required?
             - list of output database properties
-        :tuple(int, [int], [int], bool, [database_props])
+        :tuple(int, [int], [int], bool, [DatabaseProps])
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
-        dump = True if self.__datadoc.find('output/dump-images').text.lower() == "true" else False
+        dump = self.__datadoc.find('output/dump-images').text.lower() == "true"
 
         # todo : virer ce type de sortie
         try:
-            str_cell_numbers = self.__datadoc.find('output/cell-for-time-figure').text
-            cell_numbers = str_cell_numbers.split(',')
+            cell_numbers = self.__datadoc.find('output/cell-for-time-figure').text
+            cell_numbers = cell_numbers.split(',')
         except ValueError:  # la ligne correspondante ne contient pas de cell id (de type int)
             cell_numbers = None
         except AttributeError:  # la ligne correspondante est absente ou comment�e
@@ -255,25 +269,26 @@ class DataContainer(object):
 
         # Databases
         db_prop_l = []
-        for el in self.__datadoc.iterfind('output/database'):
-            identi = el.find('identifier').text
-            database_path = el.find('path').text
+        for elem in self.__datadoc.iterfind('output/database'):
+            identi = elem.find('identifier').text
+            database_path = elem.find('path').text
             iteration_period, time_period = None, None
             cell_indexes, node_indexes = None, None
-            if el.find('iteration-period') is not None:
-                iteration_period = int(el.find('iteration-period').text)
+            if elem.find('iteration-period') is not None:
+                iteration_period = int(elem.find('iteration-period').text)
             else:
-                time_period = float(el.find('time-period').text)
-            # indices sp�cifiques : pas impl�ment� et pose pb pour reconstruction des champs
-            # if el.find('cell-indexes') is not None:
-            #     cell_indexes = [int(ind) for ind in el.find('cell-indexes').text.split(',')]
-            # if el.find('node-indexes') is not None:
-            #     node_indexes = [int(ind) for ind in el.find('node-indexes').text.split(',')]
-            db_props = database_props(identi, database_path, time_period, iteration_period, cell_indexes, node_indexes)
+                time_period = float(elem.find('time-period').text)
+            # indices spécifiques : pas implémenté et pose pb pour reconstruction des champs
+            # if elem.find('cell-indexes') is not None:
+            #     cell_indexes = [int(ind) for ind in elem.find('cell-indexes').text.split(',')]
+            # if elem.find('node-indexes') is not None:
+            #     node_indexes = [int(ind) for ind in elem.find('node-indexes').text.split(',')]
+            db_props = DatabaseProps(identi, database_path, time_period,
+                                     iteration_period, cell_indexes, node_indexes)
             db_prop_l.append(db_props)
         return number_of_images, dump, cell_numbers, node_numbers, db_prop_l
 
-    def __getInitialValues(self, matter):
+    def __get_initial_values(self, matter):
         """
         Reads the XDATA file and find the initialization quantities for the material matter
         :param matter: material to be considered
@@ -294,15 +309,16 @@ class DataContainer(object):
             temperature = float(coef["initial_temperature"])
             internal_energy = float(coef["initial_internal_energy"])
 
-        yield_stress, shear_modulus = self.__getYieldStressAndShearModulusFromData(matter)
-        return velocity, pressure, temperature, density, internal_energy, yield_stress, shear_modulus
+        yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+        return (velocity, pressure, temperature, density, internal_energy,
+                yield_stress, shear_modulus)
 
-    def __getEquationOfStateProperties(self, matter):
+    def __get_equation_of_state_props(self, matter):
         """
         Creates the equation of state with XDATA input parameters for the material matter
         :param matter: material to be considered
         :type string
-        :return: the equation of state 
+        :return: the equation of state
         :rtype EquationOfState
         """
         repertoire_base = matter + '/equation-of-state/'
@@ -312,34 +328,28 @@ class DataContainer(object):
             with open(json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
-                # Lecture des param�tres
-                czero = float(coef["ref_sound_velocity"])
-                S1 = float(coef["s1"])
-                S2 = float(coef["s2"])
-                S3 = float(coef["s3"])
-                rhozero = float(coef["ref_density"])
-                grunzero = float(coef["coefficient_gruneisen"])
-                b = float(coef["param_b"])
-                ezero = float(coef["ref_internal_energy"])
-            # Cr�ation de l'�quation d'�tat
-            eos = MieGruneisen(czero, S1, S2, S3, rhozero, grunzero, b, ezero)
-        else:
-            raise NotImplementedError("Only MieGruneisen equation of state is implemented for now")
-        return eos
+                # Lecture des paramètres
+                params_key = ("ref_sound_velocity", "s1", "s2", "s3", "ref_density",
+                              "coefficient_gruneisen", "param_b", "ref_internal_energy")
+                params = [float(coef[p]) for p in params_key]
+            # Création de l'équation d'état
+            return MieGruneisen(*params)
+        raise NotImplementedError("Only MieGruneisen equation of state is implemented for now")
 
-    def __getFailureProperties(self, matter):
+    def __get_failure_props(self, matter):
         """
         Creates the failure model with XDATA input parameters for the material matter
         :param matter: material to be considered
         :type string
         :return: has_failure : booleen pour activer la rupture
                 failure_model : mod�le de traitement de la rupture
-                failure_treatment_value : position of disconitnuity in cracked element or imposed pressure
+                failure_treatment_value : position of disconitnuity in cracked element
+                                          or imposed pressure
                 type_of_enrichment : Hansbo
                 lump_mass_matrix : lumping strategy
         :rtype bool, str, float, str, str
         """
-        
+
         repertoire_base = matter + "/failure/failure-treatment/"
 
         failure_treatment = None
@@ -354,28 +364,31 @@ class DataContainer(object):
             failure_treatment_value = float(self.__datadoc.find(repertoire_base + 'value').text)
 
         if failure_treatment == "Enrichment":
-            type_of_enrichment = str(self.__datadoc.find(repertoire_base + 'type-of-enrichment').text)
+            type_of_enrichment = str(
+                self.__datadoc.find(repertoire_base + 'type-of-enrichment').text)
             if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
                 raise ValueError("Unknown enrichment type. = Hansbo")
             else:
-                lump_mass_matrix = str(self.__datadoc.find(repertoire_base + 'lump-mass-matrix').text)
+                lump_mass_matrix = str(
+                    self.__datadoc.find(repertoire_base + 'lump-mass-matrix').text)
                 if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:
-                    print "Don't recognize lumping technique. Only those lumps are possible : menouillard, somme \n" \
-                          "No lumping technique is applied. Mass matrix is consistent"
+                    print ("""Don't recognize lumping technique. """
+                           """Only those lumps are possible : menouillard, somme \n"""
+                           """No lumping technique is applied. Mass matrix is consistent""")
         else:
-            print ("No failure treatment will be applied for {:}".format(matter))
+            print "No failure treatment will be applied for {:}".format(matter)
             failure_treatment_value = 0.
             type_of_enrichment = None
             lump_mass_matrix = None
 
         return failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix
-    
-    def __getFailureCriterionProperties(self, matter):
+
+    def __get_failure_criterion_props(self, matter):
         """
         Creates the failure criterion model with XDATA input parameters for the material matter
         :param matter: material to be considered
         :type string
-        :return: failure_criterion : crit�re de rupture
+        :return: failure_criterion : critère de rupture
                 failure_criterion_value : valeur seuil
         :rtype Criterion, float
         """
@@ -394,14 +407,15 @@ class DataContainer(object):
             elif failure_criterion_name == "MaximalStress":
                 failure_criterion = MaximalStressCriterion(failure_criterion_value)
             else:
-                print("Failure criterion is not in MinimumPressure, Damage, HalfRodComparison, MaximalStress")
+                print("Failure criterion is not in MinimumPressure, "
+                      "Damage, HalfRodComparison, MaximalStress")
                 exit(0)
         except AttributeError:
             pass
 
         return failure_criterion, failure_criterion_value
-        
-    def __getDamageProperties(self, matter):
+
+    def __get_damage_props(self, matter):
         """
         Creates the damage model with XDATA input parameters for the material matter
         :param matter (string): material to be considered
@@ -415,21 +429,26 @@ class DataContainer(object):
         try:
             cohesive_model_name = self.__datadoc.find(repertoire_base + 'name').text
             if cohesive_model_name.lower() not in ["linear", "bilinear", "trilinear"]:
-                raise ValueError("""Le mod�le coh�sif doit �tre parmi linear, bilinear, trilinear""")
+                raise ValueError("""Le modéle cohésif doit être parmi linear, """
+                                 """bilinear, trilinear""")
         except AttributeError:
             return None, ""
         if cohesive_model_name != "":
-            # Donn�es de base :
-            cohesive_strength = float(self.__datadoc.find(repertoire_base + 'coefficients/cohesive-strength').text)
-            critical_separation = float(self.__datadoc.find(repertoire_base + 'coefficients/critical-separation').text)
+            # Données de base :
+            cohesive_strength = float(
+                self.__datadoc.find(repertoire_base + 'coefficients/cohesive-strength').text)
+            critical_separation = float(
+                self.__datadoc.find(repertoire_base + 'coefficients/critical-separation').text)
 
             # Unloading model
             unloading_model = None
-            unloading_model_name = self.__datadoc.find(repertoire_base + 'unloading-model/name').text
+            unloading_model_name = self.__datadoc.find(
+                repertoire_base + 'unloading-model/name').text
             if unloading_model_name.lower() not in ["zeroforceunloading", "progressiveunloading",
                                                     "lossofstiffnessunloading"]:
-                raise ValueError(""" Le mod�le de d�charge doit �tre dans "zeroforceunloading", "progressiveunloading",
-                "lossofstiffnessunloading" """)
+                raise ValueError(""" Le modéle de décharge doit être dans """
+                                 """zeroforceunloading, progressiveunloading, """
+                                 """lossofstiffnessunloading """)
 
             if unloading_model_name.lower() == "zeroforceunloading":
                 slope = float(self.__datadoc.find(repertoire_base + 'unloading-model/slope').text)
@@ -439,29 +458,38 @@ class DataContainer(object):
                 unloading_model = ProgressiveUnloadingModel(slope, cohesive_strength)
             elif unloading_model_name.lower() == "lossofstiffnessunloading":
                 slope = float(self.__datadoc.find(repertoire_base + 'unloading-model/slope').text)
-                unloading_model = LossOfStiffnessUnloadingModel(slope,cohesive_strength)
+                unloading_model = LossOfStiffnessUnloadingModel(slope, cohesive_strength)
 
             if cohesive_model_name.lower() == "bilinear":
-                separation_1 = float(self.__datadoc.find(repertoire_base + 'coefficients/separation-at-point-1').text)
-                contrainte_1 = float(self.__datadoc.find(repertoire_base + 'coefficients/stress-at-point-1').text)
-                cohesive_model = BilinearCohesiveZoneModel(cohesive_strength, separation_1, contrainte_1,
-                                                           critical_separation, unloading_model)
+                separation_1 = float(
+                    self.__datadoc.find(
+                        repertoire_base + 'coefficients/separation-at-point-1').text)
+                contrainte_1 = float(
+                    self.__datadoc.find(repertoire_base + 'coefficients/stress-at-point-1').text)
+                cohesive_model = BilinearCohesiveZoneModel(
+                    cohesive_strength, separation_1, contrainte_1,
+                    critical_separation, unloading_model)
 
             elif cohesive_model_name.lower() == "trilinear":
-                separation_1 = float(self.__datadoc.find(repertoire_base + 'coefficients/separation-at-point-1').text)
-                contrainte_1 = float(self.__datadoc.find(repertoire_base + 'coefficients/stress-at-point-1').text)
-                separation_2 = float(self.__datadoc.find(repertoire_base + 'coefficients/separation-at-point-2').text)
-                contrainte_2 = float(self.__datadoc.find(repertoire_base + 'coefficients/stress-at-point-2').text)
-                cohesive_model = TrilinearCohesiveZoneModel(cohesive_strength, separation_1, contrainte_1,
-                                                           separation_2, contrainte_2,
-                                                           critical_separation, unloading_model)
+                separation_1 = float(self.__datadoc.find(
+                    repertoire_base + 'coefficients/separation-at-point-1').text)
+                contrainte_1 = float(self.__datadoc.find(
+                    repertoire_base + 'coefficients/stress-at-point-1').text)
+                separation_2 = float(self.__datadoc.find(
+                    repertoire_base + 'coefficients/separation-at-point-2').text)
+                contrainte_2 = float(
+                    self.__datadoc.find(repertoire_base + 'coefficients/stress-at-point-2').text)
+                cohesive_model = TrilinearCohesiveZoneModel(
+                    cohesive_strength, separation_1, contrainte_1, separation_2, contrainte_2,
+                    critical_separation, unloading_model)
             else:  # loi lineaire
-                cohesive_model = LinearCohesiveZoneModel(cohesive_strength, critical_separation, unloading_model)
+                cohesive_model = LinearCohesiveZoneModel(
+                    cohesive_strength, critical_separation, unloading_model)
         print "Applying a damage model for " + matter + " which is : " + cohesive_model_name
         print "Unloading model is : " + unloading_model_name
         return cohesive_model, cohesive_model_name
 
-    def __getYieldStressAndShearModulusFromData(self, matter):
+    def __get_yield_stress_and_shear_modulus(self, matter):
         repertoire_base = matter + '/rheology/'
         try:
             json_name = self.__datadoc.find(repertoire_base + 'coefficients').text
@@ -475,7 +503,7 @@ class DataContainer(object):
         shear_modulus = float(coef["shear_modulus"])
         return yield_stress, shear_modulus
 
-    def __getRheologyProperties(self, matter):
+    def __get_rheology_props(self, matter):
         """
         Reads the elasticity parameters for material matter
         :param matter: material to be considered
@@ -488,44 +516,46 @@ class DataContainer(object):
         plasticity_model = None
         plasticity_criterion = None
         repertoire_base = matter + '/rheology/'
-        yield_stress, shear_modulus = self.__getYieldStressAndShearModulusFromData(matter)
+        yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
         try:
-            # Elasticit�
-            elasticity_model_name = str(self.__datadoc.find(repertoire_base + 'elasticity-model').text)
+            # Elasticité
+            elasticity_model_name = str(self.__datadoc.find(
+                repertoire_base + 'elasticity-model').text)
             if elasticity_model_name != "Linear":
-                raise ValueError("Model {:} not implemented. Choose Linear".format(elasticity_model_name))
+                raise ValueError("Model {:} not implemented. Choose Linear".
+                                 format(elasticity_model_name))
             elasticity_model = ConstantShearModulus(shear_modulus)
         except AttributeError:
-            print "Impossible de construire le mod�le d'�lasticit�"
-            pass
+            print "Impossible de construire le modèle d'élasticité"
         try:
-            # Plasticit�
-            plasticity_model_name = str(self.__datadoc.find(repertoire_base + 'plasticity-model').text)
+            # Plasticité
+            plasticity_model_name = str(self.__datadoc.find(
+                repertoire_base + 'plasticity-model').text)
             if plasticity_model_name != "EPP":
-                raise ValueError("Model {:} not implemented. Choose EPP".format(plasticity_model_name))
+                raise ValueError("Model {:} not implemented. Choose EPP".
+                                 format(plasticity_model_name))
             plasticity_model = ConstantYieldStress(yield_stress)
-            plasticity_criterion_name = str(self.__datadoc.find(repertoire_base + 'plasticity-criterion').text)
+            plasticity_criterion_name = str(self.__datadoc.find(
+                repertoire_base + 'plasticity-criterion').text)
             if plasticity_criterion_name == "VonMises":
                 plasticity_criterion = VonMisesCriterion()
         except AttributeError:
             print "Impossible de construire le mod�le de plasticit�"
-            pass
         return elasticity_model, plasticity_model, plasticity_criterion
 
-    def __getMaterialDelimiters(self, matter):
-        repertoire_base = matter + '/init-geometrical-limit/'
-        left = float(self.__datadoc.find(repertoire_base + 'left').text)
-        right = float(self.__datadoc.find(repertoire_base + 'right').text)
-        return left, right
+    def hasExternalSolver(self):  # pylint: disable=invalid-name
+        """
+        Returns True if an external solver is required in the data
+        """
+        return self.__datadoc.find('numeric-parameters/external-solver-library') is not None
 
-    def hasExternalSolver(self):
-        if self.__datadoc.find('numeric-parameters/external-solver-library') is not None:
-            return True
-    
-    def getExternalSolverPath(self):
+    def getExternalSolverPath(self):  # pylint: disable=invalid-name
+        """
+        Returs the external solver required in the data
+        """
         return self.__datadoc.find('numeric-parameters/external-solver-library').text
 
-    def __getBoundaryConditionDefiniton(self, info):
+    def __get_boundary_condition_def(self, info):
         """
         Creates the boundary condition class with pressure law
         :return: pressure_law
@@ -541,8 +571,9 @@ class DataContainer(object):
                 bc_law = ConstantValue(value)
                 bc_law.register_velocity()
             else:
-                raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
-                                 Les possibilit�s sont : (Constant)""".format(info, type_bc))
+                raise ValueError("""Mauvais type de loi de pression en entrée """
+                                 """pour {:} avec un type {:}."""
+                                 """Les possibilit�s sont : (Constant)""".format(info, type_bc))
 
         elif type_bc.lower() == "pressure":
             class_name = str(self.__datadoc.find(info + 'bc-law').text)
@@ -552,40 +583,43 @@ class DataContainer(object):
                 bc_law = ConstantValue(value)
 
             elif class_name.lower() == "twostep":
-                value1 = float(self.__datadoc.find(info + 'value1').text)  # 1st value
-                value2 = float(self.__datadoc.find(info + 'value2').text)  # 2nd value
-                time = float(self.__datadoc.find(info + 'time-activation').text)  # time
-                bc_law = TwoSteps(value1, value2, time)
+                params = [float(self.__datadoc.find(info + tag).text)
+                          for tag in ('value1', 'value2', 'time-activation')]
+                bc_law = TwoSteps(*params)
 
             elif class_name.lower() == "ramp":
-                value1 = float(self.__datadoc.find(info + 'value1').text)
-                value2 = float(self.__datadoc.find(info + 'value2').text)
-                time1 = float(self.__datadoc.find(info + 'time-activation-value1').text)
-                time2 = float(self.__datadoc.find(info + 'time-activation-value2').text)
-                # et une rampe entre time-activation-value1 et time-activation-value2
-                bc_law = Ramp(value1, value2, time1, time2)
+                params = [float(self.__datadoc.find(info + tag).text)
+                          for tag in ('value1', 'value2',
+                                      'time-activation-value-1',
+                                      'time-activation-value-2')
+                         ]
+                bc_law = Ramp(*params)
 
             elif class_name == "marchtable":
-                file = str(self.__datadoc.find(info + 'value').text)
-                bc_law = MarchTable(file)
+                _file = str(self.__datadoc.find(info + 'value').text)
+                bc_law = MarchTable(_file)
 
             elif class_name == "creneauramp":
-                value1 = float(self.__datadoc.find(info + 'initial-value').text)
-                value2 = float(self.__datadoc.find(info + 'plateau-value').text)
-                value3 = float(self.__datadoc.find(info + 'end-value').text)
-                time1 = float(self.__datadoc.find(info + 'start-first-ramp-time').text)
-                time2 = float(self.__datadoc.find(info + 'reach-value2-time').text)
-                time3 = float(self.__datadoc.find(info + 'start-second-ramp-time').text)
-                time4 = float(self.__datadoc.find(info + 'reach-value3-time').text)
-                first_ramp = Ramp(value1, value2, time1, time2)
-                second_ramp = Ramp(value2, value3, time3, time4)
+                f_ramp_tags = ('initial-value', 'plateau-value',
+                               'start-first-ramp-time', 'reach-value2-time')
+                s_ramp_tags = ('plateau-value', 'end-value',
+                               'start-second-ramp-time', 'reach-value3-time')
+                f_ramp_params = [float(self.__datadoc.find(info + tag).text)
+                                 for tag in f_ramp_tags]
+                s_ramp_params = [float(self.__datadoc.find(info + tag).text)
+                                 for tag in s_ramp_tags]
+                first_ramp = Ramp(*f_ramp_params)
+                second_ramp = Ramp(*s_ramp_params)
                 bc_law = SuccessiveRamp(first_ramp, second_ramp)
             else:
-                raise ValueError("""Mauvais type de loi de pression en entr�e pour {:} avec un type {:}.
-                                Les possibilit�s sont : (Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
+                raise ValueError("""Mauvais type de loi de pression en entrée """
+                                 """pour {:} avec un type {:}."""
+                                 """Les possibilités sont : """
+                                 """(Constant|TwoStep|Ramp|MarchTable|CreaneauRamp)"""
                                  .format(info, type_bc))
 
             bc_law.register_pressure()
         else:
-            raise(ValueError, """Mauvais type de CL : les possibilit�s sont (pressure | velocity)""")
+            raise(ValueError, """Mauvais type de CL : les possibilités sont """
+                              """(pressure | velocity)""")
         return bc_law

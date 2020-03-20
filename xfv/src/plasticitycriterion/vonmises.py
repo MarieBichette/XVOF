@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementation of MinimumPressureCriterion class
 """
@@ -11,24 +10,23 @@ class VonMisesCriterion(PlasticityCriterion):
     """
     A plasticity criterion based on Von Mises model
     """
-    def __init__(self):
-        super(VonMisesCriterion, self).__init__()
-
-    def checkCriterion(self, cells, *args, **kwargs):
+    def check_criterion(self, cells):
         """
-        Return the mask of the cells where pressure is below the minimum pressure
+        Return the mask of the cells where the VonMises plasticity criterion is verified
 
         :param cells: cells on which to check the criterion
-        :return: the mask of the cells where plastic criterion is activated
+        :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
-        J2 = compute_J2(cells.deviatoric_stress_new)
-        return J2 > cells.yield_stress.new_value
+        return (compute_J2(cells.deviatoric_stress_new) >
+                cells.yield_stress.new_value)
 
-    def checkCriterion_on_right_part_cells(self, disc, *args, **kwargs):
+    @staticmethod
+    def check_criterion_on_right_part_cells(disc):
         """
-        Return the mask of the cells where pressure is below the minimum pressure
+        Return the mask of the cells where the VonMises plasticity criterion is verified
+
         :param disc: current discontinuity
-        :return: the mask of the cells where pressure is below the minimum pressure
+        :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
-        J2 = compute_J2(disc.additional_dof_deviatoric_stress_new)
-        return J2 > disc.additional_dof_yield_stress.new_value
+        return (compute_J2(disc.additional_dof_deviatoric_stress_new) >
+                disc.additional_dof_yield_stress.new_value)
