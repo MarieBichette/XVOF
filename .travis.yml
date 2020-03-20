@@ -7,4 +7,5 @@ install:
   - pip install .
 # command to run tests
 script:
+  - python pylint-pre-hook.py
   - python -m unittest discover -v
