@@ -8,7 +8,6 @@ import unittest
 import os
 from xvof.src.cell.one_dimension_cell import OneDimensionCell
 from xvof.src.data.data_container import DataContainer
-from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):

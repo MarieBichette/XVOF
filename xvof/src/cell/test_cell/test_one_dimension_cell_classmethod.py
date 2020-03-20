@@ -8,7 +8,6 @@ import unittest
 import os
 from xvof.src.cell.one_dimension_cell import OneDimensionCell
 from xvof.src.data.data_container import DataContainer
-from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):
@@ -29,7 +28,6 @@ class OneDimensionCellTest(unittest.TestCase):
         """
         Test of apply_equation_of_state class method
         """
-        print "Test apply_equation_of_state"
         density_current = np.ones(self.nbr_cells) * 8930.
         pressure_current = np.ones(self.nbr_cells) * 1.e+05
         energy_current = np.ones(self.nbr_cells) * 6.719465
@@ -53,7 +51,6 @@ class OneDimensionCellTest(unittest.TestCase):
         np.testing.assert_allclose(energy_new_value, expected_energy, rtol=1.e-5)
         np.testing.assert_allclose(pressure_new_value, expected_pressure, rtol=1.e-5)
         np.testing.assert_allclose(sound_velocity_new_value, expected_sound_speed)
-        print "__[OK]"
 
     def test_add_elastic_energy_method(self):
         """

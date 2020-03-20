@@ -22,7 +22,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Préparation des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_elasto.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.my_cells = OneDimensionHansboEnrichedCell(1)
@@ -117,46 +117,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         # - valeur champ de pression "à droite" pour disc 1
         exact_field = np.array([1., 1.e+09, 2., 5.e+09])
         np.testing.assert_allclose(self.my_cells.pressure_field, exact_field)
-
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos, mock_disc_list):
-        """
-        Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
-        """
-        # L'option élasticité est désactivée dans le jeu de donnée
-        type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
-
-        # Configuration des mocks
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        mock_eos.side_effect = [[self.my_cells.energy.new_value,
-                                 self.my_cells.pressure.new_value,
-                                 self.my_cells.sound_velocity.new_value],
-                                [self.mock_discontinuity.additional_dof_energy.new_value,
-                                 self.mock_discontinuity.additional_dof_pressure.new_value,
-                                 self.mock_discontinuity.additional_dof_sound_velocity.new_value]]
-        # mock_eos.return_value =
-
-        self.my_cells.compute_enriched_elements_new_pressure(1.)
-
-        # mock_elasto.assert_not_called()
-        #
-        # mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-        #                         self.my_cells.density.current_value, self.my_cells.density.new_value,
-        #                         self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
-        #                         self.my_cells.energy.current_value, self.my_cells.energy.new_value,
-        #                         self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
-        #
-        # mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-        #                         self.mock_discontinuity.additional_dof_density.current_value,
-        #                         self.mock_discontinuity.additional_dof_density.new_value,
-        #                         self.mock_discontinuity.additional_dof_pressure.current_value,
-        #                         self.mock_discontinuity.additional_dof_pressure.new_value,
-        #                         self.mock_discontinuity.additional_dof_energy.current_value,
-        #                         self.mock_discontinuity.additional_dof_energy.new_value,
-        #                         self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
-        #                         self.mock_discontinuity.additional_dof_sound_velocity.new_value)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)

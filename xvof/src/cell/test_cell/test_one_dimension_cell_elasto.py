@@ -12,7 +12,7 @@ from xvof.src.cell.one_dimension_cell import OneDimensionCell
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.data.data_container import DataContainer
 from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
-from xvof.src.cell.test_cell.test_variables import TestVariables
+
 
 class OneDimensionCellTest(unittest.TestCase):
 
@@ -58,7 +58,7 @@ class OneDimensionCellTest(unittest.TestCase):
 
         self.my_cells.compute_new_pressure(mask_classic, dt)
         np.testing.assert_allclose(self.my_cells.pressure.new_value,
-                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]))
+                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]), rtol=1.e-5)
         np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([17.254756,  163.9763, 0., 0.]))
         np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([3948.726929,  3974.84139, 0., 0.]))
 

@@ -10,7 +10,6 @@ import os
 from xvof.src.cell.one_dimension_cell import OneDimensionCell
 from xvof.src.mesh.topology1d import Topology1D
 from xvof.src.data.data_container import DataContainer
-from xvof.src.cell.test_cell.test_variables import TestVariables
 
 
 class OneDimensionCellTest(unittest.TestCase):
@@ -88,8 +87,9 @@ class OneDimensionCellTest(unittest.TestCase):
         self.my_cells.pseudo.new_value = np.zeros([self.nbr_cells])
 
         self.my_cells.compute_new_pressure(mask, dt)
-        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([2000., 4000, 8000., 4000.]))
-        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([2000., 4000, 8000., 4000.]))
+        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([487.203942, 94.056026, 28.379115, 0.]))
+        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([1.103734e+09, -4.640127e+08,
+                                                                               -2.323423e+08, 0.]), rtol=1e-5)
 
     def test_compute_new_pseudo(self):
         """
