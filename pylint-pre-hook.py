@@ -49,7 +49,7 @@ def get_git_cmd():
     cmd = "git diff --name-only --diff-filter=AM HEAD...$TRAVIS_BRANCH"
     # else:
     #     cmd = "git diff --staged --name-only HEAD"
-    print "cmd is {:s}".format(cmd)
+    print ("cmd is {:s}".format(cmd))
     return cmd.split()
 
 
