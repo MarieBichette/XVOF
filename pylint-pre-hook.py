@@ -44,7 +44,7 @@ def _is_python_script(filename):
 
 def get_git_cmd():
     """Return the git command to detect the changes between branch and master"""
-    is_travis_env = getenv("$TRAVIS") is not None
+    is_travis_env = getenv("TRAVIS") is not None
     if is_travis_env:
         cmd = "git diff --name-only --diff-filter=AM origin/master-new"
     else:
