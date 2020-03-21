@@ -4,12 +4,12 @@ git:
 python:
   - "2.7"
 # command to install dependencies
-pre-install:
-  - git remote set-branches --add origin master-new
-  - git fetch
 install:
   - pip install -r requirements.txt
   - pip install .
+before_script:
+  - git remote set-branches --add origin master-new
+  - git fetch
 # command to run tests
 script:
   - python pylint-pre-hook.py
