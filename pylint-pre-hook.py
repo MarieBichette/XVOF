@@ -46,9 +46,10 @@ def get_git_cmd():
     """Return the git command to detect the changes between branch and master"""
     # is_travis_env = getenv("$TRAVIS_BRANCH") is not None
     # if is_travis_env:
-    cmd = "git diff --name-only --diff-filter=AM HEAD master-new"
+    cmd = "git diff --name-only --diff-filter=AM HEAD...$TRAVIS_BRANCH"
     # else:
     #     cmd = "git diff --staged --name-only HEAD"
+    print "cmd is {:s}".format(cmd)
     return cmd.split()
 
 
