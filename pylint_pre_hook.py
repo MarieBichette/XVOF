@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 """Git pre-commit hook to run pylint on python files.
 
-Slight variation of: 
+Slight variation of:
     https://gist.github.com/nivbend/7e0e306a98138916b3c9#file-run_pylint-py
-    
+
 Copy it under .git/hooks/pre-commit at the root of your project.
 """
 
@@ -21,7 +21,7 @@ PYLINTRC = ".pylintrc"
 
 def _print_error(message):
     """Print an error message to stderr."""
-    print(message, file = stderr)
+    print(message, file=stderr)
 
 def _is_python_script(filename):
     """Return true for *.py files and python scripts ("#! /path/to/python")."""
