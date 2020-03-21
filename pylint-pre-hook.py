@@ -11,6 +11,7 @@ from __future__ import print_function
 from subprocess import check_output, CalledProcessError
 from sys import stderr
 from os.path import isfile
+from os import getenv
 
 (SUCCESS,
  GIT_DIFF_ERROR,
@@ -40,12 +41,22 @@ def _is_python_script(filename):
 
     return True
 
+
+def get_git_cmd():
+    """Return the git command to detect the changes between branch and master"""
+    is_travis_env = os.getenv("$TRAVIS_BRANCH") is not None
+    if is_travis_env:
+        cmd = "git diff --name-only --diff-filter=AM HEAD...$TRAVIS_BRANCH"
+    else:
+        cmd = "git diff --staged --name-only HEAD"
+    return cmd.split()
+
+
 def run():
     """Verify changed python files using pylint."""
     # Get all changed files' paths.
     try:
-        # changed_files = check_output(["git", "diff", "--staged", "--name-only", "HEAD", ])
-        changed_files = check_output(["git", "diff", "--staged", "--name-only", "HEAD", ])
+        changed_files = check_output(get_git_cmd())
     except CalledProcessError:
         _print_error("Couldn't get list of changed files")
         return GIT_DIFF_ERROR
