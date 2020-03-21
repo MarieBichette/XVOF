@@ -4,6 +4,9 @@ git:
 python:
   - "2.7"
 # command to install dependencies
+pre-install:
+  - git remote set-branches --add origin master-new
+  - git fetch
 install:
   - pip install -r requirements.txt
   - pip install .
