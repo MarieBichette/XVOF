@@ -7,6 +7,7 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install .
+  - pip install pylint
 # command to run tests
 script:
   - python pylint-pre-hook.py
