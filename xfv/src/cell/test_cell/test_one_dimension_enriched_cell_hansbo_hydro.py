@@ -1,28 +1,28 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Cell module unit tests
 """
-import numpy as np
 import unittest
-import mock
 import os
-from xfv.src.mesh.topology1d import Topology1D
+import mock
+
+import numpy as np
+
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
 class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
-
+    """Unittests of the OneDimensionHansboEnrichedCell class"""
     def setUp(self):
         """
-        Pr�paration des tests
+        Unit tests setup
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.my_cells = OneDimensionHansboEnrichedCell(1)
@@ -46,7 +46,8 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         # configuration d'un mock 'discontinuity'
         config = {'mask_in_nodes': np.array([True, False]),
                   'mask_out_nodes': np.array([False, True]),
-                  'position_in_ruptured_element': DataContainer().material_target.failure_model.failure_treatment_value,
+                  'position_in_ruptured_element': (
+                      DataContainer().material_target.failure_model.failure_treatment_value),
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': np.array([0]),
                   'plastic_cells': False,
@@ -72,25 +73,28 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'right_part_size.current_value': np.array([0.3]),
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
-                  }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+                 }
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+                             spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
         DataContainer.clear()
-        pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionCell, "apply_equation_of_state", spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos, mock_disc_list):
+    @mock.patch.object(OneDimensionCell, "apply_equation_of_state",
+                       spec=classmethod, new_callable=mock.MagicMock)
+    @mock.patch.object(OneDimensionCell, "add_elastic_energy_method",
+                       spec=classmethod, new_callable=mock.MagicMock)
+    def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos):
         """
-        Test de la m�thode compute_enriched_elements_new_pressure pour Hansbo
+        Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """
-        # L'option �lasticit� est d�sactiv�e dans le jeu de donn�e
-        type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
+        # No elasticity in the data file
+        type(DataContainer().material_target.constitutive_model).elasticity_model = (
+            mock.PropertyMock(return_value=None))
 
-        # Configuration des mocks
+        # Mocks configuration
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_eos.side_effect = [[self.my_cells.energy.new_value,
                                  self.my_cells.pressure.new_value,
@@ -104,18 +108,20 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
 
         mock_elasto.assert_not_called()
 
-        mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-                                self.my_cells.density.current_value, self.my_cells.density.new_value,
-                                self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
-                                self.my_cells.energy.current_value, self.my_cells.energy.new_value,
-                                self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
+        mock_eos.assert_any_call(
+            self.my_cells, DataContainer().material_target.constitutive_model.eos,
+            self.my_cells.density.current_value, self.my_cells.density.new_value,
+            self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
+            self.my_cells.energy.current_value, self.my_cells.energy.new_value,
+            self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
 
-        mock_eos.assert_any_call(self.my_cells, DataContainer().material_target.constitutive_model.eos,
-                                self.mock_discontinuity.additional_dof_density.current_value,
-                                self.mock_discontinuity.additional_dof_density.new_value,
-                                self.mock_discontinuity.additional_dof_pressure.current_value,
-                                self.mock_discontinuity.additional_dof_pressure.new_value,
-                                self.mock_discontinuity.additional_dof_energy.current_value,
-                                self.mock_discontinuity.additional_dof_energy.new_value,
-                                self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
-                                self.mock_discontinuity.additional_dof_sound_velocity.new_value)
+        mock_eos.assert_any_call(
+            self.my_cells, DataContainer().material_target.constitutive_model.eos,
+            self.mock_discontinuity.additional_dof_density.current_value,
+            self.mock_discontinuity.additional_dof_density.new_value,
+            self.mock_discontinuity.additional_dof_pressure.current_value,
+            self.mock_discontinuity.additional_dof_pressure.new_value,
+            self.mock_discontinuity.additional_dof_energy.current_value,
+            self.mock_discontinuity.additional_dof_energy.new_value,
+            self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
+            self.mock_discontinuity.additional_dof_sound_velocity.new_value)
