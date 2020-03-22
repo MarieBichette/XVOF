@@ -14,20 +14,26 @@ from xfv.src.data.data_container import DataContainer
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
-class OneDimensionCellTest(unittest.TestCase):
+class OneDimensionCellElastoTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
-
         self.mask = np.array([True, True, False, False])
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_compute_new_pressure_with_elasticity(self):
@@ -67,7 +73,7 @@ class OneDimensionCellTest(unittest.TestCase):
         Test de la m�thode compute_shear_modulus
         """
         self.my_cells.compute_shear_modulus()
-        expected_value = self.test_datacontainer.material_target.initial_values.shear_modulus_init
+        expected_value = DataContainer().material_target.initial_values.shear_modulus_init
         np.testing.assert_allclose(self.my_cells.shear_modulus.new_value, np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_yield_stress(self):
@@ -75,7 +81,7 @@ class OneDimensionCellTest(unittest.TestCase):
         Test de la m�thode compute_yield_stress
         """
         self.my_cells.compute_yield_stress()
-        expected_value = self.test_datacontainer.material_target.initial_values.yield_stress_init
+        expected_value = DataContainer().material_target.initial_values.yield_stress_init
         np.testing.assert_allclose(self.my_cells.yield_stress.new_value, np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_complete_stress_tensor(self):

@@ -7,24 +7,32 @@ import numpy as np
 import unittest
 import mock
 import os
-from xvof.src.mesh.topology1d import Topology1D
-from xvof.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xvof.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
-from xvof.src.cell.one_dimension_cell import OneDimensionCell
-from xvof.src.data.data_container import DataContainer
-from xvof.src.discontinuity.discontinuity import Discontinuity
-from xvof.src.rheology.constantshearmodulus import ConstantShearModulus
+from xfv.src.mesh.topology1d import Topology1D
+from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
+from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
+from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.data.data_container import DataContainer
+from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
-class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
+class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
         """
         Préparation des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
 
@@ -73,11 +81,10 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
@@ -87,9 +94,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option élasticité est désactivée dans le jeu de donnée
-        type(DataContainer().material_target.constitutive_model).elasticity_model = mock.PropertyMock(return_value=None)
-
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_eos.side_effect = [[self.my_cells.energy.new_value,

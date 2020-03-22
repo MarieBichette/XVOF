@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
 Implementing Singleton metaclass
-From https://stackoverflow.com/questions/50065276/clearing-a-metaclass-singleton"
+From Python Cookbook 3rd edition Chapter 9.13 "Using metaclass to control instance creation"
 
 >>> class Spam(object):
 ...     __metaclass__ = Singleton
@@ -19,19 +19,24 @@ True
 
 
 class Singleton(type):
-    _instances = {}
+    """
+    A metaclass implementing singleton pattern
+    """
 
-    # Each of the following functions use cls instead of self
-    # to emphasize that although they are instance methods of
-    # Singleton, they are also *class* methods of a class defined
-    # with Singleton
-    def __call__(cls, *args, **kwargs):
-        if cls not in Singleton._instances:
-            Singleton._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return Singleton._instances[cls]
+    def __init__(self, *args, **kwargs):
+        self.__instance = None
+        super(Singleton, self).__init__(*args, **kwargs)
 
-    def clear(cls):
-        try:
-            del Singleton._instances[cls]
-        except KeyError:
-            pass
+    def __call__(self, *args, **kwargs):
+        if self.__instance is None:
+            self.__instance = super(Singleton, self).__call__(*args, **kwargs)
+        return self.__instance
+
+    def clear(self):
+        del self.__instance
+        self.__instance = None
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
