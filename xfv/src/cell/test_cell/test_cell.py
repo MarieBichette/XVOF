@@ -69,7 +69,7 @@ class CellTest(unittest.TestCase):
 
     def test_str(self):
         """
-        Teste la réponse de __str__ de la classe Cell
+        Teste la rï¿½ponse de __str__ de la classe Cell
         """
         message = self.my_cells.__str__()
         answer = "Number of cells: 3"
@@ -91,19 +91,19 @@ class CellTest(unittest.TestCase):
         with captured_output() as (out, err):
             self.my_cells.print_infos()
             output = out.getvalue().strip()
-            answer = """Cell 
-            ==> number of cells = 3
-            ==> size at t = [ 0.  0.  0.]
-            ==> size at t+dt = [ 0.015  0.01   0.05 ]
-            ==> density at t = [ 8129.  8129.  8129.]
-            ==> density at t+dt = [ 8500.  4500.  9500.]
-            ==> pressure at t = [ 100006.2096  100006.2096  100006.2096]
-            ==> pressure at t+dt = [  2.00000000e+09  -5.00000000e+08   1.25000000e+09]
-            ==> internal energy at t = [ 7.689  7.689  7.689]
-            ==> internal energy at t+dt = [-1000000.    50000.   150000.]
-            ==> sound velocity at t = [ 0.  0.  0.]
-            ==> sound velocity at t+dt = [ 440.  210. -110.]"""
-            self.assertEqual(output.split(), answer.split())
+        answer = ("Cell " + os.linesep +
+        "==> number of cells = 3" + os.linesep +
+        "==> size at t = [0. 0. 0.]" + os.linesep +
+        "==> size at t+dt = [0.015 0.01  0.05 ]" + os.linesep +
+        "==> density at t = [8129. 8129. 8129.]" + os.linesep +
+        "==> density at t+dt = [8500. 4500. 9500.]" + os.linesep +
+        "==> pressure at t = [100006.2096 100006.2096 100006.2096]" + os.linesep +
+        "==> pressure at t+dt = [ 2.00e+09 -5.00e+08  1.25e+09]" + os.linesep +
+        "==> internal energy at t = [7.689 7.689 7.689]" + os.linesep +
+        "==> internal energy at t+dt = [-1000000.    50000.   150000.]" + os.linesep +
+        "==> sound velocity at t = [0. 0. 0.]" + os.linesep +
+        "==> sound velocity at t+dt = [ 440.  210. -110.]")
+        self.assertEqual(output.split('\n'), answer.split('\n'))
 
 if __name__ == "__main__":
     unittest.main()
