@@ -75,8 +75,3 @@ tags
 
 # Ignore hdf5 files
 *.hdf5
-
-#Ignore results repositories
-xvof/RESULTS
-xvof/0_*
-xvof/3_impact_TA*

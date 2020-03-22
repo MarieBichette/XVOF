@@ -10,18 +10,25 @@ from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 
 
-class OneDimensionCellTest(unittest.TestCase):
+class OneDimensionCellEPPTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_apply_plastic_corrector_on_deviatoric_stress_tensor(self):
@@ -33,13 +40,13 @@ class OneDimensionCellTest(unittest.TestCase):
                                                          [5e+8, -2.5e+8, -2.5e+8],
                                                          [1.e+2, -5e+1, -5e+1],
                                                          [4e+9, -2e+9, -2e+9]])
-        Y = self.test_datacontainer.material_target.initial_values.yield_stress_init
+        Y = DataContainer().material_target.initial_values.yield_stress_init
         self.my_cells.yield_stress.current_value = np.ones(self.nbr_cells) * Y
         self.my_cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask)
-        expected_value =  np.array([[8.000000e+07,  -4.000000e+07,  -4.000000e+07],
-                                    [8.000000e+07,  -4.000000e+07,  -4.000000e+07],
-                                    [1.e+2, -5e+1, -5e+1],
-                                    [4e+9, -2e+9, -2e+9]])
+        expected_value = np.array([[8.000000e+07,  -4.000000e+07,  -4.000000e+07],
+                                [8.000000e+07,  -4.000000e+07,  -4.000000e+07],
+                                [1.e+2, -5e+1, -5e+1],
+                                [4e+9, -2e+9, -2e+9]])
         np.testing.assert_allclose(self.my_cells.deviatoric_stress_new, expected_value)
 
     def test_compute_equivalent_plastic_strain_rate(self):
@@ -52,8 +59,8 @@ class OneDimensionCellTest(unittest.TestCase):
                                                              [5e+8, -2.5e+8, -2.5e+8],
                                                              [1.e+2, -5e+1, -5e+1],
                                                              [4e+9, -2e+9, -2e+9]])
-        G = self.test_datacontainer.material_target.initial_values.shear_modulus_init
-        Y = self.test_datacontainer.material_target.initial_values.yield_stress_init
+        G = DataContainer().material_target.initial_values.shear_modulus_init
+        Y = DataContainer().material_target.initial_values.yield_stress_init
         self.my_cells.shear_modulus.current_value = np.ones(self.nbr_cells) * G
         self.my_cells.yield_stress.current_value = np.ones(self.nbr_cells) * Y
         self.my_cells.compute_equivalent_plastic_strain_rate(mask, dt)

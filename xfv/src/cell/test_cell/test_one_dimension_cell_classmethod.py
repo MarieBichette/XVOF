@@ -10,18 +10,25 @@ from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 
 
-class OneDimensionCellTest(unittest.TestCase):
+class OneDimensionCellClassMethodTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_apply_equation_of_state(self):

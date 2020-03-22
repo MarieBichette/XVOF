@@ -16,16 +16,24 @@ from xfv.src.data.data_container import DataContainer
 
 # TODO : move to the package solver !
 
-class OneDimensionCellTest(unittest.TestCase):
+class OneDimensionCellInternalLibTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+
+        pass
 
     def setUp(self):
-        data_file_path = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml"))
-        self.test_datacontainer = DataContainer(data_file_path)
         self.test_cell = Cell(3)
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_compute_new_pressure_internal(self):

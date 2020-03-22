@@ -6,7 +6,6 @@ Cell module unit tests
 import unittest
 import os
 import mock
-
 import numpy as np
 
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
@@ -15,16 +14,23 @@ from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
+class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
     """Unittests of the OneDimensionHansboEnrichedCell class"""
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
+
     def setUp(self):
         """
         Unit tests setup
         """
-        data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
 
@@ -79,7 +85,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
-        DataContainer.clear()
+        pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionCell, "apply_equation_of_state",
@@ -90,11 +96,7 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """
-        # No elasticity in the data file
-        type(DataContainer().material_target.constitutive_model).elasticity_model = (
-            mock.PropertyMock(return_value=None))
-
-        # Mocks configuration
+        # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_eos.side_effect = [[self.my_cells.energy.new_value,
                                  self.my_cells.pressure.new_value,

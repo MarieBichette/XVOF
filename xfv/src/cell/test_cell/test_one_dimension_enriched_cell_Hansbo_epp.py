@@ -16,15 +16,23 @@ from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
-class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
+class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
         """
         Pr�paration des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
         self.my_cells._external_library = None
@@ -78,7 +86,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_initialize_additional_dof(self):
@@ -126,10 +133,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Test de la m�thode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option �lasticit� est activ�e dans le jeu de donn�e
-        type(DataContainer().material_target.constitutive_model).elasticity_model = \
-            mock.PropertyMock(return_value=ConstantShearModulus)
-
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_apply_eos.return_value = self.my_cells.energy.new_value, self.my_cells.pressure.new_value,\

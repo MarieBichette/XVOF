@@ -77,7 +77,6 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
         print "Opening data file : {:s}".format(os.path.abspath(datafile_path))
         self.project_dir = os.path.commonprefix([os.path.abspath(datafile_path),
                                                  os.path.abspath(__file__)])
-        # self.project_dir = os.path.split(os.path.dirname(os.path.abspath(datafile_path)))[0]
         self.__datadoc = et.parse(datafile_path)
         self.numeric = NumericalProps(*self.__fill_in_numerical_props())
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
