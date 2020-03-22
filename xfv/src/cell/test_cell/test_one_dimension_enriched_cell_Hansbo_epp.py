@@ -16,15 +16,23 @@ from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
-class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
+class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
+        DataContainer(data_file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
 
     def setUp(self):
         """
         Pr�paration des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
         self.my_cells._external_library = None
@@ -74,11 +82,10 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
                   'left_part_size.new_value': np.array([0.4]),
                   'right_part_size.new_value': np.array([0.6]),
                   }
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_initialize_additional_dof(self):
@@ -97,13 +104,13 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         config = {'label': 1,
                   'ruptured_cell_id': np.array([0]),
                   'additional_dof_pressure.current_value': np.array([1.e+09])}
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_1 = patcher.start()
         # configuration de la deuxi�me discontinuit�
         config = {'label': 2,
                   'ruptured_cell_id': np.array([1]),
                   'additional_dof_pressure.current_value': np.array([5.e+09])}
-        patcher = mock.patch('xvof.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
         discontinuity_2 = patcher.start()
 
         # on a besoin de faire comme si on avait 2 cells classiques qui rompent
@@ -126,10 +133,6 @@ class OneDimensionEnrichedHansboCellTest(unittest.TestCase):
         """
         Test de la m�thode compute_enriched_elements_new_pressure pour Hansbo
         """
-        # L'option �lasticit� est activ�e dans le jeu de donn�e
-        type(DataContainer().material_target.constitutive_model).elasticity_model = \
-            mock.PropertyMock(return_value=ConstantShearModulus)
-
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         mock_apply_eos.return_value = self.my_cells.energy.new_value, self.my_cells.pressure.new_value,\

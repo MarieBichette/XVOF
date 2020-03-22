@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Classe de test du module element1dupgraded
 """
@@ -14,21 +14,30 @@ from xfv.src.discontinuity.discontinuity import Discontinuity
 
 class OneDimensionEnrichedCellTest(unittest.TestCase):
 
-    def setUp(self):
-        """ Pr�paration des tests """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
-        self.nbr_cells = 4
+    @classmethod
+    def setUpClass(cls):
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
+        DataContainer(data_file_path)
 
+    @classmethod
+    def tearDownClass(cls):
+        DataContainer.clear()
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
+        pass
+
+    def setUp(self):
+        """
+        Test preparation
+        """
+        self.nbr_cells = 4
         self.my_elements = OneDimensionEnrichedCell(self.nbr_cells)
 
     def tearDown(self):
-        DataContainer.clear()
         pass
 
     def test_classical(self):
         """
-        Test la propri�t� classical
+        Test of the property lassical
         """
         np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
@@ -37,7 +46,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def test_enriched(self):
         """
-        Test la propri�t� enriched
+        Test of the property enriched
         """
         np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
@@ -46,7 +55,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def test_compute_new_left_right_size(self):
         """
-        Test de la m�thode compute_new_left_right_size
+        Test of compute_new_left_right_size
         """
         disc = mock.MagicMock(Discontinuity)
         type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.0]))
@@ -61,7 +70,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     def test_compute_new_left_right_density(self):
         """
-        Test de la m�thode compute_new_left_right_density
+        Test of compute_new_left_right_density
         """
         disc = mock.MagicMock(Discontinuity)
         type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.]))
