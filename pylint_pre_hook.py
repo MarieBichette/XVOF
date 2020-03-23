@@ -75,7 +75,7 @@ def run():
         try:
             check_output(cmd + changed_files)
         except CalledProcessError as error:
-            _print_error(error.output)
+            _print_error(error.output.decode('utf-8'))
             _print_error("pylint returned errors, aborting commit.")
             return PYLINT_ERRORS
 
