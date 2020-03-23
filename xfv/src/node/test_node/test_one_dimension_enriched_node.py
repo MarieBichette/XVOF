@@ -31,22 +31,26 @@ class OneDimensionEnrichedNodeTest(unittest.TestCase):
         self.my_nodes = OneDimensionEnrichedNode(4, self.poz_init, self.vit_init, section=1.0e-06)
         self.my_nodes._classical = np.array([True, False, False, True])
 
+        # configuration propre d'un mock 'discontinuity'
+        config = {'mask_in_nodes': np.array([False, True, False, False]),
+                  'mask_out_nodes': np.array([False, False, True, False]),
+                  'additional_dof_velocity_current': np.array([[1., ], [1., ]]),
+                  'additional_dof_force': np.array([[1., ], [2., ]]),
+                  'label': 1
+                  }
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        self.mock_discontinuity = patcher.start()
+
     def tearDown(self):
         DataContainer.clear()
         pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_additional_dof_new_velocity(self, mock_disc_list):
-        disc = mock.MagicMock(Discontinuity)
-        type(disc).mask_in_nodes= mock.PropertyMock(return_value=np.array([False, True, False, False]))
-        type(disc).mask_out_nodes = mock.PropertyMock(return_value=np.array([False, False, True, False]))
-        type(disc).additional_dof_velocity_current = mock.PropertyMock(return_value=np.array([[1., ], [1., ]]))
-        type(disc).additional_dof_force = mock.PropertyMock(return_value=np.array([[1., ], [2., ]]))
-        Discontinuity.discontinuity_list.return_value = [disc]
-
+        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         inv_mass_additional = np.array([[2., 0.],[0., 2.]])
         self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
-        np.testing.assert_array_almost_equal(disc._additional_dof_velocity_new, np.array([[3., ], [5., ]]))
+        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new, np.array([[3., ], [5., ]]))
 
 
 if __name__ == '__main__':

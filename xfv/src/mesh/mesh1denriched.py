@@ -227,7 +227,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type delta_t: float
         """
         self.cells.compute_new_pseudo(delta_t, self.cells.classical)
-
         self.cells.compute_enriched_elements_new_pseudo(delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -236,8 +235,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Computation of nodes forces at t+dt
         """
         self.nodes.compute_new_force(self.__topology, self.cells.stress_xx)
-
-        self.nodes.compute_enriched_nodes_new_force(self.__topology, self.cells.stress_xx)
+        self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cohesive_forces(self):
