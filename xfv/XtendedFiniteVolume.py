@@ -1,3 +1,4 @@
+# XtendedFiniteVolume doesn't respect the style but we don't care pylint: disable=invalid-name
 #!/usr/bin/env python2.7
 """
 todo: to complete
@@ -303,7 +304,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
         my_mesh.compute_new_nodes_forces()
-        my_mesh.compute_new_cohesive_forces(time)
+        my_mesh.compute_new_cohesive_forces()
         # ---------------------------------------------#
         #         LOADING                              #
         # ---------------------------------------------#

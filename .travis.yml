@@ -1,10 +1,14 @@
 language: python
+git:
+  depth: false
 python:
   - "2.7"
 # command to install dependencies
 install:
   - pip install -r requirements.txt
   - pip install .
+  - pip install pylint
 # command to run tests
 script:
+  - python pylint_pre_hook.py
   - python -m unittest discover -v

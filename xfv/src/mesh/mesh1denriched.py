@@ -1,6 +1,6 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Base class for one dimensional mesh
+Base class for one dimensional enriched mesh
 """
 
 import numpy as np
@@ -14,11 +14,10 @@ from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact import ContactModel
 
 # noinspection PyArgumentList
-class Mesh1dEnriched(object):
+class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
     """
     This class defines a one dimensional mesh with potential enrichment
     """
-
     # noinspection PyArgumentList
     def __init__(self, initial_coordinates, initial_velocities, enrichment_type):
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
@@ -35,12 +34,14 @@ class Mesh1dEnriched(object):
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
-        if enrichment_type == "Hansbo":
-            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
-                                                section=DataContainer().geometric.section)
+        if self.enrichment_type == "Hansbo":
+            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
+                                                        initial_velocities,
+                                                        section=DataContainer().geometric.section)
         else:
-            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates, initial_velocities,
-                                                section=DataContainer().geometric.section)
+            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
+                                                        initial_velocities,
+                                                        section=DataContainer().geometric.section)
 
         # ---------------------------------------------
         # Cells creation
@@ -71,7 +72,11 @@ class Mesh1dEnriched(object):
         self.__plastic_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
 
         # Initialize cell fields
-        self.cells.initialize_cell_fields(self.nodes.nodes_in_target, self.nodes.nodes_in_projectile, self.__topology)
+        self.cells.initialize_cell_fields(self.nodes.nodes_in_target,
+                                          self.nodes.nodes_in_projectile,
+                                          self.__topology)
+
+        self.mask_last_nodes_of_ref = None
 
     @property
     def topology(self):
@@ -90,18 +95,19 @@ class Mesh1dEnriched(object):
         """
         Nodal mass computation
         """
-        self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, self.nb_nodes_per_cell)
+        self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass,
+                                             self.nb_nodes_per_cell)
 
         if self.mass_matrix.correction_on_cell_500 is not None:
             print 'Matrix correction on last cells compatible with {} analyis'.format(
                 self.mass_matrix.correction_on_cell_500)
+            # identifier derniers éléments de la barre de référence
             self.mask_last_nodes_of_ref = np.zeros(
-                [self.nodes.number_of_nodes], dtype=bool) # identifier derniers �l�ments de la barre de r�f�rence
+                [self.nodes.number_of_nodes], dtype=bool)
             self.mask_last_nodes_of_ref[-2] = True
             self.mask_last_nodes_of_ref[-1] = True
             self.mass_matrix.compute_correction_mass_matrix_for_cell_500(
                 self.cells.mass, self.mask_last_nodes_of_ref, self.__topology)
-            self.inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_velocities(self, delta_t):
@@ -110,31 +116,37 @@ class Mesh1dEnriched(object):
         :var delta_t: float, time step
         """
         # ddl classiques (loin de l'enrichissement)
-        self.nodes.compute_new_velocity(delta_t, self.nodes.enrichment_not_concerned,
-                                        self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
+        self.nodes.compute_new_velocity(
+            delta_t, self.nodes.enrichment_not_concerned,
+            self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
         if self.mass_matrix.correction_on_cell_500 is not None:
+            inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
             # on applique la correction sur les derniers �l�ments de la matrice de r�f�rence :
-            self.nodes.apply_correction_reference_bar(delta_t, self.inv_mass_matrix_correction,
-                                                      self.mass_matrix.inverse_mass_matrix[self.mask_last_nodes_of_ref],
-                                                      mask=self.mask_last_nodes_of_ref)
+            self.nodes.apply_correction_reference_bar(
+                delta_t, inv_mass_matrix_correction,
+                self.mass_matrix.inverse_mass_matrix[self.mask_last_nodes_of_ref],
+                mask=self.mask_last_nodes_of_ref)
             #############
         for disc in Discontinuity.discontinuity_list():
             # Calcul des nouvelles matrices de masse enrichies pour les nouvelles discontinuit�s
             if not disc.mass_matrix_updated:
                 # Construction de la matrice masse enrichie et de son inverse
-                disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology, self.cells.mass)
+                disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology,
+                                                                       self.cells.mass)
                 if self.enrichment_type == "Hansbo":
                     disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
                         "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
-                    # r�arrangement de la matrice de masse pour avoir strucure (classiq/enr/couplage)
+                    # réarrangement de la matrice de masse pour avoir
+                    # strucure (classiq/enr/couplage)
                     disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
                 disc.mass_matrix_enriched.print_enriched_mass_matrix()
                 disc.has_mass_matrix_been_computed()
 
             # Calcul des vitesses ddl classique et enrichi � l'endroit de l'enrichissement
-            self.nodes.compute_new_velocity(delta_t, disc.mask_disc_nodes,
-                                            disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
+            self.nodes.compute_new_velocity(
+                delta_t, disc.mask_disc_nodes,
+                disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
             self.nodes.compute_additional_dof_new_velocity(
                 delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
 
@@ -146,7 +158,7 @@ class Mesh1dEnriched(object):
 
     def compute_contact(self, delta_t):
         """
-
+        :todo: to fill in
         :return:
         """
         for disc in Discontinuity.discontinuity_list():
@@ -196,13 +208,14 @@ class Mesh1dEnriched(object):
         self.cells.compute_enriched_elements_new_density()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def compute_new_cells_pressures(self, dt):
+    def compute_new_cells_pressures(self, dt):  # dt name is ok pylint: disable=invalid-name
         """
         Computation of cells pressure at t+dt
         :var dt: time step
         :type dt: float
         """
-        self.cells.compute_new_pressure(np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=dt)
+        self.cells.compute_new_pressure(
+            np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=dt)
 
         self.cells.compute_enriched_elements_new_pressure(dt)
 
@@ -225,13 +238,15 @@ class Mesh1dEnriched(object):
         self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def compute_new_cohesive_forces(self, time):
+    def compute_new_cohesive_forces(self):
         """
         Computation of cohesive forces at t+dt
         """
         if DataContainer().material_target.damage_model.cohesive_model is not None:
-            if DataContainer().material_target.failure_model.failure_treatment == "ImposedPressure":
-                self.nodes.compute_cohesive_stress(self.__ruptured_cells, self.__topology)
+            # Commented because pylint warns that there is no compute_cohesive_stress method
+            # for OneDimensionHansboEnrichedNode class and that's true
+            # if DataContainer().material_target.failure_model.failure_treatment == "ImposedPressure":  pylint:disable=line-too-long
+            #     self.nodes.compute_cohesive_stress(self.__ruptured_cells, self.__topology)
             if DataContainer().material_target.failure_model.failure_treatment == "Enrichment":
                 self.nodes.compute_enriched_nodes_cohesive_forces()
 
@@ -252,10 +267,12 @@ class Mesh1dEnriched(object):
         :param delta_t : float, time step staggered
         :param mask: array of bool to select cells of interest
         """
-        mask = np.logical_and(mask, self.cells.classical) # sert � identifier si on est dans le  projectile ou dans la cible
+        # Sert à identifier si on est dans le  projectile ou dans la cible
+        mask = np.logical_and(mask, self.cells.classical)  # pylint: disable=assignment-from-no-return
         self.cells.compute_deviatoric_stress_tensor(mask, self.__topology,
                                                     self.nodes.xtpdt, self.nodes.upundemi, delta_t)
-        self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt, self.nodes.upundemi, delta_t)
+        self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
+                                                             self.nodes.upundemi, delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def assemble_complete_stress_tensor(self):
@@ -275,11 +292,11 @@ class Mesh1dEnriched(object):
         # return self.cells.dt.min()
 
         initial_time_step = DataContainer().time.initial_time_step
-        dt = initial_time_step
+        dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
         reduction_factor = DataContainer().time.time_step_reduction_factor_for_failure
         if reduction_factor is not None:
             if self.cells.enriched.any():
-                dt = dt/reduction_factor
+                dt = dt/reduction_factor  # dt name is ok pylint: disable=invalid-name
         return dt
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -292,7 +309,8 @@ class Mesh1dEnriched(object):
         :type pressure: float
         """
         if surface.lower() not in ("left", "right"):
-            raise(ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+            raise(ValueError("""One dimensional mesh : only """
+                             """'left' or 'right' boundaries are possibles!"""))
         if surface.lower() == 'left':
             self.nodes.apply_pressure(0, pressure)
         else:
@@ -304,7 +322,8 @@ class Mesh1dEnriched(object):
         Apply a given velocity on left or right boundary
         """
         if surface.lower() not in ("left", "right"):
-            raise (ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+            raise ValueError("""One dimensional mesh : only """
+                             """'left' or 'right' boundaries are possibles!""")
         if surface.lower() == 'left':
             self.nodes.apply_velocity_boundary_coundition(0, velocity)
         else:
@@ -320,7 +339,7 @@ class Mesh1dEnriched(object):
         new_cracked_cells_in_target = rupture_criterion.checkCriterion(self.cells)
         # correction car le projectile ne peut pas rompre
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
-        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)
+        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):
@@ -330,10 +349,10 @@ class Mesh1dEnriched(object):
         :type plastic_criterion: PlasticityCriterion
         :param mask: array of bool to select cells of interest
         """
-        self.__plastic_cells[mask] = plastic_criterion.checkCriterion(self.cells)[mask]
+        self.__plastic_cells[mask] = plastic_criterion.check_criterion(self.cells)[mask]
 
         for disc in Discontinuity.discontinuity_list():
-            disc.plastic_cells = plastic_criterion.checkCriterion_on_right_part_cells(disc)
+            disc.plastic_cells = plastic_criterion.check_criterion_on_right_part_cells(disc)
 
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -343,10 +362,11 @@ class Mesh1dEnriched(object):
         :var treatment: rupture treatment
         :type treatment: RuptureTreatment
         """
-        treatment.applyTreatment(self.cells, self.__ruptured_cells, self.nodes, self.__topology, time)
+        treatment.applyTreatment(self.cells, self.__ruptured_cells,
+                                 self.nodes, self.__topology, time)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def apply_plasticity_treatment(self, dt):
+    def apply_plasticity_treatment(self, dt):  # dt is ok. pylint: disable=invalid-name
         """
         Apply plasticity treatment if criterion is activated :
         - compute plastic deviatoric stress tensor
@@ -354,12 +374,13 @@ class Mesh1dEnriched(object):
         - compute yield stress
         :param dt : float, time step
         """
-        # La m�thode apply_plastic_corrector_on_deviatoric_stress_tensor modifie la variable dev_stress_new et doit
-        # donc �tre appel�e � la fin de l'�tape du calcul de plasticit� pour conserver la pr�diction �lastique dans
-        # le calcul du taux de d�formation plastique, plasticit� cumul�e, ...
+        # La méthode apply_plastic_corrector_on_deviatoric_stress_tensor modifie
+        # la variable dev_stress_new et doit donc être appelée à la fin de
+        # l'étape du calcul de plasticité pour conserver la prédiction élastique dans
+        # le calcul du taux de déformation plastique, plasticité cumulée, ...
 
         # Cells plastic classical
-        mask = np.logical_and(self.cells.classical, self.__plastic_cells)
+        mask = np.logical_and(self.cells.classical, self.__plastic_cells)  # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
         self.cells.compute_plastic_strain_rate_tensor(mask, dt)
         self.cells.compute_equivalent_plastic_strain_rate(mask, dt)
@@ -369,8 +390,8 @@ class Mesh1dEnriched(object):
         self.cells.compute_enriched_yield_stress()
         self.cells.compute_enriched_plastic_strain_rate(self.__plastic_cells, dt)
         self.cells.compute_enriched_equivalent_plastic_strain_rate(self.__plastic_cells, dt)
-        self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self.__plastic_cells)
-
+        self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(
+            self.__plastic_cells)
 
     @property
     def velocity_field(self):
@@ -391,8 +412,9 @@ class Mesh1dEnriched(object):
         """
         Cells coordinates (coordinates of cells centers)
         """
-        # Pour reconstruire le champ de coordonn�es des cells, les ruptured cells des discontinuit�s doivent �tre
-        # tri�es par cell id pour savoir comment g�rer le d�calage
+        # Pour reconstruire le champ de coordonnées des cells,
+        # les ruptured cells des discontinuités doivent être
+        # triées par cell id pour savoir comment gérer le décalage
         modified_coord = np.zeros([len(Discontinuity.discontinuity_list()), 3])
         # modified_coord est un array qui contient ruptured_cell_id, left_size, right_size
         for disc in Discontinuity.discontinuity_list():
@@ -404,9 +426,10 @@ class Mesh1dEnriched(object):
         modified_coord = np.sort(modified_coord, 0)
 
         res = self.cells.get_coordinates(self.cells.number_of_cells, self.__topology, self.nodes.xt)
-        # On s�pare  les deux �tapes de construction de cell_coordinates pour ne pas �craser les
-        # r�sultats au fur et � mesure
-        # Etape 1 : modification des longueurs de cell qui sont rompues : taille non rompue ->taille gauche
+        # On sépare  les deux étapes de construction de cell_coordinates
+        # pour ne pas écraser les résultats au fur et à mesure
+        # Etape 1 : modification des longueurs de cell qui sont rompues :
+        # taille non rompue ->taille gauche
         ligne_indice_cell = 0
         for indice_cell_rompue in modified_coord[:, 0]:
             res[int(indice_cell_rompue)] = modified_coord[ligne_indice_cell, 1]
@@ -414,9 +437,10 @@ class Mesh1dEnriched(object):
         # Etape 2 : insertion des tailles droites
         ligne_indice_cell = 0
         for indice_cell_rompue in modified_coord[:, 0]:
-            res = np.insert(res, int(indice_cell_rompue) + ligne_indice_cell + 1, modified_coord[ligne_indice_cell, 2])
+            res = np.insert(res, int(indice_cell_rompue) + ligne_indice_cell + 1,
+                            modified_coord[ligne_indice_cell, 2])
             ligne_indice_cell += 1
-        return res 
+        return res
 
     @property
     def pressure_field(self):

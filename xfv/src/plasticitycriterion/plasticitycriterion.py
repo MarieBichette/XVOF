@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing the PlasticityCriterion abstract base class
 """
@@ -12,14 +11,22 @@ class PlasticityCriterion(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        pass
-
+    @staticmethod
     @abstractmethod
-    def checkCriterion(self, cells, *args, **kwargs):
+    def check_criterion(cells):
         """
-        Check of the plasticity criterion on the cells in arguments
+        Check the plasticity criterion on the cells in arguments
 
         :param cells: cells on which to check the criterion
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def check_criterion_on_right_part_cells(disc):
+        """
+        Check the plasticity criterion on the discontinuity in arguments
+
+        :param disc: discontinuity on which to check the criterion
         """
         pass
