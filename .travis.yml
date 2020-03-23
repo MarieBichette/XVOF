@@ -5,10 +5,15 @@ python:
   - "2.7"
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
   - pip install .
-  - pip install pylint
 # command to run tests
-script:
-  - python pylint_pre_hook.py
-  - python -m unittest discover -v
+jobs:
+  include:
+    - stage: "Lint"
+      name: "pylint"
+      before_script: pip install pylint
+      script: python pylint_pre_hook.py
+    - stage: "Tests"
+      name: "Unit tests"
+      before_script: pip install mock
+      script: python -m unittest discover -v

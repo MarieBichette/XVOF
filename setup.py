@@ -2,21 +2,7 @@
 """
 Setup script for XtendedFiniteVolume project
 """
-
-from distutils.core import setup
-import os
-import os.path
-
-
-def find_packages():
-    """
-    Return the list of all packages
-    """
-    packages = []
-    for (dirpath, _, _) in os.walk('xfv'):
-        if os.path.exists(os.path.join(dirpath, '__init__.py')):
-            packages.append(dirpath.replace('/', '.'))
-    return packages
+from setuptools import setup, find_packages
 
 
 setup(name='XtendedFiniteVolume',
@@ -28,5 +14,9 @@ setup(name='XtendedFiniteVolume',
       maintainer_email='guillaume.peillex@gmail.com',
       url='https://github.com/hippo91/XVOF',
       packages=find_packages(),
-      scripts=['xfv/XtendedFiniteVolume.py']
+      scripts=['xfv/XtendedFiniteVolume.py'],
+      install_requires=['h5py',
+                        'lxml',
+                        'matplotlib',
+                        'numpy']
      )
