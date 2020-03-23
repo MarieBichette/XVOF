@@ -28,6 +28,11 @@ class DiscontinuityTest(unittest.TestCase):
         self.mask_out = np.array([False, True, False, False])
         self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2)
 
+    def tearDown(self):
+        DataContainer.clear()
+        return super(DiscontinuityTest, self).tearDown()
+
+
     # def test_label(self):
     #     """
     #     Teste l'accesseur label de la classe Discontinuity

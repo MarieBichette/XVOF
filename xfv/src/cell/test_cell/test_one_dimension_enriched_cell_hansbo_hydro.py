@@ -130,3 +130,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
             self.mock_discontinuity.additional_dof_energy.new_value,
             self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
             self.mock_discontinuity.additional_dof_sound_velocity.new_value)
+
+
+if __name__ == "__main__":
+    unittest.main()
