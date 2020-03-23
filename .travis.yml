@@ -20,7 +20,7 @@ jobs:
         - pip install pytest
         - pip install pytest-cov
         - pip install coveralls
-      script: pytest --cov=xfv/
+      script: PYTHONPATH=$(pwd) pytest --cov=xfv/
       after_success: coveralls
 stages:
   - Tests
