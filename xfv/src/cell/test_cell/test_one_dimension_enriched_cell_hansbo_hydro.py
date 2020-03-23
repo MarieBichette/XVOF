@@ -93,7 +93,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
     @mock.patch.object(OneDimensionCell, "add_elastic_energy_method",
                        spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto,
-                                                                       mock_eos, mock_disc):
+                                                                       mock_eos, mock_disc):  #pylint: disable=unused-argument
         """
         Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """
@@ -110,8 +110,6 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         self.my_cells.compute_enriched_elements_new_pressure(1.)
 
         mock_elasto.assert_not_called()
-
-        mock_disc.assert_not_called()
 
         mock_eos.assert_any_call(
             self.my_cells, DataContainer().material_target.constitutive_model.eos,
