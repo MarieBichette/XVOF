@@ -31,7 +31,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
 
     def setUp(self):
         """
-        Préparation des tests
+        Prï¿½paration des tests
         """
         self.my_cells = OneDimensionHansboEnrichedCell(1)
         self.my_cells._classical = np.array([False])
@@ -92,7 +92,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
     @mock.patch.object(OneDimensionCell, "add_elastic_energy_method", spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto, mock_eos, mock_disc_list):
         """
-        Test de la méthode compute_enriched_elements_new_pressure pour Hansbo
+        Test de la mï¿½thode compute_enriched_elements_new_pressure pour Hansbo
         """
         # Configuration des mocks
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
@@ -123,3 +123,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                                 self.mock_discontinuity.additional_dof_energy.new_value,
                                 self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
                                 self.mock_discontinuity.additional_dof_sound_velocity.new_value)
+
+
+if __name__ == "__main__":
+    unittest.main()
