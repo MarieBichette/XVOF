@@ -20,7 +20,7 @@ def compute_wilkins_mass_matrix(topology, cell_mass_vector, node_number_by_cell_
         """
     nbr_nodes = len(topology.cells_in_contact_with_node)
     mass_matrix = np.zeros([nbr_nodes, 1], dtype=np.float64, order='C')
-    for ind_node in xrange(nbr_nodes):
+    for ind_node in range(nbr_nodes):
         neighboring_cells = topology.getCellsInContactWithNode(ind_node)
         # Index -1 => unexistant cell
         neighboring_cells = neighboring_cells[neighboring_cells != -1]

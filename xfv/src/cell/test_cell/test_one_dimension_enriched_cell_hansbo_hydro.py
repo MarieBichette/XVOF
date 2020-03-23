@@ -25,7 +25,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         DataContainer.clear()
-        print "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
 
     def setUp(self):
         """

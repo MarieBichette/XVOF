@@ -67,19 +67,19 @@ msg += " Si analysis = diff : " \
 analysis = None
 
 if len(sys.argv) not in [2, 5]:
-    print msg
+    print(msg)
     exit(0)
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 else: # vraie simulation : on lit lest arguments données par l'utilisateur
     try:
         analysis = sys.argv[1]
         if analysis not in ['single', 'compare', 'diff', 'compare_with_A3']:
-            print msg
-            print("Type d'analysis {:s} inconnu!".format(analysis))
+            print(msg)
+            print(("Type d'analysis {:s} inconnu!".format(analysis)))
             os._exit(0)
 
         field_list = sys.argv[2].split(',')
@@ -89,7 +89,7 @@ else: # vraie simulation : on lit lest arguments données par l'utilisateur
         id_item_list = [int(id_item) for id_item in id_item_list]
 
     except:
-        print msg
+        print(msg)
         raise
 
 case_list = sys.argv[4].split(',')
@@ -99,7 +99,7 @@ case_ref_choice = case_list[0]  # pas utile pour une comparaison single mais on 
 if analysis in ['diff']:
     # Pour une courbe d'erreur, la référence est donnée par le premier cas renseigné
     if len(case_list) < 2:
-        print "Impossible de faire une analyse en erreur (diff) si il n'y a pas au moins 2 cas renseignés"
+        print("Impossible de faire une analyse en erreur (diff) si il n'y a pas au moins 2 cas renseignés")
         exit(0)
     case_ref_choice = case_list[0]
     case_list = case_list[1:]
@@ -119,15 +119,15 @@ if analysis=="compare_with_A3":
 # Run user instruction (analysis)
 # -----------------------------------------
 for case in case_list:
-    print "-------------------------------"
-    print case.case_name
+    print("-------------------------------")
+    print(case.case_name)
     item = field_list[0].application
 
     for field in field_list:
-        print field.title
+        print(field.title)
 
         for id_item in id_item_list:
-            print "item : {:}".format(id_item)
+            print("item : {:}".format(id_item))
 
             fig_manager = TimeFigureManager(case, item, id_item, data_file_name=file_name, case_ref=case_ref_choice)
             fig_tools = TimeFigureTools(case, item, id_item, data_file_name=file_name)
@@ -146,8 +146,8 @@ for case in case_list:
                 plt.legend(loc=4)
 
             elif analysis == 'diff':
-                print "Reference case is {}".format(case_ref_choice.case_name)
-                print "Post treating data for case : {:}".format(case.label)
+                print("Reference case is {}".format(case_ref_choice.case_name))
+                print("Post treating data for case : {:}".format(case.label))
                 fig_manager.plot_error_vs_time(field, compute_error_index=option)
                 # set_acceptance_criterion(item, id_item, 0., 5., 1.e-4)
                 plt.legend(loc=4)

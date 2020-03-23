@@ -66,15 +66,15 @@ class TimeFigureManager:
         error_table = 0
 
         if compute_error_index == 0:
-            print "Compute absolute error"
+            print("Compute absolute error")
             error_table = np.abs(item_field - ref_item_field)
 
         if compute_error_index == 1:
-            print "Compute erreur adimensionn�e par max du champ (en valeur absolue)"
+            print("Compute erreur adimensionn�e par max du champ (en valeur absolue)")
             error_table = (np.abs(item_field - ref_item_field)) / max(np.abs(ref_item_field - ref_item_field[0]))
 
         if compute_error_index == 2:
-            print "Compute relative error"
+            print("Compute relative error")
             error_table = (np.abs(item_field - ref_item_field)) / np.abs(ref_item_field)
 
         return error_table

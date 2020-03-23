@@ -38,7 +38,7 @@ class NewtonRaphson(NewtonRaphsonBase):
         var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
 
         # Newton's parameters initialization
-        not_conv = np.array([True for i in xrange(len(var_i))])  # Convergence criterion cell by cell
+        not_conv = np.array([True for i in range(len(var_i))])  # Convergence criterion cell by cell
         nit = 0  # Number of iterations
         res = 0.  # result
         delta = 0.  # increment

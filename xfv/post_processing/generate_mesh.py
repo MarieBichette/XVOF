@@ -31,11 +31,11 @@ def generate_mesh(path, user_arg):
     for data in enumerate(user_arg):
         length = data[1][0]
         nb_mailles = data[1][1]
-        print "length = " + str(length) + " = nb mailles " + str(nb_mailles)
+        print("length = " + str(length) + " = nb mailles " + str(nb_mailles))
         bloc = np.linspace(total_length, total_length + length, int(nb_mailles) + 1)
 
         with open(meshfile, 'a') as f:
-            for i in xrange(int(nb_mailles)):
+            for i in range(int(nb_mailles)):
                 i += 1  # astuce pour pas écrire le premier noeud (qui est déjà écrit) pour éviter les doublons
                 index_node = total_nb_mailles + i
                 x = bloc[i]
@@ -45,7 +45,7 @@ def generate_mesh(path, user_arg):
         total_length += length
         total_nb_mailles += int(nb_mailles)
 
-    print "Generating mesh with {:} elements in repository {:}".format(total_nb_mailles, path)
+    print("Generating mesh with {:} elements in repository {:}".format(total_nb_mailles, path))
 
 
 if __name__ == '__main__':
@@ -56,7 +56,7 @@ if __name__ == '__main__':
            "contenant un bloc d'1m à 100 mailles et un bloc de 50 cm à 3 mailles"
 
     if (len(sys.argv) < 2):
-        print msg
+        print(msg)
         os._exit(0)
 
     #  Lecture des données :
@@ -64,13 +64,13 @@ if __name__ == '__main__':
     nb_blocs = len(sys.argv) - 2  # 0eme argument = nom de la méthode, 1er argument et rep, les données commenncent à partir du 2ème argument
     user_data = np.zeros([nb_blocs, 2])
 
-    for i in xrange(nb_blocs):
+    for i in range(nb_blocs):
         arg = sys.argv[i + 2].split("/")
         user_data[i, 0] = arg[0]
         user_data[i, 1] = arg[1]
 
     generate_mesh(path, user_data)
-    print "Done !"
+    print("Done !")
 
 
     # TA 5

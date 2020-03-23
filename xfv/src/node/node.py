@@ -165,7 +165,7 @@ class Node(object):
         message += "==> vitesse à t+1/2 = {}\n".format(self.upundemi[index])
         message += "==> masse = {:5.4g}\n".format(self.masse[index])
         message += "==> force = {}".format(self.force[index])
-        print message
+        print(message)
 
     def compute_new_coodinates(self, delta_t):
         """
@@ -198,4 +198,4 @@ class Node(object):
 
 
 if __name__ == "__main__":
-    print "Ceci est uniquement un module!"
+    print("Ceci est uniquement un module!")

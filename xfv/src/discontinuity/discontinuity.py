@@ -40,7 +40,7 @@ class Discontinuity(object):
         self._discontinuity_position = discontiuity_position_in_ruptured_element
         self.__mass_matrix_updated = False
         self.__initialisation = False
-        print "Building discontinuity number {:d}".format(self.__label)
+        print("Building discontinuity number {:d}".format(self.__label))
         # Additional dof representing either the enriched Heaviside value or
         # the field value in the right part of enriched element.
         self._additional_dof_velocity_current = np.zeros([2, 1])

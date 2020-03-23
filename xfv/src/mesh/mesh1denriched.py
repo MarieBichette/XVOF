@@ -99,8 +99,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                                              self.nb_nodes_per_cell)
 
         if self.mass_matrix.correction_on_cell_500 is not None:
-            print 'Matrix correction on last cells compatible with {} analyis'.format(
-                self.mass_matrix.correction_on_cell_500)
+            print('Matrix correction on last cells compatible with {} analyis'.format(
+                self.mass_matrix.correction_on_cell_500))
             # identifier derniers éléments de la barre de référence
             self.mask_last_nodes_of_ref = np.zeros(
                 [self.nodes.number_of_nodes], dtype=bool)
@@ -309,8 +309,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type pressure: float
         """
         if surface.lower() not in ("left", "right"):
-            raise(ValueError("""One dimensional mesh : only """
-                             """'left' or 'right' boundaries are possibles!"""))
+            raise ValueError
         if surface.lower() == 'left':
             self.nodes.apply_pressure(0, pressure)
         else:

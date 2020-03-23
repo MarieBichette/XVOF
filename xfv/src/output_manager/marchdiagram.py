@@ -2,7 +2,7 @@
 """
 A script writing a march diagram after exploitation of the output database
 """
-from __future__ import print_function
+
 import numpy as np
 from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 

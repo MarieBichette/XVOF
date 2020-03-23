@@ -56,11 +56,11 @@ else:
 # Run user instruction (analysis)
 # -----------------------------------------
 for case in case_list:
-    print "---------------------------"
+    print("---------------------------")
     case = CaseManager().find_case(case)
-    print case.case_name
+    print(case.case_name)
     path_to_db = os.path.join(case.directory_name, "all_fields.hdf5")
-    print path_to_db
+    print(path_to_db)
     my_hd = OutputDatabaseExploit(path_to_db)
 
     time = np.array(my_hd.saved_times)

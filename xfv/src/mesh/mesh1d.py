@@ -75,8 +75,8 @@ class Mesh1d(object):
         self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass, self.nb_nodes_per_cell)
 
         if self.mass_matrix.correction_on_cell_500 is not None:
-            print 'applying mass matrix correction on last cells compatible with {} analyis'.format(
-                self.mass_matrix.correction_on_cell_500)
+            print('applying mass matrix correction on last cells compatible with {} analyis'.format(
+                self.mass_matrix.correction_on_cell_500))
             self.mask_last_nodes_of_ref = np.empty([self.nodes.number_of_nodes], dtype=bool)
             self.mask_last_nodes_of_ref[:] = False  # mask pour identifier derniers �l�ments de la barre de r�f�rence
             self.mask_last_nodes_of_ref[-2] = True
@@ -199,7 +199,7 @@ class Mesh1d(object):
         :type pressure: float
         """
         if surface.lower() not in ("left", "right"):
-            raise (ValueError("One dimensional mesh : only 'left' or 'right' boundaries are possibles!"))
+            raise ValueError
         if surface.lower() == 'left':
             self.nodes.apply_pressure(0, pressure)
         else:

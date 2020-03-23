@@ -62,11 +62,11 @@ msg += "On pose la question si on souhaite afficher les données expérimentales a
        "(adresse du fichier dans le code)"
 
 if len(sys.argv) != 2:
-    print msg
+    print(msg)
     exit(0)
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 # choix_exp = raw_input("Voulez vous tracer les résultats expérimentaux du fichier {:} ? (y/n) ".format(exp_data))
@@ -86,13 +86,13 @@ if choix_exp == "y":
 # Run user instruction (analysis)
 # -----------------------------------------
 for case in case_list:
-    print "-------------------------------"
-    print case.case_name
+    print("-------------------------------")
+    print(case.case_name)
     # exp_result.plot_hugoniot(case)
 
     # Tracé des données numériques
     path_to_hdf5_db = os.path.join(case.directory_name, hdf5_band)
-    print "Read hdf5 data in file {:}".format(path_to_hdf5_db)
+    print("Read hdf5 data in file {:}".format(path_to_hdf5_db))
 
     hdf5_data = read_database_in_array(path_to_hdf5_db, id_item, "NodeVelocity", 1)
     time = hdf5_data[:, 0]
@@ -103,7 +103,7 @@ for case in case_list:
     np.savetxt(os.path.join(case.directory_name, "vitesse_surface_libre.dat"), hdf5_data)
 
     plt.figure(VelocityField.colonne_history)
-    case_label = u"{:}".format(case.label)
+    case_label = "{:}".format(case.label)
     plt.plot((time - time_0) * 1.e+06, velocity, color=case.color, marker=case.marker, label=case_label, linestyle=case.linestyle)
     # plt.plot((time[mask] - time_0) * 1.e+06, velocity[mask], color=case.color, marker=case.marker, label=case.label)
 

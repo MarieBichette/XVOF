@@ -40,11 +40,11 @@ msg += "- -h ou --help pour afficher l'aide\n"
 msg += "Pour une analyse error_profile, le premier cas donné est considéré comme la référence\n"
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 if len(sys.argv) != 5:
-    print msg
+    print(msg)
     exit(0)
 
 # check type of analysis value
@@ -70,7 +70,7 @@ if analysis == "error_profile":
     # le premier cas donné est considéré comme la référence
     case_ref = case_list[0]
     case_list = case_list[1:]
-    print "Reference case is {:}".format(case_ref.case_name)
+    print("Reference case is {:}".format(case_ref.case_name))
 
 
 # -----------------------------------------
@@ -92,7 +92,7 @@ for my_case in case_list:
     path_to_db = os.path.join(case.directory_name, "all_fields.hdf5")
 
     for time in time_list:
-        print "------- Infos time = " + str(time) + "------"
+        print("------- Infos time = " + str(time) + "------")
         for field in field_list:
             id_fig += 1
 
@@ -170,7 +170,7 @@ for my_case in case_list:
                 if adimensionne_erreur:
                     max_ref = max(abs(field_value_ref - field_value_init))
                     # correspond à l'amplitude maximale du choc dans le profil
-                    print "Adimensionnement de l'erreur par la valeur constante {:} : {:}".format(field, max_ref)
+                    print("Adimensionnement de l'erreur par la valeur constante {:} : {:}".format(field, max_ref))
                     erreur_interp_adim = error_interp / max_ref
                     plt.ylabel("Erreur adimensionnee avec le max du choc")
 

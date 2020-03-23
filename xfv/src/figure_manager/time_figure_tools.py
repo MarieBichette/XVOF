@@ -56,7 +56,7 @@ class TimeFigureTools:
         # import ipdb ; ipdb.set_trace()
         if self.data_file.split('.')[-1] == "dat":
             history_file = os.path.join(self.history_directory, self.data_file)
-            print "Read data in {:}".format(history_file)
+            print("Read data in {:}".format(history_file))
             reading = np.loadtxt(history_file, dtype='string', skiprows=2)
             time = reading[:, 0]
             field = reading[:, field.colonne_history]
@@ -66,7 +66,7 @@ class TimeFigureTools:
             field = field.title  # compatibilit� des deux noms de champs
             path_to_db = os.path.join(self.history_directory, self.data_file)
             item_history = read_database_in_array(path_to_db, self.id_number, field)
-            print "Read data in {:}".format(path_to_db)
+            print("Read data in {:}".format(path_to_db))
 
         else:
             raise ValueError(""" Wrong file extension specified """)
@@ -81,8 +81,8 @@ class TimeFigureTools:
         elif self.item == "node":
             self._field_list = node_field_list
         else:
-            print "Wrong type parameter in function plot_time_figure call." \
-                  + os.linesep + "Only -cell- or -node- are possible"
+            print("Wrong type parameter in function plot_time_figure call." \
+                  + os.linesep + "Only -cell- or -node- are possible")
         return self._field_list
 
     @property

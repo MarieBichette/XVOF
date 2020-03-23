@@ -3,7 +3,7 @@
 Different utilities for testing
 """
 from contextlib import contextmanager
-from StringIO import StringIO
+from io import StringIO
 import sys
 
 @contextmanager

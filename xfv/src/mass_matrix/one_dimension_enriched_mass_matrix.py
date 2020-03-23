@@ -26,7 +26,7 @@ class OneDimensionEnrichedMassMatrix(object):
         """
         for name in sub_matrix_names:
             self._enriched_mass_matrix += getattr(self, name)
-        print "Numerical inverse of mass matrix"
+        print("Numerical inverse of mass matrix")
         self._inv_enriched_mass_matrix = inverseMasse(self._enriched_mass_matrix)
 
     @property

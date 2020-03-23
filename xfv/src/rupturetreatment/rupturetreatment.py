@@ -5,12 +5,10 @@ Defining an interface for rupture treatments
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureTreatment(object):
+class RuptureTreatment(object, metaclass=ABCMeta):
     """
     An interface for rupture treatments
     """
-    # Nécessaire pour spécifier l'interface
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def applyTreatment(self, cells, ruptured_cells, *args, **kwargs):

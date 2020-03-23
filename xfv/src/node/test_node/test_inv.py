@@ -12,7 +12,7 @@ class InvMatrixTest(unittest.TestCase):
     """This class tests the matrix inversion process"""
     def setUp(self):
         self._test_matrix = np.array([[1, 2], [1, 4]])
-        print self._test_matrix
+        print(self._test_matrix)
 
     def test_inverse_matrice(self):
         """Test the inverse of a matrix"""

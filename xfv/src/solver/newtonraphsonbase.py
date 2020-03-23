@@ -6,13 +6,10 @@ Classe de base définissant un solveur non linéaire 1D de type Newton-Raphson
 from abc import ABCMeta, abstractmethod
 
 
-class NewtonRaphsonBase(object):
+class NewtonRaphsonBase(object, metaclass=ABCMeta):
     """
     Une classe de base pour les solveurs non linéaire 1D de type Newton-Raphson
     """
-    # pylint: disable=abstract-class-not-used
-    # Nécessaire pour spécifier l'interface
-    __metaclass__ = ABCMeta
     #
 
     def __init__(self, function_to_vanish, nb_iterations_max, increment_method):

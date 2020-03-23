@@ -7,7 +7,7 @@ Slight variation of:
 Copy it under .git/hooks/pre-commit at the root of your project.
 """
 
-from __future__ import print_function
+
 from subprocess import check_output, CalledProcessError
 from sys import stderr
 from os.path import isfile
@@ -15,7 +15,7 @@ from os import getenv
 
 (SUCCESS,
  GIT_DIFF_ERROR,
- PYLINT_ERRORS) = range(3)
+ PYLINT_ERRORS) = list(range(3))
 
 PYLINTRC = ".pylintrc"
 

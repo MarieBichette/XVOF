@@ -23,7 +23,7 @@ class FieldManager(OrderedDict):
         :param key: name of the field
         :param value: Field object
         """
-        if key not in self.keys() or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
+        if key not in list(self.keys()) or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
             super(FieldManager, self).__setitem__(key, value)
         else:
             raise KeyError("Le champ {:s} existe d�j� dans le gestionnaire!".format(key))
@@ -42,12 +42,12 @@ class FieldManager(OrderedDict):
         """
         Turn all classical fields into enriched ones
         """
-        for name, field in self.items():
+        for name, field in list(self.items()):
             self[name] = EnrichedField(size, field.current_value, field.new_value)
 
     def incrementFields(self):
         """
         Increment all the fields registered in the manager
         """
-        for field in self.values():
+        for field in list(self.values()):
             field.increment_values()

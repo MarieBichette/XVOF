@@ -34,7 +34,7 @@ class OutputDatabase(object):
         # except TypeError:
         #     import ipdb; ipdb.set_trace()
         ds[...] = values
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             ds.attrs[k] = v
 
     def close(self):

@@ -35,11 +35,11 @@ msg += "- une liste des cas à traiter (séparés par une virgule, sans espace, Non
 msg += "- -h ou --help pour afficher l'aide\n"
 
 if len(sys.argv) != 2:
-    print msg
+    print(msg)
     exit(0)
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 case_list = sys.argv[1].split(',')
@@ -67,7 +67,7 @@ for case in case_list:
     force_vecteur_temps = np.zeros([my_hd.nb_saved_times, nb_disc])
 
     # Dissipation modèle cohésif
-    for index_temps in xrange(my_hd.nb_saved_times):
+    for index_temps in range(my_hd.nb_saved_times):
         t = my_hd.saved_times[index_temps]
         # cracked_cell_id, ouverture, force, mask_existance = my_hd.extract_fields_for_cohesive_zone_model(t)
         # On récupère au temps t l'ouverture et la force de chaque discontinuité qui existe
@@ -81,7 +81,7 @@ for case in case_list:
 
 
 
-    for index_temps in xrange(my_hd.nb_saved_times):
+    for index_temps in range(my_hd.nb_saved_times):
         t = my_hd.saved_times[index_temps]
         longueur_mailles = my_hd.get_cells_true_size_at_time(t)
         # Incrémente Dissipation pseudo-viscosité

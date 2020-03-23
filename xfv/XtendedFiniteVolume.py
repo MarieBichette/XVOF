@@ -57,10 +57,10 @@ def __init_velocity(nodes, data):
     except AttributeError:
         vitesse_cible = 0
 
-    print "Projectile velocity initialized to : {:} m/s".format(vitesse_projectile)
+    print("Projectile velocity initialized to : {:} m/s".format(vitesse_projectile))
     nodes.upundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
     nodes.umundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
-    print "Target velocity initialized to : {:} m/s".format(vitesse_cible)
+    print("Target velocity initialized to : {:} m/s".format(vitesse_cible))
     nodes.upundemi[nodes.nodes_in_target, 0] = vitesse_cible
     nodes.umundemi[nodes.nodes_in_target, 0] = vitesse_cible
 
@@ -77,8 +77,8 @@ def __init_velocity(nodes, data):
         vitesse_interface = 0.5 * (vitesse_cible + vitesse_projectile)
         nodes.upundemi[node_interface, 0] = vitesse_interface
         nodes.umundemi[node_interface, 0] = vitesse_interface
-        print ("Interface velocity initialized to : {:} m/s (node {:})"
-               .format(vitesse_interface, node_interface))
+        print(("Interface velocity initialized to : {:} m/s (node {:})"
+               .format(vitesse_interface, node_interface)))
 
 
 def __init_time_figure_plot(output_data, path):
@@ -149,7 +149,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     path = sys.argv[1]
     data = DataContainer(os.path.join(path, "XDATA.xml"))
     meshfile = os.path.join(path, "mesh.txt")
-    print "Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path)))
+    print("Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path))))
 
     # ---- # TIME MANAGEMENT
     final_time = data.time.final_time
@@ -169,7 +169,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         rupture_treatment = EnrichElement(
             data.material_target.failure_model.failure_treatment_value)
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
-        print "Enrichment method : {}".format(type_of_enrichment)
+        print("Enrichment method : {}".format(type_of_enrichment))
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
@@ -201,7 +201,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     my_mesh.compute_cells_sizes()
     my_mesh.compute_cells_masses()
     my_mesh.compute_nodes_masses()
-    print "CALCULUS LAUNCHED!"
+    print("CALCULUS LAUNCHED!")
     compute_time = 0.
 
     # ************************************************* #
@@ -222,7 +222,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
                """ a time step of {:15.9g} seconds""".
                format(step, simulation_time, dt))
-        print msg
+        print(msg)
 
         # ---------------------------------------------#
         #                OUTPUT MANAGEMENT             #
@@ -318,7 +318,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         dt_crit = my_mesh.compute_new_time_step()
         dt = min(dt, dt_crit)  # pylint: disable=invalid-name
         if dt != dt_crit:
-            print "Reduction of the time step after failure. New time step is " + str(dt_crit)
+            print("Reduction of the time step after failure. New time step is " + str(dt_crit))
 
         # ---------------------------------------------#
         #                INCREMENTATION                #
@@ -334,14 +334,14 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         loop_end_time = time.time()
         compute_time += loop_end_time - loop_begin_time
 
-    print "Total time spent in compute operation is : {:15.9g} seconds".format(compute_time)
+    print("Total time spent in compute operation is : {:15.9g} seconds".format(compute_time))
     plt.show(block=False)
 
     for item_time_data in history_list:
         item_time_data.write_fields_history()
         item_time_data.close_file()
 
-    print 'Done !'
+    print('Done !')
 
     the_output_mng.finalize()
 

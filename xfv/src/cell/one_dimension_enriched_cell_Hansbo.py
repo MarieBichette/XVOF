@@ -34,7 +34,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         correction_factor_gauche = 1.
         correction_factor_droite = 1.
         if DataContainer().material_target.failure_model.lump_mass_matrix == 'diag_eps':
-            print "correction velocity discontinuity boundaries"
+            print("correction velocity discontinuity boundaries")
             correction_factor_gauche = 1. / epsilon
             correction_factor_droite = 1. / (1. - epsilon)
         u2g_correction = correction_factor_gauche * u2g

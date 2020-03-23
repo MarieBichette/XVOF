@@ -24,10 +24,10 @@ def build_cases_from_case_names(case_name_list, directory_for_case_definition = 
     # Ouverture du fichier XLS
     wb = xlrd.open_workbook(directory_for_case_definition)
 
-    sh = wb.sheet_by_name(u'CaseList')
+    sh = wb.sheet_by_name('CaseList')
 
     for case_name in case_name_list:
-        print "Searching for case {:}".format(case_name)
+        print("Searching for case {:}".format(case_name))
         # Pour chaque nom de cas : recherche de la ligne
         rownum = 0
         ligne = sh.row_values(rownum, start_colx=0, end_colx=None)
@@ -35,7 +35,7 @@ def build_cases_from_case_names(case_name_list, directory_for_case_definition = 
         # Recherche de la ligne du fichier excel qui contient le nom demandé
         while (rownum < sh.nrows) & (ligne[0] != case_name):
             ligne = sh.row_values(rownum, start_colx=0, end_colx=None)
-            print ligne
+            print(ligne)
             rownum += 1
 
 

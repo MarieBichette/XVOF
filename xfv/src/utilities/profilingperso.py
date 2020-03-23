@@ -34,19 +34,19 @@ def timeit_file(filename=None):
                 file_desc = sys.stdout
             begin_cpu_time = clock()
             begin_real_time = time()
-            print >> file_desc, "=" * 80
-            print >> file_desc, "Appel de {:s}".format(func.__name__)
+            print("=" * 80, file=file_desc)
+            print("Appel de {:s}".format(func.__name__), file=file_desc)
             fonction = func(*args, **kwargs)
             cpu_duration = clock() - begin_cpu_time
             real_duration = time() - begin_real_time
             record = cumul_times.setdefault(func.__name__, [0., 0.])
             record[0] += cpu_duration
             record[1] += real_duration
-            print >> file_desc, "\t Durée CPU instantanée/cumulée : {:4f}/{:4f}s".format(cpu_duration, record[0])
-            print >> file_desc, "\t Durée réelle instantanée/cumulée : {:4f}/{:4f}s".format(real_duration, record[1])
-            print >> file_desc, "\t Durée CPU/réelle totale : {:4f}/{:4f}" \
-                .format(sum([rec[0] for rec in cumul_times.values()]), sum([rec[1] for rec in cumul_times.values()]))
-            print >> file_desc, "=" * 80 + os.linesep
+            print("\t Durée CPU instantanée/cumulée : {:4f}/{:4f}s".format(cpu_duration, record[0]), file=file_desc)
+            print("\t Durée réelle instantanée/cumulée : {:4f}/{:4f}s".format(real_duration, record[1]), file=file_desc)
+            print("\t Durée CPU/réelle totale : {:4f}/{:4f}" \
+                .format(sum([rec[0] for rec in list(cumul_times.values())]), sum([rec[1] for rec in list(cumul_times.values())])), file=file_desc)
+            print("=" * 80 + os.linesep, file=file_desc)
             if filename is not None:
                 file_desc.close()
             return fonction
@@ -65,9 +65,9 @@ def logit(func):
         """
         Wrapper autour de la fonction func
         """
-        print "Appel de {:s} ".format(func.__name__,)
-        print "Arguments : {:s}".format(args)
-        print "Arguments par mots clefs : {:s}".format(kwargs)
+        print("Appel de {:s} ".format(func.__name__,))
+        print("Arguments : {:s}".format(args))
+        print("Arguments par mots clefs : {:s}".format(kwargs))
         fonction = func(*args, **kwargs)
         return fonction
     return wrapper
@@ -82,9 +82,9 @@ if __name__ == "__main__":
         """
         for i in range(nbr_iter, 0, -1):
             if i % 1000 == 0:
-                print i
+                print(i)
             sleep(0.0001)
 
     countdown(10000)
     countdown(10000)
-    print "name : ", countdown.__name__
+    print("name : ", countdown.__name__)

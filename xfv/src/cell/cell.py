@@ -41,7 +41,7 @@ class Cell(object):
         """
         vec_coord = np.zeros([nbr_cells, topology.dimension])
 
-        for ielem in xrange(nbr_cells):
+        for ielem in range(nbr_cells):
             nodes_index = topology.getNodesBelongingToCell(ielem)
             vec_coord[ielem][0] = x_coord[nodes_index].mean()
             if topology.dimension == 2:
@@ -99,10 +99,10 @@ class Cell(object):
         self.cell_in_projectile[cell_projectile] = True
 
         try:
-            print "Cells in the projectile : de {:} a {:}" .format(np.where(self.cell_in_projectile)[0][0],
-                                                                   np.where(self.cell_in_projectile)[0][-1])
-            print "Cells in the target : de {:} a {:}".format(np.where(self.cell_in_target)[0][0],
-                                                              np.where(self.cell_in_target)[0][-1])
+            print("Cells in the projectile : de {:} a {:}" .format(np.where(self.cell_in_projectile)[0][0],
+                                                                   np.where(self.cell_in_projectile)[0][-1]))
+            print("Cells in the target : de {:} a {:}".format(np.where(self.cell_in_target)[0][0],
+                                                              np.where(self.cell_in_target)[0][-1]))
         except IndexError:
             # pour g�rer  les exceptions o� il n'y a pas de projectile ou de target (cas tableau vide [index])
             pass
@@ -261,7 +261,7 @@ class Cell(object):
         message += "==> internal energy at t+dt = {}".format(self.energy.new_value) + os.linesep
         message += "==> sound velocity at t = {}".format(self.sound_velocity.current_value) + os.linesep
         message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
-        print message
+        print(message)
 
     def increment_variables(self):
         """

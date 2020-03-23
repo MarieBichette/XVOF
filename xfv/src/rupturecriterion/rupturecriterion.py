@@ -6,11 +6,10 @@ Implementing the RuptureCriterion abstract base class
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureCriterion(object):
+class RuptureCriterion(object, metaclass=ABCMeta):
     """
     An abstract base class for rupture criteria
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         pass

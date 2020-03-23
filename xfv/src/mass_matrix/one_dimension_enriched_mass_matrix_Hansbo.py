@@ -77,8 +77,8 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         :param cells_mass: array of cells mass
         :return:
         """
-        print "Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(discontinuity.label)
-        print "Compute mass matrix with Hansbo method"
+        print("Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(discontinuity.label))
+        print("Compute mass matrix with Hansbo method")
         epsilon = discontinuity.position_in_ruptured_element
         # Suppose les éléments voisins triés par position croissante
         connectivity = topology.cells_in_contact_with_node[:]
@@ -116,13 +116,13 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         :return:
         """
         m = self.enriched_mass_matrix
-        print "Enriched mass matrix :"
+        print("Enriched mass matrix :")
         ligne0 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[0, 0], m[0, 1], m[0, 2], m[0, 3])
         ligne1 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[1, 0], m[1, 1], m[1, 2], m[1, 3])
         ligne2 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[2, 0], m[2, 1], m[2, 2], m[2, 3])
         ligne3 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[3, 0], m[3, 1], m[3, 2], m[3, 3])
-        print ligne0
-        print ligne1
-        print ligne2
-        print ligne3
+        print(ligne0)
+        print(ligne1)
+        print(ligne2)
+        print(ligne3)
 

@@ -6,13 +6,10 @@ Classe de base définissant une méthode d'incrémentation
 from abc import ABCMeta, abstractmethod
 
 
-class NewtonRaphsonIncrementBase(object):
+class NewtonRaphsonIncrementBase(object, metaclass=ABCMeta):
     """
     Classe base définissant une méthode d'incrémentation
     """
-    # pylint: disable=abstract-class-not-used
-    # Nécessaire pour spécifier l'interface
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         pass

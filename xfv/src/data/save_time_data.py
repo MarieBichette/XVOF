@@ -13,11 +13,10 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class TimeData(object):
+class TimeData(object, metaclass=ABCMeta):
     """
     This class is an abstract base class for CellTimeData and NodeTimeData classes.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, attribute, id_number, o_path):
         """
