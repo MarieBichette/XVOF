@@ -15,8 +15,13 @@ jobs:
       script: python pylint_pre_hook.py
     - stage: "Tests"
       name: "Unit tests"
-      before_script: pip install mock
-      script: python -m unittest discover -v
+      before_script:
+        - pip install mock
+        - pip install pytest
+        - pip install pytest-cov
+        - pip install coveralls
+      script: PYTHONPATH=$(pwd) pytest --cov=xfv/src/
+      after_success: coveralls
 stages:
   - Tests
   - Lint
