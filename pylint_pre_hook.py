@@ -28,7 +28,7 @@ def _is_python_script(filename):
     if not isfile(filename):
         return False
 
-    if not filename.endswith(".py"):
+    if not filename.endswith(b".py"):
         try:
             with open(filename, "rb") as contents:
                 first_line = contents.readline()
@@ -36,7 +36,7 @@ def _is_python_script(filename):
             return False
 
         # Check shebang.
-        if not (first_line.startswith("#!") and "python" in first_line):
+        if not (first_line.startswith(b"#!") and b"python" in first_line):
             return False
 
     return True
