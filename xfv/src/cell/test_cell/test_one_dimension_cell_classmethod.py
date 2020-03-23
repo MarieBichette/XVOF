@@ -83,7 +83,6 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         expected_energy = np.array([ 0.001846,  0.00151 ,  0.005034,  0.026846])
         np.testing.assert_allclose(energy_new, expected_energy, rtol=1.e-3)
 
-    @unittest.skip("Seems to be an error in it")
     def test_general_method_deviator_strain_rate(self):
         """
         Test of general_method_deviator_strain_rate
@@ -103,8 +102,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
                                 [u_new[1], u_new[2]],
                                 [u_new[2], u_new[3]],
                                 [u_new[3], u_new[4]]]).reshape((4,2))
-        expected_result = np.array([0., 0., 2.666667, -1.333333])
-        dev_strain_rate = np.zeros(self.nbr_cells)
+        expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333], [0.266667, -0.133333, -0.133333]])
+        dev_strain_rate = np.zeros((self.nbr_cells, 3))
         dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt, position_new, vitesse_new)
         np.testing.assert_allclose(dev_strain_rate, expected_result, rtol=1.e-05)
 
