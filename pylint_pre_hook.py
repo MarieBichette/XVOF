@@ -9,7 +9,7 @@ Copy it under .git/hooks/pre-commit at the root of your project.
 
 
 from subprocess import check_output, CalledProcessError
-from sys import stderr
+import sys
 from os.path import isfile
 from os import getenv
 
@@ -21,7 +21,7 @@ PYLINTRC = ".pylintrc"
 
 def _print_error(message):
     """Print an error message to stderr."""
-    print(message, file=stderr)
+    print(message, file=sys.stderr)
 
 def _is_python_script(filename):
     """Return true for *.py files and python scripts ("#! /path/to/python")."""
@@ -49,7 +49,7 @@ def get_git_cmd():
         cmd = "git diff --name-only --diff-filter=AM origin/master-new"
     else:
         cmd = "git diff --staged --name-only HEAD"
-    print ("cmd is {:s}".format(cmd))
+    print("cmd is {:s}".format(cmd))
     return cmd.split()
 
 
@@ -82,4 +82,4 @@ def run():
     return SUCCESS
 
 if __name__ == "__main__":
-    exit(run())
+    sys.exit(run())
