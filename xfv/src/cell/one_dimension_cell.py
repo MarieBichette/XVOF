@@ -27,7 +27,8 @@ class OneDimensionCell(Cell):
         if cell._external_library is not None:
             energy_new_value, pressure_new_value, sound_velocity_new_value = \
                 (np.array(x) for x in cell._compute_new_pressure_with_external_lib(
-                    density, density_new, pressure, pseudo, energy, energy_new, pressure_new, cson_new))
+                    density, density_new, pressure, pseudo, energy, energy_new,
+                    pressure_new, cson_new))
         else:
             my_variables = {'EquationOfState': eos,
                             'OldDensity': density,
@@ -43,7 +44,8 @@ class OneDimensionCell(Cell):
             sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
             dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables['EquationOfState'].solveVolumeEnergy(
-                1. / my_variables['NewDensity'], energy_new_value, pressure_new_value, sound_velocity_new_value, dummy)
+                1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
+                sound_velocity_new_value, dummy)
             cell._function_to_vanish.eraseVariables()
         return energy_new_value, pressure_new_value, sound_velocity_new_value
 
@@ -55,10 +57,13 @@ class OneDimensionCell(Cell):
         """
         # Le 1/2 de la moyenne density_current et density_new se simplifie avec
         # la moyenne stress_dev_current et stress_dev_new
-        energy_new_value = dt / (density_new + density_current) * \
-                           ((stress_dev_new[:, 0] + stress_dev_current[:, 0]) * strain_rate_dev[:, 0] +
-                            (stress_dev_new[:, 1] + stress_dev_current[:, 1]) * strain_rate_dev[:, 1] +
-                            (stress_dev_new[:, 2] + stress_dev_current[:, 2]) * strain_rate_dev[:, 2])
+        energy_new_value = dt / (density_new + density_current)\
+                           * ((stress_dev_new[:, 0]
+                               + stress_dev_current[:, 0]) * strain_rate_dev[:, 0] +
+                              (stress_dev_new[:, 1]
+                               + stress_dev_current[:, 1]) * strain_rate_dev[:, 1] +
+                              (stress_dev_new[:, 2]
+                               + stress_dev_current[:, 2]) * strain_rate_dev[:, 2])
         return energy_new_value
 
     @classmethod
@@ -68,8 +73,10 @@ class OneDimensionCell(Cell):
         à partir des grandeurs vitesse et position au centre des mailles
         :param mask : tableau de booleen pour identifier les cell à calculer
         :param dt : time step (float)
-        :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et à droite de la cell calculée
-        :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et à droite de la cell calculée
+        :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et
+        à droite de la cell calculée
+        :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et
+        à droite de la cell calculée
         x_new, u_new sont obligatoirement tous de taille (taille de mask, 2)
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
@@ -95,12 +102,14 @@ class OneDimensionCell(Cell):
         divu = vpoint / vnplusundemi
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
         mask = np.where(divu < 0.)
-        pseudo[mask] = 1. / vnplusundemi[mask] * (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
-                                                  b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
+        pseudo[mask] = 1. / vnplusundemi[mask] * (
+                a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
+                b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
         return pseudo
 
     @classmethod
-    def compute_time_step(cls, cfl, cfl_pseudo, rho_old, rho_new, taille_new, cson_new, pseudo_old, pseudo_new):
+    def compute_time_step(cls, cfl, cfl_pseudo, rho_old, rho_new, taille_new, cson_new,
+                          pseudo_old, pseudo_new):
         """
         Computation of the time step
         :param cfl : nombre cfl

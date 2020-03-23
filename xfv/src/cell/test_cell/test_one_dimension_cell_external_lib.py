@@ -14,9 +14,14 @@ from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionCellExternalLibTest(unittest.TestCase):
-    """Unittest of the OneDimensionCell class (external lib use case)"""
+    """
+    Unittest of the OneDimensionCell class (external lib use case)
+    """
     @classmethod
     def setUpClass(cls):
+        """
+        Tests setup for class
+        """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA.xml")
         DataContainer(data_file_path)

@@ -14,7 +14,11 @@ class OneDimensionCellEPPTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_epp.xml")
         DataContainer(data_file_path)
 
     @classmethod

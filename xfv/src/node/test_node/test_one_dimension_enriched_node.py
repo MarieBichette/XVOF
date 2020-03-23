@@ -3,10 +3,10 @@
 """
 Classe de test du module OneDimensionEnrichedNode
 """
-import numpy as np
 import unittest
 import mock
 import os
+import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
@@ -21,7 +21,8 @@ class OneDimensionEnrichedNodeTest(unittest.TestCase):
         """
         Préparation des tests unitaires
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.vit_init = np.zeros([4, 1], dtype='float')
@@ -38,19 +39,23 @@ class OneDimensionEnrichedNodeTest(unittest.TestCase):
                   'additional_dof_force': np.array([[1., ], [2., ]]),
                   'label': 1
                   }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+                             spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
+        """
+        Operations to be done after completing all the tests in the class
+        """
         DataContainer.clear()
-        pass
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_additional_dof_new_velocity(self, mock_disc_list):
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_mass_additional = np.array([[2., 0.],[0., 2.]])
+        inv_mass_additional = np.array([[2., 0.], [0., 2.]])
         self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
-        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new, np.array([[3., ], [5., ]]))
+        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new,
+                                             np.array([[3., ], [5., ]]))
 
 
 if __name__ == '__main__':

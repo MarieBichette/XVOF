@@ -339,7 +339,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         new_cracked_cells_in_target = rupture_criterion.checkCriterion(self.cells)
         # correction car le projectile ne peut pas rompre
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
-        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
+        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)
+        # pylint: disable=assignment-from-no-return
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):
@@ -380,7 +381,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
 
         # Cells plastic classical
-        mask = np.logical_and(self.cells.classical, self.__plastic_cells)  # pylint: disable=assignment-from-no-return
+        mask = np.logical_and(self.cells.classical, self.__plastic_cells)
+        # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
         self.cells.compute_plastic_strain_rate_tensor(mask, dt)
         self.cells.compute_equivalent_plastic_strain_rate(mask, dt)

@@ -27,7 +27,8 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         :param section: section area associated with the node
         :type section: float
         """
-        super(OneDimensionEnrichedNode, self).__init__(nbr_of_nodes, initial_positions, initial_velocities,
+        super(OneDimensionEnrichedNode, self).__init__(nbr_of_nodes, initial_positions,
+                                                       initial_velocities,
                                                        section=section)
         self._v_field = np.zeros([self.number_of_nodes])
 
@@ -55,7 +56,6 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         :return:
         """
         for disc in Discontinuity.discontinuity_list():
-            disc._additional_dof_velocity_new = disc.additional_dof_velocity_current + delta_t * \
-                                                     multiplicationMasse(inv_matrice_masse, disc.additional_dof_force)
-
-
+            disc._additional_dof_velocity_new = \
+                disc.additional_dof_velocity_current + delta_t * \
+                multiplicationMasse(inv_matrice_masse, disc.additional_dof_force)

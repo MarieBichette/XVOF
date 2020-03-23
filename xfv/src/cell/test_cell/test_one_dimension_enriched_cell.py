@@ -16,7 +16,11 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_epp.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_epp.xml")
         DataContainer(data_file_path)
 
     @classmethod
@@ -39,18 +43,22 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         """
         Test of the property lassical
         """
-        np.testing.assert_array_equal(self.my_elements.classical, np.ones(self.nbr_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.classical,
+                                      np.ones(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
-        np.testing.assert_array_equal(self.my_elements.classical, np.array([False, True, True, True]))
+        np.testing.assert_array_equal(self.my_elements.classical,
+                                      np.array([False, True, True, True]))
         self.my_elements.classical[0] = True
 
     def test_enriched(self):
         """
         Test of the property enriched
         """
-        np.testing.assert_array_equal(self.my_elements.enriched, np.zeros(self.nbr_cells, dtype="bool"))
+        np.testing.assert_array_equal(self.my_elements.enriched,
+                                      np.zeros(self.nbr_cells, dtype="bool"))
         self.my_elements.classical[0] = False
-        np.testing.assert_array_equal(self.my_elements.enriched, np.array([True, False, False, False]))
+        np.testing.assert_array_equal(self.my_elements.enriched,
+                                      np.array([True, False, False, False]))
         self.my_elements.classical[0] = True
 
     def test_compute_new_left_right_size(self):
