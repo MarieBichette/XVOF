@@ -114,7 +114,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         discontinuity_2 = patcher.start()
 
         # on a besoin de faire comme si on avait 2 cells classiques qui rompent
-        type(self.my_cells.pressure).current_value = mock.PropertyMock(return_value=np.array([1., 2.]))
+        self.my_cells.pressure._Field__current = np.array([1., 2.])
 
         Discontinuity.discontinuity_list.return_value = [discontinuity_2, discontinuity_1]
         # le champ de pression est compos� de :
