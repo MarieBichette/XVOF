@@ -17,3 +17,6 @@ jobs:
       name: "Unit tests"
       before_script: pip install mock
       script: python -m unittest discover -v
+stages:
+  - Tests
+  - Lint
