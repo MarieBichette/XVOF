@@ -1,11 +1,10 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Classe de test du module OneDimensionEnrichedNode
 """
 import numpy as np
 import unittest
-import mock
+import unittest.mock as mock
 import os
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
@@ -15,11 +14,11 @@ from xfv.src.data.data_container import DataContainer
 
 class OneDimensionEnrichedNodeTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'OneDimensionEnrichedNode'
+    Test case utilisï¿½ pour test les fonctions du module 'OneDimensionEnrichedNode'
     """
     def setUp(self):
         """
-        Préparation des tests unitaires
+        Prï¿½paration des tests unitaires
         """
         data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)

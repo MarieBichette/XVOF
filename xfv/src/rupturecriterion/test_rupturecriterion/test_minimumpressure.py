@@ -1,11 +1,10 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Classe de test du module node
 """
 import numpy as np
 import unittest
-import mock
+import unittest.mock as mock
 from xfv.src.cell.cell import Cell
 from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 

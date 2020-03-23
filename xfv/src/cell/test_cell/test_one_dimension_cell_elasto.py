@@ -1,11 +1,10 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 one_dimension_cell module unit tests
 """
 import numpy as np
 import unittest
-import mock
+import unittest.mock as mock
 import os
 from xfv.src.cell.cell import Cell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell

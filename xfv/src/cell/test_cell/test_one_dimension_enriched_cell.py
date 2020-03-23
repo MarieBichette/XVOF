@@ -1,11 +1,10 @@
-#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 """
 Classe de test du module element1dupgraded
 """
 import numpy as np
 import unittest
-import mock
+import unittest.mock as mock
 import os
 from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.data.data_container import DataContainer
