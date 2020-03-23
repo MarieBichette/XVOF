@@ -11,10 +11,13 @@ from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
+    """
+    A class for the enriched nodes with Hansbo enrichment
+    """
 
     def __init__(self, nbr_of_nodes, initial_positions, initial_velocities, section=1.):
         super(OneDimensionHansboEnrichedNode, self).__init__(nbr_of_nodes, initial_positions,
-                                                            initial_velocities, section=section)
+                                                             initial_velocities, section=section)
         self._v_field = np.copy(self._upundemi)
 
     @property
@@ -58,14 +61,15 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         message += "==> classical force = {}\n". \
             format(self.force[index])
         message += "------------"
-        for disc in [d for d in Discontinuity.discontinuity_list() if index in [d.mask_in_nodes, d.mask_out_nodes]]:
+        for disc in [d for d in Discontinuity.discontinuity_list()
+                     if index in [d.mask_in_nodes, d.mask_out_nodes]]:
             recal_ind = (disc.mask_out_nodes == index)
             message += "==> additional degree of freedom for velocity at t-1/2 = {}\n". \
                 format(disc.additional_dof_velocity_current[recal_ind])
             message += "==> additional degree of freedom for velocity at t+1/2 = {}\n". \
                 format(disc.additional_dof_velocity_current[recal_ind])
             message += "==> additional degree of freedom for force = {}\n". \
-                format(disc.additional_dof_force.current_value[recal_ind])  # (pas encore calculé les new forces)
+                format(disc.additional_dof_force.current_value[recal_ind])
         print message
 
     def initialize_additional_node_dof(self, disc):
@@ -86,48 +90,49 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         # Rappel : les coordonnées enrichies n'existent pas
         OneDimensionNode.compute_new_coodinates(self, delta_t)
 
-    def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrice_couplage):
+    def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrix):
         """
-        Compute the coupled terms between classical and enriched dof due to non diagonal complete mass matrix
-        Takes into account nodes concerned by enrichment and not only the enriched nodes
+        Compute the coupled terms between classical and enriched dof due to non diagonal
+        complete mass matrix. Takes into account nodes concerned by enrichment and
+        not only the enriched nodes
         :param delta_t: time step
-        :param inv_matrice_couplage : inverse de la matrice de masse partie couplage ddl classiq /enrichis
+        :param inv_matrice_couplage : inverse of the mass matrix (coupling classic / enr ddl part)
         """
         for disc in Discontinuity.discontinuity_list():
             node_in = np.where(disc.mask_in_nodes)[0][0]
             node_out = np.where(disc.mask_out_nodes)[0][0]
             mask_disc = [node_in, node_out]
-            disc._additional_dof_velocity_new += np.dot(inv_matrice_couplage.transpose(),
-                                                                self._force[mask_disc]) * delta_t
-            self._upundemi[mask_disc] += np.dot(inv_matrice_couplage, disc.additional_dof_force) * delta_t
+            disc._additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
+                                                        self._force[mask_disc]) * delta_t
+            self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
 
     def compute_enriched_nodes_new_force(self, contrainte_xx):
         """
-        Compute the enriched force on enriched nodes and apply correction for classical force on enriched nodes
-        (classical ddl)
+        Compute the enriched force on enriched nodes and apply correction for classical
+        force on enriched nodes (classical ddl)
         :param topology: Topology1D, give the connectivity of nodes
         :param contrainte_xx : vecteur contrainte xx, array de taille (nb_cell, 1)
         """
         for disc in Discontinuity.discontinuity_list():
-            # For each discontinuity, compute the contribution of the cracked cell to the classical node forces and
-            # compute the enriched node forces for the enriched nodes of the discontinuity
-
+            # For each discontinuity, compute the contribution of the cracked cell to the classical
+            # node forces and compute the enriched node forces for the enriched nodes of
+            # the discontinuity
             cell = disc.ruptured_cell_id
             epsilon = disc.position_in_ruptured_element
 
-            sigmaG = contrainte_xx[cell]
-            sigmaD = disc.additional_dof_stress[:,0]
+            sigma_minus = contrainte_xx[cell]
+            sigma_plus = disc.additional_dof_stress[:, 0]
 
-            F1g = sigmaG * (1 - epsilon)
-            F2d = - sigmaD * epsilon
+            f_node_left_minus = sigma_minus * (1 - epsilon)
+            f_node_right_plus = - sigma_plus * epsilon
 
-            F2g = - sigmaG * epsilon
-            F1d = sigmaD * (1 - epsilon)
+            f_node_right_minus = - sigma_minus * epsilon
+            f_node_left_plus = sigma_plus * (1 - epsilon)
 
-            disc.additional_dof_force[0] = F2g * self.section
-            disc.additional_dof_force[1] = F1d * self.section
-            self._force[disc.mask_in_nodes] += F1g * self.section
-            self._force[disc.mask_out_nodes] += F2d * self.section
+            disc.additional_dof_force[0] = f_node_right_minus * self.section
+            disc.additional_dof_force[1] = f_node_left_plus * self.section
+            self._force[disc.mask_in_nodes] += f_node_left_minus * self.section
+            self._force[disc.mask_out_nodes] += f_node_right_plus * self.section
 
     def compute_discontinuity_opening(self):
         """
@@ -141,31 +146,24 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             disc.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
 
             if (disc.discontinuity_opening.new_value < 0 and
-                DataContainer().material_target.damage_model.cohesive_model is None):
+                    DataContainer().material_target.damage_model.cohesive_model is None):
                 print "Problème avec la discontinuité {:} : ouverture négative".format(disc.label)
 
     def compute_enriched_nodes_cohesive_forces(self):
         """
         Compute the cohesive forces for the enriched nodes
         """
-        self.compute_discontinuity_opening()  # normalement on en a pas besoin mais on le refait au cas où
+        self.compute_discontinuity_opening()
 
         for disc in Discontinuity.discontinuity_list():
-            # On calcule la nouvelle ouverture de l'écaille
-            # xd_new = self.xtpdt[disc.mask_out_nodes] - disc.right_part_size.new_value
-            # xg_new = self.xtpdt[disc.mask_in_nodes] + disc.left_part_size.new_value
-            # disc.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
-
-            cohesive_stress = DataContainer().material_target.damage_model.cohesive_model.compute_cohesive_stress(disc)
+            cohesive_stress = DataContainer().material_target.damage_model.\
+                              cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
 
-            F_czm = self.section * cohesive_stress
+            f_coh = self.section * cohesive_stress
 
             # On applique la force du ressort sur les forces nodales
-            self._force[disc.mask_in_nodes] += (1. - disc.position_in_ruptured_element) * F_czm
-            self._force[disc.mask_out_nodes] += - disc.position_in_ruptured_element * F_czm
-            disc.additional_dof_force[1] += - (1. - disc.position_in_ruptured_element) * F_czm
-            disc.additional_dof_force[0] += disc.position_in_ruptured_element * F_czm
-
-
-
+            self._force[disc.mask_in_nodes] += (1. - disc.position_in_ruptured_element) * f_coh
+            self._force[disc.mask_out_nodes] += - disc.position_in_ruptured_element * f_coh
+            disc.additional_dof_force[1] += - (1. - disc.position_in_ruptured_element) * f_coh
+            disc.additional_dof_force[0] += disc.position_in_ruptured_element * f_coh
