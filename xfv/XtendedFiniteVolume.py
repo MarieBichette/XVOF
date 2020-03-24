@@ -264,19 +264,21 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         # ---------------------------------------------#
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#
-        if data.material_projectile.constitutive_model.elasticity_model is not None:
-            my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
+        if data.data_contains_a_projectile:
+            if data.material_projectile.constitutive_model.elasticity_model is not None:
+                my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
         if data.material_target.constitutive_model.elasticity_model is not None:
             my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
-        target_model = data.material_target.constitutive_model
-        projectile_model = data.material_projectile.constitutive_model
+        if data.data_contains_a_projectile:
+            projectile_model = data.material_projectile.constitutive_model
+            if projectile_model.plasticity_model is not None:
+                my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
+                                          my_mesh.cells.cell_in_projectile)
 
-        if projectile_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
-                                      my_mesh.cells.cell_in_projectile)
+        target_model = data.material_target.constitutive_model
         if target_model.plasticity_model is not None:
             my_mesh.get_plastic_cells(target_model.plasticity_criterion,
                                       my_mesh.cells.cell_in_target)

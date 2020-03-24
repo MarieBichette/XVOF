@@ -489,7 +489,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
                                                  (radial_return * 3 * disc.additional_dof_shear_modulus.current_value * dt) * \
                                                  disc._additional_dof_deviatoric_stress_new[:, i]
 
-
     def compute_enriched_yield_stress(self):
         """
         Compute the yield stress for ruptured cells

@@ -73,15 +73,10 @@ class OneDimensionCell(Cell):
         ï¿½ partir des grandeurs vitesse et position au centre des mailles
         :param mask : tableau de booleen pour identifier les cell ï¿½ calculer
         :param dt : time step (float)
-<<<<<<< HEAD
         :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et
         à droite de la cell calculée
         :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et
         à droite de la cell calculée
-=======
-        :param x_new : array des coordonnï¿½es ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
-        :param u_new : array des vitesses ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
->>>>>>> 6b55f92392fa87d4a7349199dbad65dc2e1c3323
         x_new, u_new sont obligatoirement tous de taille (taille de mask, 2)
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
@@ -284,12 +279,21 @@ class OneDimensionCell(Cell):
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
-        elasticity_activated = np.logical_or(
-            (DataContainer().material_target.constitutive_model.elasticity_model is not None),
-            (DataContainer().material_projectile.constitutive_model.elasticity_model is not None))
-        plasticity_activated = np.logical_or(
-            (DataContainer().material_target.constitutive_model.plasticity_model is not None),
-            (DataContainer().material_projectile.constitutive_model.plasticity_model is not None))
+        # Elasticity / Plasticity on the target ?
+        target_model = DataContainer().material_target.constitutive_model
+        elasticity_target = target_model.elasticity_model is not None
+        plasticity_target = target_model.plasticity_model is not None
+
+        # Elasticity / Plasticity on the projectile if exists ?
+        elasticity_projectile = False
+        plasticity_projectile = False
+        if DataContainer().data_contains_a_projectile:
+            projectile_model = DataContainer().material_projectile.constitutive_model
+            elasticity_projectile = projectile_model.elasticity_model is not None
+            plasticity_projectile = projectile_model.plasticity_model is not None
+
+        elasticity_activated = elasticity_target or elasticity_projectile
+        plasticity_activated = plasticity_target or plasticity_projectile
 
         if elasticity_activated or plasticity_activated:
             # si l'élasticité n'est pas activée, les grandeurs élastiques restent nulles.
@@ -413,12 +417,22 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-        elasticity_activated = (
-                DataContainer().material_target.constitutive_model.elasticity_model is not None or
-                DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
-        plasticity_activated = (
-                DataContainer().material_target.constitutive_model.plasticity_model is not None or
-                DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+        # Elasticity / Plasticity on the target ?
+        target_model = DataContainer().material_target.constitutive_model
+        elasticity_target = target_model.elasticity_model is not None
+        plasticity_target = target_model.plasticity_model is not None
+
+        # Elasticity / Plasticity on the projectile if exists ?
+        elasticity_projectile = False
+        plasticity_projectile = False
+        if DataContainer().data_contains_a_projectile:
+            projectile_model = DataContainer().material_projectile.constitutive_model
+            elasticity_projectile = projectile_model.elasticity_model is not None
+            plasticity_projectile = projectile_model.plasticity_model is not None
+
+        elasticity_activated = elasticity_target or elasticity_projectile
+        plasticity_activated = plasticity_target or plasticity_projectile
+
         if elasticity_activated or plasticity_activated:
             self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
 
@@ -501,7 +515,6 @@ class OneDimensionCell(Cell):
                 (1 - radial_return[plastic_mask]) * self._deviatoric_stress_new[plastic_mask, i] / \
                 (radial_return[plastic_mask] *
                  3 * self.shear_modulus.current_value[plastic_mask] * dt)
-
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):
         """

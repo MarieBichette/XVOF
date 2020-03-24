@@ -119,17 +119,18 @@ class Cell(object):
         # correction de l'init si materiau projectile d�clar� dans XDATA.xml
         # (le mask est vide si pas de projectile donc transparent quand il n'y a pas
         # de projectile d�clar�)
-        material_data = DataContainer().material_projectile.initial_values
-        self.density.current_value[self.cell_in_projectile] = material_data.rho_init
-        self.density.new_value[self.cell_in_projectile] = material_data.rho_init
-        self.pressure.current_value[self.cell_in_projectile] = material_data.pression_init
-        self.pressure.new_value[self.cell_in_projectile] = material_data.pression_init
-        self.energy.current_value[self.cell_in_projectile] = material_data.energie_init
-        self.energy.new_value[self.cell_in_projectile] = material_data.energie_init
-        self.shear_modulus.current_value[self.cell_in_projectile] = material_data.shear_modulus_init
-        self.shear_modulus.new_value[self.cell_in_projectile] = material_data.shear_modulus_init
-        self.yield_stress.current_value[self.cell_in_projectile] = material_data.yield_stress_init
-        self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
+        if DataContainer().data_contains_a_projectile:
+            material_data = DataContainer().material_projectile.initial_values
+            self.density.current_value[self.cell_in_projectile] = material_data.rho_init
+            self.density.new_value[self.cell_in_projectile] = material_data.rho_init
+            self.pressure.current_value[self.cell_in_projectile] = material_data.pression_init
+            self.pressure.new_value[self.cell_in_projectile] = material_data.pression_init
+            self.energy.current_value[self.cell_in_projectile] = material_data.energie_init
+            self.energy.new_value[self.cell_in_projectile] = material_data.energie_init
+            self.shear_modulus.current_value[self.cell_in_projectile] = material_data.shear_modulus_init
+            self.shear_modulus.new_value[self.cell_in_projectile] = material_data.shear_modulus_init
+            self.yield_stress.current_value[self.cell_in_projectile] = material_data.yield_stress_init
+            self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
 
 
     @property
