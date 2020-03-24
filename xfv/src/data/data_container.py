@@ -103,6 +103,9 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         self.material_target = None
         if self.data_contains_a_target:
             self.material_target = MaterialProps(*self.__fill_in_material_props("matter/target"))
+        else:
+            self.material_target = MaterialProps(*self.__fill_in_material_props("matter"))
+            self.data_contains_a_target = True
 
         if not (self.data_contains_a_projectile or self.data_contains_a_target):
             self.material_target = MaterialProps(*self.__fill_in_material_props("matter"))
