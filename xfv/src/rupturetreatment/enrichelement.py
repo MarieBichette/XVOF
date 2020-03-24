@@ -41,7 +41,7 @@ class EnrichElement(RuptureTreatment):
                 print("Cells already enriched are :", np.nonzero(cells.enriched))
                 print("New cells to be enriched are :", np.nonzero(cells_to_be_enr))
             for cell_tb_enr in np.nonzero(cells_to_be_enr)[0]:
-                if Discontinuity.discontinuity_number() < 100:  # à changer pour plusieurs discontinuity
+                if Discontinuity.discontinuity_number() < 100:  # ï¿½ changer pour plusieurs discontinuity
                     if not cells.enriched[cell_tb_enr]:
                         print("---------------------------------------------")
                         print("New ruptured cell detected. " \
@@ -68,11 +68,11 @@ class EnrichElement(RuptureTreatment):
                         # Affectation left / right part sizes
                         disc.right_part_size.new_value = (1. - self.__position_rupture) * cells.size_t_plus_dt[cell_tb_enr]
                         disc.left_part_size.new_value = self.__position_rupture * cells.size_t_plus_dt[cell_tb_enr]
-                        # L'initialisation des tailles gauches et droites courantes n'est pas nécessaire.
-                        # On initialise simplement avec des tailles fictives de sorte qu'on peut gérer le calcul des forces
-                        # cohésives à l'itération où la discontinutié est créée.
-                        # Cette taille ficitive permet simplement d'obtenir une ouverture nulle de la fissure à
-                        # l'itération de création de la discontinuité.  Elle sera écrasée après ce calcul lors de l'appel
+                        # L'initialisation des tailles gauches et droites courantes n'est pas nï¿½cessaire.
+                        # On initialise simplement avec des tailles fictives de sorte qu'on peut gï¿½rer le calcul des forces
+                        # cohï¿½sives ï¿½ l'itï¿½ration oï¿½ la discontinutiï¿½ est crï¿½ï¿½e.
+                        # Cette taille ficitive permet simplement d'obtenir une ouverture nulle de la fissure ï¿½
+                        # l'itï¿½ration de crï¿½ation de la discontinuitï¿½.  Elle sera ï¿½crasï¿½e aprï¿½s ce calcul lors de l'appel
                         # de mesh.increment().
                         disc.right_part_size.current_value = \
                             (1. - self.__position_rupture) * cells.size_t[cell_tb_enr]
@@ -84,14 +84,15 @@ class EnrichElement(RuptureTreatment):
                             nodes.initialize_additional_node_dof(disc)
                             disc.have_dof_been_initialized()
 
-                        # Ecartement un tout petit peu de la fissure qui vient d'être créée
+                        # Ecartement un tout petit peu de la fissure qui vient d'ï¿½tre crï¿½ï¿½e
                         # nodes.compute_discontinuity_opening_when_created(disc, 0.05 * disc.left_part_size.new_value)
                         print("---------------------------------------------")
                     else:
-                        raise NotImplementedError("""La cell {:} est déjà enrichie.
+                        raise NotImplementedError("""La cell {:} est dï¿½jï¿½ enrichie.
                         On ne peut pas l'enrichir plusieurs fois""". format(cell_tb_enr))
 
         ruptured_cells[:] = False
 
-    def get_discontinuity_position(self):
+    @staticmethod
+    def get_discontinuity_position():
         return DataContainer().material_target.failure_model.rupture_treatment_value
