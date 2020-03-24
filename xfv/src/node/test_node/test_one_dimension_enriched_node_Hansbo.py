@@ -3,17 +3,14 @@
 Classe de test du module OneDimensionEnrichedNode
 """
 import unittest
-<<<<<<< HEAD
-=======
-import unittest.mock as mock
->>>>>>> 6b55f92392fa87d4a7349199dbad65dc2e1c3323
 import os
-import mock
+import unittest.mock as mock
 import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
+
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """

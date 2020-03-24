@@ -41,7 +41,7 @@ class Cell(object):
         """
         vec_coord = np.zeros([nbr_cells, topology.dimension])
 
-        for ielem in xrange(nbr_cells):
+        for ielem in range(nbr_cells):
             nodes_index = topology.get_nodes_belonging_to_cell(ielem)
             vec_coord[ielem][0] = x_coord[nodes_index].mean()
             if topology.dimension == 2:
