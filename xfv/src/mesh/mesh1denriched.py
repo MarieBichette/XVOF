@@ -75,7 +75,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.initialize_cell_fields(self.nodes.nodes_in_target,
                                           self.nodes.nodes_in_projectile,
                                           self.__topology)
-
         self.mask_last_nodes_of_ref = None
 
     @property
@@ -158,8 +157,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
 
     def compute_contact(self, delta_t):
         """
-        :todo: to fill in
-        :return:
+        Compute the contact force to be applied to ensure non penetration of the
+        discontinuities boundaries
+        :param delta_t : time step, float
         """
         for disc in Discontinuity.discontinuity_list():
             contact = ContactModel(disc)
@@ -177,7 +177,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type delta_t: float
         """
         self.nodes.compute_new_coodinates(delta_t)
-
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -193,9 +192,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Computation of cells sizes at t+dt
         """
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self.cells.classical)
-
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.nodes.upundemi)
-
         self.nodes.compute_discontinuity_opening()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -242,12 +239,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of cohesive forces at t+dt
         """
-        if DataContainer().material_target.damage_model.cohesive_model is not None:
-            # Commented because pylint warns that there is no compute_cohesive_stress method
-            # for OneDimensionHansboEnrichedNode class and that's true
-            # if DataContainer().material_target.failure_model.failure_treatment == "ImposedPressure":  pylint:disable=line-too-long
-            #     self.nodes.compute_cohesive_stress(self.__ruptured_cells, self.__topology)
-            if DataContainer().material_target.failure_model.failure_treatment == "Enrichment":
+        if DataContainer().material_target.failure_model.failure_treatment == "Enrichment":
+            if DataContainer().material_target.damage_model.cohesive_model is not None:
                 self.nodes.compute_enriched_nodes_cohesive_forces()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -268,7 +261,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :param mask: array of bool to select cells of interest
         """
         # Sert à identifier si on est dans le  projectile ou dans la cible
-        mask = np.logical_and(mask, self.cells.classical)  # pylint: disable=assignment-from-no-return
+        mask = np.logical_and(
+            mask, self.cells.classical)  # pylint: disable=assignment-from-no-return
         self.cells.compute_deviatoric_stress_tensor(mask, self.__topology,
                                                     self.nodes.xtpdt, self.nodes.upundemi, delta_t)
         self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
@@ -339,8 +333,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         new_cracked_cells_in_target = rupture_criterion.checkCriterion(self.cells)
         # correction car le projectile ne peut pas rompre
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
-        self.__ruptured_cells = np.logical_or(self.__ruptured_cells, new_cracked_cells_in_target)
-        # pylint: disable=assignment-from-no-return
+        self.__ruptured_cells = \
+            np.logical_or(self.__ruptured_cells,
+                          new_cracked_cells_in_target) # pylint: disable=assignment-from-no-return
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):
@@ -381,8 +376,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
 
         # Cells plastic classical
-        mask = np.logical_and(self.cells.classical, self.__plastic_cells)
-        # pylint: disable=assignment-from-no-return
+        mask = np.logical_and(
+            self.cells.classical, self.__plastic_cells) # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
         self.cells.compute_plastic_strain_rate_tensor(mask, dt)
         self.cells.compute_equivalent_plastic_strain_rate(mask, dt)

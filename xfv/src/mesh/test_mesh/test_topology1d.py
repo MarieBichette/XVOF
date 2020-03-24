@@ -15,24 +15,26 @@ class Topology1dTest(unittest.TestCase):
     """
     def setUp(self):
         """
-        Prï¿½paration des tests
+        Preparation des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
         self.topology = Topology1D(4, 3)
 
     def tearDown(self):
         DataContainer.clear()
-        pass
 
     def test_elements_voisins(self):
-        """ Test de Node1d.elements_voisins = """
+        """
+        Test de Node1d.elements_voisins
+        """
         #
-        # En 1D affecter plus de deux ï¿½lï¿½ments ï¿½ un noeud doit lever
+        # En 1D affecter plus de deux elements à un noeud doit lever
         # une exception de type SystemExit
         #
         with self.assertRaises(IndexError):
-            self.topology.addCellInContactWithNode(1, 2)
+            self.topology.add_cell_in_contact_with_node(1, 2)
 
 
 if __name__ == '__main__':

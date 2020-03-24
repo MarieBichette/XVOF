@@ -42,7 +42,7 @@ class Cell(object):
         vec_coord = np.zeros([nbr_cells, topology.dimension])
 
         for ielem in xrange(nbr_cells):
-            nodes_index = topology.getNodesBelongingToCell(ielem)
+            nodes_index = topology.get_nodes_belonging_to_cell(ielem)
             vec_coord[ielem][0] = x_coord[nodes_index].mean()
             if topology.dimension == 2:
                 vec_coord[ielem][1] = y_coord[nodes_index].mean()
@@ -90,7 +90,7 @@ class Cell(object):
         """
         # Partie mask_cible
         indice_noeuds = np.where(mask_node_target)[0]
-        cell_target = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
+        cell_target = np.unique(topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
         # on �limine les noeuds extr�mes :
         # 1 pour ne pas prendre la derni�re maille du projectile qui est connect�e
         # aussi � un noeud target -1 pour ne pas prendre la maille connect�ee au dernier
@@ -99,7 +99,7 @@ class Cell(object):
 
         # Partie mask_projectile
         indice_noeuds = np.where(mask_node_projectile)[0]
-        cell_projectile = np.unique(topology.getCellsInContactWithNode(indice_noeuds)[1:-1].flatten())
+        cell_projectile = np.unique(topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
         # on �limine les noeuds extr�mes :
         # -1 pour ne pas prendre la premi�re maille de la cible qui est aussi
         # connect�e � un noeud projectile 1 pour ne pas prendre la maille connect�ee au

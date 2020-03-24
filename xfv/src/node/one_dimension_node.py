@@ -88,11 +88,11 @@ class OneDimensionNode(Node):
                                    contrainte[connectivity][:, 0]) * self.section
 
         ind_node = 0
-        elements_voisins = topologie.getCellsInContactWithNode(ind_node)
+        elements_voisins = topologie.get_cells_in_contact_with_node(ind_node)
         self._force[ind_node] = contrainte[elements_voisins][1] * self.section
 
         ind_node = self.number_of_nodes - 1
-        elements_voisins = topologie.getCellsInContactWithNode(ind_node)
+        elements_voisins = topologie.get_cells_in_contact_with_node(ind_node)
         self._force[ind_node] = -contrainte[elements_voisins][0] * self.section
 
     def compute_new_velocity(self, delta_t, mask, matrice_masse):
