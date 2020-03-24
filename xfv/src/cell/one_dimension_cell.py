@@ -263,12 +263,14 @@ class OneDimensionCell(Cell):
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
-        elasticity_activated = np.logical_or(
-            (DataContainer().material_target.constitutive_model.elasticity_model is not None),
-            (DataContainer().material_projectile.constitutive_model.elasticity_model is not None))
-        plasticity_activated = np.logical_or(
-            (DataContainer().material_target.constitutive_model.plasticity_model is not None),
-            (DataContainer().material_projectile.constitutive_model.plasticity_model is not None))
+        target_model = DataContainer().material_target.constitutive_model
+        projectile_model = None
+        if DataContainer().data_contains_a_projectile:
+            projectile_model = DataContainer().material_projectile.constitutive_model
+        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+            projectile_model and projectile_model.elasticity_model is not None)
+        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+            projectile_model and projectile_model.plasticity_model is not None)
 
         if elasticity_activated or plasticity_activated:
             # si l'�lasticit� n'est pas activ�e, les grandeurs �lastiques restent nulles.
@@ -385,10 +387,15 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-        elasticity_activated = (DataContainer().material_target.constitutive_model.elasticity_model is not None or
-                                DataContainer().material_projectile.constitutive_model.elasticity_model is not None)
-        plasticity_activated = (DataContainer().material_target.constitutive_model.plasticity_model is not None or
-                                DataContainer().material_projectile.constitutive_model.plasticity_model is not None)
+        target_model = DataContainer().material_target.constitutive_model
+        projectile_model = None
+        if DataContainer().data_contains_a_projectile:
+            projectile_model = DataContainer().material_projectile.constitutive_model
+        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+            projectile_model and projectile_model.elasticity_model is not None)
+        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+            projectile_model and projectile_model.plasticity_model is not None)
+
         if elasticity_activated or plasticity_activated:
             self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
 
