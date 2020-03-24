@@ -17,7 +17,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         super(OneDimensionEnrichedCell, self).__init__(number_of_elements)
         #
         self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
-        print self._fields_manager
+        print(self._fields_manager)
         self._classical = np.empty(self.number_of_cells, dtype=np.bool, order='C')
         self._classical[:] = True
         self._initial_additional_dof = {}
@@ -93,7 +93,7 @@ class OneDimensionEnrichedCell(OneDimensionCell):
                 format(self.pseudo.current_value[disc.ruptured_cell_id])
             message += "==> pseudo à droite = {}\n". \
                 format(disc.additional_dof_artificial_viscosity.current_value)
-        print message
+        print(message)
 
     @classmethod
     def compute_new_left_right_size(cls, time_step, disc, u1h, u2h, ug, ud):

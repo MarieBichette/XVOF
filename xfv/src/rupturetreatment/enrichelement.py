@@ -35,36 +35,36 @@ class EnrichElement(RuptureTreatment):
         if ruptured_cells.any():  # Enrichment is made once for all
             cells_to_be_enr = np.logical_and(ruptured_cells, ~cells.enriched)
             if EnrichElement.__debug:
-                print "Cells checking rupture criterion are :", np.nonzero(ruptured_cells)
-                print "Cells already enriched are :", np.nonzero(cells.enriched)
-                print "New cells to be enriched are :", np.nonzero(cells_to_be_enr)
+                print("Cells checking rupture criterion are :", np.nonzero(ruptured_cells))
+                print("Cells already enriched are :", np.nonzero(cells.enriched))
+                print("New cells to be enriched are :", np.nonzero(cells_to_be_enr))
 
             for cell_tb_enr in np.nonzero(cells_to_be_enr)[0]:
                 if not cells.enriched[cell_tb_enr]:
-                    print "---------------------------------------------"
-                    print "New ruptured cell detected. " \
-                          "Starting enrichment process for cell {:}".format(cell_tb_enr)
-                    print "Beginning enrichment sequence at time {:}".format(time)
-                    print "==> Enrichment of cell : ", cell_tb_enr
+                    print("---------------------------------------------")
+                    print("New ruptured cell detected. " 
+                          "Starting enrichment process for cell {:}".format(cell_tb_enr))
+                    print("Beginning enrichment sequence at time {:}".format(time))
+                    print("==> Enrichment of cell : ", cell_tb_enr)
                     nodes_to_be_enr = topology.nodes_belonging_to_cell[cell_tb_enr]
                     nodes_to_be_enr_mask = np.ndarray(nodes.number_of_nodes,
                                                       dtype=np.bool, order="C")
                     nodes_to_be_enr_mask[:] = False
                     nodes_to_be_enr_mask[nodes_to_be_enr.flatten()] = True
-                    print "==> Enrichment of nodes : ", nodes_to_be_enr.flatten()
+                    print("==> Enrichment of nodes : ", nodes_to_be_enr.flatten())
                     nodes.classical[nodes_to_be_enr] = False
                     x_left_node = nodes.xt[nodes_to_be_enr].flatten()[0]
                     x_right_node = nodes.xt[nodes_to_be_enr].flatten()[1]
                     discontinuity_coord = x_left_node + \
                                           (x_right_node - x_left_node) * self.__position_rupture
-                    print "==> Discontinuity position : ", \
-                          x_left_node, " < ", discontinuity_coord, " < ", x_right_node
+                    print("==> Discontinuity position : ",
+                          x_left_node, " < ", discontinuity_coord, " < ", x_right_node)
                     in_nodes = np.logical_and(
                         nodes_to_be_enr_mask, nodes.xt[:, 0] < discontinuity_coord)
                     out_nodes = np.logical_and(
                         nodes_to_be_enr_mask, nodes.xt[:, 0] > discontinuity_coord)
-                    print "==> In nodes : ", np.nonzero(in_nodes)
-                    print "==> Out nodes : ", np.nonzero(out_nodes)
+                    print("==> In nodes : ", np.nonzero(in_nodes))
+                    print("==> Out nodes : ", np.nonzero(out_nodes))
                     disc = Discontinuity(in_nodes, out_nodes, self.__position_rupture)
                     disc.find_ruptured_cell_id(topology)
                     cells.classical[cell_tb_enr] = False
@@ -91,12 +91,13 @@ class EnrichElement(RuptureTreatment):
                         nodes.initialize_additional_node_dof(disc)
                         disc.have_dof_been_initialized()
 
-                    print "---------------------------------------------"
+                    print("---------------------------------------------")
                 else:
                     raise NotImplementedError("""La cell {:} est déjà enrichie.
                     On ne peut pas l'enrichir plusieurs fois""". format(cell_tb_enr))
 
         ruptured_cells[:] = False
 
-    def get_discontinuity_position(self):
+    @staticmethod
+    def get_discontinuity_position():
         return DataContainer().material_target.failure_model.rupture_treatment_value

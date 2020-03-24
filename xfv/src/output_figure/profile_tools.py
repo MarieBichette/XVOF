@@ -52,7 +52,7 @@ def get_error_value(coord_ref, field_ref, coord, field_value, error_calcul='abso
     :return: err_x, err_y, interpolated coordinates and error in field value
     """
     # Interpolation sur une même grille :
-    print "Error computation requires interpolation on a common fixed grid"
+    print("Error computation requires interpolation on a common fixed grid")
     borne_left = max(min(coord_ref), min(coord))  # boundary of the left part of interpolation domain
     borne_right = min(max(coord_ref), max(coord))    # boundary of the right part of interpolation domain
     x_interp = np.linspace(borne_left, borne_right, num=1000)  # create the fix x-grid for interpolation
@@ -60,7 +60,7 @@ def get_error_value(coord_ref, field_ref, coord, field_value, error_calcul='abso
     y_interp_a3 = np.interp(x_interp, coord_ref, field_ref, left=-1, right=-1)
     y_interp = np.interp(x_interp, coord, field_value, left=-1, right=-1)
 
-    print "Returning {:} error".format(error_calcul)
+    print("Returning {:} error".format(error_calcul))
     # Calcul de l'erreur absolue
     if error_calcul == 'absolute':
         return x_interp, np.abs(y_interp - y_interp_a3)

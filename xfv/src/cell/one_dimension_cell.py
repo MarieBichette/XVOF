@@ -36,7 +36,7 @@ class OneDimensionCell(Cell):
                             'Pressure': (pressure + 2. * pseudo),
                             'OldEnergy': energy}
             cell._function_to_vanish.setVariables(my_variables)
-            energy_new_value = cell._solver.computeSolution(energy)
+            energy_new_value = cell._solver.compute_solution(energy)
 
             # Eos call to determine final pressure and sound speed values
             shape = energy_new.shape
@@ -69,18 +69,23 @@ class OneDimensionCell(Cell):
     @classmethod
     def general_method_deviator_strain_rate(cls, mask, dt, x_new, u_new):
         """
-        Compute the deviateur du tenseur taux de déformation (calculé au centre la maille)
-        à partir des grandeurs vitesse et position au centre des mailles
-        :param mask : tableau de booleen pour identifier les cell à calculer
+        Compute the deviateur du tenseur taux de dï¿½formation (calculï¿½ au centre la maille)
+        ï¿½ partir des grandeurs vitesse et position au centre des mailles
+        :param mask : tableau de booleen pour identifier les cell ï¿½ calculer
         :param dt : time step (float)
+<<<<<<< HEAD
         :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et
         à droite de la cell calculée
         :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et
         à droite de la cell calculée
+=======
+        :param x_new : array des coordonnï¿½es ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
+        :param u_new : array des vitesses ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
+>>>>>>> 6b55f92392fa87d4a7349199dbad65dc2e1c3323
         x_new, u_new sont obligatoirement tous de taille (taille de mask, 2)
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
-        # Calcul du déviateur de D
+        # Calcul du dï¿½viateur de D
         x_demi = x_new - dt/2. * u_new
         D = (u_new[mask, 1] - u_new[mask, 0]) / (x_demi[mask, 1] - x_demi[mask, 0])  # Dxx
         strain_rate_dev[mask, 0] = 2. / 3. * D
@@ -94,7 +99,7 @@ class OneDimensionCell(Cell):
         Computation of artificial viscosity
         """
         # pylint: disable=too-many-arguments
-        # 8 arguments semblent nécessaires
+        # 8 arguments semblent nï¿½cessaires
         vn = 1. / rho_old
         vnplusun = 1. / rho_new
         vnplusundemi = (vn + vnplusun) / 2.
@@ -113,7 +118,7 @@ class OneDimensionCell(Cell):
         """
         Computation of the time step
         :param cfl : nombre cfl
-        :param cfl_pseudo : cfl par rapport à la condition de traitement du choc
+        :param cfl_pseudo : cfl par rapport ï¿½ la condition de traitement du choc
         :param rho_old : density at time t
         :param rho_new : density at time t+dt
         :param taille_new : size of element
@@ -402,7 +407,7 @@ class OneDimensionCell(Cell):
 
     def compute_complete_stress_tensor(self, mask):
         """
-        Compute the Cauchy stress tensor (assemble pression et déviateur)
+        Compute the Cauchy stress tensor (assemble pression et dï¿½viateur)
         :param mask : array of boolean to identify classical cells
         """
         for i in range(0, 3):
@@ -448,7 +453,7 @@ class OneDimensionCell(Cell):
 
     def compute_deviator_strain_rate(self, mask, dt, topologie, coord_noeud_new, vitesse_noeud_new):
         """
-        Compute deviateur du taux de déformation
+        Compute deviateur du taux de dï¿½formation
         :param mask : mask to select classical cells
         :param dt : time step
         :param topologie : table of connectivity : link between cells and nodes id

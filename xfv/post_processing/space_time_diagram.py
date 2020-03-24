@@ -3,7 +3,7 @@
 """
 A script writing a march diagram after exploitation of the output database
 """
-from __future__ import print_function
+
 import os
 import sys
 import numpy as np
@@ -83,7 +83,7 @@ if analysis == 'schlieren':
 if analysis == "coupe":
     coupe_type = -1
     while coupe_type not in [0, 1]:
-        coupe_type = int(raw_input("Quel type de coupe fait-on ? (0 = constant time, 1 = constant item) << "))
+        coupe_type = int(input("Quel type de coupe fait-on ? (0 = constant time, 1 = constant item) << "))
 
 # Cas demandé
 case_list = sys.argv[3].split(',')
@@ -153,7 +153,7 @@ for case in case_list:
         if len(final_ruptured_cell_id) >= 1:
             # Séparation par paquets entre les mailles rompues pour prendre en compte le vide
             print("FYI : liste des cells rompues :" + str(final_ruptured_cell_id))
-            ruptured_cell_id_after_offset = final_ruptured_cell_id + range(0, len(final_ruptured_cell_id))
+            ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
             print("=> liste des cells rompues après décalage:" + str(ruptured_cell_id_after_offset))
 
             first_left_index = final_ruptured_cell_id[0]
@@ -202,12 +202,12 @@ for case in case_list:
         # Coupe y = f(x) à t = constant
         if coupe_type == 0:
             plt.xlabel("Position [mm]")
-            time = raw_input("Cas {:} :  t = ? (en secondes, "
+            time = input("Cas {:} :  t = ? (en secondes, "
                              "? pour afficher les temps existants dans les données) << " . format(case.case_name))
             # Pour afficher l'aide avant de reposer poliment la question
             if time == "?":
                 print(my_hd.saved_times)
-                time = raw_input("Cas {:} :  t = ? (en secondes, "
+                time = input("Cas {:} :  t = ? (en secondes, "
                                  "? pour afficher les temps existants dans les données) << ".format(case.case_name))
             time = float(time)
             index_time = np.where(np.array(my_hd.saved_times) <= time)[0][-1]
@@ -219,10 +219,10 @@ for case in case_list:
         if coupe_type == 1:
             plt.xlabel("Temps [$\mu s$]")
             if len(final_ruptured_cell_id) > 0:
-                ruptured_cell_id_after_offset = final_ruptured_cell_id + range(0, len(final_ruptured_cell_id))
+                ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
                 print("Cas {:} : les mailles rompues (après recalage) sont {:}".format(case.case_name,
                                                                                     ruptured_cell_id_after_offset))
-            indice_item = int(raw_input("Cas {:} : item id = ? (entier après recalage au temps "
+            indice_item = int(input("Cas {:} : item id = ? (entier après recalage au temps "
                                         "final) << ".format(case.case_name)))
 
             plt.plot(Y[:, indice_item], Z[:, indice_item], "-*", label=case.label + ' (cell ' + str(indice_item) + ')',
@@ -236,15 +236,15 @@ for case in case_list:
         continue_bool = True
 
         if len(final_ruptured_cell_id) > 0:
-            ruptured_cell_id_after_offset = final_ruptured_cell_id + range(0, len(final_ruptured_cell_id))
+            ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
             print("Pour info, les mailles rompues (après recalage) sont " + str(ruptured_cell_id_after_offset))
 
         while continue_bool:
-            time = raw_input("Cas {:} :  t = ? (en secondes) << ".format(case.case_name))
+            time = input("Cas {:} :  t = ? (en secondes) << ".format(case.case_name))
             time = float(time)
             index_time = np.where(np.array(my_hd.saved_times) <= time)[0][-1]
 
-            indice_item = int(raw_input("Cas {:} : item id = ? (entier après recalage au temps "
+            indice_item = int(input("Cas {:} : item id = ? (entier après recalage au temps "
                                         "final) << ".format(case.case_name)))
 
             print("----------------------------------")
@@ -253,7 +253,7 @@ for case in case_list:
             print("Position : {:}".format(Y[index_time, indice_item]))
             print("Valeur du champ {:} : {:}".format(field, Z[index_time, indice_item]))
 
-            continue_bool = raw_input("Continuer ?") == "y"
+            continue_bool = input("Continuer ?") == "y"
 
 
 if plot:

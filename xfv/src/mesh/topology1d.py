@@ -66,7 +66,7 @@ class Topology1D(Topology):
         """
         Generation du maillage (connectivity cells <-> nodes)
         """
-        for ind_cell in xrange(nbr_of_cells):
+        for ind_cell in range(nbr_of_cells):
             ind_node_left = ind_cell
             ind_node_right = ind_cell + 1
             self.add_cell_in_contact_with_node(ind_node_left, ind_cell)

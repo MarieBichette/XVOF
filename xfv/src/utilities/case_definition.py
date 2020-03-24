@@ -55,7 +55,7 @@ class CaseManager:
         # Enregistrement du dictionnaire dans le fichier json
         fichier = self.file_for_case(case_name)
         if os.path.isfile(fichier):
-            print "Overriting existing file : {:}...".format(fichier)
+            print("Overriting existing file : {:}...".format(fichier))
 
         with open(fichier, "w") as f:
             json.dump(data, f, indent=4, sort_keys=True,
@@ -67,7 +67,7 @@ class CaseManager:
             if (case_name not in all_cases):
                 f.write(case_name)
                 f.write("\n")
-        print "Case {:} correctly registered".format(case_name)
+        print("Case {:} correctly registered".format(case_name))
 
     def find_case(self, case_name):
         """
@@ -83,10 +83,10 @@ class CaseManager:
                             case_dict["label"], case_dict["color"],
                             case_dict["linestyle"], case_dict["marker"])
         except:
-            print "Le cas {:} n'a pas été trouvé.".format(case_name)
-            choix = raw_input("Afficher tous les cas possibles ? (y/n) ")
+            print("Le cas {:} n'a pas été trouvé.".format(case_name))
+            choix = input("Afficher tous les cas possibles ? (y/n) ")
             if choix == "y":
-                print "Les cas disponibles sont :"
+                print("Les cas disponibles sont :")
                 with open(self.list_cases, "r") as f:
                     liste_cas = f.read()
                     print(liste_cas)
@@ -104,8 +104,8 @@ class CaseManager:
         case = self.find_case(case_name)
         # import ipdb ; ipdb.set_trace()
         setattr(case, key, new_value)
-        print "Le cas {:} a été modifié.".format(case_name)
-        print "Sauvegarde des nouvelles valeurs"
+        print("Le cas {:} a été modifié.".format(case_name))
+        print("Sauvegarde des nouvelles valeurs")
         self.delete_case(case_name)
         self.create_case(case.case_name, case.directory_name, case.label, case.color, case.linestyle, case.marker)
 
@@ -116,12 +116,12 @@ class CaseManager:
         :return:
         """
         case = self.find_case(case_name)
-        print u"Nom du cas : {:} ".format(case_name)
-        print u"Répertoire : {:} ".format(case.directory_name)
-        print u"Légende : {:} ".format(case.label)
-        print u"Couleur : {:} ".format(case.color)
-        print u"Linestyle : {:} ".format(case.linestyle)
-        print u"Marqueur : {:} ".format(case.marker)
+        print("Nom du cas : {:} ".format(case_name))
+        print("Répertoire : {:} ".format(case.directory_name))
+        print("Légende : {:} ".format(case.label))
+        print("Couleur : {:} ".format(case.color))
+        print("Linestyle : {:} ".format(case.linestyle))
+        print("Marqueur : {:} ".format(case.marker))
 
     def delete_case(self, case_name):
         """
@@ -140,7 +140,7 @@ class CaseManager:
         with open(case_mng.list_cases, "w") as f_tri:
             for case in liste_cas:
                 f_tri.write(case)
-        print "Case {:} deleted".format(case_name)
+        print("Case {:} deleted".format(case_name))
 
 
 if __name__ == '__main__':
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     # si le programme est lancé dans un terminal : lire les options sur quoi faire :
     if len(sys.argv) != 2:
-        print msg
+        print(msg)
         raise IndexError()
     option = sys.argv[1]
 
@@ -175,36 +175,36 @@ if __name__ == '__main__':
 
     # L'option create doit créer un cas avec les paramètres en arguments
     elif option == "create":
-        print "Cette fonctionnalité va maintenant vous guider dans la création d'un nouveau cas : "
-        name = raw_input("- Nom du cas : ")
-        directory = raw_input("- Répertoire (à partir du répertoire xfv.src) : ")
-        print "Options pour les tracés : "
-        label = raw_input("- Légende : ")
-        color = raw_input("- Couleur : ")
-        linestyle = raw_input("- Type de trait (symbole Python) : ")
-        marker = raw_input("- Marqueur (symbole Python) : ")
+        print("Cette fonctionnalité va maintenant vous guider dans la création d'un nouveau cas : ")
+        name = input("- Nom du cas : ")
+        directory = input("- Répertoire (à partir du répertoire xfv.src) : ")
+        print("Options pour les tracés : ")
+        label = input("- Légende : ")
+        color = input("- Couleur : ")
+        linestyle = input("- Type de trait (symbole Python) : ")
+        marker = input("- Marqueur (symbole Python) : ")
         case_mng.create_case(name, directory, label, color, linestyle, marker)
 
     elif option == "modify":
-        case_name = raw_input("- Nom du cas à modifier : ")
-        key = raw_input("Propriété à modifier : ")
+        case_name = input("- Nom du cas à modifier : ")
+        key = input("Propriété à modifier : ")
         while key not in ["case_name", "directory_name", "label", "color", "linestyle", "marker"]:
             print ("""Propriété non reconnue. Choisir entre case_name, directory_name, label,
                                 color, linestyle, marker""")
-            key = raw_input("Propriété à modifier : ")
-        value = raw_input("Nouvelle valeur : ")
+            key = input("Propriété à modifier : ")
+        value = input("Nouvelle valeur : ")
         case_mng.modify_case(case_name, key, value)
 
     elif option == "delete":
-        case_name = raw_input("- Nom du cas à supprimer : ")
-        confirmation = raw_input("Confirmation [O/n] : ")
+        case_name = input("- Nom du cas à supprimer : ")
+        confirmation = input("Confirmation [O/n] : ")
         if confirmation == "O":
             case_mng.delete_case(case_name)
 
     elif option == "info":
-        case_name = raw_input("- Nom du cas à afficher : ")
-        print "--- Informations sur le cas"
+        case_name = input("- Nom du cas à afficher : ")
+        print("--- Informations sur le cas")
         case_mng.print_info(case_name)
 
     else:
-        print msg
+        print(msg)

@@ -13,11 +13,10 @@ DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "field
 Field = namedtuple("Field", ["name", "owner", "attr_name", "indexes"])
 
 
-class OutputManager(object):
+class OutputManager(object, metaclass=Singleton):
     """
     The manager of all outputs
     """
-    __metaclass__ = Singleton
 
     def __init__(self):
         self.__db_build_infos = {}
@@ -48,7 +47,7 @@ class OutputManager(object):
                 self.__db_build_infos[db].fields.append(
                     Field(name=field_name, owner=field_support, attr_name=field_attr_name, indexes=indexes))
         else:
-            for build_infos in self.__db_build_infos.values():
+            for build_infos in list(self.__db_build_infos.values()):
                 build_infos.fields.append(Field(name=field_name, owner=field_support,
                                                 attr_name=field_attr_name, indexes=indexes))
 
@@ -140,7 +139,7 @@ class OutputManager(object):
         Based on this remark, additional_dof_fields have standard name "Additional..."
         Differentiation is made with test startswith(Additional)
         """
-        for build_infos in self.__db_build_infos.values():
+        for build_infos in list(self.__db_build_infos.values()):
             if build_infos.time_controler.db_has_to_be_updated(time, iteration):
                 build_infos.database_object.add_time(time)
                 for field in build_infos.fields:
@@ -183,7 +182,7 @@ class OutputManager(object):
         Close all the database
         """
         print("Flushing and writing database outputs!")
-        for build_infos in self.__db_build_infos.values():
+        for build_infos in list(self.__db_build_infos.values()):
             build_infos.database_object.close()
 
     def __str__(self):

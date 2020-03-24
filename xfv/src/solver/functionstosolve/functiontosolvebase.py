@@ -5,12 +5,10 @@ Implementing FunctionToSolveBase interface
 from abc import ABCMeta, abstractmethod
 
 
-class FunctionToSolveBase(object):
+class FunctionToSolveBase(object, metaclass=ABCMeta):
     """
     An interface for functions that should be solve by Nexton-Raphson non linear solver
     """
-    # pylint: disable=abstract-class-not-used
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         self._variables = None

@@ -36,7 +36,7 @@ def inverseMasse(matrice):
     """
     if len(matrice.shape) == 1 or (matrice.ndim == 2 and 1 in matrice.shape):
         result = np.zeros([len(matrice), 1])
-        for ind_node in xrange(len(matrice)):
+        for ind_node in range(len(matrice)):
             result[ind_node] = 1. / matrice[ind_node]
     else:  # la matrice est une vraie matrice (dim >=2)
         result = inv(matrice)
@@ -58,7 +58,8 @@ class SymNDArray(np.ndarray):
     """
     Une classe pour les matrices symétriques
     """
-    def __setitem__(self, (i, j), value):
+    def __setitem__(self, xxx_todo_changeme, value):
+        (i, j) = xxx_todo_changeme
         super(SymNDArray, self).__setitem__((i, j), value)
         super(SymNDArray, self).__setitem__((j, i), value)
 

@@ -26,11 +26,11 @@ msg += "- une liste des cas à traiter (séparés par une virgule, sans espace, 
 msg += "- -h ou --help pour afficher l'aide\n"
 
 if len(sys.argv) != 2:
-    print msg
+    print(msg)
     exit(0)
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 case_list = sys.argv[1].split(',')
@@ -49,7 +49,7 @@ for case in case_list:
     disc_collection_final = np.where(output_db.extract_field_at_time("CellStatus", output_db.saved_times[-1]))[0]
     nb_disc_total = len(disc_collection_final)
 
-    print "Nombres de  discontinuités créées : {:}".format(nb_disc_total)
+    print("Nombres de  discontinuités créées : {:}".format(nb_disc_total))
 
     # gros tableau pour les résultats
     opening = np.zeros([output_db.nb_saved_times, nb_disc_total])
@@ -64,11 +64,11 @@ for case in case_list:
     min_opening = 10.e+10
     max_opening = 0.
 
-    for i_temps in xrange(output_db.nb_saved_times):
+    for i_temps in range(output_db.nb_saved_times):
         t = output_db.saved_times[i_temps]
         temps[i_temps, :] = np.ones(nb_disc_total) * t
 
-        for i_disc in xrange(nb_disc_total):
+        for i_disc in range(nb_disc_total):
             exist, op, f = output_db.extract_fields_for_cohesive_zone_model(disc_collection_final[i_disc], t)
 
             opening[i_temps, i_disc] = op * 1.e+03 # multiplicateur pour tout passer en micro mètre

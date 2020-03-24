@@ -70,7 +70,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
                 format(disc.additional_dof_velocity_current[recal_ind])
             message += "==> additional degree of freedom for force = {}\n". \
                 format(disc.additional_dof_force.current_value[recal_ind])
-        print message
+        print(message)
 
     def initialize_additional_node_dof(self, disc):
         """
@@ -147,7 +147,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
 
             if (disc.discontinuity_opening.new_value < 0 and
                     DataContainer().material_target.damage_model.cohesive_model is None):
-                print "Problème avec la discontinuité {:} : ouverture négative".format(disc.label)
+                print("Problème avec la discontinuité {:} : ouverture négative".format(disc.label))
 
     def compute_enriched_nodes_cohesive_forces(self):
         """

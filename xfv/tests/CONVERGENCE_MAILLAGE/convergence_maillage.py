@@ -37,7 +37,7 @@ def compute_error(cell_id, data, ref_data):
 
     ref_max = np.max(np.abs(ref_data))
 
-    for cell_id in xrange(size_data):
+    for cell_id in range(size_data):
         x_target = data[cell_id * factor]
         x_ref = ref_data[cell_id]
 
@@ -77,8 +77,8 @@ field = "Pressure"
 # Initialisation des tableaux contenant les r�sultats
 ####################################################
 maillage = np.arange(4)
-print "maillage = "
-print maillage
+print("maillage = ")
+print(maillage)
 
 taille_maillage = np.array([1.e-6, 3.e-6, 9.e-6, 27.e-6, 81.e-6])
 
@@ -105,7 +105,7 @@ for i in maillage:
 
 ########################################################################
 
-    print "Maillage de r�f�rence : "
+    print("Maillage de r�f�rence : ")
     dir_to_db = "Ref_maillage_" + str(i)
     path_to_db = os.path.join(dir_to_db, "all_fields.hdf5")
     my_hd = OutputDatabaseExploit(path_to_db)
@@ -122,7 +122,7 @@ for i in maillage:
 
 ########################################################################
 
-    print "Maillage de somme : "
+    print("Maillage de somme : ")
     dir_to_db = "Enr_somme_maillage_" + str(i)
     path_to_db = os.path.join(dir_to_db, "all_fields.hdf5")
     my_hd = OutputDatabaseExploit(path_to_db)
@@ -138,7 +138,7 @@ for i in maillage:
     erreur_maillage_somme[i] = compute_error(-1, data, ref_data)
 
 ########################################################################
-    print "Maillage de menouillard : "
+    print("Maillage de menouillard : ")
 ########################################################################
     dir_to_db = "Enr_menouillard_maillage_" + str(i)
     path_to_db = os.path.join(dir_to_db, "all_fields.hdf5")

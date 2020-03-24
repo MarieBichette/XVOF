@@ -1,11 +1,10 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Cell module unit tests
 """
 import numpy as np
 import unittest
-import mock
+import unittest.mock as mock
 import os
 
 from xfv.src.cell.cell import Cell

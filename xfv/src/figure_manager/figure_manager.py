@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from collections import namedtuple
-from physic_figure import PhysicFigure
+from .physic_figure import PhysicFigure
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
 
@@ -31,11 +31,10 @@ DevStressField = Field("Stress Dev [Pa]", "Champ de dev stress", -1.5e+09,
 StressXXField = Field("Stress XX [Pa]", "Champ de stress XX", -20e+09, 20e+09, "./RESULTATS/StressXXField")
 
 
-class FigureManager(object):
+class FigureManager(object, metaclass=Singleton):
     """
     Gestionnaire de figures
     """
-    __metaclass__ = Singleton
 
     def __init__(self, mesh_instance, dump=False):
         self.__mesh_instance = mesh_instance
@@ -87,12 +86,12 @@ class FigureManager(object):
         try:
             X = self.__champs_mailles[field_X]
         except ValueError as ve:
-            print "Le champ {} est inconnu!".format(field_X)
+            print("Le champ {} est inconnu!".format(field_X))
             raise ve
         try:
             Y = self.__champs_mailles[field_Y]
         except ValueError as ve:
-            print "Le champ {} est inconnu!".format(field_Y)
+            print("Le champ {} est inconnu!".format(field_Y))
             raise ve
         if self.__dump:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
@@ -112,12 +111,12 @@ class FigureManager(object):
         try:
             X = np.array(self.__champs_noeuds[field_X])
         except ValueError as ve:
-            print "Le champ {} est inconnu!".format(field_X)
+            print("Le champ {} est inconnu!".format(field_X))
             raise ve
         try:
             Y = np.array(self.__champs_noeuds[field_Y])
         except ValueError as ve:
-            print "Le champ {} est inconnu!".format(field_Y)
+            print("Le champ {} est inconnu!".format(field_Y))
             raise ve
         if self.__dump:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
@@ -135,12 +134,12 @@ class FigureManager(object):
         la liste des figures
         """
         champ_X = CellPositionField
-        for champ_Y in self.__champs_mailles.keys():
+        for champ_Y in list(self.__champs_mailles.keys()):
             if champ_Y != champ_X:
                 fig = self.create_figure_for_cell_field(champ_X, champ_Y)
                 self.__figures_mailles.append((fig, champ_X, champ_Y))
         champ_X = NodePositionField
-        for champ_Y in self.__champs_noeuds.keys():
+        for champ_Y in list(self.__champs_noeuds.keys()):
             if champ_Y != champ_X:
                 fig = self.create_figure_for_node_field(champ_X, champ_Y)
                 self.__figures_noeuds.append((fig, champ_X, champ_Y))

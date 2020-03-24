@@ -5,11 +5,10 @@ Implementing the PlasticityCriterion abstract base class
 from abc import ABCMeta, abstractmethod
 
 
-class PlasticityCriterion(object):
+class PlasticityCriterion(object, metaclass=ABCMeta):
     """
     An abstract base class for plasticity criteria
     """
-    __metaclass__ = ABCMeta
 
     @staticmethod
     @abstractmethod

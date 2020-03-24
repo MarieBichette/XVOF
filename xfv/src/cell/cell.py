@@ -107,10 +107,10 @@ class Cell(object):
         self.cell_in_projectile[cell_projectile] = True
 
         try:
-            print "Cells in the projectile : de {:} a {:}" .format(
-                np.where(self.cell_in_projectile)[0][0], np.where(self.cell_in_projectile)[0][-1])
-            print "Cells in the target : de {:} a {:}".format(
-                np.where(self.cell_in_target)[0][0], np.where(self.cell_in_target)[0][-1])
+            print("Cells in the projectile : de {:} a {:}" .format(
+                np.where(self.cell_in_projectile)[0][0], np.where(self.cell_in_projectile)[0][-1]))
+            print("Cells in the target : de {:} a {:}".format(
+                np.where(self.cell_in_target)[0][0], np.where(self.cell_in_target)[0][-1]))
         except IndexError:
             # pour g�rer  les exceptions o� il n'y a pas de projectile ou de target
             # (cas tableau vide [index])
@@ -272,7 +272,7 @@ class Cell(object):
         message += "==> sound velocity at t = {}".format(
             self.sound_velocity.current_value) + os.linesep
         message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
-        print message
+        print(message)
 
     def increment_variables(self):
         """

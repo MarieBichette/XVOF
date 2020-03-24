@@ -2,9 +2,10 @@ language: python
 git:
   depth: false
 python:
-  - "2.7"
+  - "3.7"
 # command to install dependencies
 install:
+  - pip install --upgrade pip
   - pip install .
 # command to run tests
 jobs:

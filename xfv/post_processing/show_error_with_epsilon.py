@@ -36,7 +36,7 @@ msg += "On demandera une option pour savoir comment calculer l'erreur (absolue, 
 msg += "- -h ou --help pour afficher l'aide"
 
 if len(sys.argv) not in [2, 3]:
-    print msg
+    print(msg)
     exit(0)
 
 ##########################
@@ -48,19 +48,19 @@ if len(sys.argv) == 3:
 ###########################
 
 if sys.argv[1] in ["-h", "--help"]:
-    print msg
+    print(msg)
     exit(0)
 
 try:
     eps_list = [float(eps) for eps in sys.argv[1].split('-')]
 except TypeError:
-    print msg
+    print(msg)
     raise
 
 # On demande quel calcul d'erreur faire
 option = None
-while option not in range(3):
-    option = input("Quelle méthode de calcul pour l'erreur ? (0 = absolue, 1 = adimensionnée, 2 = relative) ")
+while option not in list(range(3)):
+    option = eval(input("Quelle méthode de calcul pour l'erreur ? (0 = absolue, 1 = adimensionnée, 2 = relative) "))
 
 # -----------------------------------------
 # Construction de la liste des cas
@@ -76,7 +76,7 @@ error_max = np.zeros([nb_case_epsilon, 3])
 # Array hansbo | lump_eps | lump_sum
 
 field = DensityField
-print "-> Selected field is : " + field.label
+print("-> Selected field is : " + field.label)
 
 hansbo_cases = [translate_epsilon_to_case(case_hansbo_base, epsilon) for epsilon in eps_list]
 hansbo_lump_eps_cases = [translate_epsilon_to_case(case_lump_eps_base, epsilon) for epsilon in eps_list]
@@ -92,7 +92,7 @@ answer_array = np.zeros([len(simulations)], dtype=bool)
 # construction d'un vecteur erreur pour chaque simulation
 sim_id = 0
 while sim_id < len(simulations):
-    answer = raw_input("Voulez vous étudier le cas : {:} ? [y/n]".format(simulations[sim_id]))
+    answer = input("Voulez vous étudier le cas : {:} ? [y/n]".format(simulations[sim_id]))
     answer_array[sim_id] = (answer == "y")
     if answer == "y":
         for i in range(nb_case_epsilon):

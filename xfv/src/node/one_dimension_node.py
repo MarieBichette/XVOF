@@ -72,7 +72,7 @@ class OneDimensionNode(Node):
         """
         Node.infos(self, index)
         message = "==> section = {:5.4g}".format(self.section)
-        print message
+        print(message)
 
     def compute_new_force(self, topologie, contrainte):
         """

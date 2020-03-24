@@ -40,7 +40,7 @@ if analysis == 'profile':
         t = float(t)
 elif analysis == 'evolution':
     item_id = sys.argv[4].split(',')
-    item_id = map(int, item_id)
+    item_id = list(map(int, item_id))
 else:
     raise ValueError("""Only evolution or profile are allowed as type of analysis""")
 # -----------------------------------------
@@ -58,7 +58,7 @@ for case in cases:
             for t in time:
                 output_file = "profil_{:}_at_time_{:}_us.txt".format(field.title.lower(), str(int(t*1e06)))
                 write_profile_from_db(path_to_hdf5_db, output_file, t, field)
-        print "Done for case {:}".format(case.case_name)
+        print("Done for case {:}".format(case.case_name))
 
     if analysis == 'evolution':
         for field in field_list:

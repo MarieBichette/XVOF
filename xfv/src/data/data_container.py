@@ -64,17 +64,16 @@ DatabaseProps = namedtuple("DatabaseProps",
                             "cell_indexes", "node_indexes"])
 
 
-class DataContainer(object):  # pylint: disable=too-many-instance-attributes
+class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-instance-attributes
     """
     Contains the data read from the datafile
     """
-    __metaclass__ = Singleton
 
     def __init__(self, datafile_path=None):
         """
         Constructor
         """
-        print "Opening data file : {:s}".format(os.path.abspath(datafile_path))
+        print("Opening data file : {:s}".format(os.path.abspath(datafile_path)))
         self.project_dir = os.path.commonprefix([os.path.abspath(datafile_path),
                                                  os.path.abspath(__file__)])
         self.__datadoc = et.parse(datafile_path)
@@ -212,8 +211,8 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
         if failure.failure_treatment is not None and damage.cohesive_model is not None:
             if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
                     isinstance(failure_criterion, MaximalStressCriterion)):
-                print "Failure criterion value and cohesive strength have different value. " \
-                      "This may result in errors in the future"
+                print("Failure criterion value and cohesive strength have different value. " \
+                      "This may result in errors in the future")
 
         return init, behavior, failure, damage
 
@@ -375,7 +374,7 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
                            """Only those lumps are possible : menouillard, somme \n"""
                            """No lumping technique is applied. Mass matrix is consistent""")
         else:
-            print "No failure treatment will be applied for {:}".format(matter)
+            print("No failure treatment will be applied for {:}".format(matter))
             failure_treatment_value = 0.
             type_of_enrichment = None
             lump_mass_matrix = None
@@ -484,8 +483,8 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
             else:  # loi lineaire
                 cohesive_model = LinearCohesiveZoneModel(
                     cohesive_strength, critical_separation, unloading_model)
-        print "Applying a damage model for " + matter + " which is : " + cohesive_model_name
-        print "Unloading model is : " + unloading_model_name
+        print("Applying a damage model for " + matter + " which is : " + cohesive_model_name)
+        print("Unloading model is : " + unloading_model_name)
         return cohesive_model, cohesive_model_name
 
     def __get_yield_stress_and_shear_modulus(self, matter):
@@ -525,7 +524,7 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
                                  format(elasticity_model_name))
             elasticity_model = ConstantShearModulus(shear_modulus)
         except AttributeError:
-            print "Impossible de construire le modèle d'élasticité"
+            print("Impossible de construire le modèle d'élasticité")
         try:
             # Plasticité
             plasticity_model_name = str(self.__datadoc.find(
@@ -539,7 +538,7 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
             if plasticity_criterion_name == "VonMises":
                 plasticity_criterion = VonMisesCriterion()
         except AttributeError:
-            print "Impossible de construire le mod�le de plasticit�"
+            print("Impossible de construire le mod�le de plasticit�")
         return elasticity_model, plasticity_model, plasticity_criterion
 
     def hasExternalSolver(self):  # pylint: disable=invalid-name
@@ -619,6 +618,5 @@ class DataContainer(object):  # pylint: disable=too-many-instance-attributes
 
             bc_law.register_pressure()
         else:
-            raise(ValueError, """Mauvais type de CL : les possibilités sont """
-                              """(pressure | velocity)""")
+            raise ValueError
         return bc_law

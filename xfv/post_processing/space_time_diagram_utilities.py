@@ -3,7 +3,7 @@
 """
 A class for utilities for plotting a march diagram after exploitation of the output database
 """
-from __future__ import print_function
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt

@@ -18,5 +18,6 @@ setup(name='XtendedFiniteVolume',
       install_requires=['h5py',
                         'lxml',
                         'matplotlib',
-                        'numpy>=1.16.0']
+                        'numpy>=1.16.0',
+                        'PyQt5']
      )

@@ -5,11 +5,10 @@ Definition of EquationOfStateBase interface
 from abc import ABCMeta, abstractmethod
 
 
-class EquationOfStateBase(object):
+class EquationOfStateBase(object, metaclass=ABCMeta):
     """
     An interface for all equation of states
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def solveVolumeEnergy(self, specific_volume, internal_energy):

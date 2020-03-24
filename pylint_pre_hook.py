@@ -7,28 +7,28 @@ Slight variation of:
 Copy it under .git/hooks/pre-commit at the root of your project.
 """
 
-from __future__ import print_function
+
 from subprocess import check_output, CalledProcessError
-from sys import stderr
+import sys
 from os.path import isfile
 from os import getenv
 
 (SUCCESS,
  GIT_DIFF_ERROR,
- PYLINT_ERRORS) = range(3)
+ PYLINT_ERRORS) = list(range(3))
 
 PYLINTRC = ".pylintrc"
 
 def _print_error(message):
     """Print an error message to stderr."""
-    print(message, file=stderr)
+    print(message, file=sys.stderr)
 
 def _is_python_script(filename):
     """Return true for *.py files and python scripts ("#! /path/to/python")."""
     if not isfile(filename):
         return False
 
-    if not filename.endswith(".py"):
+    if not filename.endswith(b".py"):
         try:
             with open(filename, "rb") as contents:
                 first_line = contents.readline()
@@ -36,7 +36,7 @@ def _is_python_script(filename):
             return False
 
         # Check shebang.
-        if not (first_line.startswith("#!") and "python" in first_line):
+        if not (first_line.startswith(b"#!") and b"python" in first_line):
             return False
 
     return True
@@ -46,10 +46,10 @@ def get_git_cmd():
     """Return the git command to detect the changes between branch and master"""
     is_travis_env = getenv("TRAVIS") is not None
     if is_travis_env:
-        cmd = "git diff --name-only --diff-filter=AM origin/master-new"
+        cmd = "git diff --name-only --diff-filter=AM origin/master-new xfv/src"
     else:
         cmd = "git diff --staged --name-only HEAD"
-    print ("cmd is {:s}".format(cmd))
+    print("cmd is {:s}".format(cmd))
     return cmd.split()
 
 
@@ -75,11 +75,11 @@ def run():
         try:
             check_output(cmd + changed_files)
         except CalledProcessError as error:
-            _print_error(error.output)
+            _print_error(error.output.decode('utf-8'))
             _print_error("pylint returned errors, aborting commit.")
             return PYLINT_ERRORS
 
     return SUCCESS
 
 if __name__ == "__main__":
-    exit(run())
+    sys.exit(run())

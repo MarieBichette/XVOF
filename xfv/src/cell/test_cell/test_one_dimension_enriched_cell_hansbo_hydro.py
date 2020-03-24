@@ -5,7 +5,7 @@ Cell module unit tests
 """
 import unittest
 import os
-import mock
+import unittest.mock as mock
 import numpy as np
 
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
@@ -31,7 +31,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         DataContainer.clear()
-        print "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
+        print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
 
     def setUp(self):
         """

@@ -6,11 +6,10 @@ Implementing the RuptureCriterion abstract base class
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureCriterion(object):  # pylint: disable=too-few-public-methods
+class RuptureCriterion(object, metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     An abstract base class for rupture criteria
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         pass

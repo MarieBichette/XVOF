@@ -64,7 +64,7 @@ def write_evolution_from_db(path_to_hdf5_db, output_file_name, item, id_item, fi
     """
     directory = os.path.dirname(os.path.abspath(path_to_hdf5_db))
     path_to_save_data = os.path.join(directory, output_file_name)
-    print "writing file {:} with fields {} ...".format(os.path.relpath(path_to_save_data), field.title)
+    print("writing file {:} with fields {} ...".format(os.path.relpath(path_to_save_data), field.title))
     to_write = read_database_in_array(path_to_hdf5_db, id_item, field.title)
     header = "-----Time History for {:} {:} :".format(item, str(id_item)) + os.linesep
     header += "{:^15s}    {:^15s} ".format("Time[s]", field.label)
@@ -90,7 +90,7 @@ def write_profile_from_db(path_to_hdf5_db, output_file_name, time, field):
     array_to_write = my_hd.extract_true_field_at_time(field.title, time)[:]
 
     np.savetxt(path_to_save_data, array_to_write, fmt=['%+9.8e','%+9.8e'])
-    print "writing file {:} with fields {} ...".format(path_to_save_data, field.title)
+    print("writing file {:} with fields {} ...".format(path_to_save_data, field.title))
 
 
 

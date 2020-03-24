@@ -5,12 +5,10 @@ Defining an interface for rupture treatments
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureTreatment(object):  # pylint: disable=too-few-public-methods
+class RuptureTreatment(object, metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     An interface for rupture treatments
     """
-    # Nécessaire pour spécifier l'interface
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def apply_treatment(self, cells, ruptured_cells, *args, **kwargs):
