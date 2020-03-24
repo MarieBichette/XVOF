@@ -18,7 +18,7 @@ class ImposedPressureTest(unittest.TestCase):
 
     def test_applyTreatment(self):
         """
-        Teste la méthode applyTreatment for EnrichElement
+        Teste la méthode apply_treatment for EnrichElement
         """
 
 

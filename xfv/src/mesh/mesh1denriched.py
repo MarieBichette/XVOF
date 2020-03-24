@@ -358,8 +358,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :var treatment: rupture treatment
         :type treatment: RuptureTreatment
         """
-        treatment.applyTreatment(self.cells, self.__ruptured_cells,
-                                 self.nodes, self.__topology, time)
+        treatment.apply_treatment(self.cells, self.__ruptured_cells,
+                                  self.nodes, self.__topology, time)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_plasticity_treatment(self, dt):  # dt is ok. pylint: disable=invalid-name
