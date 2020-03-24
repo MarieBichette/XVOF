@@ -40,9 +40,9 @@ class ImposedPressureTest(unittest.TestCase):
 
     def test_applyTreatment(self):
         """
-        Teste la méthode applyTreatment for ImposedPressure
+        Teste la méthode apply_treatment for ImposedPressure
         """
-        self.my_imposed_pressure.applyTreatment(self.cells, self.ruptured_cells)
+        self.my_imposed_pressure.apply_treatment(self.cells, self.ruptured_cells)
         self.cells.increment_variables()
         self.assertAlmostEqual(self.cells.pressure_field[500], self._pressure)
 

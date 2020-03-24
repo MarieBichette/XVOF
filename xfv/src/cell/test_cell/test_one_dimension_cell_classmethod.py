@@ -14,7 +14,11 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_elasto.xml")
         DataContainer(data_file_path)
 
     @classmethod
@@ -48,9 +52,9 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         eos = DataContainer().material_target.constitutive_model.eos
 
         energy_new_value, pressure_new_value, sound_velocity_new_value = \
-            OneDimensionCell.apply_equation_of_state(self.my_cells, eos, density_current, density_new,
-                                         pressure_current, pressure_new,
-                                         energy_current, energy_new, pseudo, cson_new)
+            OneDimensionCell.apply_equation_of_state(self.my_cells, eos, density_current,
+                                                     density_new, pressure_current, pressure_new,
+                                                     energy_current, energy_new, pseudo, cson_new)
 
         expected_energy = np.array([487.425148, 94.274747, 28.598207, 16.438778])
         expected_pressure = np.array([1.103738e+09,  -4.640087e+08,  -2.323383e+08,  -1.549395e+08])
@@ -79,7 +83,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
                                    [3., -1.5, -1.5],
                                    [4., -2., -2.]])
         energy_new = OneDimensionCell.add_elastic_energy_method(dt, density_current, density_new,
-                                                                stress_dev_current, stress_dev_new, strain_rate_dev)
+                                                                stress_dev_current, stress_dev_new,
+                                                                strain_rate_dev)
         expected_energy = np.array([ 0.001846,  0.00151 ,  0.005034,  0.026846])
         np.testing.assert_allclose(energy_new, expected_energy, rtol=1.e-3)
 
@@ -102,9 +107,12 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
                                 [u_new[1], u_new[2]],
                                 [u_new[2], u_new[3]],
                                 [u_new[3], u_new[4]]]).reshape((4,2))
-        expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333], [0.266667, -0.133333, -0.133333]])
+        expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333],
+                                    [0.266667, -0.133333, -0.133333]])
         dev_strain_rate = np.zeros((self.nbr_cells, 3))
-        dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt, position_new, vitesse_new)
+        dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt,
+                                                                                     position_new,
+                                                                                     vitesse_new)
         np.testing.assert_allclose(dev_strain_rate, expected_result, rtol=1.e-05)
 
     def test_compute_pseudo(self):
@@ -117,7 +125,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         sound_speed = np.array([4400, 3200, 1140])
         dt = 1.2e-08
         pseudo_a, pseudo_b = 1.2, 0.25
-        result = OneDimensionCell.compute_pseudo(dt, rho_old, rho_new, new_size, sound_speed, pseudo_a, pseudo_b)
+        result = OneDimensionCell.compute_pseudo(dt, rho_old, rho_new, new_size, sound_speed,
+                                                 pseudo_a, pseudo_b)
         np.testing.assert_allclose(result, [0.00000000e+00, 2.25427729e+13, 2.00897590e+09])
 
     def test_compute_time_step(self):
@@ -131,7 +140,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         sound_speed = np.array([4400., 3200., 1140.])
         pseudo_old = np.array([1.0e+09, 0.5e+08, 0.3e+08])
         pseudo_new = np.array([1.5e+09, 1.5e+08, 0.])
-        result = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size, sound_speed, pseudo_old, pseudo_new)
+        result = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size,
+                                                    sound_speed, pseudo_old, pseudo_new)
         np.testing.assert_allclose(result, [1.41137110e-06, 7.81250000e-07, 1.09649123e-06])
 
 if __name__ == "__main__":

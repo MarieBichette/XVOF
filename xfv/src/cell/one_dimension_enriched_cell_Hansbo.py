@@ -51,30 +51,47 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         Values to intialize the right part fields when discontinuity disc is created
         """
         # Initialization of the current field value
-        disc.additional_dof_density.current_value = self.density.current_value[disc.mask_ruptured_cell]
-        disc.additional_dof_pressure.current_value = self.pressure.current_value[disc.mask_ruptured_cell]
-        disc.additional_dof_sound_velocity.current_value = self.sound_velocity.current_value[disc.mask_ruptured_cell]
-        disc.additional_dof_energy.current_value = self.energy.current_value[disc.mask_ruptured_cell]
-        disc.additional_dof_artificial_viscosity.current_value = self.pseudo.current_value[disc.mask_ruptured_cell]
-        disc._additional_dof_deviatoric_stress_current = self._deviatoric_stress_current[disc.mask_ruptured_cell]
-        disc.additional_dof_shear_modulus.current_value = self.shear_modulus.current_value[disc.mask_ruptured_cell]
-        disc.additional_dof_yield_stress.current_value = self.yield_stress.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_density.current_value = \
+            self.density.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_pressure.current_value = \
+            self.pressure.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_sound_velocity.current_value = \
+            self.sound_velocity.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_energy.current_value = \
+            self.energy.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_artificial_viscosity.current_value = \
+            self.pseudo.current_value[disc.mask_ruptured_cell]
+        disc._additional_dof_deviatoric_stress_current = \
+            self._deviatoric_stress_current[disc.mask_ruptured_cell]
+        disc.additional_dof_shear_modulus.current_value = \
+            self.shear_modulus.current_value[disc.mask_ruptured_cell]
+        disc.additional_dof_yield_stress.current_value = \
+            self.yield_stress.current_value[disc.mask_ruptured_cell]
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
-        disc.additional_dof_density.new_value = self.density.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_pressure.new_value = self.pressure.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_sound_velocity.new_value = self.sound_velocity.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_energy.new_value = self.energy.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_artificial_viscosity.new_value = self.pseudo.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_shear_modulus.new_value = self.shear_modulus.new_value[disc.mask_ruptured_cell]
-        disc.additional_dof_yield_stress.new_value = self.yield_stress.new_value[disc.mask_ruptured_cell]
-        disc._additional_dof_deviatoric_stress_new = self._deviatoric_stress_new[disc.mask_ruptured_cell]
+        disc.additional_dof_density.new_value = \
+            self.density.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_pressure.new_value = \
+            self.pressure.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_sound_velocity.new_value = \
+            self.sound_velocity.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_energy.new_value = \
+            self.energy.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_artificial_viscosity.new_value = \
+            self.pseudo.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_shear_modulus.new_value = \
+            self.shear_modulus.new_value[disc.mask_ruptured_cell]
+        disc.additional_dof_yield_stress.new_value = \
+            self.yield_stress.new_value[disc.mask_ruptured_cell]
+        disc._additional_dof_deviatoric_stress_new = \
+            self._deviatoric_stress_new[disc.mask_ruptured_cell]
         # Other quantities initialization
-        disc._additional_dof_deviatoric_strain_rate = self._deviatoric_strain_rate[disc.mask_ruptured_cell]
+        disc._additional_dof_deviatoric_strain_rate = \
+            self._deviatoric_strain_rate[disc.mask_ruptured_cell]
         disc._additional_dof_stress = self._stress[disc.mask_ruptured_cell]
         disc._additional_dof_equivalent_plastic_strain_rate = \
-                                                          self._equivalent_plastic_strain_rate[disc.mask_ruptured_cell]
+            self._equivalent_plastic_strain_rate[disc.mask_ruptured_cell]
 
     @staticmethod
     def reconstruct_enriched_hydro_field(classical_field, enriched_field_name):
@@ -85,8 +102,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :return: champ complet
         :rtype np.array
         """
-        # Pour reconstruire le champ de coordonnées des cells, les ruptured cells des discontinuités doivent être
-        # triées par cell id pour savoir comment gérer le décalage
+        # Pour reconstruire le champ de coordonnées des cells, les ruptured cells des
+        # discontinuités doivent être triées par cell id pour savoir comment gérer le décalage
         insertion_field = np.zeros([len(Discontinuity.discontinuity_list()), 2])
         # insertion_field est un array qui contient ruptured_cell_id, right_field
         for disc in Discontinuity.discontinuity_list():
@@ -111,8 +128,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :return: champ complet
         :rtype np.array
         """
-        # Pour reconstruire le champ de coordonnées des cells, les ruptured cells des discontinuités doivent être
-        # triées par cell id pour savoir comment gérer le décalage
+        # Pour reconstruire le champ de coordonnées des cells, les ruptured cells des
+        # discontinuités doivent être triées par cell id pour savoir comment gérer le décalage
         insertion_field = np.zeros([len(Discontinuity.discontinuity_list()), 2])
         # insertion_field est un array qui contient ruptured_cell_id, right_field
         for disc in Discontinuity.discontinuity_list():
@@ -157,7 +174,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :return: artificial viscosity field
         :rtype: np.array
         """
-        return self.reconstruct_enriched_hydro_field(self.pseudo, "additional_dof_artificial_viscosity")
+        return self.reconstruct_enriched_hydro_field(self.pseudo,
+                                                     "additional_dof_artificial_viscosity")
 
     @property
     def stress_xx_field(self):
@@ -178,7 +196,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
 
     def compute_enriched_elements_new_pressure(self, dt):
         """
-        Compute pressure, internal energy and sound velocity in left and right parts of the enriched elements
+        Compute pressure, internal energy and sound velocity in left and right parts of
+        the enriched elements
         """
         for disc in Discontinuity.discontinuity_list():
             mask = disc.mask_ruptured_cell
@@ -200,12 +219,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
                                                                self.deviatoric_stress_new[mask],
                                                                self._deviatoric_strain_rate[mask])
                 disc.additional_dof_energy.current_value += \
-                    OneDimensionCell.add_elastic_energy_method(dt,
-                                                               disc.additional_dof_density.current_value,
-                                                               disc.additional_dof_density.new_value,
-                                                               disc.additional_dof_deviatoric_stress_current,
-                                                               disc.additional_dof_deviatoric_stress_new,
-                                                               disc.additional_dof_deviatoric_strain_rate)
+                    OneDimensionCell.add_elastic_energy_method(
+                        dt, disc.additional_dof_density.current_value,
+                        disc.additional_dof_density.new_value,
+                        disc.additional_dof_deviatoric_stress_current,
+                        disc.additional_dof_deviatoric_stress_new,
+                        disc.additional_dof_deviatoric_strain_rate)
+
             # Initialize local parameters :
             density_left = self.density.current_value[mask]
             density_left_new = self.density.new_value[mask]
@@ -226,16 +246,19 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             cson_right_new = disc.additional_dof_sound_velocity.new_value
             # Call EOS :
             energy_new_left_value, pressure_new_left_value, sound_velocity_new_left_value = \
-                OneDimensionCell.apply_equation_of_state(self, DataContainer().material_target.constitutive_model.eos,
-                                                         density_left, density_left_new, pressure_left,
-                                                         pressure_left_new, energy_left, energy_left_new,
-                                                         pseudo_left, cson_left_new)
+                OneDimensionCell.apply_equation_of_state(
+                    self, DataContainer().material_target.constitutive_model.eos,
+                    density_left, density_left_new, pressure_left,
+                    pressure_left_new, energy_left, energy_left_new,
+                    pseudo_left, cson_left_new)
 
             energy_new_right_value, pressure_new_right_value, sound_velocity_new_right_value = \
-                OneDimensionCell.apply_equation_of_state(self, DataContainer().material_target.constitutive_model.eos,
-                                                         density_right, density_right_new, pressure_right,
-                                                         pressure_right_new, energy_right, energy_right_new,
-                                                         pseudo_right, cson_right_new)
+                OneDimensionCell.apply_equation_of_state(
+                    self, DataContainer().material_target.constitutive_model.eos,
+                    density_right, density_right_new, pressure_right,
+                    pressure_right_new, energy_right, energy_right_new,
+                    pseudo_right, cson_right_new)
+
             # Save results :
             self.pressure.new_value[mask] = pressure_new_left_value
             disc.additional_dof_pressure.new_value = pressure_new_right_value
@@ -251,14 +274,16 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :param node_velocity: array, node velocities
         """
         for disc in Discontinuity.discontinuity_list():
-            ug, ud = OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(disc, node_velocity)
+            ug, ud = OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
+                disc, node_velocity)
             u1g = node_velocity[disc.mask_in_nodes]
             u2d = node_velocity[disc.mask_out_nodes]
             OneDimensionEnrichedCell.compute_new_left_right_size(time_step, disc, u1g, u2d, ug, ud)
 
     def compute_enriched_elements_new_density(self):
         """
-        Compute the new densities for left and right parts of the ruptured element (from mass conservation equation)
+        Compute the new densities for left and right parts of the ruptured element
+        (from mass conservation equation)
         """
         for disc in Discontinuity.discontinuity_list():
             mask = disc.ruptured_cell_id
@@ -269,8 +294,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
 
     def compute_enriched_elements_new_pseudo(self, delta_t):
         """
-        Calcule les nouvelles pseudo viscosités gauche et droite pour les éléments enrichis à partir de la methode
-        compute_new_pseudo de OneDimensionCell avec les nouvelles valeurs enrichies
+        Calcule les nouvelles pseudo viscosités gauche et droite pour les éléments enrichis
+        à partir de la methode compute_new_pseudo de OneDimensionCell avec les nouvelles
+        valeurs enrichies
         :param delta_t: time_step
         """
         for disc in Discontinuity.discontinuity_list():
@@ -279,18 +305,18 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             density_left = np.array([self.density.current_value[mask_in]])
             density_left_new = np.array([self.density.new_value[mask_in]])
             sound_velocity_left = np.array([self.sound_velocity.current_value[mask_in]])
-            pseudo_left_new = OneDimensionCell.compute_pseudo(delta_t, density_left, density_left_new,
-                                                              disc.left_part_size.new_value, sound_velocity_left,
-                                                              DataContainer().numeric.a_pseudo,
-                                                              DataContainer().numeric.b_pseudo)
+            pseudo_left_new = OneDimensionCell.compute_pseudo(
+                delta_t, density_left, density_left_new, disc.left_part_size.new_value,
+                sound_velocity_left, DataContainer().numeric.a_pseudo,
+                DataContainer().numeric.b_pseudo)
             # Partie droite :
             density_right = disc.additional_dof_density.current_value
             density_right_new = disc.additional_dof_density.new_value
             sound_velocity_right = disc.additional_dof_sound_velocity.current_value
-            pseudo_right_new = OneDimensionCell.compute_pseudo(delta_t, density_right, density_right_new,
-                                                               disc.right_part_size.new_value, sound_velocity_right,
-                                                               DataContainer().numeric.a_pseudo,
-                                                               DataContainer().numeric.b_pseudo)
+            pseudo_right_new = OneDimensionCell.compute_pseudo(
+                delta_t, density_right, density_right_new,
+                disc.right_part_size.new_value, sound_velocity_right,
+                DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
             self.pseudo.new_value[mask_in] = pseudo_left_new
             disc.additional_dof_artificial_viscosity.new_value = pseudo_right_new
 
@@ -331,7 +357,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             mask_cells = disc.ruptured_cell_id
 
             u_discg_new, u_discd_new = \
-                OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(disc, node_velocity_new)
+                OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
+                    disc, node_velocity_new)
             u_noeuds_new = node_velocity_new[mask_nodes]  # vitesses noeuds gauche et droite de l'élément rompu à t_n+1
             x_noeuds_new = node_coord_new[mask_nodes]  # coord noeuds gauche et droite de l'élément rompu à t_n+1
 
@@ -461,7 +488,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
                     disc._additional_dof_plastic_strain_rate[:, i] = (1- radial_return) / \
                                                  (radial_return * 3 * disc.additional_dof_shear_modulus.current_value * dt) * \
                                                  disc._additional_dof_deviatoric_stress_new[:, i]
-
 
     def compute_enriched_yield_stress(self):
         """

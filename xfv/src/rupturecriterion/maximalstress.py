@@ -6,7 +6,7 @@ Implementation of MaximalStressCriterion class
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
-class MaximalStressCriterion(RuptureCriterion):
+class MaximalStressCriterion(RuptureCriterion):   # pylint: disable=too-few-public-methods
     """
     A rupture criterion based on minimal pressure
     """
@@ -14,7 +14,7 @@ class MaximalStressCriterion(RuptureCriterion):
         super(MaximalStressCriterion, self).__init__()
         self.__max_stress = sigma_max
 
-    def checkCriterion(self, cells, *args, **kwargs):
+    def check_criterion(self, cells, *args, **kwargs):
         """
         Return the mask of the cells where pressure is below the minimum pressure
 
@@ -22,5 +22,3 @@ class MaximalStressCriterion(RuptureCriterion):
         :return: the mask of the cells where pressure is below the minimum pressure
         """
         return cells.stress[:, 0] > self.__max_stress
-
-

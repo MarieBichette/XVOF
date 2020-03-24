@@ -15,9 +15,15 @@ from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
 class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
-    """Unittests of the OneDimensionHansboEnrichedCell class"""
+    """
+    Unittests of the OneDimensionHansboEnrichedCell class
+    """
+
     @classmethod
     def setUpClass(cls):
+        """
+        Tests setup for class
+        """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
         DataContainer(data_file_path)
@@ -92,8 +98,8 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                        spec=classmethod, new_callable=mock.MagicMock)
     @mock.patch.object(OneDimensionCell, "add_elastic_energy_method",
                        spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_enriched_elements_new_pressure_without_elasticity(self, mock_elasto,
-                                                                       mock_eos, mock_disc):  #pylint: disable=unused-argument
+    def test_compute_enriched_elements_new_pressure_without_elasticity(
+            self, mock_elasto, mock_eos, mock_disc):  #pylint: disable=unused-argument
         """
         Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """

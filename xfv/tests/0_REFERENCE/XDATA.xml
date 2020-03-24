@@ -9,6 +9,7 @@
         <section>0.0003141592653589793</section>
     </geometry>
     <matter>
+        <target>
 
             <initialization>
                 <initial-velocity>0.</initial-velocity>
@@ -18,6 +19,7 @@
                 <name>Mie-Gruneisen</name>
                 <coefficients>Cuivre_MieGruneisen.json</coefficients>
             </equation-of-state>
+        </target>
     </matter>
 
     <boundary-conditions>
