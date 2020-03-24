@@ -7,7 +7,7 @@ import os.path
 import sys
 import time
 import matplotlib  # pylint: disable=unused-import
-#matplotlib.use('Qt4Agg')
+matplotlib.use('Qt4Agg')
 
 
 import matplotlib.pyplot as plt
@@ -230,8 +230,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         the_output_mng.update(simulation_time, step,
                               data.material_target.failure_model.type_of_enrichment,
                               data.material_target.failure_model.failure_treatment_value)
-        #the_figure_mng.update(simulation_time, step)
-        # commente en attendant de retrouver Qt => avec passage python3 + PyQt5
+        the_figure_mng.update(simulation_time, step)
 
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
