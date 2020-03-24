@@ -330,7 +330,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :var rupture_criterion: rupture criterion
         :type rupture_criterion: RuptureCriterion
         """
-        new_cracked_cells_in_target = rupture_criterion.checkCriterion(self.cells)
+        new_cracked_cells_in_target = rupture_criterion.check_criterion(self.cells)
         # correction car le projectile ne peut pas rompre
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
         self.__ruptured_cells = \

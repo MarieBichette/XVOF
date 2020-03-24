@@ -6,7 +6,7 @@ Implementation of DamageCriterion class
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
-class DamageCriterion(RuptureCriterion):
+class DamageCriterion(RuptureCriterion):   # pylint: disable=too-few-public-methods
     """
     A rupture criterion based on damage value
     """
@@ -14,7 +14,7 @@ class DamageCriterion(RuptureCriterion):
         super(DamageCriterion, self).__init__()
         self.__limit_damage = d_limite
 
-    def checkCriterion(self, cells, *args, **kwargs):
+    def check_criterion(self, cells, *args, **kwargs):
         """
         Return the mask of the cells where pressure is below the minimum pressure
 
