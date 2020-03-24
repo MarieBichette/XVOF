@@ -5,7 +5,7 @@ python:
   - "3.7"
 # command to install dependencies
 install:
-  - pip install --upgrade --user pip
+  - pip install --upgrade
   - pip install .
 # command to run tests
 jobs:
