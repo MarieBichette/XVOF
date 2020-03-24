@@ -1,39 +1,41 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe définissant un solveur non linéaire de type Newton Raphson
+Implements the NewtonRaphson class
 
-:todo: Mettre les critères de convergence dans le XML des données
+:todo: Put criterion convergence in the XML data
 """
 import numpy as np
 from xfv.src.solver.incrementmethods.classicalnewtonraphson import ClassicalNewtonRaphsonIncrement
 from xfv.src.solver.newtonraphsonbase import NewtonRaphsonBase
 
 EPSILON = 1.0e-06
-PRECISION = 1.0e-08  # valeurs par défaut dans A1 et dans A3
+PRECISION = 1.0e-08
 
 class NewtonRaphson(NewtonRaphsonBase):
     """
-    Solveur non linéaire de type Newton Raphson
+    This class implements a Newton Raphson type non linear solver
     """
     def __init__(self, function_to_vanish):
-        super(NewtonRaphson, self).__init__(function_to_vanish, 100, ClassicalNewtonRaphsonIncrement())
+        super(NewtonRaphson, self).__init__(
+            function_to_vanish, 100, ClassicalNewtonRaphsonIncrement())
 
-    def setIncrementMethod(self, increment_method_obj):
+    def set_increment_method(self, increment_method_obj):
         """
-        Permet un changement de méthode d'incrémentation
+        Allow a change of incrementation method
         """
         self._increment_method = increment_method_obj
 
-    def computeSolution(self, init_variable):
+    def compute_solution(self, init_variable):
         """
-        Algorithme de Newton-Raphson
+        Compute the solution through Newton-Raphson algorithm
         """
-        if init_variable.size == 0:  # this case should never append but has been discovered in Unittests...
-            msg = "Initialization variable for Newton has null size. Impossible to start Newton procedure."
+        # This case should never append but has been discovered in Unittests...
+        if init_variable.size == 0:
+            msg = ("Initialization variable for Newton has null size. "
+                   "Impossible to start Newton procedure.")
             raise ValueError(msg)
 
-        # Variable du Newton
+        # Newton's variable
         var_i = init_variable
         var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
 

@@ -35,7 +35,7 @@ class OneDimensionCell(Cell):
                             'Pressure': (pressure + 2. * pseudo),
                             'OldEnergy': energy}
             cell._function_to_vanish.setVariables(my_variables)
-            energy_new_value = cell._solver.computeSolution(energy)
+            energy_new_value = cell._solver.compute_solution(energy)
 
             # Eos call to determine final pressure and sound speed values
             shape = energy_new.shape
@@ -64,16 +64,16 @@ class OneDimensionCell(Cell):
     @classmethod
     def general_method_deviator_strain_rate(cls, mask, dt, x_new, u_new):
         """
-        Compute the deviateur du tenseur taux de déformation (calculé au centre la maille)
-        à partir des grandeurs vitesse et position au centre des mailles
-        :param mask : tableau de booleen pour identifier les cell à calculer
+        Compute the deviateur du tenseur taux de dï¿½formation (calculï¿½ au centre la maille)
+        ï¿½ partir des grandeurs vitesse et position au centre des mailles
+        :param mask : tableau de booleen pour identifier les cell ï¿½ calculer
         :param dt : time step (float)
-        :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et à droite de la cell calculée
-        :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et à droite de la cell calculée
+        :param x_new : array des coordonnï¿½es ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
+        :param u_new : array des vitesses ï¿½ l'intant n+1 des neouds ï¿½ gauche et ï¿½ droite de la cell calculï¿½e
         x_new, u_new sont obligatoirement tous de taille (taille de mask, 2)
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
-        # Calcul du déviateur de D
+        # Calcul du dï¿½viateur de D
         x_demi = x_new - dt/2. * u_new
         D = (u_new[mask, 1] - u_new[mask, 0]) / (x_demi[mask, 1] - x_demi[mask, 0])  # Dxx
         strain_rate_dev[mask, 0] = 2. / 3. * D
@@ -87,7 +87,7 @@ class OneDimensionCell(Cell):
         Computation of artificial viscosity
         """
         # pylint: disable=too-many-arguments
-        # 8 arguments semblent nécessaires
+        # 8 arguments semblent nï¿½cessaires
         vn = 1. / rho_old
         vnplusun = 1. / rho_new
         vnplusundemi = (vn + vnplusun) / 2.
@@ -104,7 +104,7 @@ class OneDimensionCell(Cell):
         """
         Computation of the time step
         :param cfl : nombre cfl
-        :param cfl_pseudo : cfl par rapport à la condition de traitement du choc
+        :param cfl_pseudo : cfl par rapport ï¿½ la condition de traitement du choc
         :param rho_old : density at time t
         :param rho_new : density at time t+dt
         :param taille_new : size of element
@@ -271,9 +271,9 @@ class OneDimensionCell(Cell):
             (DataContainer().material_projectile.constitutive_model.plasticity_model is not None))
 
         if elasticity_activated or plasticity_activated:
-            # si l'élasticité n'est pas activée, les grandeurs élastiques restent nulles.
-            # L'opération est transparente pour les matériaux hydro.
-            # Donc on peut ne pas distinguer les matériaux.
+            # si l'ï¿½lasticitï¿½ n'est pas activï¿½e, les grandeurs ï¿½lastiques restent nulles.
+            # L'opï¿½ration est transparente pour les matï¿½riaux hydro.
+            # Donc on peut ne pas distinguer les matï¿½riaux.
             self.energy.current_value[mask_classic] += OneDimensionCell.add_elastic_energy_method(dt,
                                                                                      self.density.current_value[mask_classic],
                                                                                      self.density.new_value[mask_classic],
@@ -281,7 +281,7 @@ class OneDimensionCell(Cell):
                                                                                      self._deviatoric_stress_new[mask_classic, :],
                                                                                      self._deviatoric_strain_rate[mask_classic, :])
 
-        # Appel de l'équation d'état sur le projectile:
+        # Appel de l'ï¿½quation d'ï¿½tat sur le projectile:
         mask = np.logical_and(mask_classic, self.cell_in_projectile)
         if DataContainer().data_contains_a_projectile and mask.any():
             # Not sure there is cells in the intersection mask_classic / projectile => test it before starting Newton
@@ -292,7 +292,7 @@ class OneDimensionCell(Cell):
                                                      self.energy.current_value[mask], self.energy.new_value[mask],
                                                      self.pseudo.current_value[mask], self.sound_velocity.new_value[mask])
 
-        # Appel de l'équation d'état sur la cible
+        # Appel de l'ï¿½quation d'ï¿½tat sur la cible
         mask = np.logical_and(mask_classic, self.cell_in_target)
         if DataContainer().data_contains_a_target and mask.any():
             # Not sure there is cells in the intersection mask_classic / target => test it before starting Newton
@@ -315,7 +315,7 @@ class OneDimensionCell(Cell):
         size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error.any():
-            raise ValueError("La maille {:} a une longueur négative !".format(np.where(cell_error)[0]))
+            raise ValueError("La maille {:} a une longueur nï¿½gative !".format(np.where(cell_error)[0]))
         self._size_t = size.flatten()
 
     def compute_new_size(self, topologie, vecteur_coord_noeuds, mask):
@@ -329,7 +329,7 @@ class OneDimensionCell(Cell):
         size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error.any():
-            raise ValueError("La maille {:} a une longueur négative !".format(np.where(cell_error)[0]))
+            raise ValueError("La maille {:} a une longueur nï¿½gative !".format(np.where(cell_error)[0]))
         self._size_t_plus_dt[mask] = size[mask].flatten()
 
     def compute_new_density(self, mask):
@@ -379,7 +379,7 @@ class OneDimensionCell(Cell):
 
     def compute_complete_stress_tensor(self, mask):
         """
-        Compute the Cauchy stress tensor (assemble pression et déviateur)
+        Compute the Cauchy stress tensor (assemble pression et dï¿½viateur)
         :param mask : array of boolean to identify classical cells
         """
         for i in range(0, 3):
@@ -413,14 +413,14 @@ class OneDimensionCell(Cell):
             self._deviatoric_stress_new[mask, i] = np.copy(self._deviatoric_stress_current[mask, i]) + 2. * G[mask] * D[mask, i] * dt
 
         # -----------------------------
-        # pour être sur que la trace soit nulle
+        # pour ï¿½tre sur que la trace soit nulle
         trace = self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] + self._deviatoric_stress_new[mask, 2]
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] -= 1./3. * trace
 
     def compute_deviator_strain_rate(self, mask, dt, topologie, coord_noeud_new, vitesse_noeud_new):
         """
-        Compute deviateur du taux de déformation
+        Compute deviateur du taux de dï¿½formation
         :param mask : mask to select classical cells
         :param dt : time step
         :param topologie : table of connectivity : link between cells and nodes id
@@ -428,10 +428,10 @@ class OneDimensionCell(Cell):
         :param vitesse_noeud_new : array with new nodes velocities
         """
         connectivity = topologie.nodes_belonging_to_cell
-        u_new = vitesse_noeud_new[connectivity][:, :, 0]  # velocities of the left and right nodes à coté de cell
-        x_new = coord_noeud_new[connectivity][:, :, 0]  # coordinates of the left and right nodes à coté de cell
+        u_new = vitesse_noeud_new[connectivity][:, :, 0]  # velocities of the left and right nodes ï¿½ cotï¿½ de cell
+        x_new = coord_noeud_new[connectivity][:, :, 0]  # coordinates of the left and right nodes ï¿½ cotï¿½ de cell
 
-        # Calcul du déviateur de D
+        # Calcul du dï¿½viateur de D
         self._deviatoric_strain_rate[mask, :] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt, x_new, u_new)
 
     def apply_plastic_corrector_on_deviatoric_stress_tensor(self, mask):
@@ -440,7 +440,7 @@ class OneDimensionCell(Cell):
         :param mask : mask to identify the cells where plasticity should be applied
         (classical cells where plasticity criterion is activated)
         """
-        invariant_J2_el = compute_J2(self.deviatoric_stress_new)  # prédiction élastique avant le traitement de la plasticité
+        invariant_J2_el = compute_J2(self.deviatoric_stress_new)  # prï¿½diction ï¿½lastique avant le traitement de la plasticitï¿½
         radial_return = self.yield_stress.current_value / invariant_J2_el
         plasticity = radial_return < 1.
         plastic_mask = np.logical_and(mask, plasticity)
@@ -471,7 +471,7 @@ class OneDimensionCell(Cell):
         :param mask: array of bool to select cells of interest
         :param dt : float, time step staggered
         """
-        invariant_J2_el = compute_J2(self.deviatoric_stress_new) # prédiction élastique avant le traitement de la plasticité
+        invariant_J2_el = compute_J2(self.deviatoric_stress_new) # prï¿½diction ï¿½lastique avant le traitement de la plasticitï¿½
         G = self.shear_modulus.current_value
         plasticity = invariant_J2_el > self.yield_stress.current_value
         plastic_mask = np.logical_and(mask, plasticity)
