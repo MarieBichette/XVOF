@@ -19,7 +19,11 @@ class OneDimensionCellInternalLibTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         DataContainer(data_file_path)
 
     @classmethod
@@ -52,9 +56,10 @@ class OneDimensionCellInternalLibTest(unittest.TestCase):
         # Function to vanish
         delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
         func = (self.test_cell.energy.new_value + self.test_cell.pressure.new_value * delta_v / 2. +
-                (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value) * delta_v / 2.
-                - self.test_cell.energy.current_value)
-        np.testing.assert_allclose(func, np.array([-1001570.197044, -49979.091163, -24011029.653135]))
+                (self.test_cell.pressure.current_value + 2. * self.test_cell.pseudo.current_value)
+                * delta_v / 2. - self.test_cell.energy.current_value)
+        np.testing.assert_allclose(func,
+                                   np.array([-1001570.197044, -49979.091163, -24011029.653135]))
 
 
 if __name__ == "__main__":

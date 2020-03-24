@@ -4,8 +4,8 @@
 Module defining Node class
 """
 
-import numpy as np
 from abc import abstractmethod
+import numpy as np
 
 
 class Node(object):
@@ -27,19 +27,19 @@ class Node(object):
         :param nbr_of_nodes: nombre de noeuds du problème
         :param position_initiale: vecteur des positions initiales
         :param vitesse_initiale: vecteur des vitesses initiales
-    
         :type dim: int
         :type nbr_of_nodes: int
         :type position_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         :type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
-        # Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes les coordonées selon
-        # les différentes dimensions
+        # Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes
+        # les coordonées selon les différentes dimensions
         self.__shape = (nbr_of_nodes, dim)
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
         if position_initiale.shape != self.__shape:
-            message = "Node() : La dimension ({}) du vecteur position_initiale ".format(np.shape(position_initiale))
+            message = "Node() : La dimension ({}) du vecteur position_initiale ".format(
+                np.shape(position_initiale))
             message += "est incorrecte (!= {})!".format(self.__shape)
             raise SystemExit(message)
         if vitesse_initiale is None:
@@ -64,6 +64,12 @@ class Node(object):
 
     @property
     def enriched(self):
+        """
+        Returns an array of the status of all nodes
+        False = classical node
+        True = enriched node
+        :return:  numpy.array([nbr_of_nodes], dtype=bool)
+        """
         return self._enriched
 
     @property

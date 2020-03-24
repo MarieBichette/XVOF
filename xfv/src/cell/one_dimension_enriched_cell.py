@@ -116,6 +116,8 @@ class OneDimensionEnrichedCell(OneDimensionCell):
         Calcule les nouvelles densités gauche et droite pour les éléments enrichis
         à partir de la conservation de la masse
         """
-        density_left_new = (density_left * disc.left_part_size.current_value / disc.left_part_size.new_value)
-        density_right_new = (density_right * disc.right_part_size.current_value / disc.right_part_size.new_value)
+        density_left_new = (density_left * disc.left_part_size.current_value /
+                            disc.left_part_size.new_value)
+        density_right_new = (density_right * disc.right_part_size.current_value /
+                             disc.right_part_size.new_value)
         return density_left_new, density_right_new

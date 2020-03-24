@@ -2,11 +2,13 @@
 """
 Classe de test du module node
 """
-import numpy as np
 import unittest
 import unittest.mock as mock
+import numpy as np
+
 from xfv.src.cell.cell import Cell
 from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
+
 
 class MinimumPressureTest(unittest.TestCase):
     """
@@ -25,8 +27,11 @@ class MinimumPressureTest(unittest.TestCase):
         self.cell.pressure.new_value[500] = 25.
         self.cell.pressure.new_value[501] = 75.
 
-    def test_checkCriterion_rupture(self):
-        retour = self._rupturecriterion.checkCriterion(self.cell)
+    def test_check_criterion_rupture(self):
+        """
+        Test of the method check_criterion of MinimumPressureCriterion
+        """
+        retour = self._rupturecriterion.check_criterion(self.cell)
         self.assertFalse(retour[501])
         self.assertTrue(retour[500])
 

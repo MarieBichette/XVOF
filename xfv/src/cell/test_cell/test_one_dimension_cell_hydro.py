@@ -15,7 +15,11 @@ class OneDimensionCellHydroTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         DataContainer(data_file_path)
 
     @classmethod
@@ -37,7 +41,8 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         Test of compute_size method
         """
         topo = mock.MagicMock(Topology1D)
-        type(topo).nodes_belonging_to_cell = mock.PropertyMock(return_value=np.array([[0, 1], [1, 2], [2, 3], [3, 4]]))
+        type(topo).nodes_belonging_to_cell = mock.PropertyMock(
+            return_value=np.array([[0, 1], [1, 2], [2, 3], [3, 4]]))
         node_coord = np.array([[-0.35, ], [0.15, ], [0.2, ], [0.25, ], [0.5, ]])
         self.my_cells.compute_size(topo, node_coord)
         np.testing.assert_allclose(self.my_cells.size_t, np.array([0.5, 0.05, 0.05, 0.25]))
@@ -47,7 +52,8 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         Test of compute_new_size method
         """
         topo = mock.MagicMock(Topology1D)
-        type(topo).nodes_belonging_to_cell = mock.PropertyMock(return_value=np.array([[0, 1], [1, 2], [2, 3],[3, 4]]))
+        type(topo).nodes_belonging_to_cell = mock.PropertyMock(
+            return_value=np.array([[0, 1], [1, 2], [2, 3],[3, 4]]))
         mask = np.array([True, True, False, False])
         self.my_cells._size_t = np.array([0.5, 0.05, 0.05, 0.25])
         node_new_coord = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
@@ -63,7 +69,7 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         self.my_cells._size_t = np.array([0.6, 0.1, 0.15, 0.6])
         self.my_cells.compute_mass()
         np.testing.assert_allclose(self.my_cells.mass,
-                                   np.array([0.015323,  0.002554,  0.003831,  0.015323]), rtol=1.e-4)
+                                   np.array([0.015323, 0.002554, 0.003831, 0.015323]), rtol=1.e-4)
 
     def test_compute_new_density(self):
         """
@@ -74,7 +80,8 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         self.my_cells._size_t_plus_dt = np.array([0.8, 0.1, 0.27, 0.8])
         mask = np.array([True, True, True, False])
         self.my_cells.compute_new_density(mask)
-        np.testing.assert_allclose(self.my_cells.density.new_value, np.array([6697.5,  8930., 4961.111111, 8930.]))
+        np.testing.assert_allclose(self.my_cells.density.new_value,
+                                   np.array([6697.5, 8930., 4961.111111, 8930.]))
 
     def test_compute_new_pressure_without_elasticity(self):
         """
@@ -94,9 +101,11 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         self.my_cells.pseudo.new_value = np.zeros([self.nbr_cells])
 
         self.my_cells.compute_new_pressure(mask, dt)
-        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([487.203942, 94.056026, 28.379115, 0.]))
-        np.testing.assert_allclose(self.my_cells.pressure.new_value, np.array([1.103734e+09, -4.640127e+08,
-                                                                               -2.323423e+08, 0.]), rtol=1e-5)
+        np.testing.assert_allclose(self.my_cells.energy.new_value,
+                                   np.array([487.203942, 94.056026, 28.379115, 0.]))
+        np.testing.assert_allclose(self.my_cells.pressure.new_value,
+                                   np.array([1.103734e+09, -4.640127e+08,
+                                             -2.323423e+08, 0.]), rtol=1e-5)
 
     def test_compute_new_pseudo(self):
         """
@@ -129,7 +138,8 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         self.my_cells._dt = np.array([1., 2., 5., 6.])
         mask = np.array([False, True, True, False])
         self.my_cells.compute_new_time_step(mask)
-        np.testing.assert_allclose(self.my_cells._dt, np.array([1., 3.400000e-03, 6.800000e-03, 6.]))
+        np.testing.assert_allclose(self.my_cells._dt,
+                                   np.array([1., 3.400000e-03, 6.800000e-03, 6.]))
 
     def test_compute_complete_stress_tensor_hydro(self):
         """
@@ -159,7 +169,8 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         """
         self.my_cells.pressure.new_value = np.array([2000., 4000, 8000., 4000.])
         self.my_cells.impose_pressure(0, -1.)
-        np.testing.assert_array_equal(self.my_cells.pressure.new_value, np.array([-1, 4000, 8000., 4000.]))
+        np.testing.assert_array_equal(self.my_cells.pressure.new_value,
+                                      np.array([-1, 4000, 8000., 4000.]))
 
 if __name__ == "__main__":
     unittest.main()

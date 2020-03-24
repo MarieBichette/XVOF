@@ -6,7 +6,7 @@ import numpy as np
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
-class HalfRodComparisonCriterion(RuptureCriterion):
+class HalfRodComparisonCriterion(RuptureCriterion):   # pylint: disable=too-few-public-methods
     """
     A not physical rupture criterion to validate XFEM by comparing
     results to other results obtained without XFEM on a half rod
@@ -15,7 +15,7 @@ class HalfRodComparisonCriterion(RuptureCriterion):
         super(HalfRodComparisonCriterion, self).__init__()
         self.__ruptured_cell_index = int(ruptured_cell_index)
 
-    def checkCriterion(self, cells):
+    def check_criterion(self, cells):
         """
         Return the mask of the cells where only the ruptured_cell_index is set to True
 

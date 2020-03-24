@@ -3,9 +3,9 @@
 """
 Classe de test du module node1d
 """
-import numpy as np
 import unittest
 import os
+import numpy as np
 
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.node.one_dimension_node import OneDimensionNode
@@ -40,8 +40,10 @@ class Node1dTest(unittest.TestCase):
                                          section=1.0e-06)
 
     def tearDown(self):
+        """
+        Operations to be done after completing all the tests in the class
+        """
         DataContainer.clear()
-        pass
 
     def test_compute_new_force(self):
         """

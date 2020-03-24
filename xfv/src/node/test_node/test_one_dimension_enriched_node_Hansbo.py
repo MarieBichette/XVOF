@@ -2,14 +2,15 @@
 """
 Classe de test du module OneDimensionEnrichedNode
 """
-import numpy as np
 import unittest
-import unittest.mock as mock
 import os
+import unittest.mock as mock
+import numpy as np
+
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
-from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
+
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """
@@ -19,21 +20,24 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Pr�paration des tests unitaires
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.vit_init = np.zeros([2, 1], dtype='float')
         self.vit_init[:, 0] = [1.2e+03, 0.0]
         self.poz_init = np.zeros([2, 1], dtype='float')
         self.poz_init[:, 0] = [1., 2.]
-        self.my_nodes = OneDimensionHansboEnrichedNode(2, self.poz_init, self.vit_init, section=1.0e-06)
+        self.my_nodes = OneDimensionHansboEnrichedNode(2, self.poz_init, self.vit_init,
+                                                       section=1.0e-06)
         self.my_nodes._classical = np.array([False, False])
 
         # configuration d'un mock 'discontinuity'
         config = {'mask_in_nodes': np.array([True, False]),
                   'mask_out_nodes': np.array([False, True]),
                   'label': 1,
-                  'position_in_ruptured_element': DataContainer().material_target.failure_model.failure_treatment_value,
+                  'position_in_ruptured_element':
+                      DataContainer().material_target.failure_model.failure_treatment_value,
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': np.array([0]),
                   'plastic_cells': False,
@@ -60,42 +64,51 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'additional_dof_stress': np.array([[2., 0., 0.]]),
                   '_additional_dof_equivalent_plastic_strain_rate': np.array([0.]),
                   '_additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.], ]),
-                  '_additional_dof_velocity_new': np.zeros([2, 1]),
+                  '_additional_dof_velocity_new': np.zeros([2, 1])
                   # 'cohesive_force.current_value': 0.,
                   # 'cohesive_force.new_value': 0.,
                   # 'discontinuity_opening.current_value': 0.5,
                   # 'discontinuity_opening.new_value': 0.5
                   }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity', spec=Discontinuity, **config)
+        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+                             spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
     def tearDown(self):
+        """
+        Operations to be done after completing all the tests in the class
+        """
         DataContainer.clear()
-        pass
 
     def test_classical(self):
-        """Test de la propri�t� classical du module OneDimensionEnrichedNode"""
+        """
+        Test de la propri�t� classical du module OneDimensionEnrichedNode
+        """
         np.testing.assert_array_equal(self.my_nodes.classical, np.array([False, False]))
 
     def test_enriched(self):
-        """ Test de la propri�t� enriched du module OneDimensionEnrichedNode"""
+        """
+        Test de la propri�t� enriched du module OneDimensionEnrichedNode
+        """
         np.testing.assert_array_equal(self.my_nodes.enriched, np.array([True, True]))
 
     def test_enrichment_concerned(self):
         """
-        Test de la propri�t� enrichment_concerned du module OneDimensionEnrichedHansboNode
+        Test de la propri�t� enrichment_concerned du module
         """
         np.testing.assert_array_equal(self.my_nodes.enrichment_concerned, np.array([True, True]))
 
     def test_enrichment_not_concerned(self):
         """
-        Test de la propri�t� enrichment_not_concerned du module OneDimensionEnrichedMoesNode
+        Test de la propri�t� enrichment_not_concerned du module
         """
-        np.testing.assert_array_equal(self.my_nodes.enrichment_not_concerned, np.array([False, False]))
+        np.testing.assert_array_equal(self.my_nodes.enrichment_not_concerned,
+                                      np.array([False, False]))
 
     def test_compute_complete_velocity_field(self):
         """
-        Test de la m�thode compute_complete_velocity_field de la classe OneDimensionHansboEnrichedNodes
+        Test de la m�thode compute_complete_velocity_field de la classe
+        OneDimensionHansboEnrichedNodes
         """
         self.my_nodes._upundemi = np.array([1., 1.])
         self.my_nodes.compute_complete_velocity_field()
@@ -103,7 +116,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
 
     def test_enriched_nodes_compute_new_coordinates(self):
         """
-        Test de la m�thode enriched_nodes_compute_new_coordinates de la classe OneDimensionHansboEnrichedNodes
+        Test de la m�thode enriched_nodes_compute_new_coordinates de la classe
         """
         self.my_nodes._upundemi = np.array([[1., ], [2., ]])
         self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
@@ -122,7 +135,8 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
 
         np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
-        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new, np.array([[3., ], [3., ]]))
+        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
+                                      np.array([[3., ], [3., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_new_force(self, mock_disc_list):
@@ -141,9 +155,11 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_almost_equal(self.my_nodes._force, np.array([[5.5, ], [1.5, ]]))
 
     @unittest.skip("Mod�le coh�sif pas revu")
-    @mock.patch.object(OneDimensionHansboEnrichedNode, "compute_discontinuity_opening", new_callable=mock.PropertyMock)
+    @mock.patch.object(OneDimensionHansboEnrichedNode, "compute_discontinuity_opening",
+                       new_callable=mock.PropertyMock)
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list, mock_compute_discontinuity_opening):
+    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list,
+                                                    mock_compute_discontinuity_opening):
         """
         Test de la m�thode compute_enriched_nodes_cohesive_forces
         """
@@ -183,7 +199,8 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.compute_enriched_nodes_cohesive_forces()
 
         np.testing.assert_allclose(self.my_nodes.force, exact_force_classic)
-        np.testing.assert_allclose(self.mock_discontinuity.additional_dof_force, exact_force_enriched)
+        np.testing.assert_allclose(self.mock_discontinuity.additional_dof_force,
+                                   exact_force_enriched)
 
 if __name__ == '__main__':
     unittest.main()

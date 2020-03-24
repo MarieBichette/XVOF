@@ -17,7 +17,11 @@ class OneDimensionCellElastoTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_elasto.xml")
+        """
+        Tests setup for class
+        """
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_elasto.xml")
         DataContainer(data_file_path)
 
     @classmethod
@@ -63,9 +67,12 @@ class OneDimensionCellElastoTest(unittest.TestCase):
 
         self.my_cells.compute_new_pressure(mask_classic, dt)
         np.testing.assert_allclose(self.my_cells.pressure.new_value,
-                                   np.array([1.557157e+08, 6.266033e+08, 0.000000e+00, 0.000000e+00]), rtol=1.e-5)
-        np.testing.assert_allclose(self.my_cells.energy.new_value, np.array([17.254756,  163.9763, 0., 0.]))
-        np.testing.assert_allclose(self.my_cells.sound_velocity.new_value, np.array([3948.726929,  3974.84139, 0., 0.]))
+                                   np.array([1.557157e+08, 6.266033e+08,
+                                             0.000000e+00, 0.000000e+00]), rtol=1.e-5)
+        np.testing.assert_allclose(self.my_cells.energy.new_value,
+                                   np.array([17.254756,  163.9763, 0., 0.]))
+        np.testing.assert_allclose(self.my_cells.sound_velocity.new_value,
+                                   np.array([3948.726929, 3974.84139, 0., 0.]))
 
     def test_compute_shear_modulus(self):
         """
@@ -73,7 +80,8 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         """
         self.my_cells.compute_shear_modulus()
         expected_value = DataContainer().material_target.initial_values.shear_modulus_init
-        np.testing.assert_allclose(self.my_cells.shear_modulus.new_value, np.ones([self.nbr_cells]) * expected_value)
+        np.testing.assert_allclose(self.my_cells.shear_modulus.new_value,
+                                   np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_yield_stress(self):
         """
@@ -81,7 +89,8 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         """
         self.my_cells.compute_yield_stress()
         expected_value = DataContainer().material_target.initial_values.yield_stress_init
-        np.testing.assert_allclose(self.my_cells.yield_stress.new_value, np.ones([self.nbr_cells]) * expected_value)
+        np.testing.assert_allclose(self.my_cells.yield_stress.new_value,
+                                   np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_complete_stress_tensor(self):
         """
@@ -119,7 +128,8 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                                              [1000., -500., -500.],
                                                              [4000., -2000., -2000.]])
         self.my_cells.shear_modulus.current_value = np.array([2., 4., 6., 8.])
-        self.my_cells.compute_deviatoric_stress_tensor(mask, topo_ex, coord_noeud_new, vitesse_noeud_new, dt)
+        self.my_cells.compute_deviatoric_stress_tensor(mask, topo_ex, coord_noeud_new,
+                                                       vitesse_noeud_new, dt)
         np.testing.assert_allclose(self.my_cells._deviatoric_stress_new,
                                    np.array([[ 1999.058824,  -999.529412,  -999.529412],
                                             [   53.555556,   -26.777778,   -26.777778],
@@ -137,12 +147,13 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         vitesse_noeud_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
         topo_ex = Topology1D(5, 4)
         # Test de la m�thode compute_deviator
-        self.my_cells.compute_deviator_strain_rate(mask, dt, topo_ex, coord_noeud_new, vitesse_noeud_new)
+        self.my_cells.compute_deviator_strain_rate(mask, dt, topo_ex, coord_noeud_new,
+                                                   vitesse_noeud_new)
         np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
                                    np.array([[-0.235294,  0.117647,  0.117647],
-                                            [ 0.4444444, -0.2222222, -0.2222222],
-                                            [ 0.      ,  0.      ,  0.      ],
-                                            [ 0.      ,  0.      ,  0.      ]]), rtol=1.e-05)
+                                            [0.4444444, -0.2222222, -0.2222222],
+                                            [0., 0., 0.], [0., 0., 0.]]), rtol=1.e-05)
+
 
 if __name__ == "__main__":
     unittest.main()

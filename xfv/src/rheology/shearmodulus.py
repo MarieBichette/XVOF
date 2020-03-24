@@ -5,11 +5,11 @@ Implementation d'une classe de module de cisaillement (interface)
 """
 
 
-class ShearModulus(object):
+class ShearModulus(object):  # pylint: disable=too-few-public-methods
     """
-    Interface de module de cisaillement
+    Classe mère de module de cisaillement
     """
-    def __init__(self, initial_value, **kwargs):
+    def __init__(self, initial_value):
         self.shear_modulus = initial_value
 
     @classmethod
@@ -19,3 +19,9 @@ class ShearModulus(object):
         :return : float
         """
         pass
+
+    def get_shear_modulus(self):
+        """
+        Accessor on the value of shear modulus
+        """
+        return self.shear_modulus
