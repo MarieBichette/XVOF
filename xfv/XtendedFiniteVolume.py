@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # XtendedFiniteVolume doesn't respect the style but we don't care pylint: disable=invalid-name
-#!/usr/bin/env python2.7
 """
 todo: to complete
 """
