@@ -7,14 +7,6 @@ Parameters :
     id_item : id of the item to be studied (int)
         For 'max_diff_vs_space' : possibility to consider a list of ids : id_item = -1
             -> takes into account a list entered in the source code
-    analysis : type of analysis to be performed :
-            - single : plot the item fields for item item n° id_item
-            - gauche_droite : superpose the left and right part of the ruptured cell
-                    (other parameters are fixed : id_item = 501)
-            -compare : superpose the case simulation item fields and the reference fields
-                    (default reference case = masse_wilkins)
-            - diff : plot the error vs time for case case (error calculated with ref_case)
-            - max_diff_vs_space : plot max error in time (computed with ref_case) for all id_item in id_item_list
     case_list : list of cases to be considered.
             case : tuple qui contient : nom du cas, simulation associée,
                     répertoire de stockage des résultats, label et couleur pour les graphiques
@@ -29,9 +21,7 @@ Parameters :
 
 import os
 import sys
-
 import matplotlib.pyplot as plt
-from matplotlib2tikz import save as tikz_save
 
 import xfv.src.figure_manager.time_figure_tools as fig_tools_path
 from xfv.src.utilities.case_definition import CaseManager
@@ -55,7 +45,7 @@ base_dir = os.path.split(project_dir)[0]
 # -----------------------------------------
 msg = "Mini programme pour tracer l'évolution temporelle d'un champ en un point de la barre\n" \
       "Ce script attend comme arguments  : \n"
-msg += "- le type de simulation (single|compare|diff|compare_with_A3) \n"
+msg += "- le type de simulation (single|compare|diff) \n"
 msg += "- les champs à tracer ([X]Field, ...)\n"
 msg += "- les ids des items (int, séparés par une virgule et sans espace) \n"
 msg += "- une liste des cas à traiter (séparés par une virgule, sans espace | None par défaut) \n"
@@ -74,23 +64,23 @@ if sys.argv[1] in ["-h", "--help"]:
     print(msg)
     exit(0)
 
-else: # vraie simulation : on lit lest arguments données par l'utilisateur
-    try:
-        analysis = sys.argv[1]
-        if analysis not in ['single', 'compare', 'diff', 'compare_with_A3']:
-            print(msg)
-            print(("Type d'analysis {:s} inconnu!".format(analysis)))
-            os._exit(0)
-
-        field_list = sys.argv[2].split(',')
-        field_list = [getattr(fig_tools_path, t_f) for t_f in field_list]
-
-        id_item_list = sys.argv[3].split(',')
-        id_item_list = [int(id_item) for id_item in id_item_list]
-
-    except:
+# on lit lest arguments données par l'utilisateur
+try:
+    analysis = sys.argv[1]
+    if analysis not in ['single', 'compare', 'diff']:
         print(msg)
-        raise
+        print(("Type d'analysis {:s} inconnu!".format(analysis)))
+        os._exit(0)
+
+    field_list = sys.argv[2].split(',')
+    field_list = [getattr(fig_tools_path, t_f) for t_f in field_list]
+
+    id_item_list = sys.argv[3].split(',')
+    id_item_list = [int(id_item) for id_item in id_item_list]
+
+except:
+    print(msg)
+    raise
 
 case_list = sys.argv[4].split(',')
 case_list = [CaseManager().find_case(case) for case in case_list]
@@ -109,11 +99,7 @@ if analysis in ['diff']:
     # while option not in range(3):
     #     option = input("Quelle méthode de calcul pour l'erreur ? (0 = absolue, 1 = adimensionnée, 2 = relative) ")
 
-if analysis=="compare_with_A3":
-    # uniquement certaines données sont actuellement disponibles pour la comparaison avec A3
-    if id_item not in [0, 100, 200, 500, 1000]:
-        raise ValueError("Data not available for cell {:}\n \
-        Enter a cell in [0, 100, 200, 500, 1000]".format(id_item))
+
 
 # -----------------------------------------
 # Run user instruction (analysis)
@@ -135,43 +121,12 @@ for case in case_list:
             if analysis == 'single':
                 fig_manager.plot_single_time_figure(field)
                 plt.legend(loc="best")
-                if save_fig:
-                    tikz_save(os.path.join(base_dir,
-                                           "Documents/These/Matplotlib2Tikz/time_evolution_{:}_{:}_{:}.tex".format(field.title,
-                                                                                                            item,
-                                                                                                            id_item)))
-
-            elif analysis == 'compare':
-                fig_manager.compare_time_fields(field)
-                plt.legend(loc=4)
 
             elif analysis == 'diff':
                 print("Reference case is {}".format(case_ref_choice.case_name))
                 print("Post treating data for case : {:}".format(case.label))
                 fig_manager.plot_error_vs_time(field, compute_error_index=option)
                 # set_acceptance_criterion(item, id_item, 0., 5., 1.e-4)
-                plt.legend(loc=4)
-
-                if save_fig:
-                    tikz_save(os.path.join(base_dir,
-                                           "Documents/These/Matplotlib2Tikz/time_evolution_{:}_{:}_{:}.tex".format(field.title,
-                                                                                                            item,
-                                                                                                            id_item)))
-
-            elif analysis == 'compare_with_A3':
-                # ^^^^^^ Traitement de la bande hdf5 :^^^^^^^^
-                fig_manager.plot_single_time_figure(field)
-                # ^^^^^^ Ajout des mesures A3 ^^^^^^^^
-                directory = "//home/marie/Documents/These/export_A3/"  # Find directory of A3 data
-                subdir = {'elasto': 'RESULT_ELASTO/', 'epp_120_MPa': 'RESULT_EPP_120_MPa/',
-                          'hydro_sans_pseudo': 'RESULT_HYDRO_sans_pseudo', 'hydro_avec_pseudo': 'RESULT_HYDRO'}
-                directory = os.path.join(directory, subdir[case], 'evolution')
-                path_to_file = os.path.join(directory,
-                                            "evolution_{:s}_{}.txt".format(A3_list[field.title], id_item))
-                x_a3, y_a3 = get_field_from_txt_file(path_to_file)
-                plot_field_from_txt_file(field.colonne_history, x_a3, y_a3, multiplicateur=1.e+06)
-                plt.xlabel("Time [$\mu s$]")
-                plt.ylabel(field.label)
                 plt.legend(loc=4)
 
 if show_fig:
