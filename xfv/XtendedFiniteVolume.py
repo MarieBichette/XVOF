@@ -7,6 +7,8 @@ import os.path
 import sys
 import time
 
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
