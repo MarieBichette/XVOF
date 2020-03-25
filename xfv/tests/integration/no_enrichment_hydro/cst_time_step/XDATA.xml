@@ -42,7 +42,7 @@
     <database>
       <identifier>AllFieldsDb</identifier>
       <path>all_fields.hdf5</path>
-      <iteration-period>1</iteration-period>
+      <time-period>1e-06</time-period>
     </database>
   </output>
 </data>
