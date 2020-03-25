@@ -11,11 +11,11 @@
   <matter>
     <initialization>
       <initial-velocity>0.</initial-velocity>
-      <init-thermo>Cuivre_InitThermo.json</init-thermo>
+      <init-thermo>../../../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json</init-thermo>
     </initialization>
     <equation-of-state>
       <name>Mie-Gruneisen</name>
-      <coefficients>Cuivre_MieGruneisen.json</coefficients>
+      <coefficients>../../../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json</coefficients>
     </equation-of-state>
   </matter>
   <boundary-conditions>
