@@ -7,7 +7,7 @@ import os.path
 import sys
 import time
 import matplotlib  # pylint: disable=unused-import
-matplotlib.use('Qt4Agg')
+matplotlib.use('Qt5Agg')
 
 
 import matplotlib.pyplot as plt
