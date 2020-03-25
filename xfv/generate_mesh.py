@@ -71,15 +71,3 @@ if __name__ == '__main__':
 
     generate_mesh(path, user_data)
     print("Done !")
-
-
-    # TA 5
-    # Length = 7.43e-03
-    # NumberOfElements = 743
-
-    # Barre de test hydrodynamique
-    # Length = 25.025e-03
-    # NumberOfElements = 1001
-    # Length = 10e-03
-    # NumberOfElements = 1000
-    # pos_disc = 0.5
