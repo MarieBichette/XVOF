@@ -1,9 +1,0 @@
-{
-    "hydro_hansbo_lump_somme_eps_001": {
-        "color": "blue",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_lump_somme_001/",
-        "label": "$\\epsilon = 0.01$ lump sum",
-        "linestyle": "",
-        "marker": "o"
-    }
-}

@@ -1,9 +1,0 @@
-{
-    "CFRAC_TA5_pimpose": {
-        "color": "red",
-        "directory_name": "CFRAC/TA5_pimpose",
-        "label": "TA5 pimpose",
-        "linestyle": "-",
-        "marker": "+"
-    }
-}

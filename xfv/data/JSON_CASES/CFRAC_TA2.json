@@ -1,9 +1,0 @@
-{
-    "CFRAC_TA2": {
-        "color": "red",
-        "directory_name": "CFRAC/TA2",
-        "label": "TA2",
-        "linestyle": "--",
-        "marker": "+"
-    }
-}

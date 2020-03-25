@@ -1,9 +1,0 @@
-{
-    "validation_elasto_plasto": {
-        "color": "blue",
-        "directory_name": "RESULTS/VALIDATION_EPP/EPP/epp_120_MPa/",
-        "label": "XVOF : Plastique Y=120 MPa",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

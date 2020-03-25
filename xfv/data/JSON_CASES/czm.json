@@ -1,9 +1,0 @@
-{
-    "czm": {
-        "color": "green",
-        "directory_name": "0_CZM_TA5/",
-        "label": "test modele cohesif (masse sum)",
-        "linestyle": "-",
-        "marker": "*"
-    }
-}

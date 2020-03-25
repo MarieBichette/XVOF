@@ -1,9 +1,0 @@
-{
-    "hansbo_hydro_partie_droite": {
-        "color": "blue",
-        "directory_name": "RESULTS/PLASTICITY/hansbo_hydro_partie_droite_eps_050",
-        "label": "partie droite",
-        "linestyle": "-",
-        "marker": "*"
-    }
-}

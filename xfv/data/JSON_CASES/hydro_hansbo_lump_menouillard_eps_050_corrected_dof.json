@@ -1,9 +1,0 @@
-{
-    "hydro_hansbo_lump_menouillard_eps_050_corrected_dof": {
-        "color": "blue",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_lump_eps_correction_050/",
-        "label": "Lump diag menouillard correction : $\\epsilon = 0.50$",
-        "linestyle": "",
-        "marker": "*"
-    }
-}

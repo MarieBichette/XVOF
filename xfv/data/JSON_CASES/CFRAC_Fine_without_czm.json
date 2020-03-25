@@ -1,9 +1,0 @@
-{
-    "CFRAC_Fine_without_czm": {
-        "color": "purple",
-        "directory_name": "CFRAC/FineMesh_without_czm",
-        "label": "Fine mesh without czm",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

@@ -1,9 +1,0 @@
-{
-    "hydro_wilkins_ref_eps_050_adapt_xfem": {
-        "color": "hotpink",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/REFERENCE/eps_050_ref_correction_xfem/",
-        "label": "REF : matrice complete (adapt. xfem), $\\epsilon =0.5",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

@@ -1,9 +1,0 @@
-{
-    "eps_025_hansbo": {
-        "color": "green",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_consistent_025/",
-        "label": "$\\epsilon = 0.25$ enriched $[\\mathcal{M}]_{consist}$",
-        "linestyle": "",
-        "marker": "d"
-    }
-}
