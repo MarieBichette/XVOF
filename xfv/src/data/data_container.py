@@ -5,8 +5,8 @@ Implementing the DataContainer class
 """
 
 from collections import namedtuple
-import os.path
 import json
+from pathlib import Path
 import lxml.etree as et
 
 from xfv.src.equationsofstate.miegruneisen import MieGruneisen
@@ -73,9 +73,8 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         """
         Constructor
         """
-        print("Opening data file : {:s}".format(os.path.abspath(datafile_path)))
-        self.project_dir = os.path.commonprefix([os.path.abspath(datafile_path),
-                                                 os.path.abspath(__file__)])
+        print("Opening data file : {}".format(Path(datafile_path).resolve()))
+        self.project_dir = (Path(__file__) / ".." / ".." / "..").resolve()
         self.__datadoc = et.parse(datafile_path)
         self.numeric = NumericalProps(*self.__fill_in_numerical_props())
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
@@ -301,7 +300,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         velocity = float(self.__datadoc.find(repertoire_base + 'initial-velocity').text)
 
         json_name = self.__datadoc.find(repertoire_base + 'init-thermo').text
-        json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
+        json_path = self.project_dir / "data" / "CONSTITUTIVE_MODEL" / json_name
         with open(json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["InitThermo"]
@@ -325,7 +324,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         repertoire_base = matter + '/equation-of-state/'
         if self.__datadoc.find(repertoire_base + 'name').text == 'Mie-Gruneisen':
             json_name = self.__datadoc.find(repertoire_base + 'coefficients').text
-            json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
+            json_path = self.project_dir / "data" / "CONSTITUTIVE_MODEL" / json_name
             with open(json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
@@ -496,7 +495,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
             json_name = self.__datadoc.find(repertoire_base + 'coefficients').text
         except AttributeError:
             return 0, 0
-        json_path = os.path.join(self.project_dir, "data/CONSTITUTIVE_MODEL/" + json_name)
+        json_path = self.project_dir / "data" / "CONSTITUTIVE_MODEL" / json_name
         with open(json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["EPP"]
