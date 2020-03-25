@@ -44,7 +44,7 @@ def launch_integration_test() -> bool:
     except subprocess.CalledProcessError:
         print(f"The command {launch_cmd} has failed!", file=sys.stderr)
         return False
-    compar_cmd = "h5diff reference.hdf5 all_fields.hdf5"
+    compar_cmd = "h5diff -r reference.hdf5 all_fields.hdf5"
     print(f"Executing command: {compar_cmd}")
     try:
         subprocess.check_output(compar_cmd.split())
