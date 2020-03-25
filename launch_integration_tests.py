@@ -51,6 +51,7 @@ def launch_integration_test() -> bool:
     except subprocess.CalledProcessError:
         print("Differences are detected between reference and obtained results!")
         return False
+    print("=> Test OK : no differences detected!")
     return True
 
 
