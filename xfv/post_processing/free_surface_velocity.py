@@ -1,34 +1,74 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-15 -*-
 """ 
-Compare velocities of free surfaces from simulation with experimental data
-USER INPUT :
-- The case name to be compared with experiment
-(field to be compare is VelocityField for the moment)
+Plot the free surface velocity
 """
 
-import os
-import sys
-import matplotlib.pyplot as plt
+import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 
-from xfv.src.utilities.case_definition import CaseManager
-from xfv.src.figure_manager.time_figure_tools import VelocityField
-from xfv.src.output_figure.hdf5_posttreatment_tools import read_database_in_array
-from xfv.src.utilities.experimental_data_exploit import ExperimentalData
 
-# -----------------------------------------
-# Initialize treatment and legend
-# -----------------------------------------
-plt.clf()
-plt.close()
+# ----------------------------------------------------------
+# Read instructions
+# ----------------------------------------------------------
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbose", action="store_true", help="Increase program verbosity")
+parser.add_argument("-case", action='append', nargs='+',
+                    help="the path to the output repository")
+parser.add_argument("-experimental_data", help="the path to experimental data to plot")
+parser.add_argument("-shif_experimental_data", type=float, default=0,
+                    help="to shift the experimental data in time in order to fit data "
+                         "(default = 0)")
+parser.add_argument("--output_filename", default="all_fields.hdf5",
+                    help="the name of the output hdf5 band (default = all_fields.hdf5)")
+args = parser.parse_args()
+
+if args.verbose:
+    print("Cases : ")
+    print(args.case)
+    if args.experimental_data is not None:
+        print("Experimental data : " + args.experimental_data)
+    print("~~~~~~~~~~~~~")
+
+complete_field_name = field + "Field"
+exp_data = args.experimental_data
+shift_data = args.shif_experimental_data
+
+# ----------------------------------------------------------
+# Prepare figure
+# ----------------------------------------------------------
+plt.figure(1)
+plt.title("Evolution of the free surface velocity", fontsize=20, fontweight='bold')
+plt.xlabel("Time [$\mu$s]")
+plt.ylabel("Velocity of free surface [m/s]")
+
+# ----------------------------------------------------------
+# Plot each case
+# ----------------------------------------------------------
+for case in args.case[0]:
+    if args.verbose:
+        print("Case is : " + case)
+    path_to_db = pathlib.Path.cwd().joinpath("..", "tests", case, args.output_filename)
+    if args.verbose:
+        print("Path to database : {:}".format(path_to_db))
+        print("Read field " + field + " in database... ")
+    # Read database :
+    item_history = get_field_evolution_in_time_for_item(path_to_db, -1, "NodeVelocity")
+    if args.verbose:
+        print("Done !")
+        print("~~~~~~~~~~~~~")
+    # Plot field :
+    plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], label=case)
+
+# ----------------------------------------------------------
+# Show figure
+# ----------------------------------------------------------
+
 
 
 project_dir = os.path.split(os.path.dirname(os.path.abspath(os.path.curdir)))[0]
 base_dir = os.path.split(project_dir)[0]
-
-english = False
-extension = '.hdf5'
 
 recalage_temps = True
 id_item = -1  # dernier noeud (surface libre du bord opposé)
@@ -43,9 +83,7 @@ hdf5_band = "all_fields.hdf5"
 fig = plt.figure(VelocityField.colonne_history)
 fig.patch.set_facecolor("white")
 if english:
-    fig.suptitle("Evolution of the free surface velocity", fontsize=20, fontweight='bold')
-    plt.xlabel("Time [$\mu$s]")
-    plt.ylabel("Velocity of free surface [m/s]")
+
 else:
     fig.suptitle("Vitesse de surface libre", fontsize=20, fontweight='bold')
     # plt.xlabel("Temps [$\mus$]", fontsize=18)
