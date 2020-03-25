@@ -35,7 +35,6 @@ if args.verbose:
 
 item_id = args.item_id
 field = args.field
-complete_field_name = field + "Field"
 
 # ----------------------------------------------------------
 # Prepare figure
