@@ -74,6 +74,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         Constructor
         """
         print("Opening data file : {}".format(Path(datafile_path).resolve()))
+        self._datafile_dir = Path(datafile_path).resolve().parent
         self.__datadoc = et.parse(datafile_path)
         self.numeric = NumericalProps(*self.__fill_in_numerical_props())
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
@@ -299,7 +300,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         velocity = float(self.__datadoc.find(repertoire_base + 'initial-velocity').text)
 
         json_path = self.__datadoc.find(repertoire_base + 'init-thermo').text
-        with open(json_path, 'r') as json_fid:
+        with open(self._datafile_dir / json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["InitThermo"]
             density = float(coef["initial_density"])
@@ -322,7 +323,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         repertoire_base = matter + '/equation-of-state/'
         if self.__datadoc.find(repertoire_base + 'name').text == 'Mie-Gruneisen':
             json_path = self.__datadoc.find(repertoire_base + 'coefficients').text
-            with open(json_path, 'r') as json_fid:
+            with open(self._datafile_dir / json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
                 # Lecture des paramètres
@@ -492,7 +493,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
             json_path = self.__datadoc.find(repertoire_base + 'coefficients').text
         except AttributeError:
             return 0, 0
-        with open(json_path, 'r') as json_fid:
+        with open(self._datafile_dir / json_path, 'r') as json_fid:
             coef = json.load(json_fid)
             coef = coef["EPP"]
         yield_stress = float(coef["yield_stress"])
