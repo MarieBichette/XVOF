@@ -1,25 +1,25 @@
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
-Definition of CohesiveZoneModelBase interface
+Definition of CohesiveZoneModel class to manage the cohesive discontinuities
 """
-from abc import abstractmethod
 
 
-class CohesiveZoneModelBase(object):
+class CohesiveZoneModel(object):
     """
-    An interface for all cohesive zone models
+    A class for the computation of the cohesive force
     """
     def __init__(self, cohesive_law_points, unloading_model):
         """
-        Construction d'un modèle cohésif
+        Construction d'un modÃ¨le cohÃ©sif
         :param cohesive_law_points: array describing the stress - opening curve of the
         cohesive model
-        # TODO : mettre à jour data container pour construire les modèles cohésifs
+        # TODO : mettre Ã  jour data container pour construire les modÃ¨les cohÃ©sifs
         :param unloading_model:
         """
-        self.cohesive_strength = cohesive_strength
-        self.critical_separation = critical_separation
-        self.unloading_model = unloading_model
+        self._critical_separation = cohesive_law_points[-1, 0]
+        self._cohesive_law = CohesiveLaw(cohesive_law_points)
+        self._unloading_model = unloading_model
 
     def compute_cohesive_stress(self, disc):
         """
@@ -32,55 +32,22 @@ class CohesiveZoneModelBase(object):
         new_opening = disc.discontinuity_opening.new_value[0]
 
         if disc.damage_variable.current_value[0] < 1:
-
             if new_opening < disc.history_max_opening:
-                cohesive_force = self.compute_unloading_reloading_condition(disc, new_opening)
+                cohesive_force = \
+                    self._unloading_model.compute_unloading_reloading_condition(disc, new_opening)
 
-            elif disc.history_max_opening <= new_opening < self.critical_separation:
-                cohesive_force = self.compute_cohesive_force_in_model(new_opening)
-                disc.history_max_opening = max(disc.history_max_opening, new_opening)
-                disc.history_min_cohesive_force = self.compute_cohesive_force_in_model(disc.history_max_opening)
+            elif disc.history_max_opening <= new_opening < self._critical_separation:
+                cohesive_force = self._cohesive_law.compute_cohesive_force(new_opening)
+                # Update the discontinuity indicators
+                disc.history_max_opening = max(abs(disc.history_max_opening), max(new_opening))
+                disc.history_min_cohesive_force = \
+                    self._cohesive_law.compute_cohesive_force(disc.history_max_opening)
                 disc.damage_variable.new_value = new_opening / self.critical_separation
 
-            if new_opening >= self.critical_separation:
-                # print "Discontinuity " + str(disc.label) + "is completely open"
+            if new_opening >= self._critical_separation:
                 disc.damage_variable.new_value = 1.
                 cohesive_force = 0.
-                disc.history_max_opening = max(disc.history_max_opening, new_opening)
+                disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
                 disc.history_min_cohesive_force = 0.
-
+                
         return cohesive_force
-
-    @abstractmethod
-    def compute_cohesive_force_in_model(self, opening):
-        """
-        Le calcul est délégué à la loi cohésive choisie
-        :param opening:
-        :return:
-        """
-        return 0.
-
-    # def apply_penalty_condition(self,  disc, new_opening):
-    #     """
-    #     Condition de pénalité pour éviter que l'ouverture devienne négative
-    #     :param disc:
-    #     :return:
-    #     """
-    #     # ancien_opening = disc.discontinuity_opening.current_value[0]
-    #     # ancien_force = disc.cohesive_force.current_value[0]
-    #     ancien_opening = 0
-    #     ancien_force = self.cohesive_strength
-    #     return self.unloading_model.apply_penalty_condition(disc, new_opening, ancien_opening,
-    #                                                                       ancien_force)
-    #     # return 0.
-
-    def compute_unloading_reloading_condition(self, disc, new_opening):
-        """
-        Charge / Décharge de la zone cohésive quand on est en dessous de l'ouverture max atteinte
-        :param opening: ouverture courante
-        :param disc:
-        :return:
-        """
-        # ancien_opening = disc.discontinuity_opening.current_value[0]
-        # ancien_force = disc.cohesive_force.current_value[0]
-        return self.unloading_model.compute_unloading_reloading_condition(disc, new_opening)
