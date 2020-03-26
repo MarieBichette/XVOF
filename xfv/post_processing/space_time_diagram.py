@@ -13,7 +13,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from collections import namedtuple
 
 from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
-from xfv.post_processing.space_time_diagram_tools import SpaceTimeDiagramTools
+from xfv.post_processing.tools.space_time_diagram_tools import SpaceTimeDiagramTools
 
 # ----------------------------------------------------------
 # Read user instructions

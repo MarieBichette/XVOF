@@ -8,7 +8,7 @@ import argparse
 import pathlib
 import matplotlib.pyplot as plt
 
-from xfv.post_processing.hdf5_postprocessing_tools import get_field_evolution_in_time_for_item
+from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolution_in_time_for_item
 
 # ----------------------------------------------------------
 # Read instructions
