@@ -24,7 +24,7 @@ parser.add_argument("--output_filename", default="all_fields.hdf5",
 args = parser.parse_args()
 
 if args.case is None:
-    raise ValueError("At least ont case is needed. Use -case to specify cases to plot")
+    raise ValueError("At least one case is needed. Use -case to specify cases to plot")
 
 if args.verbose:
     print("Cases : ")

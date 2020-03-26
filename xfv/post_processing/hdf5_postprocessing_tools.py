@@ -38,6 +38,25 @@ def get_field_evolution_in_time_for_item(path_to_hdf5_db, id_item, field, modulo
     return field_item_history
 
 
+def get_field_profile_at_time(hdf5_band, field, t):
+    """
+    Extracts a profile of field at time t
+
+    :param hdf5_band: hdf5 band containing the output results
+    :param field: field to extract
+    :param t: time
+    :type OutputDatabaseExploit
+    :type str
+    :type float
+
+    :return: tuple(coordinates, field profile)
+    """
+    data = hdf5_band.extract_true_field_at_time(field, t)
+    coord = data[:, 0]
+    field_value = data[:, 1]
+    return coord, field_value
+
+
 def _field_at_time_at_item(hd_band, id_item, field, t):
     """
     Extracts the field at a given item and at a given time
@@ -46,8 +65,8 @@ def _field_at_time_at_item(hd_band, id_item, field, t):
     :param id_item: item id to look at
     :param field: field to look at
     :param t: time to look at
-    :type OutputDatabaseExploit
 
+    :type OutputDatabaseExploit
     :type int
     :type str
     :type float
@@ -61,49 +80,3 @@ def _field_at_time_at_item(hd_band, id_item, field, t):
     else:
         result = hd_band.extract_true_field_at_time(field, t)[id_item][1]
     return result
-
-
-# def write_evolution_from_db(path_to_hdf5_db, output_file_name, item, id_item, field):
-#     """
-#     Save the hdf5 database in a .dat file
-#     :param path_to_hdf5_db : path where the hdf5 database is stored
-#     :param item: cell or node
-#     :param id_item: int, id of the item to be saved
-#     :param field: item fields to be saved
-#     :param output_file_name : file name for outputs
-#     :return:
-#     """
-#     directory = os.path.dirname(os.path.abspath(path_to_hdf5_db))
-#     path_to_save_data = os.path.join(directory, output_file_name)
-#     print("writing file {:} with fields {} ...".format(os.path.relpath(path_to_save_data), field.title))
-#     to_write = get_field_evolution_in_time_for_item(path_to_hdf5_db, id_item, field.title)
-#     header = "-----Time History for {:} {:} :".format(item, str(id_item)) + os.linesep
-#     header += "{:^15s}    {:^15s} ".format("Time[s]", field.label)
-#     my_format = ['%+10.9e', '%+10.9e']
-#
-#     with open(path_to_save_data, 'w') as f:
-#         np.savetxt(f, to_write, fmt=my_format, header=header)
-#         f.close()
-#
-#
-# def write_profile_from_db(path_to_hdf5_db, output_file_name, time, field):
-#     """
-#     Save the hdf5 database in a .dat file
-#     :param path_to_hdf5_db : path where the hdf5 database is stored
-#     :param output_file_name : file to write
-#     :param time : time
-#     :param field: fields to be saved
-#     :return:
-#     """
-#     directory = os.path.dirname(os.path.abspath(path_to_hdf5_db))
-#     path_to_save_data = os.path.join(directory, output_file_name)
-#     my_hd = OutputDatabaseExploit(path_to_hdf5_db)
-#     array_to_write = my_hd.extract_true_field_at_time(field.title, time)[:]
-#
-#     np.savetxt(path_to_save_data, array_to_write, fmt=['%+9.8e','%+9.8e'])
-#     print("writing file {:} with fields {} ...".format(path_to_save_data, field.title))
-
-
-
-
-
