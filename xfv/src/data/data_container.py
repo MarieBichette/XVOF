@@ -7,6 +7,7 @@ Implementing the DataContainer class
 from collections import namedtuple
 import json
 from pathlib import Path
+import sys
 import lxml.etree as et
 
 from xfv.src.equationsofstate.miegruneisen import MieGruneisen
@@ -64,7 +65,7 @@ DatabaseProps = namedtuple("DatabaseProps",
                             "cell_indexes", "node_indexes"])
 
 
-class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-instance-attributes
+class DataContainer(metaclass=Singleton):  # pylint: disable=too-many-instance-attributes
     """
     Contains the data read from the datafile
     """
@@ -73,9 +74,10 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         """
         Constructor
         """
-        print("Opening data file : {}".format(Path(datafile_path).resolve()))
-        self._datafile_dir = Path(datafile_path).resolve().parent
-        self.__datadoc = et.parse(datafile_path)
+        datafile_path = Path(datafile_path)
+        print("Opening data file : {}".format(datafile_path.resolve()))
+        self._datafile_dir = datafile_path.resolve().parent
+        self.__datadoc = et.parse(datafile_path.as_posix())
         self.numeric = NumericalProps(*self.__fill_in_numerical_props())
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
         self.time = TimeProps(*self.__fill_in_time_props())
@@ -366,13 +368,12 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
                 self.__datadoc.find(repertoire_base + 'type-of-enrichment').text)
             if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
                 raise ValueError("Unknown enrichment type. = Hansbo")
-            else:
-                lump_mass_matrix = str(
-                    self.__datadoc.find(repertoire_base + 'lump-mass-matrix').text)
-                if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:
-                    print ("""Don't recognize lumping technique. """
-                           """Only those lumps are possible : menouillard, somme \n"""
-                           """No lumping technique is applied. Mass matrix is consistent""")
+            lump_mass_matrix = str(
+                self.__datadoc.find(repertoire_base + 'lump-mass-matrix').text)
+            if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:
+                print("""Don't recognize lumping technique. """
+                      """Only those lumps are possible : menouillard, somme \n"""
+                      """No lumping technique is applied. Mass matrix is consistent""")
         else:
             print("No failure treatment will be applied for {:}".format(matter))
             failure_treatment_value = 0.
@@ -407,7 +408,7 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
             else:
                 print("Failure criterion is not in MinimumPressure, "
                       "Damage, HalfRodComparison, MaximalStress")
-                exit(0)
+                sys.exit(0)
         except AttributeError:
             pass
 
