@@ -3,8 +3,8 @@
 """
 todo: to complete
 """
-import os.path
-import sys
+import argparse
+from pathlib import Path
 import time
 
 
@@ -21,7 +21,7 @@ from xfv.src.rupturetreatment.enrichelement     import EnrichElement
 from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
 
 
-def __create_mesh(meshfile, enrichment_type):
+def __create_mesh(meshfile: Path, enrichment_type) -> None:
     """
     Create a Mesh1D object from meshfile
 
@@ -79,14 +79,13 @@ def __init_velocity(nodes, data):
                .format(vitesse_interface, node_interface)))
 
 
-def __init_time_figure_plot(output_data, path):
+def __init_time_figure_plot(output_data, path: Path) -> None:
     """
     Initialize the time figure plots
 
     :param output_data: output data
     :type output_data: data_container.output_props
     :param path: path toward the directory holding data file
-    :type path: str
     :return: the list of nodes or cells that must be followed
     :rtype: List[TimeData]
     """
@@ -136,7 +135,8 @@ def __init_output(output_data, type_of_enrichment, mesh):
     return the_output_mng
 
 
-def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def main(directory: Path) -> None:
+    #pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Launch the program
     """
@@ -144,10 +144,9 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     #             PARAMETERS INITIALIZATION
     # ------------------------------------------------------------------
     # ---- # DATA FILES
-    path = sys.argv[1]
-    data = DataContainer(os.path.join(path, "XDATA.xml"))
-    meshfile = os.path.join(path, "mesh.txt")
-    print("Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path))))
+    data = DataContainer(directory / "XDATA.xml")
+    meshfile = directory / "mesh.txt"
+    print("Running simulation for {}".format(directory.resolve()))
 
     # ---- # TIME MANAGEMENT
     final_time = data.time.final_time
@@ -191,7 +190,7 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    history_list = __init_time_figure_plot(data.output, path)
+    history_list = __init_time_figure_plot(data.output, directory)
     the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
@@ -345,4 +344,9 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="%(prog)s is a one dimensional hydro code to simulate "
+                    "damage and spall activated by strong shock propagation.")
+    parser.add_argument("data_directory", help="Path toward the data directory")
+    args = parser.parse_args()
+    main(Path(args.data_directory))
