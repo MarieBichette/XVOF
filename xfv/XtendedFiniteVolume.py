@@ -314,9 +314,9 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         #         TIME STEP COMPUTATION                #
         # ---------------------------------------------#
         dt_crit = my_mesh.compute_new_time_step()
-        dt = min(dt, dt_crit)  # pylint: disable=invalid-name
-        if dt != dt_crit:
-            print("Reduction of the time step after failure. New time step is " + str(dt_crit))
+        if dt > dt_crit:
+            dt = min(dt, dt_crit)  # pylint: disable=invalid-name
+            print("Reduction of the time step to respect CFL. New time step is " + str(dt_crit))
 
         # ---------------------------------------------#
         #                INCREMENTATION                #
