@@ -24,18 +24,15 @@ class OutputDatabase(object):
         self.__current_group = self.__db.create_group("{:g}".format(time))
         self.__nb_sav += 1
 
-    def add_field(self, field_name, values, **kwargs):
+    def add_field(self, f_name, values, **kwargs):
         """
-        Create a dataset corresponding to field_name and storing the values. All extra keywords arguments
-        are stored as attributes of the dataset
+        Create a dataset corresponding to field_name and storing the values.
+        All extra keywords arguments are stored as attributes of the dataset
         """
-        # try:
-        ds = self.__current_group.create_dataset(field_name, values.shape, np.result_type(values))
-        # except TypeError:
-        #     import ipdb; ipdb.set_trace()
-        ds[...] = values
-        for k, v in list(kwargs.items()):
-            ds.attrs[k] = v
+        data_set = self.__current_group.create_dataset(f_name, values.shape, np.result_type(values))
+        data_set[...] = values
+        for key, value in list(kwargs.items()):
+            data_set.attrs[key] = value
 
     def close(self):
         """

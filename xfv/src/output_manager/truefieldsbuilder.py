@@ -5,7 +5,7 @@ A collection of methods for building True fields from classical and enriched one
 import numpy as np
 
 
-def build_node_true_field(classical_field, enriched_field, node_status, enrichment_type=None):
+def build_node_true_field(classical_field, enrichment_type=None):
     """
     Build the node true field based on the node status
 
@@ -19,7 +19,7 @@ def build_node_true_field(classical_field, enriched_field, node_status, enrichme
     if not enrichment_type == "Hansbo":
         # Hansbo : vitesse nodale = vitesse classique => rien a faire. On verifie quand meme
         raise ValueError(
-            """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
+            """Don't know how to build true fields with enrichment type {}.""".format(
                 enrichment_type))
     return true_field.reshape((len(true_field), 1))
 
@@ -54,26 +54,18 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
     >>> build_cell_true_field(a, b, s).tolist()
     [-3.0, 4.0, 0.0, -2.0, 4.0, -3.0, -5.0, 9.0]
     """
-    # ------------- extract sigma xx if field = tensor
-    # if len(classical_field.value.flatten()) > classical_field.shape[0]:  # si tableau de dimension > 1
-    #     # correspond a un field de type tenseur (3 valeurs enregistrees pour chaque cell)
-    #     classical_field = classical_field[:, 0]  # on ne garde que la composante xx
-
-    # idem pour le champ enrichi (operation transparente pour les champs scalaires)
-    # enriched_field = enriched_field[:, 0:2]  # on ne garde que cell_id et la composante xx
-    # -------------------------------------------------------------------
-
     if len(classical_field.flatten()) == classical_field.shape[0]:
-        # si le champ est un champ scalaire, on rentre dans la boucle et on reshape le np.array pour avoir
-        # deux dimensions (dont une egale a 1). Cela permet d'avoirla compatibilite avec le type des coordonnees
-        # des items pour np.concatenate
+        # si le champ est un champ scalaire, on rentre dans la boucle et on reshape le
+        # np.array pour avoir deux dimensions (dont une egale a 1). Cela permet d'avoir la
+        # compatibilite avec le type des coordonnees des items pour np.concatenate
         classical_field = classical_field.reshape((len(classical_field), 1))
 
     true_field = np.copy(classical_field)
     offset = 0
 
     # on recupere les cell_id dans la premiere colonne de la db
-    # la methode de reconstruction des champs necessite que les indices des cells enrichies soient triees
+    # la methode de reconstruction des champs necessite que les indices des cells enrichies
+    # soient triees
     enriched_field = np.sort(enriched_field, 0)
     enriched_id = enriched_field[:, 0]
 
@@ -88,9 +80,8 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
             true_field = true_field.reshape(-1, classical_field.shape[1])
             offset += 1
     else:
-        raise ValueError(
-            """Don't know how to build true fields with enrichment type {}. Possibilities are Hansbo and Moes""".format(
-                enrichment_type))
+        raise ValueError("""Don't know how to build true fields with enrichment type {}.""".format(
+            enrichment_type))
 
     return true_field
 
