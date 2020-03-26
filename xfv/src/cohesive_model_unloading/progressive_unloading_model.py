@@ -3,7 +3,7 @@
 Definition of UnloadingModel with opposite force
 """
 from abc import abstractmethod
-from xfv.src.cohesive_model.unloading_model_base import UnloadingModelBase
+from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
 class ProgressiveUnloadingModel(UnloadingModelBase):
