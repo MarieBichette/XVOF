@@ -5,13 +5,14 @@ A class for utilities for plotting a space-time diagram after exploitation of th
 """
 
 import pathlib
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from xfv.src.data.data_container import DataContainer
 from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
 
 
-class SpaceTimeDiagramUtilities:
+class SpaceTimeDiagramTools:
     """
     A class utilities for plotting a space-time diagram
     """
@@ -29,13 +30,13 @@ class SpaceTimeDiagramUtilities:
         self._data_container = DataContainer(os.path.join(os.path.dirname(path_to_db), "XDATA.xml"))
         self._verbose = verbose
 
-    def _data_has_interface(self):
+    def data_has_interface(self):
         """
         Return true if an interface exists between node and projectile
         :return: bool
         """
         try:
-            interface_position = self.data_container.geometric.initial_interface_position
+            interface_position = self._data_container.geometric.initial_interface_position
             return True
         except ValueError:
             return False
@@ -46,14 +47,14 @@ class SpaceTimeDiagramUtilities:
         (last cell in the projectile)
         :return: tuple(cell_interface_id (int), interface_position(float)
         """
-        interface_position = self.data_container.geometric.initial_interface_position
+        interface_position = self._data_container.geometric.initial_interface_position
         if self._verbose:
             print("Interface position : " + str(interface_position))
 
         # Look the index of cell of the projectile / target interface
         t = 0
-        node_coord = self.my_hd.extract_field_at_time("NodeCoordinates", t)[:-1].flatten()
-        cell_size = self.my_hd.extract_field_at_time("CellSize", t)[:]
+        node_coord = self._my_hd.extract_field_at_time("NodeCoordinates", t)[:-1].flatten()
+        cell_size = self._my_hd.extract_field_at_time("CellSize", t)[:]
         cell_coord = (node_coord + cell_size / 2.)
         indice_interface = 0
         for i_cell in range(cell_size.shape[0]):
@@ -61,7 +62,7 @@ class SpaceTimeDiagramUtilities:
                 indice_interface += 1
         return indice_interface, interface_position
 
-    def plot_interface(self, coordinates_array, time_array, i_fig=1):
+    def plot_interface(self, coordinates_array, time_array):
         """
         Plot the interface between interface and projectile
         :param coordinates_array: coordinates
@@ -69,18 +70,19 @@ class SpaceTimeDiagramUtilities:
         :param i_fig : figure index to add the interface line to
         :return:
         """
+        # In theory, interface is a node but the array of coordinates is based on cell
         index, position = self.compute_interface_cell_id()
         if self._verbose:
             print("Put the interface between projectile and target at " + str(position) +
-                  "(= cell " + str(indice) + ")")
-        plt.figure(i_fig)
+                  "(= cell " + str(index) + ")")
         plt.plot(coordinates_array[:, index], time_array[:, index], color='black')
 
-    def build_xyz_map_for_contourf_plot(self, field_type):
+    def build_xyz_map_for_contourf_plot(self, field_type, final_ruptured_cell_id):
         """
         Build a map to plot the space time diagram with contourf matplotlib function
         :param field_type : string for field type of interest.
         Should match a key of dictionary OutputDatabaseExploit.field_type_converter
+        :param final_ruptured_cell_id : array of the enriched cells at final time
         :type field_type : str
         :return: tuple(X, Y, Z) map
         X = coordinates, Y = time et Z = field to map
@@ -93,105 +95,107 @@ class SpaceTimeDiagramUtilities:
         # -> on se retrouve après construction des tableaux avec
         # dim_x qui vaut nbr_cell + nbr_disc à la fin du calcul
 
-        # 1.a) Récupérer les disc finales
-        final_cell_status = \
-            self.my_hd.extract_field_at_time("CellStatus", self.my_hd.saved_times[-1])
-        final_ruptured_cell_id = np.where(final_cell_status)[0]
-        final_ruptured_cell_id = np.sort(final_ruptured_cell_id)
-
-        # 1.b) calculer les tailles des tableaux
-        dim_x_0 = self.my_hd.extract_field_at_time(classical_fname, 0.).shape[0]
+        # 1.a) calculer les tailles des tableaux
+        dim_x_0 = self._my_hd.extract_field_at_time(classical_fname, 0.).shape[0]
         dim_x_final = dim_x_0 + len(final_ruptured_cell_id)
-        dim_y = self.my_hd.nb_saved_times
+        dim_y = self._my_hd.nb_saved_times
 
-        # 1.c) Créer les tableaux
+        # 1.b) Créer les tableaux
         X = np.zeros([dim_y, dim_x_final])
         Y = np.zeros([dim_y, dim_x_final])
         Z = np.zeros([dim_y, dim_x_final])
 
         # 2) Build line after line the color map X, Y, Z
-        for i_temps in range(self.my_hd.nb_saved_times):
-            t = self.my_hd.saved_times[i_temps]
-            x, y, z = self._build_classical_xyz_map_for_contourf_plot_at_time(t, dim_x_0)
-            self._include_enrichment(x, y, z, t, final_ruptured_cell_id)  # modifies x, y, z
+        for i_temps in range(self._my_hd.nb_saved_times):
+            t = self._my_hd.saved_times[i_temps]
+            x, y, z = self._build_classical_xyz_map_for_contourf_plot_at_time(t, dim_x_0,
+                                                                              classical_fname)
+            self._include_enrichment(x, y, z, t, final_ruptured_cell_id,
+                                     additional_fname)  # modifies x, y, z
             X[i_temps, :] = x * 1.e3
             Y[i_temps, :] = y * 1.e6
             Z[i_temps, :] = z
         return X, Y, Z
 
-    def plot_section_of_color_map(self, X, Y, Z, begin=None, end=None,
-                                  n_colors= 500, vmin=0, vmax=1):
+    def plot_section_of_color_map(self, coord, time, field, options, begin=None, end=None):
         """
         Plot a line of the contourf map with defined boundaries in space begin and end
-        :param X: coordinates array
-        :param Y: time array
-        :param Z: field array
+        :param coord: coordinates array
+        :param time: time array
+        :param field: field array
         :param begin: left boundary id
         :param end: right boundary id
-        :param n_colors: param of the plot : number of color in the colorbar
-        :param vmin: param of the plot : minimum of the colorbar
-        :param vmax: param of the plot : maximum of the colorbar
+        :param options : tuple(int, float, float) with :
+                - n_colors: param of the plot : number of color in the color bar
+                - field_min: param of the plot : minimum of the color bar
+                - field_max: param of the plot : maximum of the color bar
         :return:
         """
         if begin is not None and end is not None:
-            plt.contourf(X[:, begin:end + 1], Y[:, begin:end + 1], Z[:, begin:end + 1],
-                         n_colors, vmin=vmin, vmax=vmax)
+            plt.contourf(coord[:, begin:end + 1], time[:, begin:end + 1], field[:, begin:end + 1],
+                         options.n_colors, vmin=options.field_min, vmax=options.field_max)
             if self._verbose:
                 print("Plot from " + str(begin) + " to " + str(end) + "inclus")
 
         elif begin is None and end is not None:
-            plt.contourf(X[:, :end + 1], Y[:, :end + 1], Z[:, :end + 1],
-                         n_colors, vmin=vmin, vmax=vmax)
+            plt.contourf(coord[:, :end + 1], time[:, :end + 1], field[:, :end + 1],
+                         options.n_colors, vmin=options.field_min, vmax=options.field_max)
             if self._verbose:
                 print("Plot from the beginning to " + str(end) + "inclus")
 
         elif begin is not None and end is None:
-            plt.contourf(X[:, begin:], Y[:, begin:], Z[:, begin:], n_colors, vmin=vmin, vmax=vmax)
+            plt.contourf(coord[:, begin:], time[:, begin:], field[:, begin:],
+                         options.n_colors, vmin=options.field_min, vmax=options.field_max)
             if self._verbose:
                 print("Plot from " + str(begin) + " to the end")
 
         elif begin is None and end is None:
-            plt.contourf(X[:, :], Y[:, :], Z[:, :], n_colors, vmin=vmin, vmax=vmax)
+            plt.contourf(coord[:, :], time[:, :], field[:, :],
+                         options.n_colors, vmin=options.field_min, vmax=options.field_max)
             if self._verbose:
-                print("Plot all data")
+                print("Plot data for all geometry")
 
-    def _build_classical_xyz_map_for_contourf_plot_at_time(self, t, dim_x):
+    def _build_classical_xyz_map_for_contourf_plot_at_time(self, t, dim_x, classical_fname):
         """
         Extract information out of the database at time t
         and return a convenient storage for contour_f
         :param t: time
-        :param dim_x :
+        :param dim_x : nbr of cells
+        :param classical_fname : name of the classical field (starting by Classical...)
         :type: float
         :type : int
+        :type str
         :return: tuple(array(coordinates), array_ones * time, array(field))
         """
-        node_coord = self.my_hd.extract_field_at_time("NodeCoordinates", t)[:-1].flatten()
-        cell_size = self.my_hd.extract_field_at_time("CellSize", t)[:]
+        node_coord = self._my_hd.extract_field_at_time("NodeCoordinates", t)[:-1].flatten()
+        cell_size = self._my_hd.extract_field_at_time("CellSize", t)[:]
         x = (node_coord + cell_size / 2.)
         y = np.ones([dim_x]) * t
-        z = self.my_hd.extract_field_at_time(classical_fname, t)[:]
+        z = self._my_hd.extract_field_at_time(classical_fname, t)[:]
         return x, y, z
 
-    def _include_enrichment(self, x, y, z, t, final_ruptured_cell_id):
+    def _include_enrichment(self, x, y, z, t, final_ruptured_cell_id, additional_fname):
         """
         Modifies the x,y,z array to include enrichment either by dedoubling the data if the disc is
         not created at time t yet, or by inserting the disc data if the disc exists at time t
-        :param x:
-        :param y:
-        :param z:
-        :param t:
+        :param x: coord array
+        :param y: time array
+        :param z: field array
+        :param t: time
+        :param final_ruptured_cell_id : id of the enriched cell after offset
+        :param additional_fname : name of the enriched field (starting with Additional...)
         :return:
         """
         # Initialisation of useful data
         offset = 0
         count_active_disc = 0
-        current_cell_status = self.my_hd.extract_field_at_time("CellStatus", t)[:]
+        current_cell_status = self._my_hd.extract_field_at_time("CellStatus", t)[:]
 
         if current_cell_status.any():
             # Mutualisation de variables qui seront demandées item par item plus tard
-            left_size = self.my_hd.extract_field_at_time("AdditionalLeftSize", t)[:]
-            right_size = self.my_hd.extract_field_at_time("AdditionalRightSize", t)[:]
-            right_field = self.my_hd.extract_field_at_time(additional_fname, t)[:]
+            left_size = self._my_hd.extract_field_at_time("AdditionalLeftSize", t)[:]
+            right_size = self._my_hd.extract_field_at_time("AdditionalRightSize", t)[:]
+            right_field = self._my_hd.extract_field_at_time(additional_fname, t)[:]
             left_size = np.sort(left_size, 0)
             right_size = np.sort(right_size, 0)
             right_field = np.sort(right_field, 0)
