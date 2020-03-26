@@ -281,9 +281,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of new time step
         """
-        # self.cells.compute_new_time_step(self.cells.classical)
-        # self.cells.compute_enriched_elements_new_time_step()
-        # return self.cells.dt.min()
+        if not DataContainer().time.is_time_step_constant:
+            self.cells.compute_new_time_step(self.cells.classical)
+            self.cells.compute_enriched_elements_new_time_step()
+            return self.cells.dt.min()
 
         initial_time_step = DataContainer().time.initial_time_step
         dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
