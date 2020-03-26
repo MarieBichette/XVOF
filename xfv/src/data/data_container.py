@@ -109,6 +109,13 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
             # astuce pour initilialiser un projectile fictif et ne pas changer la structure du code
             self.material_projectile = self.material_target
 
+    def get_cohesive_model(self):
+        """
+        Accessor on the cohesive model of the target or material
+        :return:
+        """
+        return self.material_target.damage_model.cohesive_model
+
     def __fill_in_bc_props(self):
         """
         :return: the pressure to be applied on the boundary of geometry
