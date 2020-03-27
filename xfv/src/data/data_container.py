@@ -22,9 +22,7 @@ from xfv.src.custom_functions.march_table import MarchTable
 from xfv.src.custom_functions.ramp import Ramp
 from xfv.src.custom_functions.two_steps import TwoSteps
 from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
-from xfv.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
-from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
-from xfv.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
+from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 from xfv.src.cohesive_model_unloading.progressive_unloading_model import ProgressiveUnloadingModel
 from xfv.src.cohesive_model_unloading.zero_force_unloading_model import ZeroForceUnloadingModel
 from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
