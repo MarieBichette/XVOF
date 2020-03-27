@@ -11,7 +11,7 @@ from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 from xfv.src.data.data_container import DataContainer
 
 
-class CohesiveLawLinearTest(unittest.TestCase):
+class CohesiveLawTest(unittest.TestCase):
     """
     Test case utilisé pour test les fonctions du module 'CohesiveLaw' for linear cohesive law
     """
@@ -19,15 +19,33 @@ class CohesiveLawLinearTest(unittest.TestCase):
         """
         Initialisation des tests
         """
-        data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
-        self.test_datacontainer = DataContainer(data_file_path)
+        pass
 
     def tearDown(self):
         """
         Operations to be done after completing all the tests in the class
         """
-        DataContainer.clear()
+        pass
+
+    def test_init(self):
+        """
+        Test of the creation of CohesiveLaw
+        :return:
+        """
+        # Test dimension of array
+
+        # Test value of first value of separation = 0
+
+        # Test value of stress at critical separation = 0
+
+        # Test separation are croissant in array
+
+    def test_compute_cohesive_force(self):
+        """
+        Test of the method compute_cohesive_force of module CohesiveLaw
+        :return:
+        """
+        CohesiveLaw(np.array([[0., 10.], [5., 0.]]))
 
 
 
