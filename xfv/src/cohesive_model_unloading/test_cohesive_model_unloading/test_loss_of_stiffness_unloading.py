@@ -1,17 +1,17 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Classe de test du module cohesive law
+Classe de test du module cohesive unloading
 """
 import unittest
 import numpy as np
 import os
-from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
+from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
 
 
-class ConstantStiffnessUnloadingTest(unittest.TestCase):
+class LossOfStiffnessUnloadingTest(unittest.TestCase):
     """
     Test case for ConstantStiffnessUnloadingTest
     """
@@ -26,7 +26,7 @@ class ConstantStiffnessUnloadingTest(unittest.TestCase):
         # Discontinuity creation
         self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5)
         # Creation of the tested service
-        self.test_unloading_model = ConstantStiffnessUnloading(10.)
+        self.test_unloading_model = LossOfStiffnessUnloading()
 
     def tearDown(self):
         """
@@ -39,9 +39,9 @@ class ConstantStiffnessUnloadingTest(unittest.TestCase):
         Test of the method compute_unloading_reloading_condition du module
         ConstantStiffnessUnloading
         """
-        self.disc.history_min_cohesive_force = 20.
+        self.disc.history_min_cohesive_force = 40.
         self.disc.history_max_opening = 2.
-        result = self.test_unloading_model.compute_unloading_reloading_condition(self.disc, 1.)
+        result = self.test_unloading_model.compute_unloading_reloading_condition(self.disc, 0.5)
         expected = 10.
         self.assertEqual(result, expected)
 

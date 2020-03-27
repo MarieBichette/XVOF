@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Classe de test du module cohesive law
+Classe de test du module cohesive unloading
 """
 import unittest
 import numpy as np
@@ -39,10 +39,10 @@ class ConstantStiffnessUnloadingTest(unittest.TestCase):
         Test of the method compute_unloading_reloading_condition du module
         ConstantStiffnessUnloading
         """
-        self.disc.history_min_cohesive_force = 20.
+        self.disc.history_min_cohesive_force = 40.
         self.disc.history_max_opening = 2.
-        result = self.test_unloading_model.compute_unloading_reloading_condition(self.disc, 1.)
-        expected = 10.
+        result = self.test_unloading_model.compute_unloading_reloading_condition(self.disc, 0.5)
+        expected = 25.
         self.assertEqual(result, expected)
 
 
