@@ -249,7 +249,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-many-instance-a
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
         dump = self.__datadoc.find('output/dump-images').text.lower() == "true"
-        
+
         # Databases
         db_prop_l = []
         for elem in self.__datadoc.iterfind('output/database'):
