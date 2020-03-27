@@ -24,7 +24,6 @@ from xfv.src.custom_functions.two_steps import TwoSteps
 from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
 from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 from xfv.src.cohesive_model_unloading.progressive_unloading_model import ProgressiveUnloadingModel
-from xfv.src.cohesive_model_unloading.zero_force_unloading_model import ZeroForceUnloadingModel
 from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
 from xfv.src.utilities.singleton import Singleton
 
