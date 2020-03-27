@@ -28,14 +28,3 @@ class ProgressiveUnloadingModel(UnloadingModelBase):
         if disc.history_max_opening > 1.e-15:
             cohesive_force = disc.history_min_cohesive_force + self.slope * (new_opening - disc.history_max_opening)
         return cohesive_force
-
-    @abstractmethod
-    def apply_penalty_condition(self, disc, new_opening, ancien_opening, ancien_force):
-        """
-
-        :param disc:
-        :return:
-        """
-        cohesive_force = ancien_force + 1000 * self.slope * (new_opening - ancien_opening)
-        return cohesive_force
-

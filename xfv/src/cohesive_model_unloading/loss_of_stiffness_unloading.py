@@ -31,15 +31,3 @@ class LossOfStiffnessUnloadingModel(UnloadingModelBase):
             cohesive_force = disc.history_min_cohesive_force + disc.history_min_cohesive_force / disc.history_max_opening * (new_opening - disc.history_max_opening)
 
         return cohesive_force
-
-    @abstractmethod
-    def apply_penalty_condition(self, disc, new_opening, ancien_opening, ancien_force):
-        """
-
-        :param disc:
-        :return:
-        """
-        # cohesive_force = ancien_force + 20 * ancien_force * (new_opening / ancien_opening - 1)
-        cohesive_force = ancien_force + 1.e+10 * (new_opening - ancien_opening)
-        return cohesive_force
-
