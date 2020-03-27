@@ -10,27 +10,37 @@ from typing import Dict, List, NamedTuple, Tuple, Optional, Union
 
 from xfv.src.utilities.singleton import Singleton
 
-class NumericalProps(NamedTuple):
+
+class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
     a_pseudo: float
     b_pseudo: float
     cfl: float
-    cfl_pseudo: Optional[float]
+    cfl_pseudo: float
 
-GeometricalProps = NamedTuple("GeometricalProps", [
-    ("section", float), ("initial_interface_position", Optional[float])])
 
-TimeProps = NamedTuple("TimeProps", [
-    ('initial_time_step', float), ('final_time', float), ('is_time_step_constant', Optional[bool]),
-    ("time_step_reduction_factor_for_failure", Optional[float])])
+class GeometricalProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    section: float
+    initial_interface_position: float
 
-DatabaseProps = NamedTuple("DatabaseProps", [
-    ("identifier", str), ("path", str),
-    ("time_period", Optional[float]), ("iteration_period", Optional[int])])
 
-OutputProps = NamedTuple("OutputProps", [
-    ("number_of_images", int), ("dump", bool), ("databases", List[DatabaseProps])])
+class TimeProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    initial_time_step: float
+    final_time: float
+    is_time_step_constant: bool
+    time_step_reduction_factor_for_failure: Optional[float]
 
-BoundaryConditionsProps = namedtuple("BoundaryConditionsProps", ["left_BC", "right_BC"])
+
+class DatabaseProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    identifier: str
+    path: str
+    time_period: Optional[float]
+    iteration_period: Optional[int]
+
+
+class OutputProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    number_of_images: int
+    dump: bool
+    databases: List[DatabaseProps]
 
 MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
                                              "failure_model", "damage_model"])
