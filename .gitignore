@@ -72,3 +72,6 @@ target/
 
 # Ignore tag files
 tags
+
+# Ignore mypy cache directory
+.mypy_cache
