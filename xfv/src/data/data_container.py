@@ -57,12 +57,10 @@ DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 TimeProps = namedtuple("TimeProps", ['initial_time_step', 'final_time', 'is_time_step_constant',
                                      "time_step_reduction_factor_for_failure"])
 
-OutputProps = namedtuple("OutputProps", ['number_of_images', 'dump', 'cells_numbers',
-                                         'nodes_numbers', 'databases'])
+OutputProps = namedtuple("OutputProps", ['number_of_images', 'dump', 'databases'])
 
 DatabaseProps = namedtuple("DatabaseProps",
-                           ["identifier", "path", "time_period", "iteration_period",
-                            "cell_indexes", "node_indexes"])
+                           ["identifier", "path", "time_period", "iteration_period"])
 
 
 class DataContainer(metaclass=Singleton):  # pylint: disable=too-many-instance-attributes
@@ -251,44 +249,21 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-many-instance-a
         """
         number_of_images = int(self.__datadoc.find('output/number-of-images').text)
         dump = self.__datadoc.find('output/dump-images').text.lower() == "true"
-
-        # todo : virer ce type de sortie
-        try:
-            cell_numbers = self.__datadoc.find('output/cell-for-time-figure').text
-            cell_numbers = cell_numbers.split(',')
-        except ValueError:  # la ligne correspondante ne contient pas de cell id (de type int)
-            cell_numbers = None
-        except AttributeError:  # la ligne correspondante est absente ou comment�e
-            cell_numbers = None
-        try:
-            str_node_numbers = self.__datadoc.find('output/node-for-time-figure').text
-            node_numbers = str_node_numbers.split(',')
-        except ValueError:  # la ligne correspondante ne contient pas de cell id (de type int)
-            node_numbers = None
-        except AttributeError:  # la ligne correspondante est absente ou comment�e
-            node_numbers = None
-        #end todo
-
+        
         # Databases
         db_prop_l = []
         for elem in self.__datadoc.iterfind('output/database'):
             identi = elem.find('identifier').text
             database_path = elem.find('path').text
             iteration_period, time_period = None, None
-            cell_indexes, node_indexes = None, None
             if elem.find('iteration-period') is not None:
                 iteration_period = int(elem.find('iteration-period').text)
             else:
                 time_period = float(elem.find('time-period').text)
-            # indices spécifiques : pas implémenté et pose pb pour reconstruction des champs
-            # if elem.find('cell-indexes') is not None:
-            #     cell_indexes = [int(ind) for ind in elem.find('cell-indexes').text.split(',')]
-            # if elem.find('node-indexes') is not None:
-            #     node_indexes = [int(ind) for ind in elem.find('node-indexes').text.split(',')]
             db_props = DatabaseProps(identi, database_path, time_period,
-                                     iteration_period, cell_indexes, node_indexes)
+                                     iteration_period)
             db_prop_l.append(db_props)
-        return number_of_images, dump, cell_numbers, node_numbers, db_prop_l
+        return number_of_images, dump, db_prop_l
 
     def __get_initial_values(self, matter):
         """

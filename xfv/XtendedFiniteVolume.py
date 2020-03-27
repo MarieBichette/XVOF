@@ -14,7 +14,6 @@ import numpy as np
 from xfv.src.figure_manager.figure_manager      import FigureManager
 from xfv.src.data.data_container                import DataContainer
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
-from xfv.src.data.save_time_data                import CellTimeData, NodeTimeData
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
 from xfv.src.rupturetreatment.enrichelement     import EnrichElement
@@ -79,34 +78,6 @@ def __init_velocity(nodes, data):
                .format(vitesse_interface, node_interface)))
 
 
-def __init_time_figure_plot(output_data, path: Path) -> None:
-    """
-    Initialize the time figure plots
-
-    :param output_data: output data
-    :type output_data: data_container.output_props
-    :param path: path toward the directory holding data file
-    :return: the list of nodes or cells that must be followed
-    :rtype: List[TimeData]
-    """
-    cells_for_time_figure = []
-    nodes_for_time_figure = []
-    try:
-        for cell_number in output_data.cells_numbers:
-            cells_for_time_figure.append(int(cell_number))
-    except TypeError:
-        pass
-
-    try:
-        for node_number in output_data.nodes_numbers:
-            nodes_for_time_figure.append(int(node_number))
-    except TypeError:
-        pass
-    h_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
-    h_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
-    return h_list
-
-
 def __init_output(output_data, type_of_enrichment, mesh):
     """
     Returns the OutputManager initialized
@@ -130,8 +101,7 @@ def __init_output(output_data, type_of_enrichment, mesh):
             the_output_mng.register_database_time_ctrl(db_el.identifier, output_db,
                                                        db_el.time_period)
         the_output_mng.register_all_fields(enrichment_registration, mesh.cells,
-                                           mesh.nodes, db_el.identifier,
-                                           db_el.cell_indexes, db_el.node_indexes)
+                                           mesh.nodes, db_el.identifier)
     return the_output_mng
 
 
@@ -190,7 +160,6 @@ def main(directory: Path) -> None:
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    history_list = __init_time_figure_plot(data.output, directory)
     the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
@@ -333,10 +302,6 @@ def main(directory: Path) -> None:
 
     print("Total time spent in compute operation is : {:15.9g} seconds".format(compute_time))
     plt.show(block=False)
-
-    for item_time_data in history_list:
-        item_time_data.write_fields_history()
-        item_time_data.close_file()
 
     print('Done !')
 
