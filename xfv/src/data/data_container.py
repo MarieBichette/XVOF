@@ -23,8 +23,8 @@ from xfv.src.custom_functions.ramp import Ramp
 from xfv.src.custom_functions.two_steps import TwoSteps
 from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
 from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
-from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ProgressiveUnloadingModel
-from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloadingModel
+from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
+from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 from xfv.src.utilities.singleton import Singleton
 
 NumericalProps = namedtuple("NumericalProps", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
@@ -457,10 +457,10 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
                 unloading_model = ZeroForceUnloadingModel(slope, cohesive_strength)
             elif unloading_model_name.lower() == "progressiveunloading":
                 slope = float(self.__datadoc.find(repertoire_base + 'unloading-model/slope').text)
-                unloading_model = ProgressiveUnloadingModel(slope, cohesive_strength)
+                unloading_model = ConstantStiffnessUnloading(slope, cohesive_strength)
             elif unloading_model_name.lower() == "lossofstiffnessunloading":
                 slope = float(self.__datadoc.find(repertoire_base + 'unloading-model/slope').text)
-                unloading_model = LossOfStiffnessUnloadingModel(slope, cohesive_strength)
+                unloading_model = LossOfStiffnessUnloading(slope, cohesive_strength)
 
             if cohesive_model_name.lower() == "bilinear":
                 separation_1 = float(

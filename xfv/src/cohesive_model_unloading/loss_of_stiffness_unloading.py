@@ -6,7 +6,7 @@ Definition of UnloadingModel with loss of stiffness
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
-class LossOfStiffnessUnloadingModel(UnloadingModelBase):
+class LossOfStiffnessUnloading(UnloadingModelBase):
     """
     A model for unloading reloading path with decreasing stiffness
     """
@@ -14,7 +14,7 @@ class LossOfStiffnessUnloadingModel(UnloadingModelBase):
         """
         Constructor
         """
-        super(LossOfStiffnessUnloadingModel, self).__init__()
+        super(LossOfStiffnessUnloading, self).__init__()
 
     def compute_unloading_reloading_condition(self, disc, new_opening):
         """

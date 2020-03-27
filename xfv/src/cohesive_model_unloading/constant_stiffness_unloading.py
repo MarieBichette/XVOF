@@ -6,7 +6,7 @@ Definition of UnloadingModel with constant stiffness
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
-class ProgressiveUnloadingModel(UnloadingModelBase):
+class ConstantStiffnessUnloading(UnloadingModelBase):
     """
     A model for unloading reloading path with constant stiffness
     """
@@ -14,7 +14,7 @@ class ProgressiveUnloadingModel(UnloadingModelBase):
         """
         Constructor
         """
-        super(ProgressiveUnloadingModel, self).__init__()
+        super(ConstantStiffnessUnloading, self).__init__()
         self.slope = slope
 
     @abstractmethod
