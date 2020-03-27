@@ -1,33 +1,30 @@
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
-Definition of UnloadingModel with opposite force
+Definition of UnloadingModel with loss of stiffness
 """
-from abc import abstractmethod
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
 class LossOfStiffnessUnloadingModel(UnloadingModelBase):
     """
-    A model for unloading reloading path in cohesive zone model
+    A model for unloading reloading path with decreasing stiffness
     """
-    def __init__(self, slope, cohesive_strength):
+    def __init__(self):
         """
-        Constructor :
+        Constructor
         """
         super(LossOfStiffnessUnloadingModel, self).__init__()
-        self.slope = slope
-        self.sigma_0 = cohesive_strength
 
-    @abstractmethod
     def compute_unloading_reloading_condition(self, disc, new_opening):
         """
-        Calcule
-        :return: contrainte
+        Compute the cohesive stress in case of unloading or reloading condition
+        (new_opening is less than the discontinuity maximal opening
+        :param disc : discontinuity
+        :param new_opening : opening of the discontinuity
+        :return: cohesive stress (float)
         """
-        # Correction :
-        cohesive_force = 0
-
-        if disc.history_max_opening > 1.e-16:
-            cohesive_force = disc.history_min_cohesive_force + disc.history_min_cohesive_force / disc.history_max_opening * (new_opening - disc.history_max_opening)
-
+        slope = disc.history_min_cohesive_force / disc.history_max_opening
+        cohesive_force = disc.history_min_cohesive_force +\
+                         slope * (new_opening - disc.history_max_opening)
         return cohesive_force
