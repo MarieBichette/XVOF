@@ -1,19 +1,19 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Classe de test du module cohesive zone model
+Classe de test du module cohesive law
 """
 import unittest
 import os
 import numpy as np
 
-from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
+from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 from xfv.src.data.data_container import DataContainer
 
 
-class LinearCohesiveZoneModelTest(unittest.TestCase):
+class CohesiveLawLinearTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'LinearCohesiveZoneModel'
+    Test case utilisé pour test les fonctions du module 'CohesiveLaw' for linear cohesive law
     """
     def setUp(self):
         """
