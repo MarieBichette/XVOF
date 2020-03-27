@@ -4,6 +4,7 @@
 Classe de test du module cohesive law
 """
 import unittest
+import numpy as np
 from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 
 

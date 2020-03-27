@@ -4,22 +4,29 @@
 Classe de test du module cohesive law
 """
 import unittest
-import os
 import numpy as np
-
-from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
+import os
+from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
+from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
 
 
-class CohesiveLawTest(unittest.TestCase):
+class ConstantStiffnessUnloadingTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'CohesiveLaw' for linear cohesive law
+    Test case for ConstantStiffnessUnloadingTest
     """
     def setUp(self):
         """
         Initialisation des tests
         """
-        pass
+        # DataContainer creation (just to be able to build the discontinuity)
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        self.test_datacontainer = DataContainer(data_file_path)
+        # Discontinuity creation
+        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5)
+        # Creation of the tested service
+        self.test_unloading_model = ConstantStiffnessUnloading(10.)
 
     def tearDown(self):
         """
@@ -27,88 +34,17 @@ class CohesiveLawTest(unittest.TestCase):
         """
         pass
 
-    def test_init(self):
+    def test_compute_unloading_reloading_condition(self):
         """
-        Test of the creation of CohesiveLaw
-        :return:
+        Test of the method compute_unloading_reloading_condition du module
+        ConstantStiffnessUnloading
         """
-        message = ""
-        # Test dimension of array 2d
-        try:
-            CohesiveLaw(np.array([1, 2, 3]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "array should be 2D")
-        # Test size of the array
-        try:
-            CohesiveLaw(np.array([[1, 2, 3], [4, 5, 6]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "array should be size (x, 2)")
-
-        # Test value of first value of separation = 0
-        try:
-            CohesiveLaw(np.array([[4, 2], [5, 0]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "first value of separation should be 0.")
-
-        # Test value of stress at critical separation = 0
-        try:
-            CohesiveLaw(np.array([[0, 2], [1, 1]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "last value of stress should be 0.")
-
-        # Test separation are croissant in array
-        try:
-            CohesiveLaw(np.array([[0, 2], [2, 1], [1, 0]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "separation is not sorted")
-
-    def test_compute_cohesive_force(self):
-        """
-        Test of the method compute_cohesive_force of module CohesiveLaw
-        """
-        linear_law = CohesiveLaw(np.array([[0., 10.], [5., 0.]]))
-        # Test linear law
-        result = linear_law.compute_cohesive_force(4.)
-        expected = 2.
-        self.assertEqual(result, expected)
-
-        bilinear_law = CohesiveLaw(np.array([[0., 10.], [3., 10.], [5., 0.]]))
-        # Test bilinear law, part 1
-        result = bilinear_law.compute_cohesive_force(2.)
+        self.disc.history_min_cohesive_force = 20.
+        self.disc.history_max_opening = 2.
+        result = self.test_unloading_model.compute_unloading_reloading_condition(self.disc, 1.)
         expected = 10.
         self.assertEqual(result, expected)
 
-        # Test bilinear law, part 2
-        result = bilinear_law.compute_cohesive_force(4.)
-        expected = 5.
-        self.assertEqual(result, expected)
 
-        trilinear_law = CohesiveLaw(np.array([[0., 10.], [1., 8.], [3., 8], [5., 0.]]))
-        # Test trilinear law, part 1
-        result = trilinear_law.compute_cohesive_force(0.5)
-        expected = 9.
-        self.assertEqual(result, expected)
-
-        # Test trilinear law, part 2
-        result = trilinear_law.compute_cohesive_force(2.)
-        expected = 8.
-        self.assertEqual(result, expected)
-
-         # Test trilinear law, part 3
-        result = trilinear_law.compute_cohesive_force(4.)
-        expected = 4.
-        self.assertEqual(result, expected)
-
-
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     unittest.main()

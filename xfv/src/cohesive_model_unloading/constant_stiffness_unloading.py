@@ -17,7 +17,6 @@ class ConstantStiffnessUnloading(UnloadingModelBase):
         super(ConstantStiffnessUnloading, self).__init__()
         self.slope = slope
 
-    @abstractmethod
     def compute_unloading_reloading_condition(self, disc, new_opening):
         """
         Compute the cohesive stress in case of unloading or reloading condition
