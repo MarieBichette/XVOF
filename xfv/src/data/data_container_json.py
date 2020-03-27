@@ -2,12 +2,19 @@
 """
 Implementing the DataContainer class
 """
-
+from abc import ABCMeta
 from collections import namedtuple
+from dataclasses import dataclass, astuple, field
 import json
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Tuple, Optional, Union
+from typing import Dict, List, NamedTuple, Tuple, Optional, Union, Type
 
+from xfv.src.custom_functions.custom_function import CustomFunction
+from xfv.src.custom_functions.constant_value import ConstantValue
+from xfv.src.custom_functions.ramp import Ramp
+from xfv.src.custom_functions.two_steps import TwoSteps
+from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
+from xfv.src.custom_functions.march_table import MarchTable
 from xfv.src.utilities.singleton import Singleton
 
 
@@ -59,7 +66,90 @@ FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatme
 DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 
 
-class DataContainerJson(metaclass=Singleton):
+@dataclass
+class UserDefinedFunction(metaclass=ABCMeta):
+    """
+    This class defines the base class of all user defined function datas
+    """
+    # Two choices here:
+    # - Dot not annotate the type here because this variable should not be a field so that
+    #   it doesn't appears through the use of astuple function
+    #   => introduces confusion for mypy
+    # - Or use type annotation in order to get mypy happy and customize the use of astuple
+    #   function by using a function (tuple_factory) that remove all classes (instance of type)
+    #   that are present in the fields of the dataclass => solution adopted here
+    _custom_func_class: Type[CustomFunction] = field(init=False)
+
+    @staticmethod
+    def tuple_factory(obj):
+        """
+        Removes the classes (instance of type) that are inside obj
+        """
+        result = []
+        for value in obj:
+            if not isinstance(value, type):
+                result.append(value)
+        return tuple(result)
+
+    def build(self) -> CustomFunction:
+        """
+        A factory that returns the CustomFunction object corresponding
+        to the user defined function data
+        """
+        return self._custom_func_class(*astuple(self, tuple_factory=self.tuple_factory))
+
+@dataclass  # pylint: disable=missing-class-docstring
+class ConstantValueFunction(UserDefinedFunction):
+    value: float
+    _custom_func_class = ConstantValue
+
+
+@dataclass  # pylint: disable=missing-class-docstring
+class RampFunction(UserDefinedFunction):
+    start_value: float
+    end_value: float
+    start_time: float
+    end_time: float
+    _custom_func_class = Ramp
+
+
+@dataclass  # pylint: disable=missing-class-docstring
+class SuccessiveRampFunction(UserDefinedFunction):
+    first_ramp: RampFunction
+    second_ramp: RampFunction
+
+    def build(self) -> CustomFunction:
+        first = self.first_ramp.build()
+        second = self.second_ramp.build()
+        return SuccessiveRamp(first, second)
+
+
+@dataclass  # pylint: disable=missing-class-docstring
+class TwoStepsFunction(UserDefinedFunction):
+    first_value: float
+    second_value: float
+    critical_time: float
+    _custom_func_class = TwoSteps
+
+
+@dataclass  # pylint: disable=missing-class-docstring
+class MarchTableFunction(UserDefinedFunction):
+    file: str
+    _custom_func_class = MarchTable
+
+
+class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
+    type_bc: str
+    law: Union[ConstantValueFunction, MarchTableFunction,
+               RampFunction, SuccessiveRampFunction, TwoStepsFunction]
+
+
+class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    left_BC: BoundaryType
+    right_BC: BoundaryType
+
+
+class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-methods
     """
     This class provides access to all the data found in the json datafile
     """
@@ -76,9 +166,9 @@ class DataContainerJson(metaclass=Singleton):
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
         self.time = TimeProps(*self.__fill_in_time_props())
         self.output = OutputProps(*self.__fill_in_output_props())
-        # self.boundary_condition = BoundaryConditionsProps(*self.__fill_in_bc_props())
+        self.boundary_condition = BoundaryConditionsProps(*self.__fill_in_bc_props())
 
-    def __fill_in_numerical_props(self) -> Tuple[float, float, float, Optional[float]]:
+    def __fill_in_numerical_props(self) -> Tuple[float, float, float, float]:
         """
         Returns the quantities needed to fill numerical properties:
             - coefficient of linear artificial viscosity
@@ -90,19 +180,19 @@ class DataContainerJson(metaclass=Singleton):
         return (params['linear-pseudo'], params['quadratic-pseudo'],
                 params['cfl'], params['cfl-pseudo'])
 
-    def __fill_in_geometrical_props(self):
+    def __fill_in_geometrical_props(self) -> Tuple[float, float]:
         """
         Returns the quantities needed to fill geometrical properties
             - area of section of the cell
             - position of the interface between target and projectile
               (2 materials case)
         """
-        params = self.__datadoc['geometry']
+        params: Dict[str, float] = self.__datadoc['geometry']
         section = params['section']
         initial_interface_position = params.get('initial-interface-position', 0.)
         return section, initial_interface_position
 
-    def __fill_in_time_props(self):
+    def __fill_in_time_props(self) -> Tuple[float, float, bool, Optional[float]]:
         """
         Returns the quantities needed to fill time properties
             - initial time step
@@ -111,13 +201,13 @@ class DataContainerJson(metaclass=Singleton):
             - time step reducation factor for failure
         """
         params = self.__datadoc['time-management']
-        initial_time_step = params['initial-time-step']
-        final_time = params['final-time']
-        cst_dt = params.get('constant-time-step', False)
-        time_step_reduction = params.get('time-step-reduction-factor-for-failure')
+        initial_time_step: float = params['initial-time-step']
+        final_time: float = params['final-time']
+        cst_dt: bool = params.get('constant-time-step', False)
+        time_step_reduction: Optional[float] = params.get('time-step-reduction-factor-for-failure')
         return initial_time_step, final_time, cst_dt, time_step_reduction
 
-    def __fill_in_output_props(self):
+    def __fill_in_output_props(self) -> Tuple[int, bool, List[DatabaseProps]]:
         """
         Returns the quantities needed to fill output properties
             - number of images
@@ -126,25 +216,84 @@ class DataContainerJson(metaclass=Singleton):
             - list of output database properties
         """
         params = self.__datadoc['output']
-        number_of_images = params['number-of-images']
-        dump = params['dump-images']
+        number_of_images: int = params['number-of-images']
+        dump: bool = params['dump-images']
 
         # Databases
         db_prop_l = []
         for elem in params['database']:
-            identi = elem['identifier']
-            database_path = elem['path']
-            iteration_period = elem.get('iteration-period')
-            time_period = elem.get('time-period')
+            identi: str = elem['identifier']
+            database_path: str = elem['path']
+            iteration_period: Optional[int] = elem.get('iteration-period')
+            time_period: Optional[float] = elem.get('time-period')
             db_props = DatabaseProps(identi, database_path, time_period,
                                      iteration_period)
             db_prop_l.append(db_props)
         return number_of_images, dump, db_prop_l
 
+    def __fill_in_bc_props(self) -> Tuple[BoundaryType, BoundaryType]:
+        """
+        Returns the quantities needed to fill boundary conditions properties
+            - left
+            - right
+        """
+        params = self.__datadoc['boundary-conditions']
+        left_boundary = self.__get_boundary_condition_def(params['left-boundary'])
+        right_boundary = self.__get_boundary_condition_def(params['right-boundary'])
+        return left_boundary, right_boundary
+
+    @staticmethod
+    def __get_boundary_condition_def(info) -> BoundaryType:
+        """
+        Creates the boundary condition class with pressure law
+        :return: pressure_law
+        """
+        type_bc: str = info['type'].lower()
+        func_name: str = info['bc-law'].lower()
+        if func_name == 'constant':
+            cvf = ConstantValueFunction(info['value'])
+            return BoundaryType(type_bc, cvf)
+
+        if func_name == "twostep":
+            tsf = TwoStepsFunction(info['value1'], info['value2'], info['time-activation'])
+            return BoundaryType(type_bc, tsf)
+
+        if func_name == "ramp":
+            raf = RampFunction(info['value1'], info['value2'],
+                               info['time-activation-value-1'],
+                               info['time-activation-value-2'])
+            return BoundaryType(type_bc, raf)
+
+        if func_name == "marchtable":
+            mtf = MarchTableFunction(info['value'])
+            return BoundaryType(type_bc, mtf)
+
+        if func_name == "creneauramp":
+            f_ramp = RampFunction(
+                info['initial-value'], info['plateau-value'],
+                info['start-first-ramp-time'], info['reach-value2-time'])
+            s_ramp = RampFunction(
+                info['plateau-value'], info['end-value'],
+                info['start-second-ramp-time'], info['reach-value3-time'])
+            srf = SuccessiveRampFunction(f_ramp, s_ramp)
+            return BoundaryType(type_bc, srf)
+
+        raise ValueError(f"Unkown function type {func_name}."
+                         "Please use one of [constant, twostep, ramp, marchtable, creneauramp]")
+
 
 if __name__ == "__main__":
+    # pylint: disable=invalid-name
     data = DataContainerJson(datafile_path='XDATA.json')
     print(data.numeric)
     print(data.geometric)
     print(data.time)
     print(data.output)
+    print(data.boundary_condition)
+    left_bc = data.boundary_condition.left_BC.law.build()
+    print(left_bc.evaluate(0))
+    print(left_bc.evaluate(1.5e-6))
+    print(left_bc.evaluate(10))
+    right_bc = data.boundary_condition.right_BC.law.build()
+    print(right_bc.evaluate(0))
+    print(right_bc.evaluate(10))
