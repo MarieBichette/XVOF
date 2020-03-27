@@ -6,34 +6,31 @@ Implementing the DataContainer class
 from collections import namedtuple
 import json
 from pathlib import Path
-import sys
+from typing import Dict, List, NamedTuple, Tuple, Optional, Union
 
-from xfv.src.equationsofstate.miegruneisen import MieGruneisen
-from xfv.src.plasticitycriterion.vonmises import VonMisesCriterion
-from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
-from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
-from xfv.src.rupturecriterion.damage_criterion import DamageCriterion
-from xfv.src.rupturecriterion.maximalstress import MaximalStressCriterion
-from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
-from xfv.src.rheology.constantyieldstress import ConstantYieldStress
-from xfv.src.custom_functions.constant_value import ConstantValue
-from xfv.src.custom_functions.march_table import MarchTable
-from xfv.src.custom_functions.ramp import Ramp
-from xfv.src.custom_functions.two_steps import TwoSteps
-from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
-from xfv.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
-from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
-from xfv.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
-from xfv.src.cohesive_model.progressive_unloading_model import ProgressiveUnloadingModel
-from xfv.src.cohesive_model.zero_force_unloading_model import ZeroForceUnloadingModel
-from xfv.src.cohesive_model.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
 from xfv.src.utilities.singleton import Singleton
 
-NumericalProps = namedtuple("NumericalProps", ["a_pseudo", "b_pseudo", "cfl", "cfl_pseudo"])
+class NumericalProps(NamedTuple):
+    a_pseudo: float
+    b_pseudo: float
+    cfl: float
+    cfl_pseudo: Optional[float]
+
+GeometricalProps = NamedTuple("GeometricalProps", [
+    ("section", float), ("initial_interface_position", Optional[float])])
+
+TimeProps = NamedTuple("TimeProps", [
+    ('initial_time_step', float), ('final_time', float), ('is_time_step_constant', Optional[bool]),
+    ("time_step_reduction_factor_for_failure", Optional[float])])
+
+DatabaseProps = NamedTuple("DatabaseProps", [
+    ("identifier", str), ("path", str),
+    ("time_period", Optional[float]), ("iteration_period", Optional[int])])
+
+OutputProps = NamedTuple("OutputProps", [
+    ("number_of_images", int), ("dump", bool), ("databases", List[DatabaseProps])])
 
 BoundaryConditionsProps = namedtuple("BoundaryConditionsProps", ["left_BC", "right_BC"])
-
-GeometricalProps = namedtuple("GeometricalProps", ["section", "initial_interface_position"])
 
 MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
                                              "failure_model", "damage_model"])
@@ -52,35 +49,26 @@ FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatme
 DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 
 
-TimeProps = namedtuple("TimeProps", ['initial_time_step', 'final_time', 'is_time_step_constant',
-                                     "time_step_reduction_factor_for_failure"])
-
-OutputProps = namedtuple("OutputProps", ['number_of_images', 'dump', 'databases'])
-
-DatabaseProps = namedtuple("DatabaseProps",
-                           ["identifier", "path", "time_period", "iteration_period"])
-
-
 class DataContainerJson(metaclass=Singleton):
     """
     This class provides access to all the data found in the json datafile
     """
-    def __init__(self, datafile_path=None):
+    def __init__(self, datafile_path: Union[str, Path]):
         """
         Constructor
         """
         datafile_path = Path(datafile_path)
         print("Opening data file : {}".format(datafile_path.resolve()))
         self._datafile_dir = datafile_path.resolve().parent
-        with datafile_path.open('r') as fi:
-            self.__datadoc = json.load(fi)
+        with datafile_path.open('r') as file_in:
+            self.__datadoc = json.load(file_in)
         self.numeric = NumericalProps(*self.__fill_in_numerical_props())
         self.geometric = GeometricalProps(*self.__fill_in_geometrical_props())
         self.time = TimeProps(*self.__fill_in_time_props())
         self.output = OutputProps(*self.__fill_in_output_props())
         # self.boundary_condition = BoundaryConditionsProps(*self.__fill_in_bc_props())
 
-    def __fill_in_numerical_props(self):
+    def __fill_in_numerical_props(self) -> Tuple[float, float, float, Optional[float]]:
         """
         Returns the quantities needed to fill numerical properties:
             - coefficient of linear artificial viscosity
@@ -88,7 +76,7 @@ class DataContainerJson(metaclass=Singleton):
             - CFL coefficient
             - CFL coefficient of artificial viscosity
         """
-        params = self.__datadoc['numeric-parameters']
+        params: Dict[str, float] = self.__datadoc['numeric-parameters']
         return (params['linear-pseudo'], params['quadratic-pseudo'],
                 params['cfl'], params['cfl-pseudo'])
 
