@@ -11,7 +11,7 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.utilities.profilingperso import timeit_file
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
-from xfv.src.contact.contact import ContactModel
+from xfv.src.contact.contact_base import ContactModel
 
 # noinspection PyArgumentList
 class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
