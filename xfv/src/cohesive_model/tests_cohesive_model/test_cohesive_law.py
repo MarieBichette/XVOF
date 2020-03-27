@@ -4,11 +4,7 @@
 Classe de test du module cohesive law
 """
 import unittest
-import os
-import numpy as np
-
 from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
-from xfv.src.data.data_container import DataContainer
 
 
 class CohesiveLawTest(unittest.TestCase):
