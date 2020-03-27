@@ -3,6 +3,7 @@
 """
 Definition of CohesiveZoneLaw class
 """
+import numpy as np
 
 
 class CohesiveLaw(object):
@@ -17,9 +18,14 @@ class CohesiveLaw(object):
         :type array[x, 2]
         # TODO : mettre à jour data container pour construire les modèles cohésifs
         """
-        assert cohesive_law_points.size()[1] == 2
+        assert len(cohesive_law_points.shape) == 2, "array should be 2D"
+        assert cohesive_law_points.shape[1] == 2, "array should be size (x, 2)"
+        assert cohesive_law_points[0, 0] == 0., "first value of separation should be 0."
+        assert cohesive_law_points[-1, 1] == 0., "last value of stress should be 0."
         self.cohesive_law_points = cohesive_law_points
         self.separation_points = self.cohesive_law_points[:, 0]
+        sorted_points = np.sort(self.separation_points)
+        assert np.all(self.separation_points == sorted_points), "separation is not sorted"
 
     def compute_cohesive_force(self, opening):
         """
@@ -34,10 +40,12 @@ class CohesiveLaw(object):
 
         # Find the relevant points to interpolate cohesive law
         index = 0
-        separation = self.separation_points[index]
-        while index < len(self.separation_points) and separation < opening:
-            separation = self.separation_points[index]
+        separation_d = self.separation_points[index + 1]
+        while index < len(self.separation_points) - 2 and separation_d < opening:
             index += 1
+            separation_d = self.separation_points[index + 1]
+            # stop as soon as separation_d is greater than opening
+            # => separation_points[index] < opening < separation_points[index + 1]
 
         # Interpolate the cohesive law
         return CohesiveLaw.interpolate_cohesive_law(opening,
