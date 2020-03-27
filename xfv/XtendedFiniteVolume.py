@@ -13,11 +13,13 @@ import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
 from xfv.src.data.data_container                import DataContainer
+from xfv.src.data.data_container_json           import DataContainerJson, BoundaryType
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
 from xfv.src.rupturetreatment.enrichelement     import EnrichElement
 from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
+from xfv.src.custom_functions.custom_function   import CustomFunction
 
 
 def __create_mesh(meshfile: Path, enrichment_type) -> None:
@@ -103,6 +105,18 @@ def __init_output(output_data, type_of_enrichment, mesh):
         the_output_mng.register_all_fields(enrichment_registration, mesh.cells,
                                            mesh.nodes, db_el.identifier)
     return the_output_mng
+
+
+def _build_boundary_function(boundary: BoundaryType) -> CustomFunction:
+    """
+    Build a boundary function from the boundary infos of the data file
+    """
+    function_obj = boundary.law.build()
+    if boundary.type_bc == "vitesse":
+        function_obj.register_velocity()
+    elif boundary.type_bc == "pressure":
+        function_obj.register_pressure()
+    return function_obj
 
 
 def main(directory: Path) -> None:
