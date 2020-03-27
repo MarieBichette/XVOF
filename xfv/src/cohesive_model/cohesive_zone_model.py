@@ -4,6 +4,8 @@
 Definition of CohesiveZoneModel class to manage the cohesive discontinuities
 """
 
+from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
+
 
 class CohesiveZoneModel(object):
     """
@@ -49,5 +51,5 @@ class CohesiveZoneModel(object):
                 cohesive_force = 0.
                 disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
                 disc.history_min_cohesive_force = 0.
-                
+
         return cohesive_force
