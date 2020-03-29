@@ -91,5 +91,5 @@ class SuccessiveRampFunctionProps(UserDefinedFunctionProps):
 
 
 UserDefinedFunctionPropsType = Union[ConstantValueFunctionProps, MarchTableFunctionProps,
-                                      RampFunctionProps, SuccessiveRampFunctionProps,
-                                      TwoStepsFunctionProps]
+                                     RampFunctionProps, SuccessiveRampFunctionProps,
+                                     TwoStepsFunctionProps]
