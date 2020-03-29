@@ -15,7 +15,7 @@ from xfv.src.custom_functions.march_table import MarchTable
 
 
 @dataclass
-class UserDefinedFunction(metaclass=ABCMeta):
+class UserDefinedFunctionProps(metaclass=ABCMeta):
     """
     This class defines the base class of all user defined function datas.
     A user defined function data class stores the data read from the datafile
@@ -51,13 +51,13 @@ class UserDefinedFunction(metaclass=ABCMeta):
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class ConstantValueFunction(UserDefinedFunction):
+class ConstantValueFunctionProps(UserDefinedFunctionProps):
     value: float
     _custom_func_class = ConstantValue
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class RampFunction(UserDefinedFunction):
+class RampFunctionProps(UserDefinedFunctionProps):
     start_value: float
     end_value: float
     start_time: float
@@ -66,7 +66,7 @@ class RampFunction(UserDefinedFunction):
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class TwoStepsFunction(UserDefinedFunction):
+class TwoStepsFunctionProps(UserDefinedFunctionProps):
     first_value: float
     second_value: float
     critical_time: float
@@ -74,15 +74,15 @@ class TwoStepsFunction(UserDefinedFunction):
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class MarchTableFunction(UserDefinedFunction):
+class MarchTableFunctionProps(UserDefinedFunctionProps):
     file: str
     _custom_func_class = MarchTable
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class SuccessiveRampFunction(UserDefinedFunction):
-    first_ramp: RampFunction
-    second_ramp: RampFunction
+class SuccessiveRampFunctionProps(UserDefinedFunctionProps):
+    first_ramp: RampFunctionProps
+    second_ramp: RampFunctionProps
 
     def build_custom_func(self) -> CustomFunction:
         first = self.first_ramp.build_custom_func()
@@ -90,5 +90,6 @@ class SuccessiveRampFunction(UserDefinedFunction):
         return SuccessiveRamp(first, second)
 
 
-UserDefinedFunctionType = Union[ConstantValueFunction, MarchTableFunction, RampFunction,
-                                SuccessiveRampFunction, TwoStepsFunction]
+UserDefinedFunctionPropsType = Union[ConstantValueFunctionProps, MarchTableFunctionProps,
+                                      RampFunctionProps, SuccessiveRampFunctionProps,
+                                      TwoStepsFunctionProps]
