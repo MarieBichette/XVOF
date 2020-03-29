@@ -8,9 +8,17 @@ from pathlib import Path
 from typing import Dict, List, NamedTuple, Tuple, Optional, Union
 
 from xfv.src.utilities.singleton import Singleton
-from xfv.src.data.user_defined_functions import (
-    UserDefinedFunctionType, ConstantValueFunction, TwoStepsFunction,
-    RampFunction, MarchTableFunction, SuccessiveRampFunction)
+from xfv.src.data.user_defined_functions_props import (
+    UserDefinedFunctionPropsType, ConstantValueFunctionProps, TwoStepsFunctionProps,
+    RampFunctionProps, MarchTableFunctionProps, SuccessiveRampFunctionProps)
+from xfv.src.data.cohesive_model_props import (CohesiveModelProps,
+                                               LinearCohesiveZoneModelProps,
+                                               BilinearCohesiveZoneModelProps,
+                                               TrilinearCohesiveZoneModelProps)
+from xfv.src.data.unloading_model_props import (UnloadingModelProps,
+                                                ZeroForceUnloadingModelProps,
+                                                LossOfStiffnessUnloadingModelProps,
+                                                ProgressiveUnloadingModelProps)
 
 
 class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
@@ -47,12 +55,17 @@ class OutputProps(NamedTuple):  # pylint: disable=missing-class-docstring
 
 class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
     type_bc: str
-    law: UserDefinedFunctionType
+    law: UserDefinedFunctionPropsType
 
 
 class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
     left_BC: BoundaryType
     right_BC: BoundaryType
+
+
+class DamageModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    cohesive_model: CohesiveModelProps
+    name: str
 
 
 MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
@@ -69,7 +82,6 @@ FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatme
                                            "type_of_enrichment", "lump_mass_matrix",
                                            "failure_criterion", "failure_criterion_value"])
 
-DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 
 
 class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-methods
@@ -168,41 +180,98 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
     @staticmethod
     def __get_boundary_condition_def(info) -> BoundaryType:
         """
-        Creates the boundary condition class with pressure law
-        :return: pressure_law
+        Returns the BoundaryType object corresponding to the info datas.
         """
         type_bc: str = info['type'].lower()
         func_name: str = info['bc-law'].lower()
         if func_name == 'constant':
-            cvf = ConstantValueFunction(info['value'])
+            cvf = ConstantValueFunctionProps(info['value'])
             return BoundaryType(type_bc, cvf)
 
         if func_name == "twostep":
-            tsf = TwoStepsFunction(info['value1'], info['value2'], info['time-activation'])
+            tsf = TwoStepsFunctionProps(info['value1'], info['value2'], info['time-activation'])
             return BoundaryType(type_bc, tsf)
 
         if func_name == "ramp":
-            raf = RampFunction(info['value1'], info['value2'],
-                               info['time-activation-value-1'],
-                               info['time-activation-value-2'])
+            raf = RampFunctionProps(info['value1'], info['value2'],
+                                    info['time-activation-value-1'],
+                                    info['time-activation-value-2'])
             return BoundaryType(type_bc, raf)
 
         if func_name == "marchtable":
-            mtf = MarchTableFunction(info['value'])
+            mtf = MarchTableFunctionProps(info['value'])
             return BoundaryType(type_bc, mtf)
 
         if func_name == "creneauramp":
-            f_ramp = RampFunction(
+            f_ramp = RampFunctionProps(
                 info['initial-value'], info['plateau-value'],
                 info['start-first-ramp-time'], info['reach-value2-time'])
-            s_ramp = RampFunction(
+            s_ramp = RampFunctionProps(
                 info['plateau-value'], info['end-value'],
                 info['start-second-ramp-time'], info['reach-value3-time'])
-            srf = SuccessiveRampFunction(f_ramp, s_ramp)
+            srf = SuccessiveRampFunctionProps(f_ramp, s_ramp)
             return BoundaryType(type_bc, srf)
 
         raise ValueError(f"Unkown function type {func_name}."
                          "Please use one of [constant, twostep, ramp, marchtable, creneauramp]")
+
+    @staticmethod
+    def __get_damage_props(matter) -> Optional[Tuple[CohesiveModelProps, str]]:
+        """
+        Returns the values needed to fill the damage model properties:
+            - the cohesive model
+            - the cohesive model name
+        """
+        try:
+            params = matter['failure']['damage-treatment']['cohesive-model']
+        except KeyError:
+            return None
+
+        cohesive_model_name = params['name'].lower()
+
+        cohesive_strength = params['coefficients']['cohesive-strength']
+        critical_separation = params['coefficients']['critical-separation']
+
+        unloading_model_name = params['unloading-model']['name'].lower()
+        unloading_model_slope = params['unloading-model']['slope']
+
+        if unloading_model_name == "zeroforceunloading":
+            unloading_model_props: UnloadingModelProps = ZeroForceUnloadingModelProps(
+                unloading_model_slope, cohesive_strength)
+        elif unloading_model_name == "progressiveunloading":
+            unloading_model_props = ProgressiveUnloadingModelProps(
+                unloading_model_slope, cohesive_strength)
+        elif unloading_model_name == "lossofstiffnessunloading":
+            unloading_model_props = LossOfStiffnessUnloadingModelProps(
+                unloading_model_slope, cohesive_strength)
+        else:
+            raise ValueError(f"Unknwown unloading model name: {unloading_model_name} "
+                             "Please choose among (zeroforceunloading, progressiveunloading, "
+                             " lossofstiffnessunloading)")
+
+        if cohesive_model_name == "linear":
+            cohesive_model_props: CohesiveModelProps = LinearCohesiveZoneModelProps(
+                cohesive_strength, critical_separation, unloading_model_props)
+        elif cohesive_model_name == "bilinear":
+            cohesive_model_props = BilinearCohesiveZoneModelProps(
+                cohesive_strength, critical_separation, unloading_model_props,
+                params['coefficients']['separation-at-point-1'],
+                params['coefficients']['stress-at-point-1'])
+        elif cohesive_model_name == "trilinear":
+            cohesive_model_props = TrilinearCohesiveZoneModelProps(
+                cohesive_strength, critical_separation, unloading_model_props,
+                params['coefficients']['separation-at-point-1'],
+                params['coefficients']['stress-at-point-1'],
+                params['coefficients']['separation-at-point-2'],
+                params['coefficients']['stress-at-point-2'])
+        else:
+            raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
+                             "Please choose among (linear, bilinear, trilinear)")
+
+        print("Applying a damage model for " + matter + " which is : " + cohesive_model_name)
+        print("Unloading model is : " + unloading_model_name)
+        return cohesive_model_props, cohesive_model_name
+
 
 
 if __name__ == "__main__":
