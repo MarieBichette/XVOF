@@ -2,20 +2,15 @@
 """
 Implementing the DataContainer class
 """
-from abc import ABCMeta
 from collections import namedtuple
-from dataclasses import dataclass, astuple, field
 import json
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Tuple, Optional, Union, Type
+from typing import Dict, List, NamedTuple, Tuple, Optional, Union
 
-from xfv.src.custom_functions.custom_function import CustomFunction
-from xfv.src.custom_functions.constant_value import ConstantValue
-from xfv.src.custom_functions.ramp import Ramp
-from xfv.src.custom_functions.two_steps import TwoSteps
-from xfv.src.custom_functions.successive_ramp import SuccessiveRamp
-from xfv.src.custom_functions.march_table import MarchTable
 from xfv.src.utilities.singleton import Singleton
+from xfv.src.data.user_defined_functions import (
+    UserDefinedFunctionType, ConstantValueFunction, TwoStepsFunction,
+    RampFunction, MarchTableFunction, SuccessiveRampFunction)
 
 
 class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
@@ -66,82 +61,9 @@ FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatme
 DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
 
 
-@dataclass
-class UserDefinedFunction(metaclass=ABCMeta):
-    """
-    This class defines the base class of all user defined function datas
-    """
-    # Two choices here:
-    # - Dot not annotate the type here because this variable should not be a field so that
-    #   it doesn't appears through the use of astuple function
-    #   => introduces confusion for mypy
-    # - Or use type annotation in order to get mypy happy and customize the use of astuple
-    #   function by using a function (tuple_factory) that remove all classes (instance of type)
-    #   that are present in the fields of the dataclass => solution adopted here
-    _custom_func_class: Type[CustomFunction] = field(init=False)
-
-    @staticmethod
-    def tuple_factory(obj):
-        """
-        Removes the classes (instance of type) that are inside obj
-        """
-        result = []
-        for value in obj:
-            if not isinstance(value, type):
-                result.append(value)
-        return tuple(result)
-
-    def build(self) -> CustomFunction:
-        """
-        A factory that returns the CustomFunction object corresponding
-        to the user defined function data
-        """
-        return self._custom_func_class(*astuple(self, tuple_factory=self.tuple_factory))
-
-@dataclass  # pylint: disable=missing-class-docstring
-class ConstantValueFunction(UserDefinedFunction):
-    value: float
-    _custom_func_class = ConstantValue
-
-
-@dataclass  # pylint: disable=missing-class-docstring
-class RampFunction(UserDefinedFunction):
-    start_value: float
-    end_value: float
-    start_time: float
-    end_time: float
-    _custom_func_class = Ramp
-
-
-@dataclass  # pylint: disable=missing-class-docstring
-class SuccessiveRampFunction(UserDefinedFunction):
-    first_ramp: RampFunction
-    second_ramp: RampFunction
-
-    def build(self) -> CustomFunction:
-        first = self.first_ramp.build()
-        second = self.second_ramp.build()
-        return SuccessiveRamp(first, second)
-
-
-@dataclass  # pylint: disable=missing-class-docstring
-class TwoStepsFunction(UserDefinedFunction):
-    first_value: float
-    second_value: float
-    critical_time: float
-    _custom_func_class = TwoSteps
-
-
-@dataclass  # pylint: disable=missing-class-docstring
-class MarchTableFunction(UserDefinedFunction):
-    file: str
-    _custom_func_class = MarchTable
-
-
 class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
     type_bc: str
-    law: Union[ConstantValueFunction, MarchTableFunction,
-               RampFunction, SuccessiveRampFunction, TwoStepsFunction]
+    law: UserDefinedFunctionType
 
 
 class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
@@ -290,10 +212,10 @@ if __name__ == "__main__":
     print(data.time)
     print(data.output)
     print(data.boundary_condition)
-    left_bc = data.boundary_condition.left_BC.law.build()
+    left_bc = data.boundary_condition.left_BC.law.build_custom_func()
     print(left_bc.evaluate(0))
     print(left_bc.evaluate(1.5e-6))
     print(left_bc.evaluate(10))
-    right_bc = data.boundary_condition.right_BC.law.build()
+    right_bc = data.boundary_condition.right_BC.law.build_custom_func()
     print(right_bc.evaluate(0))
     print(right_bc.evaluate(10))
