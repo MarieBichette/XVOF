@@ -44,6 +44,17 @@ class OutputProps(NamedTuple):  # pylint: disable=missing-class-docstring
     dump: bool
     databases: List[DatabaseProps]
 
+
+class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
+    type_bc: str
+    law: UserDefinedFunctionType
+
+
+class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    left_BC: BoundaryType
+    right_BC: BoundaryType
+
+
 MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
                                              "failure_model", "damage_model"])
 
@@ -59,16 +70,6 @@ FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatme
                                            "failure_criterion", "failure_criterion_value"])
 
 DamageModel = namedtuple("DamageModel", ["cohesive_model", "name"])
-
-
-class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
-    type_bc: str
-    law: UserDefinedFunctionType
-
-
-class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
-    left_BC: BoundaryType
-    right_BC: BoundaryType
 
 
 class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-methods
