@@ -18,6 +18,11 @@ from xfv.src.data.unloading_model_props import (UnloadingModelProps,
                                                 ZeroForceUnloadingModelProps,
                                                 LossOfStiffnessUnloadingModelProps,
                                                 ProgressiveUnloadingModelProps)
+from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
+from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
+from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
+from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
+                                                     VonMisesCriterionProps)
 
 
 class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
@@ -76,16 +81,20 @@ class InitialValues(NamedTuple):  # pylint: disable=missing-class-docstring
     yield_stress_init: float
     shear_modulus_init: float
 
+class ConstitutiveModel(NamedTuple):  # pylint: disable=missing-class-docstring
+    eos: EquationOfStateProps
+    elasticity_model: ShearModulusProps
+    plasticity_model: YieldStressProps
+    plasticity_criterion: PlasticityCriterionProps
+
 
 class MaterialProps(NamedTuple):  # pylint: disable=missing-class-docstring
     initial_value: InitialValues
+    constitutive_model: ConstitutiveModel
     damage_model: DamageModelProps
 
 # MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
 #                                              "failure_model", "damage_model"])
-
-# ConstitutiveModel = namedtuple("ConstitutiveModel", ["eos", "elasticity_model",
-#                                                      "plasticity_model", "plasticity_criterion"])
 
 # FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatment_value",
 #                                            "type_of_enrichment", "lump_mass_matrix",
@@ -309,9 +318,9 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         """
         init = InitialValues(*self.__get_initial_values(material))
 
-        # behavior = ConstitutiveModel(
-        #     self.__get_equation_of_state_props(material),
-        #     *self.__get_rheology_props(material))
+        behavior = ConstitutiveModel(
+            self.__get_equation_of_state_props(material),
+            *self.__get_rheology_props(material))
 
         # failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = \
         #     self.__get_failure_props(material)
@@ -338,7 +347,7 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         #               "This may result in errors in the future")
 
         # return init, behavior, failure, damage
-        return init, damage
+        return init, behavior, damage
 
     def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
                                                     float, float, float]:
@@ -383,6 +392,63 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
             shear_modulus = float(coef['EPP']["shear_modulus"])
         return yield_stress, shear_modulus
 
+    def __get_equation_of_state_props(self, matter) -> EquationOfStateProps:
+        """
+        Returns the properties of the equation of state read from the datafile
+
+        :param matter: material to be considered
+        :return: the equation of state parameters
+        """
+        params = matter['equation-of-state']
+        if params['name'] == 'Mie-Gruneisen':
+            json_path = params['coefficients']
+            with open(self._datafile_dir / json_path, 'r') as json_fid:
+                coef = json.load(json_fid)
+                coef = coef["MieGruneisen"]
+                # Lecture des paramètres
+                params_key = ("ref_sound_velocity", "s1", "s2", "s3", "ref_density",
+                              "coefficient_gruneisen", "param_b", "ref_internal_energy")
+                params = [float(coef[p]) for p in params_key]
+            # Création de l'équation d'état
+            return MieGruneisenProps(*params)
+
+        raise NotImplementedError("Only MieGruneisen equation of state is implemented for now")
+
+    def __get_rheology_props(self, matter) -> Tuple[Optional[ShearModulusProps],
+                                                    Optional[YieldStressProps],
+                                                    Optional[PlasticityCriterionProps]]:
+        """
+        Reads the elasticity parameters for material matter
+
+        :param matter: material to be considered
+        :return: elasticity_model : elasticity model
+                 plasticity_model : plasticity model
+                 plasticity_criterion : plasticity criterion
+        """
+        params = matter.get('rheology')
+        if not params:
+            return None, None, None
+
+        yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+        elasticity_model_name = params['elasticity-model']
+        if elasticity_model_name != "Linear":
+            raise ValueError(f"Model {elasticity_model_name} not implemented. Choose Linear")
+        elasticity_model = ConstantShearModulusProps(shear_modulus)
+
+        plasticity_model_name = params.get('plasticity-model')
+        if not plasticity_model_name:
+            return elasticity_model, None, None
+
+        if plasticity_model_name != "EPP":
+            raise ValueError(f"Model {plasticity_model_name} not implemented. Choose EPP")
+        plasticity_model = ConstantYieldStressProps(yield_stress)
+
+        plasticity_criterion_name = params['plasticity-criterion']
+        if plasticity_criterion_name == "VonMises":
+            plasticity_criterion = VonMisesCriterionProps()
+        else:
+            raise ValueError(f"Plasticity criterion {plasticity_criterion_name}. Choose VonMises")
+        return elasticity_model, plasticity_model, plasticity_criterion
 
 
 if __name__ == "__main__":
