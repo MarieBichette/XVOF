@@ -2,7 +2,7 @@
 This module defines the classes that stores data read from the datafile and
 needed to create CohesiveModel objects.
 """
-from dataclasses import dataclass, field, astuple
+from dataclasses import dataclass, field, asdict
 from typing import Type
 
 from xfv.src.data.unloading_model_props import UnloadingModelProps
@@ -17,46 +17,46 @@ class CohesiveModelProps:
     cohesive_strength: float
     critical_separation: float
     unloading_model: UnloadingModelProps
-    __cohesive_model_class: Type[CohesiveZoneModelBase] = field(init=False, repr=False)
+    _cohesive_model_class: Type[CohesiveZoneModelBase] = field(init=False, repr=False)
 
     @staticmethod
-    def tuple_factory(obj):
+    def dict_factory(obj):
         """
         Removes the classes (instance of type) that are inside obj
         """
-        result = []
-        for value in obj:
+        result = {}
+        for key, value in obj:
             if not isinstance(value, type):
                 try:
                     value.build_unloading_model_obj()  # Case of unloading_model field
                 except AttributeError:
                     pass
-                result.append(value)
-        return tuple(result)
+                result[key] = value
+        return result
 
     def build_cohesive_model_obj(self):
         """
         Build and return the CohesiveModel object
         """
-        return self.build_cohesive_model_obj(*astuple(self, tuple_factory=self.tuple_factory))
+        return self._cohesive_model_class(**asdict(self, dict_factory=self.dict_factory))
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class LinearCohesiveZoneModelProps(CohesiveModelProps):
-    __cohesive_model_class = LinearCohesiveZoneModel
+    _cohesive_model_class = LinearCohesiveZoneModel
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class BilinearCohesiveZoneModelProps(CohesiveModelProps):
     separation_1: float
-    contrainte_1: float
-    __cohesive_model_class = BilinearCohesiveZoneModel
+    stress_1: float
+    _cohesive_model_class = BilinearCohesiveZoneModel
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class TrilinearCohesiveZoneModelProps(CohesiveModelProps):
     separation_1: float
-    contrainte_1: float
+    stress_1: float
     separation_2: float
-    contrainte_2: float
-    __cohesive_model_class = TrilinearCohesiveZoneModel
+    stress_2: float
+    _cohesive_model_class = TrilinearCohesiveZoneModel
