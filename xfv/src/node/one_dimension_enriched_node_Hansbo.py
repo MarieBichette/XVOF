@@ -160,7 +160,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             epsilon = disc.position_in_ruptured_element
 
             # Apply cohesive stress on enriched nodes
-            # TODO : verifier epsilon vs 1-epsilon (j'ai un doute)
             self._force[disc.mask_in_nodes] += (1. - epsilon) * f_coh  # F1-
             disc.additional_dof_force[0] += epsilon * f_coh  # F2-
             self._force[disc.mask_out_nodes] += - epsilon * f_coh  # F2+
