@@ -24,19 +24,20 @@ class LinearCohesiveZoneModel(CohesiveZoneModelBase):
         self.stress_2 = stress_2
         self.separation_2 = separation_2
 
-        # Vérification de la cohérence des paramètres
+        # Vï¿½rification de la cohï¿½rence des paramï¿½tres
         if not separation_1 <= separation_2:
-            raise ValueError("""Erreur dans le jeu de données. Les valeurs de séparation dans la loi cohésive ne
-            sont pas cohérentes. Il faut avoir Separation 1 < Separation 2""")
+            raise ValueError("Error in the datafile.\n"
+                             "The value of the separation in the cohesive law are not coherent.\n"
+                             f"Separation 1 ({self.separation_1}) !< Separation 2 ({self.separation_2})")
 
     def compute_cohesive_force_in_model(self, current_disc_opening):
         """
-        Calcule par une interpolation linéaire la contrainte correspondant à l'ouverture en argument
+        Calcule par une interpolation linï¿½aire la contrainte correspondant ï¿½ l'ouverture en argument
         ____
             \
              \
               _____
-        :param current_disc_opening: ouverture de la discontinuité à calculer
+        :param current_disc_opening: ouverture de la discontinuitï¿½ ï¿½ calculer
         :return: contrainte
         """
         # if current_disc_opening <= self.separation_1:
