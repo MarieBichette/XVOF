@@ -2,10 +2,9 @@
 """
 Implementing the DataContainer class
 """
-from collections import namedtuple
 import json
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Tuple, Optional, Union
+from typing import Dict, List, NamedTuple, Tuple, Optional, Union
 
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.data.user_defined_functions_props import (
@@ -68,16 +67,22 @@ class DamageModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
     name: str
 
 
+class InitialValues(NamedTuple):  # pylint: disable=missing-class-docstring
+    velocity_init: float
+    pression_init: float
+    temp_init: float
+    rho_init: float
+    energie_init: float
+    yield_stress_init: float
+    shear_modulus_init: float
+
+
 class MaterialProps(NamedTuple):  # pylint: disable=missing-class-docstring
-    initial_value: Any
+    initial_value: InitialValues
     damage_model: DamageModelProps
 
 # MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
 #                                              "failure_model", "damage_model"])
-
-# InitialValues = namedtuple("InitialValues", ["velocity_init", "pression_init", "temp_init",
-#                                              "rho_init", "energie_init",
-#                                              "yield_stress_init", "shear_modulus_init"])
 
 # ConstitutiveModel = namedtuple("ConstitutiveModel", ["eos", "elasticity_model",
 #                                                      "plasticity_model", "plasticity_criterion"])
@@ -117,7 +122,6 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
             self.material_projectile = MaterialProps(
                 *self.__fill_in_material_props(matter_data['projectile']))
 
-        self.material_target = None
         if self.data_contains_a_target:
             self.material_target = MaterialProps(
                 *self.__fill_in_material_props(matter_data['target']))
@@ -299,10 +303,11 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
     def __fill_in_material_props(self, material="matter/target"):
         """
         Returns the values needed to fill the material properties:
+            - the initial values
             - the damage properties
-        
+
         """
-        # init = InitialValues(*self.__get_initial_values(material))
+        init = InitialValues(*self.__get_initial_values(material))
 
         # behavior = ConstitutiveModel(
         #     self.__get_equation_of_state_props(material),
@@ -333,7 +338,50 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         #               "This may result in errors in the future")
 
         # return init, behavior, failure, damage
-        return None, damage
+        return init, damage
+
+    def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
+                                                    float, float, float]:
+        """
+        Reads the XDATA file and find the initialization quantities for the material matter
+
+        :param matter: material to be considered
+        :return: initial thermodynamical quantities
+        """
+        params = matter['initialization']
+        velocity = params['initial-velocity']
+
+        json_path = params['init-thermo']
+        with open(self._datafile_dir / json_path, 'r') as json_fid:
+            coef = json.load(json_fid)
+            coef = coef["InitThermo"]
+            density = float(coef["initial_density"])
+            pressure = float(coef["initial_pressure"])
+            temperature = float(coef["initial_temperature"])
+            internal_energy = float(coef["initial_internal_energy"])
+
+        yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+        return (velocity, pressure, temperature, density, internal_energy,
+                yield_stress, shear_modulus)
+
+    def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float]:
+        """
+        Returns the yield stress and shear modulus read from the json file specified
+        under the coefficients key
+        """
+        params = matter.get('rheology')
+        if not params:
+            return 0., 0.
+
+        coefficients_file = params.get('coefficients')
+        if not coefficients_file:
+            return 0., 0.
+
+        with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
+            coef = json.load(json_fid)
+            yield_stress = float(coef['EPP']["yield_stress"])
+            shear_modulus = float(coef['EPP']["shear_modulus"])
+        return yield_stress, shear_modulus
 
 
 
@@ -356,5 +404,5 @@ if __name__ == "__main__":
     print(right_bc.evaluate(0))
     print(right_bc.evaluate(10))
 
-    target_dmg: DamageModelProps = data.material_target.damage_model
-    target_dmg.cohesive_model.build_cohesive_model_obj()
+    print(data.material_target)
+    print(data.material_projectile)
