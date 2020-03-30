@@ -23,6 +23,11 @@ from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStre
 from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
 from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
                                                      VonMisesCriterionProps)
+from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
+                                                  DamageCriterionProps,
+                                                  HalfRodComparisonCriterionProps,
+                                                  MaximalStressCriterionProps,
+                                                  MinimumPressureCriterionProps)
 
 
 class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
@@ -81,28 +86,30 @@ class InitialValues(NamedTuple):  # pylint: disable=missing-class-docstring
     yield_stress_init: float
     shear_modulus_init: float
 
-class ConstitutiveModel(NamedTuple):  # pylint: disable=missing-class-docstring
+class ConstitutiveModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
     eos: EquationOfStateProps
     elasticity_model: ShearModulusProps
     plasticity_model: YieldStressProps
     plasticity_criterion: PlasticityCriterionProps
 
 
+class FailureModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    failure_treatment: str
+    failure_treatment_value: float
+    type_of_enrichment: str
+    lump_mass_matrix: str
+    failure_criterion: RuptureCriterionProps
+    failure_criterion_value: float
+
+
 class MaterialProps(NamedTuple):  # pylint: disable=missing-class-docstring
     initial_value: InitialValues
-    constitutive_model: ConstitutiveModel
+    constitutive_model: ConstitutiveModelProps
+    failure_model: FailureModelProps
     damage_model: DamageModelProps
 
-# MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
-#                                              "failure_model", "damage_model"])
 
-# FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatment_value",
-#                                            "type_of_enrichment", "lump_mass_matrix",
-#                                            "failure_criterion", "failure_criterion_value"])
-
-
-
-class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-methods
+class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     """
     This class provides access to all the data found in the json datafile
     """
@@ -309,7 +316,7 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
 
         return cohesive_model_props, cohesive_model_name
 
-    def __fill_in_material_props(self, material="matter/target"):
+    def __fill_in_material_props(self, material):
         """
         Returns the values needed to fill the material properties:
             - the initial values
@@ -318,21 +325,21 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         """
         init = InitialValues(*self.__get_initial_values(material))
 
-        behavior = ConstitutiveModel(
+        behavior = ConstitutiveModelProps(
             self.__get_equation_of_state_props(material),
             *self.__get_rheology_props(material))
 
-        # failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = \
-        #     self.__get_failure_props(material)
-        # failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
+        failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = (
+            self.__get_failure_props(material))
+        failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
 
-        # failure = FailureModel(failure_treatment, failure_treatment_value, type_of_enrichment,
-        #                        lump_mass_matrix, failure_criterion, failure_criterion_value)
+        failure = FailureModelProps(failure_treatment, failure_treatment_value, type_of_enrichment,
+                                    lump_mass_matrix, failure_criterion, failure_criterion_value)
 
-        # if failure.failure_treatment is not None and failure_criterion is None:
-        #     raise ValueError("Failure criterion expected. "
-        #                      "No failure criterion is specified or "
-        #                      "specified criterion not understood")
+        if failure.failure_treatment is not None and failure_criterion is None:
+            raise ValueError("Failure criterion expected. "
+                             "No failure criterion is specified or "
+                             "specified criterion not understood")
 
         dmg_props = self.__get_damage_props(material)
         if dmg_props:
@@ -340,14 +347,13 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         else:
             damage = None
 
-        # if failure.failure_treatment is not None and damage.cohesive_model is not None:
-        #     if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
-        #             isinstance(failure_criterion, MaximalStressCriterion)):
-        #         print("Failure criterion value and cohesive strength have different value. " \
-        #               "This may result in errors in the future")
+        if failure.failure_treatment is not None and damage.cohesive_model is not None:
+            if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
+                    isinstance(failure_criterion, MaximalStressCriterionProps)):
+                print("Failure criterion value and cohesive strength have different value. " \
+                      "This may result in errors in the future")
 
-        # return init, behavior, failure, damage
-        return init, behavior, damage
+        return init, behavior, failure, damage
 
     def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
                                                     float, float, float]:
@@ -449,6 +455,82 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         else:
             raise ValueError(f"Plasticity criterion {plasticity_criterion_name}. Choose VonMises")
         return elasticity_model, plasticity_model, plasticity_criterion
+
+    @staticmethod
+    def __get_failure_props(matter) -> Tuple[Optional[str], Optional[float],
+                                             Optional[str], Optional[str]]:
+        """
+        Returns the data needed to fill the FailureModel props
+
+            - failure_model : rupture treatment model name
+            - failure_treatment_value : position of disconitnuity in cracked element
+            -                           or imposed pressure
+            - type_of_enrichment : Hansbo
+            - lump_mass_matrix : lumping strategy
+        """
+        failure_data = matter.get('failure')
+        if not failure_data:
+            return None, None, None, None
+
+        failure_treatment_data = matter['failure']['failure-treatment']
+
+        failure_treatment = failure_treatment_data.get('name')
+        if failure_treatment is not None:
+            if failure_treatment not in ["ImposedPressure", "Enrichment"]:
+                raise ValueError(f"Unknown failure treatment {failure_treatment}."
+                                 "Please choose among (ImposedPressure, Enrichment)")
+            failure_treatment_value = failure_treatment_data['value']
+
+        if failure_treatment == "Enrichment":
+            type_of_enrichment = failure_treatment_data['type-of-enrichment']
+            if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
+                raise ValueError(f"Unknown enrichment type {type_of_enrichment}. "
+                                 "Only Hansbo is available for now")
+            lump_mass_matrix = failure_treatment_data['lump-mass-matrix']
+            if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:
+                print(f"Unknown lumping technique {lump_mass_matrix}. "
+                      "Only those lumps are possible : menouillard, somme \n"
+                      "No lumping technique is applied. Mass matrix is consistent")
+        else:
+            failure_treatment_value = 0.
+            type_of_enrichment = None
+            lump_mass_matrix = None
+
+        return failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix
+
+    @staticmethod
+    def __get_failure_criterion_props(matter) -> Tuple[
+            Optional[RuptureCriterionProps], float]:
+        """
+        Returns the failure criterion properties needed to fill the failure model properties
+
+        :return: failure_criterion : the rupture criterion
+                failure_criterion_value : the threshold value
+        """
+        failure_data = matter.get('failure')
+        if not failure_data:
+            return None, 0.
+
+        failure_criterion_data = failure_data['failure-criterion']
+
+        failure_criterion_name = failure_criterion_data['name']
+        failure_criterion_value = failure_criterion_data['value']
+
+        if failure_criterion_name == "MinimumPressure":
+            failure_criterion: RuptureCriterionProps = (
+                MinimumPressureCriterionProps(failure_criterion_value))
+        elif failure_criterion_name == "Damage":
+            failure_criterion = DamageCriterionProps(failure_criterion_value)
+        elif failure_criterion_name == "HalfRodComparison":
+            failure_criterion = HalfRodComparisonCriterionProps(failure_criterion_value)
+        elif failure_criterion_name == "MaximalStress":
+            failure_criterion = MaximalStressCriterionProps(failure_criterion_value)
+        else:
+            raise ValueError(f"Unknown failure criterion {failure_criterion_name}. "
+                             "Please choose among (MinimumPressure, Damage, "
+                             "HalfRodComparison, MaximalStress")
+
+        return failure_criterion, failure_criterion_value
 
 
 if __name__ == "__main__":
