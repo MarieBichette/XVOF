@@ -101,6 +101,11 @@ class CohesiveLawTest(unittest.TestCase):
         expected = 4.
         self.assertEqual(result, expected)
 
+        # Above critical separation
+        result = trilinear_law.compute_cohesive_force(20.)
+        expected = 0.
+        self.assertEqual(result, expected)
+
 
 
 
