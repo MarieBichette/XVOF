@@ -18,11 +18,11 @@ class BilinearCohesiveZoneModel(CohesiveZoneModelBase):
         :param stress_1 : contrainte au changement de pente
         :param delta_2 : ouverture critique (sigma = 0)
         """
-        CohesiveZoneModelBase.__init__(self, cohesive_strength, critical_separation, unloading_model)
+        super().__init__(cohesive_strength, critical_separation, unloading_model)
         self.separation_1 = separation_1
         self.stress_1 = stress_1
 
-        # La loi bilinéaire peut être vue comme une juxtaposition de 2 lois linéaires
+        # La loi bilinï¿½aire peut ï¿½tre vue comme une juxtaposition de 2 lois linï¿½aires
         self.linear_law_1 = LinearCohesiveZoneModel(stress_1=cohesive_strength, separation_1=0.,
                                                     stress_2=stress_1, separation_2=separation_1,
                                                     unloading_model=unloading_model)
@@ -30,15 +30,15 @@ class BilinearCohesiveZoneModel(CohesiveZoneModelBase):
                                                     stress_2=0., separation_2=critical_separation,
                                                     unloading_model=unloading_model)
 
-        # Vérification de la cohérence des paramètres
+        # Vï¿½rification de la cohï¿½rence des paramï¿½tres
         if not separation_1 <= critical_separation:
-            raise ValueError("""Erreur dans le jeu de données.
-            Les valeurs de séparation dans la loi cohésive ne sont pas cohérentes.
+            raise ValueError("""Erreur dans le jeu de donnï¿½es.
+            Les valeurs de sï¿½paration dans la loi cohï¿½sive ne sont pas cohï¿½rentes.
             Il faut avoir Separation Linear < Critical Separation""")
 
     def compute_cohesive_force_in_model(self, current_disc_opening):
         """
-        Calcul de la cohesive stress dans le cas d'une loi bilinéaire
+        Calcul de la cohesive stress dans le cas d'une loi bilinï¿½aire
         :param current_disc_opening:
         :return:
         """
