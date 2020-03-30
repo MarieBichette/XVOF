@@ -113,6 +113,13 @@ class DataContainer(object, metaclass=Singleton):  # pylint: disable=too-many-in
         """
         return self.material_target.damage_model.cohesive_model
 
+    def get_contact_model(self):
+        """
+        Accessor on the contact model between discontinuity boundaries of the target or material
+        :return:
+        """
+        return self.material_target.damage_model.contact_model
+
     def __fill_in_bc_props(self):
         """
         :return: the pressure to be applied on the boundary of geometry
