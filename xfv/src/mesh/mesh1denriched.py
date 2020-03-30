@@ -11,7 +11,7 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.utilities.profilingperso import timeit_file
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
-from xfv.src.contact.contact_base import ContactModel
+from xfv.src.contact.contact_base import ContactBase
 
 # noinspection PyArgumentList
 class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
@@ -85,6 +85,11 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
             self.cohesive_zone_model = None
+
+        # ---------------------------------------------
+        # Contact model initialisation (contact between discontinuities boundaries)
+        # ---------------------------------------------
+        self.contact_model = DataContainer().get_contact_model()
 
     @property
     def topology(self):
@@ -164,18 +169,15 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
 
         self.nodes.compute_complete_velocity_field()
 
-    def compute_contact(self, delta_t):
+    def apply_contact_correction(self, delta_t):
         """
         Compute the contact force to be applied to ensure non penetration of the
         discontinuities boundaries
         :param delta_t : time step, float
         """
         for disc in Discontinuity.discontinuity_list():
-            contact = ContactModel(disc)
-            contact.check_contact(self.nodes.xtpdt)
-            if contact.has_contact:
-                contact.compute_contact(self.nodes.upundemi, delta_t)
-                contact.apply_contact(self.nodes.upundemi, delta_t)
+            self.contact_model.apply_contact(self.nodes.xtpdt, self.nodes.upundemi,
+                                             self.nodes.force, disc, delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):

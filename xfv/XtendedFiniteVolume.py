@@ -231,7 +231,6 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
                               data.material_target.failure_model.type_of_enrichment,
                               data.material_target.failure_model.failure_treatment_value)
         the_figure_mng.update(simulation_time, step)
-
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
         # ---------------------------------------------#
@@ -245,10 +244,6 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         if right_boundary_condition.is_velocity():
             my_mesh.apply_velocity_boundary_condition(
                 'right', right_boundary_condition.evaluate(simulation_time))
-        # ---------------------------------------------#
-        #         CONTACT CORRECTION                   #
-        # ---------------------------------------------#
-        # my_mesh.compute_contact(dt)
         # ---------------------------------------------#
         #         NODES COORDINATES COMPUTATION        #
         # ---------------------------------------------#
@@ -306,6 +301,10 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         # ---------------------------------------------#
         my_mesh.compute_new_nodes_forces()
         my_mesh.compute_new_cohesive_forces()
+        # ---------------------------------------------#
+        #         CONTACT CORRECTION                   #
+        # ---------------------------------------------#
+        my_mesh.apply_contact_correction(dt)
         # ---------------------------------------------#
         #         LOADING                              #
         # ---------------------------------------------#
