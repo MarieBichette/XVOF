@@ -177,7 +177,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         for disc in Discontinuity.discontinuity_list():
             self.contact_model.apply_contact(self.nodes.xtpdt, self.nodes.upundemi,
-                                             self.nodes.force, disc, delta_t)
+                                             self.nodes.force, disc, delta_t, self.nodes.section)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):

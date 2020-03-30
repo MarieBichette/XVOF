@@ -20,7 +20,7 @@ class ContactBase(object):
 
     @abstractmethod
     def apply_contact(self, node_coord: np.array, node_velocity: np.array, node_force: np.array,
-                      disc: Discontinuity, delta_t: float):
+                      disc: Discontinuity, delta_t: float, section: float):
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
@@ -28,5 +28,6 @@ class ContactBase(object):
         :param node_force : node force array
         :param disc: discontinuity to examine
         :param delta_t : time step
+        :param section : section of the bar
         """
         pass
