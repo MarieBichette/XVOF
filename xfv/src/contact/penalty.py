@@ -31,7 +31,7 @@ class PenaltyContact(ContactBase):
         """
         opening = self._compute_discontinuity_opening(node_coord, disc)
         contact_force = self._compute_penalty_force(opening)
-        contact_force = self._apply_penalty_upper_bound(contact_force, delta_t)
+        contact_force = self._apply_penalty_upper_bound(disc, node_velocity, contact_force, delta_t)
         self._apply_contact_force(disc, node_force, contact_force, section)
 
     @staticmethod
@@ -56,12 +56,15 @@ class PenaltyContact(ContactBase):
             return 0.
         return self.penalty_stiffness * opening
 
-    def _apply_penalty_upper_bound(self, contact_force: float, delta_t: float):
+    def _apply_penalty_upper_bound(self, disc: Discontinuity, node_velocity: np.array,
+                                   contact_force: float, delta_t: float):
         """
         Apply an upper bound on the computed contact force in order to ensure that the
         force does not induce snapback of the contact nodes
         (nodes enter in contact and separate in the same time step)
         Computed from Non Linear Finite Element for Continua And Structure, T. Belytschko
+        :param disc: discontinuity to examine
+        :param node_velocity: node velocity array
         :param contact_force: force to apply
         :param delta_t : time step
         :return:
@@ -81,10 +84,10 @@ class PenaltyContact(ContactBase):
                  (node_mass_2 * (1 - epsilon) + enr_node_mass_1 * epsilon)
 
         # Compute the velocity of discontinuity boundaries
-        velocity_g = (1-epsilon) * node_velocity[self.disc.mask_in_nodes] \
-                     + epsilon * self.disc.additional_dof_velocity_new[0]
-        velocity_d = (1-epsilon) * self.disc.additional_dof_velocity_new[1] \
-                     + epsilon * node_velocity[self.disc.mask_out_nodes]
+        velocity_g = (1-epsilon) * node_velocity[disc.mask_in_nodes] \
+                     + epsilon * disc.additional_dof_velocity_new[0]
+        velocity_d = (1-epsilon) * disc.additional_dof_velocity_new[1] \
+                     + epsilon * node_velocity[disc.mask_out_nodes]
 
         # Compute the upper bound of penalty force
         upper_bound = mass_g * mass_d * (velocity_g - velocity_d) / (delta_t * (mass_g + mass_d))
