@@ -158,7 +158,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             - CFL coefficient of artificial viscosity
         """
         params: Dict[str, float] = self.__datadoc['numeric-parameters']
-        return (params['linear-pseudo'], params['quadratic-pseudo'],
+        return (params['quadratic-pseudo'], params['linear-pseudo'],
                 params['cfl'], params['cfl-pseudo'])
 
     def __fill_in_geometrical_props(self) -> Tuple[float, float]:
