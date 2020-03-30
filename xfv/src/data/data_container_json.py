@@ -5,7 +5,7 @@ Implementing the DataContainer class
 from collections import namedtuple
 import json
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Tuple, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Tuple, Optional, Union
 
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.data.user_defined_functions_props import (
@@ -68,19 +68,23 @@ class DamageModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
     name: str
 
 
-MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
-                                             "failure_model", "damage_model"])
+class MaterialProps(NamedTuple):  # pylint: disable=missing-class-docstring
+    initial_value: Any
+    damage_model: DamageModelProps
 
-InitialValues = namedtuple("InitialValues", ["velocity_init", "pression_init", "temp_init",
-                                             "rho_init", "energie_init",
-                                             "yield_stress_init", "shear_modulus_init"])
+# MaterialProps = namedtuple("MaterialProps", ["initial_values", "constitutive_model",
+#                                              "failure_model", "damage_model"])
 
-ConstitutiveModel = namedtuple("ConstitutiveModel", ["eos", "elasticity_model",
-                                                     "plasticity_model", "plasticity_criterion"])
+# InitialValues = namedtuple("InitialValues", ["velocity_init", "pression_init", "temp_init",
+#                                              "rho_init", "energie_init",
+#                                              "yield_stress_init", "shear_modulus_init"])
 
-FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatment_value",
-                                           "type_of_enrichment", "lump_mass_matrix",
-                                           "failure_criterion", "failure_criterion_value"])
+# ConstitutiveModel = namedtuple("ConstitutiveModel", ["eos", "elasticity_model",
+#                                                      "plasticity_model", "plasticity_criterion"])
+
+# FailureModel = namedtuple("FailureModel", ["failure_treatment", "failure_treatment_value",
+#                                            "type_of_enrichment", "lump_mass_matrix",
+#                                            "failure_criterion", "failure_criterion_value"])
 
 
 
@@ -102,6 +106,28 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
         self.time = TimeProps(*self.__fill_in_time_props())
         self.output = OutputProps(*self.__fill_in_output_props())
         self.boundary_condition = BoundaryConditionsProps(*self.__fill_in_bc_props())
+
+        # test si on a un projectile et une cible ou si on a qu'un bloc matter
+        matter_data = self.__datadoc['matter']
+        self.data_contains_a_projectile = 'projectile' in matter_data.keys()
+        self.data_contains_a_target = 'target' in matter_data.keys()
+
+        self.material_projectile = None
+        if self.data_contains_a_projectile:
+            self.material_projectile = MaterialProps(
+                *self.__fill_in_material_props(matter_data['projectile']))
+
+        self.material_target = None
+        if self.data_contains_a_target:
+            self.material_target = MaterialProps(
+                *self.__fill_in_material_props(matter_data['target']))
+        else:
+            self.material_target = MaterialProps(
+                *self.__fill_in_material_props(matter_data))
+            self.data_contains_a_target = True
+
+        if not (self.data_contains_a_projectile or self.data_contains_a_target):
+            self.material_projectile = self.material_target
 
     def __fill_in_numerical_props(self) -> Tuple[float, float, float, float]:
         """
@@ -268,9 +294,46 @@ class DataContainerJson(metaclass=Singleton):  # pylint: disable=too-few-public-
             raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
                              "Please choose among (linear, bilinear, trilinear)")
 
-        print("Applying a damage model for " + matter + " which is : " + cohesive_model_name)
-        print("Unloading model is : " + unloading_model_name)
         return cohesive_model_props, cohesive_model_name
+
+    def __fill_in_material_props(self, material="matter/target"):
+        """
+        Returns the values needed to fill the material properties:
+            - the damage properties
+        
+        """
+        # init = InitialValues(*self.__get_initial_values(material))
+
+        # behavior = ConstitutiveModel(
+        #     self.__get_equation_of_state_props(material),
+        #     *self.__get_rheology_props(material))
+
+        # failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = \
+        #     self.__get_failure_props(material)
+        # failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
+
+        # failure = FailureModel(failure_treatment, failure_treatment_value, type_of_enrichment,
+        #                        lump_mass_matrix, failure_criterion, failure_criterion_value)
+
+        # if failure.failure_treatment is not None and failure_criterion is None:
+        #     raise ValueError("Failure criterion expected. "
+        #                      "No failure criterion is specified or "
+        #                      "specified criterion not understood")
+
+        dmg_props = self.__get_damage_props(material)
+        if dmg_props:
+            damage = DamageModelProps(*dmg_props)
+        else:
+            damage = None
+
+        # if failure.failure_treatment is not None and damage.cohesive_model is not None:
+        #     if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
+        #             isinstance(failure_criterion, MaximalStressCriterion)):
+        #         print("Failure criterion value and cohesive strength have different value. " \
+        #               "This may result in errors in the future")
+
+        # return init, behavior, failure, damage
+        return None, damage
 
 
 
@@ -282,6 +345,9 @@ if __name__ == "__main__":
     print(data.time)
     print(data.output)
     print(data.boundary_condition)
+    print(data.material_projectile)
+    print(data.material_target)
+
     left_bc = data.boundary_condition.left_BC.law.build_custom_func()
     print(left_bc.evaluate(0))
     print(left_bc.evaluate(1.5e-6))
@@ -289,3 +355,6 @@ if __name__ == "__main__":
     right_bc = data.boundary_condition.right_BC.law.build_custom_func()
     print(right_bc.evaluate(0))
     print(right_bc.evaluate(10))
+
+    target_dmg: DamageModelProps = data.material_target.damage_model
+    target_dmg.cohesive_model.build_cohesive_model_obj()
