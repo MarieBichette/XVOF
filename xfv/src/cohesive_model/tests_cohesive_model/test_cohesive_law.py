@@ -1,7 +1,6 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Classe de test du module cohesive law
+Test of the CohesiveLaw
 """
 import unittest
 import numpy as np
@@ -10,7 +9,7 @@ from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 
 class CohesiveLawTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'CohesiveLaw' for linear cohesive law
+    Test case used to test the 'CohesiveLaw' module
     """
     def setUp(self):
         """
@@ -107,10 +106,8 @@ class CohesiveLawTest(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-############ PROGRAMME PRINCIPAL ####################
+# PROGRAMME PRINCIPAL
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     unittest.main()

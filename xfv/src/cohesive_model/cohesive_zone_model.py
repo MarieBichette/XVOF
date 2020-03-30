@@ -1,4 +1,3 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
 Definition of CohesiveZoneModel class to manage the cohesive discontinuities
@@ -11,7 +10,7 @@ class CohesiveZoneModel(object):
     """
     A class for the computation of the cohesive force
     """
-    def __init__(self, cohesive_law_points, unloading_model):
+    def __init__(self, cohesive_law_points: np.array, unloading_model: UnloadingModelBase):
         """
         Construction d'un modèle cohésif
         :param cohesive_law_points: array describing the stress - opening curve of the
@@ -23,12 +22,11 @@ class CohesiveZoneModel(object):
         self._cohesive_law = CohesiveLaw(cohesive_law_points)
         self._unloading_model = unloading_model
 
-    def compute_cohesive_stress(self, disc):
+    def compute_cohesive_stress(self, disc: Discontinuity):
         """
         Compute the cohesive force for the current opening of discontinuity according to the
         current discontinuity opening
         :param disc :discontinuity
-        :type disc: Discontinuity
         """
         cohesive_force = 0.
         new_opening = disc.discontinuity_opening.new_value[0]

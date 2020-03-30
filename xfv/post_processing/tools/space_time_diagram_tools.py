@@ -17,13 +17,11 @@ class SpaceTimeDiagramTools:
     A class utilities for plotting a space-time diagram
     """
 
-    def __init__(self, path_to_db, verbose):
+    def __init__(self, path_to_db: str, verbose: bool):
         """
         Creation of the class
         :param path_to_db : complete path to database hdf5 band (should include all_fields.hdf5)
         :param verbose : to allow a detailed print
-        :type str
-        :type bool
         """
         self._my_hd = OutputDatabaseExploit(path_to_db)
         self._case = os.path.basename(os.path.dirname(path_to_db))
@@ -67,7 +65,6 @@ class SpaceTimeDiagramTools:
         Plot the interface between interface and projectile
         :param coordinates_array: coordinates
         :param time_array: time
-        :param i_fig : figure index to add the interface line to
         :return:
         """
         # In theory, interface is a node but the array of coordinates is based on cell
@@ -77,13 +74,12 @@ class SpaceTimeDiagramTools:
                   "(= cell " + str(index) + ")")
         plt.plot(coordinates_array[:, index], time_array[:, index], color='black')
 
-    def build_xyz_map_for_contourf_plot(self, field_type, final_ruptured_cell_id):
+    def build_xyz_map_for_contourf_plot(self, field_type: str, final_ruptured_cell_id: int):
         """
         Build a map to plot the space time diagram with contourf matplotlib function
         :param field_type : string for field type of interest.
         Should match a key of dictionary OutputDatabaseExploit.field_type_converter
         :param final_ruptured_cell_id : array of the enriched cells at final time
-        :type field_type : str
         :return: tuple(X, Y, Z) map
         X = coordinates, Y = time et Z = field to map
         """
@@ -155,16 +151,14 @@ class SpaceTimeDiagramTools:
             if self._verbose:
                 print("Plot data for all geometry")
 
-    def _build_classical_xyz_map_for_contourf_plot_at_time(self, t, dim_x, classical_fname):
+    def _build_classical_xyz_map_for_contourf_plot_at_time(self, t: float, dim_x: int,
+                                                           classical_fname: str):
         """
         Extract information out of the database at time t
         and return a convenient storage for contour_f
         :param t: time
         :param dim_x : nbr of cells
         :param classical_fname : name of the classical field (starting by Classical...)
-        :type: float
-        :type : int
-        :type str
         :return: tuple(array(coordinates), array_ones * time, array(field))
         """
         node_coord = self._my_hd.extract_field_at_time("NodeCoordinates", t)[:-1].flatten()

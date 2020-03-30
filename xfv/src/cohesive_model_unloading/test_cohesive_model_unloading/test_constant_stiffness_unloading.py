@@ -1,7 +1,6 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Classe de test du module cohesive unloading
+Class to test the module ConstantStiffnessUnloadingTest
 """
 import unittest
 import numpy as np
@@ -17,7 +16,7 @@ class ConstantStiffnessUnloadingTest(unittest.TestCase):
     """
     def setUp(self):
         """
-        Initialisation des tests
+        Tests initialisation
         """
         # DataContainer creation (just to be able to build the discontinuity)
         data_file_path = os.path.join(os.path.dirname(__file__),

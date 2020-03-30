@@ -1,4 +1,3 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """ 
 Plot the free surface velocity eventually with experimental data
@@ -21,6 +20,9 @@ parser.add_argument("-case", action='append', nargs='+',
 parser.add_argument("-experimental_data", help="the path to experimental data to plot")
 parser.add_argument("--output_filename", default="all_fields.hdf5",
                     help="the name of the output hdf5 band (default = all_fields.hdf5)")
+parser.add_argument("--shift_t0", action="store_true",
+                    help="Shift time origin to put t0 when the velocity signal arrives on "
+                         "the free surface velocity")
 args = parser.parse_args()
 
 if args.case is None:
@@ -63,9 +65,11 @@ for case in args.case[0]:
     time = item_history[:, 0]
     velocity = item_history[:, 1]
     time_0 = 0.
-    # Uncomment to shift free surface velocity for plate impact cases
-    # velocity_is_not_zero = np.where(velocity > 1)  # 1 m/s is ok to detect non zero velocity
-    # time_0 = time[np.where(velocity_is_not_zero)[0]][0]  # first time where non zero velocity
+    if args.shift_t0:
+        velocity_is_not_zero = np.where(velocity > 1)  # 1 m/s is ok to detect non zero velocity
+        time_0 = time[np.where(velocity_is_not_zero)[0]][0]  # first time where non zero velocity
+        if args.verbose:
+            print("New t0 is : " + str(time_0))
     plt.plot((time - time_0) * 1.e+6, velocity, label=case)
 
 # ----------------------------------------------------------
