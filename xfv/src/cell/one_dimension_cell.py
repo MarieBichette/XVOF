@@ -160,6 +160,10 @@ class OneDimensionCell(Cell):
         self._damage_variable = np.zeros([number_of_elements, ], dtype=np.float64, order='C')
 
         # Solveur pour EOS :
+        self._target_eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
+        self._projectile_eos = None
+        if DataContainer().data_contains_a_projectile:
+            self._projectile_eos = DataContainer().material_projectile.constitutive_model.eos.build_eos_obj()
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
 
@@ -307,7 +311,7 @@ class OneDimensionCell(Cell):
             # => test it before starting Newton
             self.energy.new_value[mask_p], self.pressure.new_value[mask_p], \
             self.sound_velocity.new_value[mask_p] = OneDimensionCell.apply_equation_of_state(
-                self, DataContainer().material_projectile.constitutive_model.eos,
+                self, self._projectile_eos,
                 self.density.current_value[mask_p], self.density.new_value[mask_p],
                 self.pressure.current_value[mask_p], self.pressure.new_value[mask_p],
                 self.energy.current_value[mask_p], self.energy.new_value[mask_p],
@@ -320,7 +324,7 @@ class OneDimensionCell(Cell):
             # => test it before starting Newton
             self.energy.new_value[mask_t], self.pressure.new_value[mask_t], \
             self.sound_velocity.new_value[mask_t] = OneDimensionCell.apply_equation_of_state(
-                self, DataContainer().material_target.constitutive_model.eos,
+                self, self._target_eos,
                 self.density.current_value[mask_t], self.density.new_value[mask_t],
                 self.pressure.current_value[mask_t], self.pressure.new_value[mask_t],
                 self.energy.current_value[mask_t], self.energy.new_value[mask_t],

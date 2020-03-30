@@ -49,7 +49,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         energy_new = np.zeros([self.nbr_cells])
         pseudo = np.zeros([self.nbr_cells])
 
-        eos = DataContainer().material_target.constitutive_model.eos
+        eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
 
         energy_new_value, pressure_new_value, sound_velocity_new_value = \
             OneDimensionCell.apply_equation_of_state(self.my_cells, eos, density_current,

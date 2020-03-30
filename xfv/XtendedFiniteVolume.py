@@ -12,8 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
-from xfv.src.data.data_container                import DataContainer
-from xfv.src.data.data_container_json           import DataContainerJson, BoundaryType
+from xfv.src.data.data_container                import DataContainer, BoundaryType
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
@@ -111,7 +110,7 @@ def _build_boundary_function(boundary: BoundaryType) -> CustomFunction:
     """
     Build a boundary function from the boundary infos of the data file
     """
-    function_obj = boundary.law.build()
+    function_obj = boundary.law.build_custom_func()
     if boundary.type_bc == "vitesse":
         function_obj.register_velocity()
     elif boundary.type_bc == "pressure":
@@ -128,7 +127,7 @@ def main(directory: Path) -> None:
     #             PARAMETERS INITIALIZATION
     # ------------------------------------------------------------------
     # ---- # DATA FILES
-    data = DataContainer(directory / "XDATA.xml")
+    data = DataContainer(directory / "XDATA.json")
     meshfile = directory / "mesh.txt"
     print("Running simulation for {}".format(directory.resolve()))
 
@@ -137,8 +136,10 @@ def main(directory: Path) -> None:
     initial_time_step = data.time.initial_time_step
 
     # ---- # LOADING
-    left_boundary_condition = data.boundary_condition.left_BC
-    right_boundary_condition = data.boundary_condition.right_BC
+    left_bc = data.boundary_condition.left_BC
+    left_boundary_condition = _build_boundary_function(left_bc)
+    right_bc = data.boundary_condition.right_BC
+    right_boundary_condition = _build_boundary_function(right_bc)
 
     # ---- # RUPTURE
     rupture_criterion = data.material_target.failure_model.failure_criterion
