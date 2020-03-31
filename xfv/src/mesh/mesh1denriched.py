@@ -40,23 +40,15 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
-        if self.enrichment_type == "Hansbo":
-            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
-                                                        initial_velocities,
-                                                        section=DataContainer().geometric.section)
-        else:
-            self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
-                                                        initial_velocities,
-                                                        section=DataContainer().geometric.section)
+        self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
+                                                    initial_velocities,
+                                                    section=DataContainer().geometric.section)
 
         # ---------------------------------------------
         # Cells creation
         # ---------------------------------------------
         nbr_cells = nbr_nodes - 1
-        if self.enrichment_type == "Hansbo":
-            self.cells = OneDimensionHansboEnrichedCell(nbr_cells)
-        else:
-            self.cells = OneDimensionHansboEnrichedCell(nbr_cells)
+        self.cells = OneDimensionHansboEnrichedCell(nbr_cells)
 
         # ----------------------------------------------
         # Mass Matrix creation
@@ -228,15 +220,14 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_enriched_elements_new_density()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def compute_new_cells_pressures(self, dt):  # dt name is ok pylint: disable=invalid-name
+    def compute_new_cells_pressures(self, delta_t: float):
         """
         Computation of cells pressure at t+dt
-        :var dt: time step
-        :type dt: float
+        :var delta_t: time step
         """
         self.cells.compute_new_pressure(
-            np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=dt)
-        self.cells.compute_enriched_elements_new_pressure(dt)
+            np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=delta_t)
+        self.cells.compute_enriched_elements_new_pressure(delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_pseudo_viscosity(self, delta_t):
@@ -323,25 +314,26 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type surface: str ('left' | 'right')
         :type pressure: float
         """
-        if surface.lower() not in ("left", "right"):
-            raise ValueError
         if surface.lower() == 'left':
             self.nodes.apply_pressure(0, pressure)
-        else:
+        elif surface.lower() == 'right':
             self.nodes.apply_pressure(-1, -pressure)
+        else:
+            msg = "One dimensional mesh : only 'left' or 'right' boundaries are possibles!"
+            raise ValueError(msg)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_velocity_boundary_condition(self, surface, velocity):
         """
         Apply a given velocity on left or right boundary
         """
-        if surface.lower() not in ("left", "right"):
-            raise ValueError("""One dimensional mesh : only """
-                             """'left' or 'right' boundaries are possibles!""")
         if surface.lower() == 'left':
             self.nodes.apply_velocity_boundary_coundition(0, velocity)
-        else:
+        elif surface.lower() == 'right':
             self.nodes.apply_velocity_boundary_coundition(-1, velocity)
+        else:
+            msg = "One dimensional mesh : only 'left' or 'right' boundaries are possibles!"
+            raise ValueError(msg)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def get_ruptured_cells(self, rupture_criterion):
