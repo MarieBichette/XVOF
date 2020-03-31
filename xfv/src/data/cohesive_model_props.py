@@ -2,61 +2,65 @@
 This module defines the classes that stores data read from the datafile and
 needed to create CohesiveModel objects.
 """
-from dataclasses import dataclass, field, asdict
-from typing import Type
+from dataclasses import dataclass, field
+
+import numpy as np
 
 from xfv.src.data.unloading_model_props import UnloadingModelProps
-from xfv.src.cohesive_model.cohesive_law_base import CohesiveZoneModelBase
-from xfv.src.cohesive_model.linear_cohesive_law import LinearCohesiveZoneModel
-from xfv.src.cohesive_model.bilinear_cohesive_law import BilinearCohesiveZoneModel
-from xfv.src.cohesive_model.trilinear_cohesive_law import TrilinearCohesiveZoneModel
+from xfv.src.cohesive_model.cohesive_zone_model import CohesiveZoneModel
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class CohesiveModelProps:
+class CohesiveZoneModelProps:
     cohesive_strength: float
-    critical_separation: float
+    critical_opening: float
     unloading_model: UnloadingModelProps
-    _cohesive_model_class: Type[CohesiveZoneModelBase] = field(init=False, repr=False)
+    _cohesive_zone_model_class: CohesiveZoneModel = field(init=False, repr=False)
 
-    @staticmethod
-    def dict_factory(obj):
+    def _build_cohesive_law(self):
         """
-        Removes the classes (instance of type) that are inside obj
+        Build the cohesive law that is needed by the CohesiveModel
         """
-        result = {}
-        for key, value in obj:
-            if not isinstance(value, type):
-                try:
-                    value.build_unloading_model_obj()  # Case of unloading_model field
-                except AttributeError:
-                    pass
-                result[key] = value
-        return result
+        raise NotImplementedError("This is an astract method!")
 
     def build_cohesive_model_obj(self):
         """
         Build and return the CohesiveModel object
         """
-        return self._cohesive_model_class(**asdict(self, dict_factory=self.dict_factory))
+        return self._cohesive_zone_model_class(self._build_cohesive_law(),
+                                               self.unloading_model.build_unloading_model_obj())
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class LinearCohesiveZoneModelProps(CohesiveModelProps):
-    _cohesive_model_class = LinearCohesiveZoneModel
+class LinearCohesiveZoneModelProps(CohesiveZoneModelProps):
+    def _build_cohesive_law(self):
+        return np.array([
+            [0, self.cohesive_strength],
+            [self.critical_opening, 0]])
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class BilinearCohesiveZoneModelProps(CohesiveModelProps):
-    separation_1: float
+class BilinearCohesiveZoneModelProps(CohesiveZoneModelProps):
+    opening_1: float
     stress_1: float
-    _cohesive_model_class = BilinearCohesiveZoneModel
+
+    def _build_cohesive_law(self):
+        return np.array([
+            [0, self.cohesive_strength],
+            [self.opening_1, self.stress_1],
+            [self.critical_opening, 0]])
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class TrilinearCohesiveZoneModelProps(CohesiveModelProps):
-    separation_1: float
+class TrilinearCohesiveZoneModelProps(CohesiveZoneModelProps):
+    opening_1: float
     stress_1: float
-    separation_2: float
+    opening_2: float
     stress_2: float
-    _cohesive_model_class = TrilinearCohesiveZoneModel
+
+    def _build_cohesive_law(self):
+        return np.array([
+            [0, self.cohesive_strength],
+            [self.opening_1, self.stress_1],
+            [self.opening_2, self.stress_2],
+            [self.critical_opening, 0]])
