@@ -2,13 +2,13 @@
 """
 Definition of Contact management
 """
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class ContactBase(object):
+class ContactBase(object, metaclass=ABCMeta):
     """
     An interface for all cohesive zone model
     """
