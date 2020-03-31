@@ -20,6 +20,12 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
     """
     # noinspection PyArgumentList
     def __init__(self, initial_coordinates, initial_velocities, enrichment_type):
+        """
+        Construction of the mesh
+        :param initial_coordinates:
+        :param initial_velocities:
+        :param enrichment_type:
+        """
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
@@ -176,8 +182,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :param delta_t : time step, float
         """
         for disc in Discontinuity.discontinuity_list():
-            self.contact_model.apply_contact(self.nodes.xtpdt, self.nodes.upundemi,
-                                             self.nodes.force, disc, delta_t, self.nodes.section)
+            contact_force = \
+                self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
+            self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):
@@ -188,7 +195,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type delta_t: float
         """
         self.nodes.compute_new_coodinates(delta_t)
+        # TODO : ménage à faire
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
+        for disc in Discontinuity.discontinuity_list():
+            disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_cells_sizes(self):

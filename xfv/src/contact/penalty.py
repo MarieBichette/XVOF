@@ -18,33 +18,19 @@ class PenaltyContact(ContactBase):
         super(PenaltyContact, self).__init__()
         self.penalty_stiffness = penalty_stiffness
 
-    def apply_contact(self, node_coord: np.array, node_velocity: np.array, node_force: np.array,
-                      disc: Discontinuity, delta_t: float, section: float):
+    def compute_contact_force(self, node_velocity: np.array,
+                              disc: Discontinuity, delta_t: float):
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
         :param node_velocity: node velocity array
-        :param node_force : node force array
         :param disc: discontinuity to examine
         :param delta_t : time step
-        :param section : section of the bar
         """
-        opening = self._compute_discontinuity_opening(node_coord, disc)
+        opening = disc.discontinuity_opening.new_value
         contact_force = self._compute_penalty_force(opening)
         contact_force = self._apply_penalty_upper_bound(disc, node_velocity, contact_force, delta_t)
-        self._apply_contact_force(disc, node_force, contact_force, section)
-
-    @staticmethod
-    def _compute_discontinuity_opening(self, node_coord, disc):
-        """
-        Compute the discontinuity opening
-        :param node_coord: node coordinates array
-        :param disc: discontinuity to examine
-        :return: discontinuity opening (float)
-        """
-        left_boundary = node_coord[disc.mask_in_nodes] + disc.left_size.new_value
-        right_boundary = node_coord[disc.mask_out_nodes] - disc.right_size.new_value
-        return right_boundary - left_boundary
+        return contact_force
 
     def _compute_penalty_force(self, opening):
         """
@@ -93,23 +79,3 @@ class PenaltyContact(ContactBase):
         upper_bound = mass_g * mass_d * (velocity_g - velocity_d) / (delta_t * (mass_g + mass_d))
         bounded_force = min(contact_force, upper_bound)
         return bounded_force
-
-    @staticmethod
-    def _apply_contact_force(self, disc: Discontinuity, node_force: np.array,
-                             contact_force: float, section: float):
-        """
-        Apply the contact forces on classical nodal forces and enriched nodal forces
-        :param disc: discontinuity to examine
-        :param node_force : node force array
-        :param contact_force: force to apply
-        :param section: section of the bar
-        :return:
-        """
-        f_contact = section * contact_force
-        epsilon = disc.position_in_ruptured_element
-
-        # Apply cohesive stress on enriched nodes
-        node_force[disc.mask_in_nodes] += (1. - epsilon) * f_contact  # F1-
-        disc.additional_dof_force[0] += epsilon * f_contact  # F2-
-        node_force[disc.mask_out_nodes] += - epsilon * f_contact  # F2+
-        disc.additional_dof_force[1] += - (1. - epsilon) * f_contact  # F1+

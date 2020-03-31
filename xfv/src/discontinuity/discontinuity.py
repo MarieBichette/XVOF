@@ -22,10 +22,12 @@ class Discontinuity(object):
         Initializing a single discontinuity after enrichment.
         :param mask_in_nodes: enriched nodes on the left of the discontinuity
         :param mask_out_nodes: enriched nodes on the right of the discontinuity
-        :param discontiuity_position_in_ruptured_element ; position of the discontiuity in the ruptured element
+        :param discontiuity_position_in_ruptured_element ; position of the discontiuity in
+        the ruptured element
         """
         # V�rification d'usage :
-        if discontiuity_position_in_ruptured_element > 1 or discontiuity_position_in_ruptured_element < 0:
+        if discontiuity_position_in_ruptured_element > 1 or \
+                discontiuity_position_in_ruptured_element < 0:
             raise ValueError("""Discontinuity position in cracked cell must be between 0 and 1""")
 
         if np.array([a in np.where(mask_out_nodes)[0] for a in np.where(mask_in_nodes)[0]]).any():
@@ -50,19 +52,26 @@ class Discontinuity(object):
         # Additional dof: thermo
         self._left_part_size = Field(1, current_value=0., new_value=0.)
         self._right_part_size = Field(1, current_value=0., new_value=0.)
-        self._additional_dof_pressure = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
-        self._additional_dof_density = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
-        self._additional_dof_energy = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
-        self._additional_dof_artificial_viscosity = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
-        self._additional_dof_sound_velocity = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
+        self._additional_dof_pressure = Field(1, current_value=np.array([0.]),
+                                              new_value=np.array([0.]))
+        self._additional_dof_density = Field(1, current_value=np.array([0.]),
+                                             new_value=np.array([0.]))
+        self._additional_dof_energy = Field(1, current_value=np.array([0.]),
+                                            new_value=np.array([0.]))
+        self._additional_dof_artificial_viscosity = Field(1, current_value=np.array([0.]),
+                                                          new_value=np.array([0.]))
+        self._additional_dof_sound_velocity = Field(1, current_value=np.array([0.]),
+                                                    new_value=np.array([0.]))
 
         # Additional dof : elasticity
         self._additional_dof_stress = np.zeros([1, 3])
         self._additional_dof_deviatoric_stress_current = np.zeros([1, 3])
         self._additional_dof_deviatoric_stress_new = np.zeros([1, 3])
         self._additional_dof_deviatoric_strain_rate = np.zeros([1, 3])
-        self._additional_dof_shear_modulus = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
-        self._additional_dof_yield_stress = Field(1, current_value=np.array([0.]), new_value=np.array([0.]))
+        self._additional_dof_shear_modulus = Field(1, current_value=np.array([0.]),
+                                                   new_value=np.array([0.]))
+        self._additional_dof_yield_stress = Field(1, current_value=np.array([0.]),
+                                                  new_value=np.array([0.]))
         self._additional_dof_equivalent_plastic_strain_rate = 0.
         self._additional_dof_plastic_strain_rate = np.zeros([1, 3])
         self.plastic_cells = False  # La partie droite de la cell rompue est plastique
@@ -204,11 +213,10 @@ class Discontinuity(object):
         self._ruptured_cell_id = topology.cells_in_contact_with_node[self.mask_in_nodes][0][1]
         self.__mask_ruptured_cell[self._ruptured_cell_id] = True
 
-
     def compute_discontinuity_new_opening(self, node_position):
         """
-
-        :param node_position:
+        Compute the discontinuity opening
+        :param node_position: coordinates of the nodes
         :return:
         """
         xd_new = node_position[self.mask_out_nodes] - self.right_part_size.new_value

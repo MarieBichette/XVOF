@@ -39,13 +39,13 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
     @property
     def velocity_field(self):
         """
-        Champ de vitesse vraie
+        Accessor on the true node velocity field
         """
         return self._v_field
 
     def compute_complete_velocity_field(self):
         """
-        Calcul du champ de vitesse vraie
+        Compute the true field of node velocity
         """
         self._v_field = np.copy(self._upundemi)
 
@@ -96,7 +96,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         complete mass matrix. Takes into account nodes concerned by enrichment and
         not only the enriched nodes
         :param delta_t: time step
-        :param inv_matrice_couplage : inverse of the mass matrix (coupling classic / enr ddl part)
+        :param inv_matrix : inverse of the mass matrix (coupling classic / enr ddl part)
         """
         for disc in Discontinuity.discontinuity_list():
             node_in = np.where(disc.mask_in_nodes)[0][0]
@@ -134,17 +134,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             self._force[disc.mask_in_nodes] += f_node_left_minus * self.section  # F1-
             self._force[disc.mask_out_nodes] += f_node_right_plus * self.section  # F2+
 
-    def _compute_discontinuity_opening(self):
-        """
-        Compute the opening of discontinuities
-        :return:
-        """
-        for disc in Discontinuity.discontinuity_list():
-            # On calcule la nouvelle ouverture de l'écaille
-            xd_new = self.xtpdt[disc.mask_out_nodes] - disc.right_part_size.new_value
-            xg_new = self.xtpdt[disc.mask_in_nodes] + disc.left_part_size.new_value
-            disc.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
-
     def compute_enriched_nodes_cohesive_forces(self, cohesive_model):
         """
         Compute the cohesive forces for the enriched nodes
@@ -156,12 +145,20 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             # Compute cohesive stress
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
-            f_coh = self.section * cohesive_stress
-            epsilon = disc.position_in_ruptured_element
+            self.apply_force_on_discontinuity_boundaries(disc, cohesive_stress)
 
-            # Apply cohesive stress on enriched nodes
-            self._force[disc.mask_in_nodes] += (1. - epsilon) * f_coh  # F1-
-            disc.additional_dof_force[0] += epsilon * f_coh  # F2-
-            self._force[disc.mask_out_nodes] += - epsilon * f_coh  # F2+
-            disc.additional_dof_force[1] += - (1. - epsilon) * f_coh  # F1+
+    def apply_force_on_discontinuity_boundaries(self, disc: Discontinuity, stress: float):
+        """
+        Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
+        :param disc: current discontinuity
+        :param stress: value of the force to apply
+        :return:
+        """
+        applied_force = self.section * stress
+        epsilon = disc.position_in_ruptured_element
 
+        # Apply cohesive stress on enriched nodes
+        self._force[disc.mask_in_nodes] += (1. - epsilon) * applied_force  # F1-
+        disc.additional_dof_force[0] += epsilon * applied_force  # F2-
+        self._force[disc.mask_out_nodes] += - epsilon * applied_force  # F2+
+        disc.additional_dof_force[1] += - (1. - epsilon) * applied_force  # F1+
