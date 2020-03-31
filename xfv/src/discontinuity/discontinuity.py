@@ -4,6 +4,7 @@ A module implementing the Discontinuity class
 """
 import numpy as np
 from xfv.src.data.data_container import DataContainer
+from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.fields.field import Field
 from xfv.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import \
     OneDimensionHansboEnrichedMassMatrix
@@ -27,8 +28,8 @@ class Discontinuity(object):
         the ruptured element
         """
         # Some verification:
-        if discontiuity_position_in_ruptured_element > 1 or \
-                discontiuity_position_in_ruptured_element < 0:
+        if discontinuity_position_in_ruptured_element > 1 or \
+                discontinuity_position_in_ruptured_element < 0:
             raise ValueError("""Discontinuity position in cracked cell must be between 0 and 1""")
 
         if np.array([a in np.where(mask_out_nodes)[0] for a in np.where(mask_in_nodes)[0]]).any():
@@ -218,7 +219,7 @@ class Discontinuity(object):
         """
         self.__mass_matrix_updated = True
 
-    def find_ruptured_cell_id(self, topology: Topology):
+    def find_ruptured_cell_id(self, topology: Topology1D):
         """
         Compute the cell id of ruptured element associated with this discontinuity
         self.ruptured_cell_id is an integer

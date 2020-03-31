@@ -156,7 +156,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
 
         self.nodes.compute_complete_velocity_field()
 
-    def _compute_discontinuity_mass_matrix(self, disc:Discontinuity):
+    def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
         Compute the mass matrix of a newly created discontinuity
         :param disc: Discontinuity
@@ -171,11 +171,11 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         disc.mass_matrix_enriched.print_enriched_mass_matrix()
         disc.has_mass_matrix_been_computed()
 
-    def apply_contact_correction(self, delta_t):
+    def apply_contact_correction(self, delta_t: float):
         """
         Compute the contact force to be applied to ensure non penetration of the
         discontinuities boundaries
-        :param delta_t : time step, float
+        :param delta_t : time step
         """
         # Theoretically, we should consider a global resolution of contact in all discontinuities
         # Here they are treated one after another. Better than nothing but may cause instabilities
@@ -201,12 +201,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 self.compute_new_nodes_coordinates(delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def compute_new_nodes_coordinates(self, delta_t):
+    def compute_new_nodes_coordinates(self, delta_t: float):
         """
         Computation of nodes coordinates at t+dt
-
-        :var delta_t: time step
-        :type delta_t: float
+        :param delta_t: time step
         """
         self.nodes.compute_new_coodinates(delta_t)
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
