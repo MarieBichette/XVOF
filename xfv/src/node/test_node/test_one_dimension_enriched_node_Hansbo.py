@@ -124,21 +124,6 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_array_equal(self.my_nodes.xtpdt, np.array([[2., ], [4., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_coupled_enrichment_terms_compute_new_velocity(self, mock_disc_list):
-        """
-        Test de la m�thode coupled_terms_compute_new_velocity
-        """
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_masse_couplage = np.array([[1., 2.], [2., 1.]])
-        self.my_nodes._force = np.array([[1., ], [1., ]])
-        self.my_nodes._upundemi = np.array([[1., ], [1., ]])
-        self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
-
-        np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
-        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
-                                      np.array([[3., ], [3., ]]))
-
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_new_force(self, mock_disc_list):
         """
         Test de la m�thode enriched_nodes_compute_new_force
@@ -155,11 +140,8 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_almost_equal(self.my_nodes._force, np.array([[5.5, ], [1.5, ]]))
 
     @unittest.skip("Mod�le coh�sif pas revu")
-    @mock.patch.object(OneDimensionHansboEnrichedNode, "compute_discontinuity_opening",
-                       new_callable=mock.PropertyMock)
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list,
-                                                    mock_compute_discontinuity_opening):
+    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list):
         """
         Test de la m�thode compute_enriched_nodes_cohesive_forces
         """

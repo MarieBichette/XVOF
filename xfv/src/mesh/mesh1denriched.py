@@ -13,6 +13,7 @@ from xfv.src.utilities.profilingperso import timeit_file
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact_base import ContactBase
 
+
 # noinspection PyArgumentList
 class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
     """
@@ -121,51 +122,53 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 self.cells.mass, self.mask_last_nodes_of_ref, self.__topology)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def compute_new_nodes_velocities(self, delta_t):
+    def compute_new_nodes_velocities(self, delta_t: float):
         """
         Computation of nodes velocities at t+dt
-        :var delta_t: float, time step
+        :var delta_t: time step
         """
-        # ddl classiques (loin de l'enrichissement)
+        # Compute classical ddl (far from enrichment = enrichment not concerned)
         self.nodes.compute_new_velocity(
             delta_t, self.nodes.enrichment_not_concerned,
             self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
         if self.mass_matrix.correction_on_cell_500 is not None:
+            # Apply some correction to mimic a consistent mass matrix on the last cells of
+            # the reference bar
             inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
-            # on applique la correction sur les derniers �l�ments de la matrice de r�f�rence :
             self.nodes.apply_correction_reference_bar(
                 delta_t, inv_mass_matrix_correction,
                 self.mass_matrix.inverse_mass_matrix[self.mask_last_nodes_of_ref],
                 mask=self.mask_last_nodes_of_ref)
-            #############
-        for disc in Discontinuity.discontinuity_list():
-            # Calcul des nouvelles matrices de masse enrichies pour les nouvelles discontinuit�s
-            if not disc.mass_matrix_updated:
-                # Construction de la matrice masse enrichie et de son inverse
-                disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology,
-                                                                       self.cells.mass)
-                if self.enrichment_type == "Hansbo":
-                    disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
-                        "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
-                    # réarrangement de la matrice de masse pour avoir
-                    # strucure (classiq/enr/couplage)
-                    disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
-                disc.mass_matrix_enriched.print_enriched_mass_matrix()
-                disc.has_mass_matrix_been_computed()
 
-            # Calcul des vitesses ddl classique et enrichi � l'endroit de l'enrichissement
+        for disc in Discontinuity.discontinuity_list():
+            # Compute mass matrix for newly created discontinuities
+            if not disc.mass_matrix_updated:
+                self._compute_discontinuity_mass_matrix(disc)
+            # Compute classical ddl velocity of enriched nodes
             self.nodes.compute_new_velocity(
                 delta_t, disc.mask_disc_nodes,
                 disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
+            # Compute enriched ddl velocity of enriched nodes
             self.nodes.compute_additional_dof_new_velocity(
                 delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
 
-            # Couplage entre ddl classiques et enrichis
-            self.nodes.coupled_enrichment_terms_compute_new_velocity(
-                delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof)
-
         self.nodes.compute_complete_velocity_field()
+
+    def _compute_discontinuity_mass_matrix(self, disc:Discontinuity):
+        """
+        Compute the mass matrix of a newly created discontinuity
+        :param disc: Discontinuity
+        """
+        disc.mass_matrix_enriched.compute_enriched_mass_matrix(
+            disc, self.__topology, self.cells.mass)
+        if self.enrichment_type == "Hansbo":
+            disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
+                "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
+            # Arrange mass matrix to get a structure : classical / enriched dof
+            disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
+        disc.mass_matrix_enriched.print_enriched_mass_matrix()
+        disc.has_mass_matrix_been_computed()
 
     def apply_contact_correction(self, delta_t):
         """
