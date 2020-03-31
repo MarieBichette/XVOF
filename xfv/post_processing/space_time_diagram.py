@@ -1,261 +1,165 @@
-#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 """
-A script writing a march diagram after exploitation of the output database
+A script plotting a space-time diagram after exploitation of the output database
 """
 
-import os
-import sys
+import argparse
+import pathlib
+from collections import namedtuple
 import numpy as np
 import matplotlib
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from xfv.src.utilities.case_definition import CaseManager
+
 from xfv.src.output_manager.outputdatabaseexploit import OutputDatabaseExploit
-from xfv.executables.space_time_diagram_utilities import SpaceTimeDiagramUtilities
+from xfv.post_processing.tools.space_time_diagram_tools import SpaceTimeDiagramTools
 
-# ----------------------------------------------------------------
-# Quelques paramètres
-# ----------------------------------------------------------------
-plot = True
-english = False
-matplotlib.rcParams['text.usetex'] = False
-matplotlib.rcParams['text.latex.unicode'] = False
 
-# ----------------------------------------------------------------
-# Définition des labels et légendes
-# ----------------------------------------------------------------
-if english:
-    my_xlabel = "Position [mm]"
-    my_ylabel = "Time [$\mu$s]"
-    my_base_title = ["Space - Time diagram in Pressure", "Space - Time diagram "]
-    my_colorbarlabel = ["Pressure", "Pressure gradient"]
-else:
-    my_xlabel = "Position [mm]"
-    my_ylabel = "Temps [$\mu$s]"
-    my_base_title = ["Diagramme de marche en Pression", "Diagramme de marche"]
-    my_colorbarlabel = ["Pression", "Gradient de pression"]
+def create_figure():
+    """
+    Creation of the color map figure
+    """
+    fig = plt.figure(1)
+    plt.xlabel("Coordinates [mm]", fontsize=18)
+    plt.ylabel("Time [$\mu s$]", fontsize=18)
+    if ARGS.gradient:
+        the_title = "Space time {:} gradient diagram".format(ARGS.field)
+        # Definition of a color map for gradients plot
+        color_dict = {'red': ((0., 0., 0.), (0.5, 0.75, 0.75), (1., 1., 1.)),
+                      'green': ((0., 0., 0.), (0.5, 0.75, 0.75), (1., 0., 0.)),
+                      'blue': ((0., 0.5, 0.5), (0.5, 0.75, 0.75), (1., 0., 0.))}
+        my_cmap = LinearSegmentedColormap('custom_cmap', color_dict)
+        plt.register_cmap(cmap=my_cmap)
+        plt.set_cmap('custom_cmap')  # set the colormap just created
+    else:
+        the_title = "Space time {:} diagram".format(ARGS.field)
+    plt.title(the_title, fontweight='bold')
+    return fig
 
-# ----------------------------------------------------------------
-# Création d'une colormap jolie
-# ----------------------------------------------------------------
-cdict = {'red': ((0., 0., 0.),
-                  (0.5, 0.75, 0.75),
-                  (1., 1., 1.)),
-          'green': ((0., 0., 0.),
-                  (0.5, 0.75, 0.75),
-                  (1., 0., 0.)),
-            'blue': ((0., 0.5, 0.5),
-                  (0.5, 0.75, 0.75),
-                  (1., 0., 0.))}
-my_cmap = LinearSegmentedColormap('custom_cmap', cdict)
-plt.register_cmap(cmap=my_cmap)
 
-# ----------------------------------------------------------------
-# Lecture des instructions utilisateur
-# ----------------------------------------------------------------
-msg = "Mini programme pour tracer un diagramme de marche\n" \
-      "Ce script attend comme arguments  : \n"
-msg += "- le type de simulation (classic|schlieren|coupe|pick) \n"
-msg += "- le type de champ à tracer (ex : Pressure)\n"
-msg += "- les cas à traiter (séparés par une virgule, sans espace)\n"
-msg += "- -h ou --help pour afficher l'aide\n"
+def show_figure(fig, min_field: float, max_field: float):
+    """
+    Show figure
+    :param fig : figure
+    :param min_field: lower bound of the color bar
+    :param max_field: upper bound of the color bar
+    """
+    # Color bar legend
+    axes, _ = matplotlib.colorbar.make_axes(fig.gca())
+    color_bar = matplotlib.colorbar.ColorbarBase(
+        axes, norm=matplotlib.colors.Normalize(vmin=min_field, vmax=max_field))
+    if ARGS.gradient:
+        color_bar.set_label("{:} gradient".format(ARGS.field), fontsize=18)
+    else:
+        color_bar.set_label(ARGS.field, fontsize=18)
+    # Show plot
+    plt.legend()
+    plt.show()
 
-# Affichage de l'aide
-if len(sys.argv) != 4:
-    print(msg)
-    exit(0)
 
-if sys.argv[1] in ["-h", "--help"]:
-    print(msg)
-    exit(0)
+def run():
+    """
+    Run post processing
+    """
+    path_to_db = pathlib.Path.cwd().joinpath("..", "tests", ARGS.case, ARGS.output_filename)
+    my_hd = OutputDatabaseExploit(path_to_db)
 
-# Type d'analyse
-analysis = sys.argv[1]
-analysis_int = 0
-if analysis not in ["schlieren", "classic", "coupe", "pick"]:
-    print("Type d'analyse inconnu. Choisir entre classic et schlieren et coupe et pick")
-    exit(0)
-if analysis == 'schlieren':
-    analysis_int = 1
-
-# Demande à l'utilisateur quelle coupe il veut tracer
-if analysis == "coupe":
-    coupe_type = -1
-    while coupe_type not in [0, 1]:
-        coupe_type = int(input("Quel type de coupe fait-on ? (0 = constant time, 1 = constant item) << "))
-
-# Cas demandé
-case_list = sys.argv[3].split(',')
-case_list = [CaseManager().find_case(my_case) for my_case in case_list]
-
-# Champ demandé (la vérification se fait après avoir lu les champs qui existent pour ce cas)
-field = sys.argv[2]
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Début du calcul
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-id_fig = 1
-
-for case in case_list:
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    print(case.case_name)
     # ----------------------------------------------------------------
-    # Lecture du cas et information sur le nombre de cells rompues
+    # Get the final number of created discontinuities
     # ----------------------------------------------------------------
-    hdf5_file = os.path.join(case.directory_name, "all_fields.hdf5")
-    my_hd = OutputDatabaseExploit(hdf5_file)
     final_cell_status = my_hd.extract_field_at_time("CellStatus", my_hd.saved_times[-1])
     final_ruptured_cell_id = np.where(final_cell_status)[0]
     final_ruptured_cell_id = np.sort(final_ruptured_cell_id)
-
-    # Vérification de la cohérence du champ demandé
-    if field not in my_hd.saved_fields_type:
-        print("The field type {:s} is not present in the database for case {:}. Available field types are {:s}!"
-              .format(field, case.case_name, ",".join(my_hd.saved_fields_type)))
-
     # ----------------------------------------------------------------
-    # Préparation de la figure
+    # Get data to plot the diagram
     # ----------------------------------------------------------------
+    diagram_tools = SpaceTimeDiagramTools(path_to_db, ARGS.verbose)
+    coord_array, time_array, field_array = \
+        diagram_tools.build_xyz_map_for_contourf_plot(ARGS.field, final_ruptured_cell_id)
+    min_field = np.min(field_array)
+    max_field = np.max(field_array)
 
-    fig = plt.figure(id_fig)
-    fig.suptitle(my_base_title[analysis_int], fontsize=20, fontweight='bold')
-    # fig.suptitle(my_base_title[analysis_int] + " : " + case.case_name, fontsize=20, fontweight='bold')
-    fig.patch.set_facecolor("white")
-    n_colors = 500
-    if analysis == "schlieren":
-        plt.set_cmap('custom_cmap')  # pour utiliser la colormap qu'on a créé
-    plt.xlabel(my_xlabel, fontsize=18)
-    plt.ylabel(my_ylabel, fontsize=18)
+    if ARGS.gradient:
+        field_array = np.gradient(field_array, axis=0)  # time derivative of the field (axis = 0)
+        min_field = -5.e8
+        max_field = 5.e8
+        if ARGS.verbose:
+            print("Scaling the color map between {:} and {:}".format(min_field, max_field))
 
-    # ----------------------------------------------------------------
-    # Construction de l'utility et construction de la map
-    # ----------------------------------------------------------------
-    utilities = SpaceTimeDiagramUtilities(case)
-    X, Y, Z = utilities.build_XYZ_map_for_contourf_plot(field)
-
-
-    vmin = np.min(Z)
-    vmax = np.max(Z)
-    if analysis == "schlieren":
-        Z = np.gradient(Z, axis=0)
-        # calcul de la dérivée temporelle (axis = 0) (un vecteur contenant tous les temps est Y[:,0]) de la pression Z
-        vmin = -5.e8
-        vmax = 5.e8
-        print("Scaling the color map between {:} and {:}".format(vmin, vmax))
+    PlotOptions = namedtuple("PlotOptions", ["n_colors", "field_min", "field_max"])
+    plot_options = PlotOptions(N_COLORS, min_field, max_field)
 
     # ----------------------------------------------------------------
     # Tracé color map 2D
     # ----------------------------------------------------------------
-    if analysis in ["classic", "schlieren"] and plot:
-        print("Plot the color map for analysis = {:}".format(analysis))
+    if ARGS.verbose:
+        print("Plot the color map")
 
-        if len(final_ruptured_cell_id) >= 1:
-            # Séparation par paquets entre les mailles rompues pour prendre en compte le vide
-            print("FYI : liste des cells rompues :" + str(final_ruptured_cell_id))
-            ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
-            print("=> liste des cells rompues après décalage:" + str(ruptured_cell_id_after_offset))
+    if len(final_ruptured_cell_id) >= 1:
+        # Offset of the cracked cell ids to be conservative with the number of items of final arrays
+        ruptured_cell_id_after_offset = \
+            final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
+        if ARGS.verbose:
+            print("List of cracked cells :" + str(final_ruptured_cell_id))
+            print("=> List of cracked cells after offset:" + str(ruptured_cell_id_after_offset))
+        # First part from 0 to first discontinuity
+        first_left_index = final_ruptured_cell_id[0]
+        diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
+                                                plot_options, end=first_left_index)
+        offset = 1
+        # From one discontinuity to another
+        for i_rupture_index in ruptured_cell_id_after_offset[:-1]:
+            right_current = i_rupture_index + 1
+            left_next = ruptured_cell_id_after_offset[offset]
+            diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
+                                                    plot_options,
+                                                    begin=right_current, end=left_next)
+            offset += 1
+        # From the last discontinuity to the end
+        last_right_index = ruptured_cell_id_after_offset[-1] + 1
+        diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
+                                                plot_options, begin=last_right_index)
+    else:
+        # Simple plot with no discontinuities
+        diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array, plot_options)
 
-            first_left_index = final_ruptured_cell_id[0]
-            utilities.plot_section_of_color_map(X, Y, Z, end=first_left_index, n_colors=n_colors, vmin=vmin, vmax=vmax)
-            offset = 1
+    # Interface target / projectile
+    if diagram_tools.data_has_interface():
+        diagram_tools.plot_interface(coord_array, time_array)
 
-            for i_rupture_index in ruptured_cell_id_after_offset[:-1]:
-                right_current = i_rupture_index + 1
-                left_next = ruptured_cell_id_after_offset[offset]
-                utilities.plot_section_of_color_map(X, Y, Z, begin=right_current, end=left_next,
-                                                    n_colors=n_colors, vmin=vmin, vmax=vmax, fig=id_fig)
-                offset += 1
+    # ----------------------------------------------------------
+    # Show figure
+    # ----------------------------------------------------------
+    show_figure(FIG, min_field, max_field)
 
-            last_right_index = ruptured_cell_id_after_offset[-1] + 1
-            utilities.plot_section_of_color_map(X, Y, Z, begin=last_right_index, n_colors=n_colors,
-                                                vmin=vmin, vmax=vmax, fig=id_fig)
 
-        else:
-            # Tracé tout simple
-            utilities.plot_section_of_color_map(X, Y, Z, n_colors=n_colors, vmin=vmin, vmax=vmax, fig=id_fig)
+if __name__ == '__main__':
+    N_COLORS = 500
 
-        # Interface cible / projectile
-        if utilities.data_has_interface():
-            utilities.plot_interface(X, Y, 1)
+    # ----------------------------------------------------------
+    # Read user instructions
+    # ----------------------------------------------------------
+    PARSER = argparse.ArgumentParser()
+    PARSER.add_argument("-v", "--verbose", action="store_true", help="Increase program verbosity")
+    PARSER.add_argument("field", help="the field to be plotted")
+    PARSER.add_argument("case", help="the path to the output repository")
+    PARSER.add_argument("-gradient", action="store_true",
+                        help="Plot the gradient map instead of the map")
+    PARSER.add_argument("--output_filename", default="all_fields.hdf5",
+                        help="the name of the output hdf5 band (default = all_fields.hdf5)")
+    ARGS = PARSER.parse_args()
 
-        # Légende sous forme de colorbar
-        ax, _ = matplotlib.colorbar.make_axes(fig.gca())
-        colorbar = matplotlib.colorbar.ColorbarBase(ax, norm=matplotlib.colors.Normalize(vmin=vmin, vmax=vmax))
-        colorbar.set_label(my_colorbarlabel[analysis_int], fontsize=18)  # titre de la color bar
-        # colorbar.set_label(r'\textit{bla}', fontsize=18)
-        # colorbar.ax.set_title(field_name)
-
-        id_fig += 1
-
-        # fin de la boucle case pour analysis = classic ou schlieren
-
-    # ----------------------------------------------------------------
-    # Tracé d'une coupe :
-    # ----------------------------------------------------------------
-    if analysis == "coupe":
-
-        # Redéfinition de quelques propriétés de la figure
-        plt.figure(id_fig).suptitle("Coupe du diagramme space-time" + case.case_name, fontsize=20, fontweight='bold')
-        plt.ylabel("{:}".format(field))
-
-        # Coupe y = f(x) à t = constant
-        if coupe_type == 0:
-            plt.xlabel("Position [mm]")
-            time = input("Cas {:} :  t = ? (en secondes, "
-                             "? pour afficher les temps existants dans les données) << " . format(case.case_name))
-            # Pour afficher l'aide avant de reposer poliment la question
-            if time == "?":
-                print(my_hd.saved_times)
-                time = input("Cas {:} :  t = ? (en secondes, "
-                                 "? pour afficher les temps existants dans les données) << ".format(case.case_name))
-            time = float(time)
-            index_time = np.where(np.array(my_hd.saved_times) <= time)[0][-1]
-            # indice -1 pour prendre soit time soit le temps (inférieur) le plus proche
-            plt.plot(X[index_time, :], Z[index_time, :], label=case.label, marker=case.marker, linestyle=case.linestyle)
-            plt.title("Time : {:}".format(my_hd.saved_times[index_time]))
-
-        # Coupe y = f(t) à item = constant (point de vue lagrangien)
-        if coupe_type == 1:
-            plt.xlabel("Temps [$\mu s$]")
-            if len(final_ruptured_cell_id) > 0:
-                ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
-                print("Cas {:} : les mailles rompues (après recalage) sont {:}".format(case.case_name,
-                                                                                    ruptured_cell_id_after_offset))
-            indice_item = int(input("Cas {:} : item id = ? (entier après recalage au temps "
-                                        "final) << ".format(case.case_name)))
-
-            plt.plot(Y[:, indice_item], Z[:, indice_item], "-*", label=case.label + ' (cell ' + str(indice_item) + ')',
-                     marker=case.marker, linestyle=case.linestyle)
+    if ARGS.verbose:
+        print("Case : " + ARGS.case)
+        print("Field : " + ARGS.field)
+        print("Gradient : " + str(ARGS.gradient))
+        print("~~~~~~~~~~~~~")
 
     # ----------------------------------------------------------------
-    # Affichage d'info sur un point à un temps donné :
+    # Figure creation and settings
     # ----------------------------------------------------------------
-    if analysis == "pick":
-        plot = False
-        continue_bool = True
-
-        if len(final_ruptured_cell_id) > 0:
-            ruptured_cell_id_after_offset = final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
-            print("Pour info, les mailles rompues (après recalage) sont " + str(ruptured_cell_id_after_offset))
-
-        while continue_bool:
-            time = input("Cas {:} :  t = ? (en secondes) << ".format(case.case_name))
-            time = float(time)
-            index_time = np.where(np.array(my_hd.saved_times) <= time)[0][-1]
-
-            indice_item = int(input("Cas {:} : item id = ? (entier après recalage au temps "
-                                        "final) << ".format(case.case_name)))
-
-            print("----------------------------------")
-            print("Item : {:}".format(indice_item))
-            print("Temps : {:}".format(time))
-            print("Position : {:}".format(Y[index_time, indice_item]))
-            print("Valeur du champ {:} : {:}".format(field, Z[index_time, indice_item]))
-
-            continue_bool = input("Continuer ?") == "y"
-
-
-if plot:
-    plt.legend()
-    plt.show()
+    FIG = create_figure()
+    # ----------------------------------------------------------
+    # Run post processing
+    # ----------------------------------------------------------
+    run()

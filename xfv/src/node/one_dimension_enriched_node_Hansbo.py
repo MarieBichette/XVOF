@@ -129,12 +129,12 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             f_node_right_minus = - sigma_minus * epsilon
             f_node_left_plus = sigma_plus * (1 - epsilon)
 
-            disc.additional_dof_force[0] = f_node_right_minus * self.section
-            disc.additional_dof_force[1] = f_node_left_plus * self.section
-            self._force[disc.mask_in_nodes] += f_node_left_minus * self.section
-            self._force[disc.mask_out_nodes] += f_node_right_plus * self.section
+            disc.additional_dof_force[0] = f_node_right_minus * self.section  # F2-
+            disc.additional_dof_force[1] = f_node_left_plus * self.section  # F1+
+            self._force[disc.mask_in_nodes] += f_node_left_minus * self.section  # F1-
+            self._force[disc.mask_out_nodes] += f_node_right_plus * self.section  # F2+
 
-    def compute_discontinuity_opening(self):
+    def _compute_discontinuity_opening(self):
         """
         Compute the opening of discontinuities
         :return:
@@ -145,25 +145,24 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
             xg_new = self.xtpdt[disc.mask_in_nodes] + disc.left_part_size.new_value
             disc.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
 
-            if (disc.discontinuity_opening.new_value < 0 and
-                    DataContainer().material_target.damage_model.cohesive_model is None):
-                print("Problème avec la discontinuité {:} : ouverture négative".format(disc.label))
-
-    def compute_enriched_nodes_cohesive_forces(self):
+    def compute_enriched_nodes_cohesive_forces(self, cohesive_model):
         """
         Compute the cohesive forces for the enriched nodes
+        :param cohesive_model : cohesive model
         """
-        self.compute_discontinuity_opening()
+        self._compute_discontinuity_opening()
 
         for disc in Discontinuity.discontinuity_list():
-            cohesive_stress = DataContainer().material_target.damage_model.\
-                              cohesive_model.compute_cohesive_stress(disc)
+            # Compute cohesive stress
+            cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
-
             f_coh = self.section * cohesive_stress
+            epsilon = disc.position_in_ruptured_element
 
-            # On applique la force du ressort sur les forces nodales
-            self._force[disc.mask_in_nodes] += (1. - disc.position_in_ruptured_element) * f_coh
-            self._force[disc.mask_out_nodes] += - disc.position_in_ruptured_element * f_coh
-            disc.additional_dof_force[1] += - (1. - disc.position_in_ruptured_element) * f_coh
-            disc.additional_dof_force[0] += disc.position_in_ruptured_element * f_coh
+            # Apply cohesive stress on enriched nodes
+            # TODO : verifier epsilon vs 1-epsilon (j'ai un doute)
+            self._force[disc.mask_in_nodes] += (1. - epsilon) * f_coh  # F1-
+            disc.additional_dof_force[0] += epsilon * f_coh  # F2-
+            self._force[disc.mask_out_nodes] += - epsilon * f_coh  # F2+
+            disc.additional_dof_force[1] += - (1. - epsilon) * f_coh  # F1+
+

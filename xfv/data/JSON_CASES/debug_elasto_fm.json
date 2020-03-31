@@ -1,9 +1,0 @@
-{
-    "debug_elasto_fm": {
-        "color": "orange",
-        "directory_name": "0_debug_elasto_fine_mesh",
-        "label": "elasto fine mesh",
-        "linestyle": "-",
-        "marker": "+"
-    }
-}

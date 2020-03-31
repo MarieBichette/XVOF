@@ -1,9 +1,0 @@
-{
-    "hansbo_consistent_epp_050": {
-        "color": "green",
-        "directory_name": "RESULTS/PLASTICITY/hansbo_consistent_050",
-        "label": "hansbo consistent epp",
-        "linestyle": "-",
-        "marker": "+"
-    }
-}

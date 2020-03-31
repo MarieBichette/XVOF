@@ -1,9 +1,0 @@
-{
-    "hydro_hansbo_lump_somme_eps_050": {
-        "color": "lightblue",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/ENRICHMENT/Hansbo/hansbo_lump_somme_050",
-        "label": "eps 0.5  consistent",
-        "linestyle": "",
-        "marker": "s"
-    }
-}

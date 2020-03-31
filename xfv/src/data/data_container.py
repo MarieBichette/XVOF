@@ -10,14 +10,13 @@ from xfv.src.utilities.singleton import Singleton
 from xfv.src.data.user_defined_functions_props import (
     UserDefinedFunctionPropsType, ConstantValueFunctionProps, TwoStepsFunctionProps,
     RampFunctionProps, MarchTableFunctionProps, SuccessiveRampFunctionProps)
-from xfv.src.data.cohesive_model_props import (CohesiveModelProps,
+from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
                                                LinearCohesiveZoneModelProps,
                                                BilinearCohesiveZoneModelProps,
                                                TrilinearCohesiveZoneModelProps)
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
-                                                ZeroForceUnloadingModelProps,
-                                                LossOfStiffnessUnloadingModelProps,
-                                                ProgressiveUnloadingModelProps)
+                                                ConstantStiffnessUnloadingProps,
+                                                LossOfStiffnessUnloadingProps)
 from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
 from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
 from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
@@ -73,7 +72,7 @@ class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docs
 
 
 class DamageModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
-    cohesive_model: CohesiveModelProps
+    cohesive_model: CohesiveZoneModelProps
     name: str
 
 
@@ -262,7 +261,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                          "Please use one of [constant, twostep, ramp, marchtable, creneauramp]")
 
     @staticmethod
-    def __get_damage_props(matter) -> Optional[Tuple[CohesiveModelProps, str]]:
+    def __get_damage_props(matter) -> Optional[Tuple[CohesiveZoneModelProps, str]]:
         """
         Returns the values needed to fill the damage model properties:
             - the cohesive model
@@ -281,22 +280,18 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         unloading_model_name = params['unloading-model']['name'].lower()
         unloading_model_slope = params['unloading-model']['slope']
 
-        if unloading_model_name == "zeroforceunloading":
-            unloading_model_props: UnloadingModelProps = ZeroForceUnloadingModelProps(
-                unloading_model_slope, cohesive_strength)
-        elif unloading_model_name == "progressiveunloading":
-            unloading_model_props = ProgressiveUnloadingModelProps(
-                unloading_model_slope, cohesive_strength)
+        if unloading_model_name == "progressiveunloading":
+            unloading_model_props: UnloadingModelProps = (
+                ConstantStiffnessUnloadingProps(unloading_model_slope))
         elif unloading_model_name == "lossofstiffnessunloading":
-            unloading_model_props = LossOfStiffnessUnloadingModelProps(
-                unloading_model_slope, cohesive_strength)
+            unloading_model_props = LossOfStiffnessUnloadingProps()
         else:
             raise ValueError(f"Unknwown unloading model name: {unloading_model_name} "
-                             "Please choose among (zeroforceunloading, progressiveunloading, "
+                             "Please choose among (progressiveunloading, "
                              " lossofstiffnessunloading)")
 
         if cohesive_model_name == "linear":
-            cohesive_model_props: CohesiveModelProps = LinearCohesiveZoneModelProps(
+            cohesive_model_props: CohesiveZoneModelProps = LinearCohesiveZoneModelProps(
                 cohesive_strength, critical_separation, unloading_model_props)
         elif cohesive_model_name == "bilinear":
             cohesive_model_props = BilinearCohesiveZoneModelProps(
