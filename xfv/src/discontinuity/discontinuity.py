@@ -232,9 +232,14 @@ class Discontinuity(object):
         Compute the discontinuity opening
         :param node_position: coordinates of the nodes
         """
-        xd_new = node_position[self.mask_out_nodes] - self.right_part_size.new_value
-        xg_new = node_position[self.mask_in_nodes] + self.left_part_size.new_value
-        self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
+        epsilon = self._discontinuity_position
+        coord_g = node_position[self.mask_in_nodes]
+        coord_d = node_position[self.mask_out_nodes]
+        enr_coord_g = self._additional_dof_coordinates_new[0]  # x2-
+        enr_coord_d = self._additional_dof_coordinates_new[1]  # x1+
+        xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
+        xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
+        self.discontinuity_opening.new_value = (xd_new - xg_new)[0]
 
     @property
     def discontinuity_position(self):

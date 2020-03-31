@@ -72,29 +72,31 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
                 format(disc.additional_dof_force.current_value[recal_ind])
         print(message)
 
-    def initialize_additional_node_dof(self, disc):
+    def initialize_additional_node_dof(self, disc: Discontinuity):
         """
         Initialialise les ddl enrichis aux noeuds
-        :param disc:
-        :return:
+        :param disc: Discontinuity
         """
+        # Velocity
         disc.additional_dof_velocity_current[:] = np.copy(self.umundemi[disc.mask_disc_nodes])
         disc.additional_dof_velocity_new[:] = np.copy(self.upundemi[disc.mask_disc_nodes])
+        # Coordinates
+        disc.additional_dof_coordinates_current[:] = np.copy(self.xtpdt[disc.mask_disc_nodes])
+        disc.additional_dof_coordinates_new[:] = np.copy(self.xt[disc.mask_disc_nodes])
 
-    def enriched_nodes_compute_new_coordinates(self, delta_t):
+    def enriched_nodes_compute_new_coordinates(self, delta_t: float):
         """
         Compute the new nodes coordinates after enrichment
-        :param delta_t: float, time step
+        :param delta_t: time step
         """
-        # Rien ne change dans le calcul de la position des noeuds enrichis.
-        # Rappel : les coordonnées enrichies n'existent pas
-        OneDimensionNode.compute_new_coodinates(self, delta_t)
+        for disc in Discontinuity.discontinuity_list():
+            disc.additional_dof_coordinates_new = disc.additional_dof_coordinates_current + \
+                                                  delta_t * disc.additional_dof_velocity_new
 
-    def compute_enriched_nodes_new_force(self, contrainte_xx):
+    def compute_enriched_nodes_new_force(self, contrainte_xx: np.array):
         """
         Compute the enriched force on enriched nodes and apply correction for classical
         force on enriched nodes (classical ddl)
-        :param topology: Topology1D, give the connectivity of nodes
         :param contrainte_xx : vecteur contrainte xx, array de taille (nb_cell, 1)
         """
         for disc in Discontinuity.discontinuity_list():
@@ -123,8 +125,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         Compute the cohesive forces for the enriched nodes
         :param cohesive_model : cohesive model
         """
-        self._compute_discontinuity_opening()
-
         for disc in Discontinuity.discontinuity_list():
             # Compute cohesive stress
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
