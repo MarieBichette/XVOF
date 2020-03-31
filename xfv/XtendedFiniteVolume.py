@@ -249,6 +249,10 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         # ---------------------------------------------#
         my_mesh.compute_new_nodes_coordinates(dt)
         # ---------------------------------------------#
+        #         CONTACT CORRECTION                   #
+        # ---------------------------------------------#
+        my_mesh.apply_contact_correction(dt)
+        # ---------------------------------------------#
         #         CELLS VOLUMES COMPUTATION            #
         # ---------------------------------------------#
         my_mesh.compute_new_cells_sizes(dt)
@@ -301,10 +305,6 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         # ---------------------------------------------#
         my_mesh.compute_new_nodes_forces()
         my_mesh.compute_new_cohesive_forces()
-        # ---------------------------------------------#
-        #         CONTACT CORRECTION                   #
-        # ---------------------------------------------#
-        my_mesh.apply_contact_correction(dt)
         # ---------------------------------------------#
         #         LOADING                              #
         # ---------------------------------------------#

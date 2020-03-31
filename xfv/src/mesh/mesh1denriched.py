@@ -177,10 +177,28 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         discontinuities boundaries
         :param delta_t : time step, float
         """
+        # Theoretically, we should consider a global resolution of contact in all discontinuities
+        # Here they are treated one after another. Better than nothing but may cause instabilities
         for disc in Discontinuity.discontinuity_list():
             contact_force = \
                 self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
-            self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+            if contact_force != 0.:
+                # Divide the contact force on the nodal forces
+                self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+
+                # Reinitialize the kinematics that lead to contact
+                self.nodes.reinitialize_kinematics_after_contact(disc)
+                disc.reinitialize_kinematics_after_contact()
+
+                # Apply correction on the velocity field
+                self.compute_new_nodes_velocities(delta_t)
+
+                # Theoretically, we should apply the velocity boundary condition here,
+                # but it is really not convenient to do this and fracture is not supposed to occur
+                # on the boundary cells. Thus, no boundary conditions is applied
+
+                # Apply correction on the node field
+                self.compute_new_nodes_coordinates(delta_t)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t):

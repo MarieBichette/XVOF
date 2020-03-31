@@ -239,7 +239,7 @@ class Discontinuity(object):
         enr_coord_d = self._additional_dof_coordinates_new[1]  # x1+
         xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
         xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
-        self.discontinuity_opening.new_value = (xd_new - xg_new)[0]
+        self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
 
     @property
     def discontinuity_position(self):
@@ -275,6 +275,13 @@ class Discontinuity(object):
         Accessor on the additional nodes coordinates at time t+dt
         """
         return self._additional_dof_coordinates_new
+
+    def reinitialize_kinematics_after_contact(self):
+        """
+        Set the new velocity to the old one to cancel the increment that has lead to contact
+        """
+        self._additional_dof_velocity_new = np.copy(self._additional_dof_velocity_current)
+        self._additional_dof_coordinates_new = np.copy(self._additional_dof_coordinates_current)
 
     @property
     def additional_dof_force(self):

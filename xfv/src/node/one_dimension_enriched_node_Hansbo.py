@@ -84,6 +84,14 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         disc.additional_dof_coordinates_current[:] = np.copy(self.xtpdt[disc.mask_disc_nodes])
         disc.additional_dof_coordinates_new[:] = np.copy(self.xt[disc.mask_disc_nodes])
 
+    def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
+        """
+        Set the new velocity to the old one to cancel the increment that has lead to contact
+        :param disc : discontinuity to be considered
+        """
+        self._upundemi[disc.mask_disc_nodes] = np.copy(self._umundemi[disc.mask_disc_nodes])
+        self._xtpdt[disc.mask_disc_nodes] = np.copy(self._xt[disc.mask_disc_nodes])
+
     def enriched_nodes_compute_new_coordinates(self, delta_t: float):
         """
         Compute the new nodes coordinates after enrichment
