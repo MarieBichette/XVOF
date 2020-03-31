@@ -113,7 +113,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         if self.mass_matrix.correction_on_cell_500 is not None:
             print('Matrix correction on last cells compatible with {} analyis'.format(
                 self.mass_matrix.correction_on_cell_500))
-            # identifier derniers éléments de la barre de référence
+            # Identify the last elements of the reference bar
             self.mask_last_nodes_of_ref = np.zeros(
                 [self.nodes.number_of_nodes], dtype=bool)
             self.mask_last_nodes_of_ref[-2] = True
@@ -141,6 +141,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 self.mass_matrix.inverse_mass_matrix[self.mask_last_nodes_of_ref],
                 mask=self.mask_last_nodes_of_ref)
 
+        # Compute velocity for enriched nodes
         for disc in Discontinuity.discontinuity_list():
             # Compute mass matrix for newly created discontinuities
             if not disc.mass_matrix_updated:
