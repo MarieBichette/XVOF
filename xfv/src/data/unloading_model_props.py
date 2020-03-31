@@ -2,38 +2,42 @@
 This module defines the classes that stores data read from the datafile and
 needed to create UnloadingModel objects.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Type
 
-from xfv.src.cohesive_model.unloading_model_base import UnloadingModelBase
-from xfv.src.cohesive_model.zero_force_unloading_model import ZeroForceUnloadingModel
-from xfv.src.cohesive_model.progressive_unloading_model import ProgressiveUnloadingModel
-from xfv.src.cohesive_model.loss_of_stiffness_unloading_model import LossOfStiffnessUnloadingModel
+from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
+from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
+from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 
 
 @dataclass
 class UnloadingModelProps:  # pylint: disable=missing-class-docstring
-    slope: float
-    cohesive_strength: float
     _unloading_model_class: Type[UnloadingModelBase] = field(init=False, repr=False)
+
+    @staticmethod
+    def dict_factory(obj):
+        """
+        Removes the classes (instance of type) that are inside obj
+        """
+        result = {}
+        for key, value in obj:
+            if not isinstance(value, type):
+                result[key] = value
+        return result
 
     def build_unloading_model_obj(self):
         """
         A factory that build and return the UnloadingModel object
         """
-        return self._unloading_model_class(self.slope, self.cohesive_strength)
+        return self._unloading_model_class(**asdict(self, dict_factory=self.dict_factory))
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class ZeroForceUnloadingModelProps(UnloadingModelProps):
-    _unloading_model_class = ZeroForceUnloadingModel
+class ConstantStiffnessUnloadingProps(UnloadingModelProps):
+    slope: float
+    _unloading_model_class = ConstantStiffnessUnloading
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class ProgressiveUnloadingModelProps(UnloadingModelProps):
-    _unloading_model_class = ProgressiveUnloadingModel
-
-
-@dataclass  # pylint: disable=missing-class-docstring
-class LossOfStiffnessUnloadingModelProps(UnloadingModelProps):
-    _unloading_model_class = LossOfStiffnessUnloadingModel
+class LossOfStiffnessUnloadingProps(UnloadingModelProps):
+    _unloading_model_class = LossOfStiffnessUnloading
