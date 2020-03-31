@@ -80,7 +80,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # ---------------------------------------------
         # Cohesive zone model initialisation
         # ---------------------------------------------
-        self.cohesive_zone_model = DataContainer().get_cohesive_model()
+        self.cohesive_zone_model = None
+        target_dmg_model = DataContainer().material_target.damage_model
+        if target_dmg_model is not None:
+            self.cohesive_zone_model = target_dmg_model.cohesive_model.build_cohesive_model_obj()
         if (DataContainer().material_target.failure_model.failure_treatment != "Enrichment") and \
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
