@@ -1,9 +1,0 @@
-{
-    "hydro_wilkins_ref_eps_010": {
-        "color": "blue",
-        "directory_name": "RESULTS/TEST_TENSION_HYDRODYNAMIQUE/REFERENCE/eps_010_ref_wilkins/",
-        "label": "Reference, $\\epsilon= 0.10$",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

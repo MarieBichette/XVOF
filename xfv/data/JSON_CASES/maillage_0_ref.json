@@ -1,9 +1,0 @@
-{
-    "maillage_0_ref": {
-        "color": "blue",
-        "directory_name": "CONVERGENCE_MAILLAGE/Ref_maillage_0",
-        "label": "ref maillage 0",
-        "linestyle": "-",
-        "marker": "."
-    }
-}

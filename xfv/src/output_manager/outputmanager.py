@@ -9,7 +9,8 @@ from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields", "time_controler"])
+DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields",
+                                                       "time_controler"])
 Field = namedtuple("Field", ["name", "owner", "attr_name", "indexes"])
 
 
@@ -37,7 +38,8 @@ class OutputManager(object, metaclass=Singleton):
         dbinfos = DatabaseBuildInfos(database_obj, fields=[], time_controler=time_ctrl)
         self.__db_build_infos[database_name] = dbinfos
 
-    def register_field(self, field_name, field_support, field_attr_name, indexes=None, database_names=None):
+    def register_field(self, field_name, field_support, field_attr_name, indexes=None,
+                       database_names=None):
         """
         Add a field to the manager. Each field will be stored in every database in arguments
         if specified else in every database registered
@@ -45,7 +47,8 @@ class OutputManager(object, metaclass=Singleton):
         if database_names is not None:
             for db in database_names:
                 self.__db_build_infos[db].fields.append(
-                    Field(name=field_name, owner=field_support, attr_name=field_attr_name, indexes=indexes))
+                    Field(name=field_name, owner=field_support, attr_name=field_attr_name,
+                          indexes=indexes))
         else:
             for build_infos in list(self.__db_build_infos.values()):
                 build_infos.fields.append(Field(name=field_name, owner=field_support,
@@ -92,40 +95,51 @@ class OutputManager(object, metaclass=Singleton):
                             database_names=[database_id], indexes=cell_indexes)
         self.register_field("ClassicalDeviatoricStress", cells, ("deviatoric_stress_current",),
                             database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalEquivalentPlasticStrainRate", cells, ("equivalent_plastic_strain_rate",),
+        self.register_field("ClassicalEquivalentPlasticStrainRate", cells,
+                            ("equivalent_plastic_strain_rate",),
                             database_names=[database_id], indexes=cell_indexes)
         self.register_field("ClassicalPlasticStrainRate", cells, ("plastic_strain_rate",),
                             database_names=[database_id], indexes=cell_indexes)
 
         if enrichment_registration:
-            self.register_field("AdditionalPressure", None, ("additional_dof_pressure", "current_value"),
+            self.register_field("AdditionalPressure", None,
+                                ("additional_dof_pressure", "current_value"),
                                 database_names=[database_id])
-            self.register_field("AdditionalDensity", None, ("additional_dof_density", "current_value"),
+            self.register_field("AdditionalDensity", None,
+                                ("additional_dof_density", "current_value"),
                                 database_names=[database_id])
-            self.register_field("AdditionalInternalEnergy", None, ("additional_dof_energy", "current_value"),
+            self.register_field("AdditionalInternalEnergy", None,
+                                ("additional_dof_energy", "current_value"),
                                 database_names=[database_id])
             self.register_field("AdditionalArtificialViscosity", None,
                                 ("additional_dof_artificial_viscosity", "current_value"),
                                 database_names=[database_id])
-            self.register_field("AdditionalSoundVelocity", None, ("additional_dof_sound_velocity", "current_value"),
+            self.register_field("AdditionalSoundVelocity", None,
+                                ("additional_dof_sound_velocity", "current_value"),
                                 database_names=[database_id])
             self.register_field("AdditionalLeftSize", None, ("left_part_size", "current_value"),
                                 database_names=[database_id])
             self.register_field("AdditionalRightSize", None, ("right_part_size", "current_value"),
                                 database_names=[database_id])
-            self.register_field("AdditionalNodeVelocity", None, ("additional_dof_velocity_current",),
+            self.register_field("AdditionalNodeVelocity", None,
+                                ("additional_dof_velocity_current",),
                                 database_names=[database_id])
             self.register_field("AdditionalStress", None, ("additional_dof_stress",),
                                 database_names=[database_id])
-            self.register_field("AdditionalDeviatoricStress", None, ("additional_dof_deviatoric_stress_current",),
+            self.register_field("AdditionalDeviatoricStress", None,
+                                ("additional_dof_deviatoric_stress_current",),
                                 database_names=[database_id])
-            self.register_field("AdditionalEquivalentPlasticStrainRate", None, ("additional_dof_equivalent_plastic_strain_rate",),
+            self.register_field("AdditionalEquivalentPlasticStrainRate", None,
+                                ("additional_dof_equivalent_plastic_strain_rate",),
                                 database_names=[database_id])
-            self.register_field("AdditionalPlasticStrainRate", None, ("additional_dof_plastic_strain_rate",),
+            self.register_field("AdditionalPlasticStrainRate", None,
+                                ("additional_dof_plastic_strain_rate",),
                                 database_names=[database_id])
-            self.register_field("AdditionalCohesiveForce", None, ("cohesive_force", "current_value"),
+            self.register_field("AdditionalCohesiveForce", None,
+                                ("cohesive_force", "current_value"),
                                 database_names=[database_id])
-            self.register_field("AdditionalDiscontinuityOpening", None, ("discontinuity_opening", "current_value"),
+            self.register_field("AdditionalDiscontinuityOpening", None,
+                                ("discontinuity_opening", "current_value"),
                                 database_names=[database_id])
 
     def update(self, time, iteration, type_of_enrichment, eps):
@@ -148,9 +162,11 @@ class OutputManager(object, metaclass=Singleton):
                         for attr_name in field.attr_name[1:]:
                             value = getattr(value, attr_name)
                         build_infos.database_object.add_field(
-                            field.name, value.__getitem__(field.indexes), support=field.owner.__class__.__name__)
+                            field.name, value.__getitem__(field.indexes),
+                            support=field.owner.__class__.__name__)
                     elif field.name.startswith("Additional"):
-                        # Permet d'identifier les champs enrichis qui doivent se rapporter a un support disc
+                        # Permet d'identifier les champs enrichis qui doivent se rapporter
+                        # a un support disc
                         additional_field = []
                         for disc in Discontinuity.discontinuity_list():
                             cell_id = np.where(disc.mask_ruptured_cell)[0][0]
@@ -158,24 +174,27 @@ class OutputManager(object, metaclass=Singleton):
                             for attr_name in field.attr_name[1:]:
                                 value = getattr(value, attr_name).flatten()
                             try:  # enregistre un tenseur diagonal (3 valeurs)
-                                additional_field.append((cell_id, value[:,0], value[:,1], value[:,2]))
+                                additional_field.append((cell_id, value[:, 0], value[:, 1],
+                                                         value[:, 2]))
                             except IndexError:
                                 try:  # enrgistre un vecteur vitesse (2 composantes)
                                     additional_field.append((cell_id, value[0], value[1]))
                                 except IndexError:  # enregistre un scalaire (champs thermo)
                                     additional_field.append((cell_id, value))
                         if len(Discontinuity.discontinuity_list()) > 0:
-                            # sortir le build info de la boucle for des discontinuites permet d'enregistrer plusieurs
-                            # discontinuites a la fois. Le seul "probleme" est que ces disc. ont toutes le meme support
-                            # de type "Discontinuity" mais pas genant pour le moment a priori car on fait reference au
+                            # sortir le build info de la boucle for des discontinuites permet
+                            # d'enregistrer plusieurs discontinuites a la fois. Le seul "probleme"
+                            # est que ces disc. ont toutes le meme support de type "Discontinuity"
+                            # mais pas genant pour le moment a priori car on fait reference au
                             # nom de la classe et non a l'objet lui meme
-                            build_infos.database_object.add_field(field.name, np.array(additional_field),
+                            build_infos.database_object.add_field(field.name,
+                                                                  np.array(additional_field),
                                                                   support="Discontinuity",
                                                                   enrichment=type_of_enrichment,
                                                                   discontinuity_position=eps)
-                            # todo : faire passer la position de la disc. dans le tableau de donnees car peut varier
+                            # todo : faire passer la position de la disc. dans le tableau de
+                            #  donnees car peut varier
                             # todo : d'une discontinuite a l'autre
-
 
     def finalize(self):
         """
@@ -190,6 +209,7 @@ class OutputManager(object, metaclass=Singleton):
         msg += " manages following database: " + os.linesep
         for db_name in self.__db_build_infos:
             msg += "|_> " + db_name + os.linesep
-            msg += "    Fields : {:s}".format(
-                ",".join([field.name for field in self.__db_build_infos[db_name].fields])) + os.linesep
+            msg += "    Fields : {:s}".format(",".join([field.name for field in
+                                                        self.__db_build_infos[db_name].fields])) \
+                   + os.linesep
         return msg

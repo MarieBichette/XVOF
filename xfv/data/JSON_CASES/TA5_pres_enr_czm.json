@@ -1,9 +1,0 @@
-{
-    "TA5_pres_enr_czm": {
-        "color": "blue",
-        "directory_name": "3_impact_TA5_with_czm",
-        "label": "Enrichissement + Modele cohesif",
-        "linestyle": "-",
-        "marker": "*"
-    }
-}

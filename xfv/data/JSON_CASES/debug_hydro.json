@@ -1,9 +1,0 @@
-{
-    "debug_hydro": {
-        "color": "red",
-        "directory_name": "0_debug_hydro",
-        "label": "hydro",
-        "linestyle": "-",
-        "marker": "+"
-    }
-}

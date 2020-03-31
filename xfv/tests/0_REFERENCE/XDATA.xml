@@ -10,7 +10,6 @@
     </geometry>
     <matter>
         <target>
-
             <initialization>
                 <initial-velocity>0.</initial-velocity>
                 <init-thermo>Cuivre_InitThermo.json</init-thermo>
@@ -29,9 +28,9 @@
             <value>0</value>
         </right-boundary>
         <left-boundary>
-            <type>velocity</type> <!--pressure | velocity-->
+            <type>pressure</type> <!--pressure | velocity-->
             <bc-law>Constant</bc-law>
-            <value>-30</value>
+            <value>-10.e+9</value>
         </left-boundary>
     </boundary-conditions>
     <numeric-parameters>

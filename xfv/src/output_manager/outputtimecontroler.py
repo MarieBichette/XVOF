@@ -12,8 +12,10 @@ class OutputTimeControler(object):
         if time_period is None and iteration_period is None:
             iteration_period = 1
         elif time_period is not None and iteration_period is not None:
-            raise ValueError(
-                "Only time_period nor iteration_period can be specified for the OutputTimeControler {:s}".format(self))
+            message = "Only time_period nor iteration_period can be specified "
+            message += "for the OutputTimeControler {:s}".format(self)
+            raise ValueError(message)
+
         self.__time_period = time_period
         self.__iteration_period = iteration_period
         self.__next_output_time = None

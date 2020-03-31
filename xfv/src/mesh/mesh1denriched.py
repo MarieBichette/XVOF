@@ -11,7 +11,7 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.utilities.profilingperso import timeit_file
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
-from xfv.src.contact.contact import ContactModel
+from xfv.src.contact.contact_base import ContactModel
 
 # noinspection PyArgumentList
 class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
@@ -76,6 +76,15 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                                           self.nodes.nodes_in_projectile,
                                           self.__topology)
         self.mask_last_nodes_of_ref = None
+
+        # ---------------------------------------------
+        # Cohesive zone model initialisation
+        # ---------------------------------------------
+        self.cohesive_zone_model = DataContainer().get_cohesive_model()
+        if (DataContainer().material_target.failure_model.failure_treatment != "Enrichment") and \
+                (self.cohesive_zone_model is not None):
+            print("No cohesive model is allowed if failure treatment is not Enrichment")
+            self.cohesive_zone_model = None
 
     @property
     def topology(self):
@@ -193,7 +202,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self.cells.classical)
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.nodes.upundemi)
-        self.nodes.compute_discontinuity_opening()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_densities(self):
@@ -201,7 +209,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Computation of cells densities at t+dt
         """
         self.cells.compute_new_density(self.cells.classical)
-
         self.cells.compute_enriched_elements_new_density()
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -213,7 +220,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         self.cells.compute_new_pressure(
             np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=dt)
-
         self.cells.compute_enriched_elements_new_pressure(dt)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
@@ -239,9 +245,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of cohesive forces at t+dt
         """
-        if DataContainer().material_target.failure_model.failure_treatment == "Enrichment":
-            if DataContainer().material_target.damage_model.cohesive_model is not None:
-                self.nodes.compute_enriched_nodes_cohesive_forces()
+        if self.cohesive_zone_model is not None:
+            self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def increment(self):
