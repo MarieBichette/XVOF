@@ -191,11 +191,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :type delta_t: float
         """
         self.nodes.compute_new_coodinates(delta_t)
-        # TODO : ménage à faire
         self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
-        # Discontinuity opening calculation cannot occur here because it needs the cracked cell
-        # part size which have not been updated yet. The discontinuity opening is computed after
-        # updating the cell size
+        # Update discontinuity opening
+        for disc in Discontinuity.discontinuity_list():
+            disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_cells_sizes(self):
@@ -211,9 +210,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self.cells.classical)
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.nodes.upundemi)
-        # Update discontinuity opening
-        for disc in Discontinuity.discontinuity_list():
-            disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_densities(self):
