@@ -114,14 +114,19 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.compute_complete_velocity_field()
         np.testing.assert_array_almost_equal(self.my_nodes.velocity_field, np.array([1., 1.]))
 
-    def test_enriched_nodes_compute_new_coordinates(self):
+    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
+    def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):
         """
-        Test de la m�thode enriched_nodes_compute_new_coordinates de la classe
+        Test de la méthode enriched_nodes_compute_new_coordinates de la classe
         """
-        self.my_nodes._upundemi = np.array([[1., ], [2., ]])
+        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
+        self.mock_discontinuity.position_in_ruptured_element = 0.25
+        self.mock_discontinuity.additional_dof_coordinates_current = np.array([[1., ], [3., ]])
+        self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
+        self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
         self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
-
-        np.testing.assert_array_equal(self.my_nodes.xtpdt, np.array([[2., ], [4., ]]))
+        np.testing.assert_array_equal(self.mock_discontinuity.additional_dof_coordinates_new,
+                                      np.array([[-2., ], [7., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_new_force(self, mock_disc_list):
@@ -167,7 +172,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         ouverture_ecaille_old = (xd_old - xg_old)[0][0]
         np.testing.assert_allclose(ouverture_ecaille_old, np.array([0.2]))
 
-        # d�finition de ouverture new
+        # definition de ouverture new
         self.my_nodes._xtpdt = np.array([[0., ], [1., ]])
         self.mock_discontinuity.right_part_size.new_value = np.array([0.3])
         self.mock_discontinuity.left_part_size.new_value = np.array([0.3])
