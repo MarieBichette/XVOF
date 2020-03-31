@@ -120,13 +120,25 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         Test de la méthode enriched_nodes_compute_new_coordinates de la classe
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        self.mock_discontinuity.position_in_ruptured_element = 0.25
         self.mock_discontinuity.additional_dof_coordinates_current = np.array([[1., ], [3., ]])
         self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
         self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
         self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
         np.testing.assert_array_equal(self.mock_discontinuity.additional_dof_coordinates_new,
                                       np.array([[-2., ], [7., ]]))
+
+    def test_reinitialize_kinematics_after_contact(self):
+        """
+        Test of the method reinitialize_kinematics_after_contact
+        """
+        self.mock_discontinuity.mask_disc_nodes = np.ones([2], dtype=bool)
+        self.my_nodes._umundemi = np.array([[-0.5, ], [1.5, ]])
+        self.my_nodes._xt = np.array([[0., ], [1., ]])
+        self.my_nodes._upundemi = np.array([[-1.5, ], [2.5, ]])
+        self.my_nodes._xtpdt = np.array([[2., ], [3., ]])
+        self.my_nodes.reinitialize_kinematics_after_contact(self.mock_discontinuity)
+        np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[-0.5, ], [1.5, ]]))
+        np.testing.assert_array_equal(self.my_nodes._xtpdt, np.array([[0., ], [1., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_new_force(self, mock_disc_list):
