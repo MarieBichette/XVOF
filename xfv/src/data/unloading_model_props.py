@@ -5,13 +5,14 @@ needed to create UnloadingModel objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
 from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 
 
-@dataclass
-class UnloadingModelProps:  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class UnloadingModelProps(TypeCheckedDataClass):
     _unloading_model_class: Type[UnloadingModelBase] = field(init=False, repr=False)
 
     @staticmethod

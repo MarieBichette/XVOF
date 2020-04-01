@@ -5,12 +5,13 @@ needed to create EquationOfState objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type, Optional
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.equationsofstate.equationofstatebase import EquationOfStateBase
 from xfv.src.equationsofstate.miegruneisen import MieGruneisen
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class EquationOfStateProps:
+class EquationOfStateProps(TypeCheckedDataClass):
     _eos_class: Type[EquationOfStateBase] = field(init=False, repr=False)
     _eos_inst: Optional[EquationOfStateBase] = field(init=False, repr=False)
 

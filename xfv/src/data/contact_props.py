@@ -5,12 +5,13 @@ needed to create Contact objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.contact.contact_base import ContactBase
 from xfv.src.contact.penalty import PenaltyContact
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class ContactProps:
+class ContactProps(TypeCheckedDataClass):
     _contact_class: Type[ContactBase] = field(init=False, repr=False)
 
     @staticmethod

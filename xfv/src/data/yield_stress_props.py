@@ -5,12 +5,13 @@ needed to create YieldStress objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rheology.yieldstress import YieldStress
 from xfv.src.rheology.constantyieldstress import ConstantYieldStress
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class YieldStressProps:
+class YieldStressProps(TypeCheckedDataClass):
     _yield_stress_class: Type[YieldStress] = field(init=False, repr=False)
 
     @staticmethod

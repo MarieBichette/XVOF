@@ -5,6 +5,7 @@ needed to create RuptureCriterion objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 from xfv.src.rupturecriterion.damage_criterion import DamageCriterion
 from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
@@ -13,7 +14,7 @@ from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class RuptureCriterionProps:
+class RuptureCriterionProps(TypeCheckedDataClass):
     _rupture_criterion_class: Type[RuptureCriterion] = field(init=False, repr=False)
 
     @staticmethod

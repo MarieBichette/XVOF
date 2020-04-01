@@ -5,12 +5,13 @@ needed to create ShearModulus objects.
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rheology.shearmodulus import ShearModulus
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class ShearModulusProps:
+class ShearModulusProps(TypeCheckedDataClass):
     _shear_modulus_class: Type[ShearModulus] = field(init=False, repr=False)
 
     @staticmethod

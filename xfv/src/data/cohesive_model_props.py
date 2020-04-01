@@ -6,12 +6,13 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.data.unloading_model_props import UnloadingModelProps
 from xfv.src.cohesive_model.cohesive_zone_model import CohesiveZoneModel
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class CohesiveZoneModelProps:
+class CohesiveZoneModelProps(TypeCheckedDataClass):
     cohesive_strength: float
     critical_opening: float
     unloading_model: UnloadingModelProps
