@@ -1,17 +1,17 @@
 """
 This module defines the classes that stores data read from the datafile and
-needed to create YieldStress objects.
+needed to create Contact objects.
 """
 from dataclasses import dataclass, field, asdict
 from typing import Type
 
-from xfv.src.rheology.yieldstress import YieldStress
-from xfv.src.rheology.constantyieldstress import ConstantYieldStress
+from xfv.src.contact.contact_base import ContactBase
+from xfv.src.contact.penalty import PenaltyContact
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class YieldStressProps:
-    _yield_stress_class: Type[YieldStress] = field(init=False, repr=False)
+class ContactProps:
+    _contact_class: Type[ContactBase] = field(init=False, repr=False)
 
     @staticmethod
     def dict_factory(obj):
@@ -24,14 +24,14 @@ class YieldStressProps:
                 result[key] = value
         return result
 
-    def build_yield_stress_obj(self):
+    def build_contact_obj(self):
         """
         A factory that builds and returns the YieldStress object
         """
-        return self._yield_stress_class(**asdict(self, dict_factory=self.dict_factory))
+        return self._contact_class(**asdict(self, dict_factory=self.dict_factory))
 
 
 @dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
-class ConstantYieldStressProps(YieldStressProps):
-    init_value: float
-    _yield_stress_class = ConstantYieldStress
+class PenaltyContactProps(ContactProps):
+    penalty_stiffness: float
+    _contact_class = PenaltyContact
