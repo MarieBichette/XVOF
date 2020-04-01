@@ -145,8 +145,12 @@ def main(directory: Path) -> None:
     right_boundary_condition = _build_boundary_function(right_bc)
 
     # ---- # RUPTURE
-    rupture_criterion = data.material_target.failure_model.failure_criterion
-    rupture_treatment = None
+    if data.material_target.failure_model.failure_criterion is not None:
+        rupture_criterion = \
+            data.material_target.failure_model.failure_criterion.build_rupture_criterion_obj()
+    else:
+        rupture_criterion = None
+
     if data.material_target.failure_model.failure_treatment == "ImposedPressure":
         rupture_treatment = ImposedPressure(
             data.material_target.failure_model.failure_treatment_value)
@@ -156,6 +160,11 @@ def main(directory: Path) -> None:
             data.material_target.failure_model.lump_mass_matrix)
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
         print("Enrichment method : {}".format(type_of_enrichment))
+    else:
+        rupture_treatment = None
+
+    if rupture_criterion is None and rupture_treatment is not None:
+        raise ValueError("A failure criterion is required if failure treatment is set")
 
     # ---------------------------------------------#
     #         MESH CREATION                        #
@@ -199,7 +208,11 @@ def main(directory: Path) -> None:
         if projectile_model is not None:
             projectile_elasticity: bool = projectile_model.elasticity_model is not None
             projectile_plasticity: bool = projectile_model.plasticity_model is not None
-            projectile_plasticity_criterion = projectile_model.plasticity_criterion
+            if projectile_plasticity:
+                projectile_plasticity_criterion = \
+                    projectile_model.plasticity_criterion.build_plasticity_criterion_obj()
+            else:
+                projectile_plasticity_criterion = None
         else:
             projectile_elasticity = False
             projectile_plasticity = False
@@ -213,7 +226,11 @@ def main(directory: Path) -> None:
     if target_model is not None:
         target_elasticity: bool = target_model.elasticity_model is not None
         target_plasticity: bool = target_model.plasticity_model is not None
-        target_plasticity_criterion = target_model.plasticity_criterion
+        if target_plasticity:
+            target_plasticity_criterion = \
+                target_model.plasticity_criterion.build_plasticity_criterion_obj()
+        else:
+            target_plasticity_criterion = None
     else:
         target_elasticity = False
         target_plasticity = False

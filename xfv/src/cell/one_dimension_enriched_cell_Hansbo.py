@@ -199,17 +199,17 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         Compute pressure, internal energy and sound velocity in left and right parts of
         the enriched elements
         """
+        target_model = DataContainer().material_target.constitutive_model
+        projectile_model = None
+        if DataContainer().data_contains_a_projectile:
+            projectile_model = DataContainer().material_projectile.constitutive_model
+        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+            projectile_model and projectile_model.elasticity_model is not None)
+        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+            projectile_model and projectile_model.plasticity_model is not None)
+
         for disc in Discontinuity.discontinuity_list():
             mask = disc.mask_ruptured_cell
-
-            # Takes elasticity into account in internal energy before calling eos
-            elasticity_activated = np.logical_or(
-                (DataContainer().material_target.constitutive_model.elasticity_model is not None),
-                (DataContainer().material_projectile.constitutive_model.elasticity_model is not None))
-            plasticity_activated = np.logical_or(
-                (DataContainer().material_target.constitutive_model.plasticity_model is not None),
-                (DataContainer().material_projectile.constitutive_model.plasticity_model is not None))
-
             if elasticity_activated or plasticity_activated:
                 self.energy.current_value[mask] += \
                     OneDimensionCell.add_elastic_energy_method(dt,
