@@ -156,6 +156,7 @@ def main(directory: Path) -> None:
             data.material_target.failure_model.lump_mass_matrix)
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
         print("Enrichment method : {}".format(type_of_enrichment))
+
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
@@ -180,6 +181,7 @@ def main(directory: Path) -> None:
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
     the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
+
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
     # ---------------------------------------------#
@@ -188,6 +190,34 @@ def main(directory: Path) -> None:
     my_mesh.compute_nodes_masses()
     print("CALCULUS LAUNCHED!")
     compute_time = 0.
+
+    # ---------------------------------------------#
+    #  READ CONSTITUTIVE MODELS SHORTCUTS          #
+    # ---------------------------------------------#
+    if data.material_projectile is not None:
+        projectile_model = data.material_projectile.constitutive_model
+        if projectile_model is not None:
+            projectile_elasticity: bool = projectile_model.elasticity_model is not None
+            projectile_plasticity: bool = projectile_model.plasticity_model is not None
+            projectile_plasticity_criterion = projectile_model.plasticity_criterion
+        else:
+            projectile_elasticity = False
+            projectile_plasticity = False
+            projectile_plasticity_criterion = None
+    else:
+        projectile_elasticity = False
+        projectile_plasticity = False
+        projectile_plasticity_criterion = None
+
+    target_model = data.material_target.constitutive_model
+    if target_model is not None:
+        target_elasticity: bool = target_model.elasticity_model is not None
+        target_plasticity: bool = target_model.plasticity_model is not None
+        target_plasticity_criterion = target_model.plasticity_criterion
+    else:
+        target_elasticity = False
+        target_plasticity = False
+        target_plasticity_criterion = None
 
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
@@ -248,24 +278,20 @@ def main(directory: Path) -> None:
         # ---------------------------------------------#
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#
-        target_model = data.material_target.constitutive_model
-        projectile_model = None
-        if data.data_contains_a_projectile:
-            projectile_model = data.material_projectile.constitutive_model
-        if projectile_model and projectile_model.elasticity_model is not None:
+        if projectile_elasticity:
             my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
-        if target_model.elasticity_model is not None:
+        if target_elasticity:
             my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
-        if projectile_model and projectile_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
+        if projectile_plasticity:
+            my_mesh.get_plastic_cells(projectile_plasticity_criterion,
                                       my_mesh.cells.cell_in_projectile)
-        if target_model.plasticity_model is not None:
-            my_mesh.get_plastic_cells(target_model.plasticity_criterion,
-                                      my_mesh.cells.cell_in_target)
-        my_mesh.apply_plasticity_treatment(dt)
+            my_mesh.apply_plasticity_treatment(dt, my_mesh.cells.cell_in_projectile)
+        if target_plasticity:
+            my_mesh.get_plastic_cells(target_plasticity_criterion, my_mesh.cells.cell_in_target)
+            my_mesh.apply_plasticity_treatment(dt, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #         PSEUDOVISCOSITY COMPUTATION          #
         # ---------------------------------------------#
