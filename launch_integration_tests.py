@@ -28,7 +28,7 @@ def get_integration_tests() -> List[Path]:
     integration_tests = []
     integration_root = Path("./xfv/tests/integration")
     for root, _, files in os.walk(integration_root.as_posix()):
-        if 'XDATA.xml' in files:
+        if 'XDATA.json' in files:
             integration_tests.append(Path(root))
     return integration_tests
 
