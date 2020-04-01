@@ -19,8 +19,7 @@ class ContactBase(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def apply_contact(self, node_coord: np.array, node_velocity: np.array, node_force: np.array,
-                      disc: Discontinuity, delta_t: float, section: float):
+    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity, delta_t: float):
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
