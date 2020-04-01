@@ -20,6 +20,9 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
             SymNDArray((self._matrix_size, self._matrix_size), dtype=np.float64, order='C')
         self._enriched_mass_matrix_right_part[:, :] = 0
         self.lump = lump
+        if self.lump not in ["menouillard", "somme", "none"]:
+            raise ValueError(f"Unkown function type {self.lump}. "
+                             f"Please use one of [menouillard, somme, none]")
 
     def get_mass_matrix_left(self):
         return self._enriched_mass_matrix_left_part
@@ -39,12 +42,14 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
             self._enriched_mass_matrix_left_part[0, 0] = epsilon * mass_1 / 2. + mass_0 / 2.
             self._enriched_mass_matrix_left_part[1, 1] = epsilon * mass_1 / 2.
         elif self.lump == "somme":
-            self._enriched_mass_matrix_left_part[0, 0] = mass_0 / 2. + epsilon * mass_1 / 2. * (2 - epsilon)
+            self._enriched_mass_matrix_left_part[0, 0] = \
+                mass_0 / 2. + epsilon * mass_1 / 2. * (2 - epsilon)
             self._enriched_mass_matrix_left_part[1, 1] = mass_1 / 2. * epsilon * epsilon
         else:
             self._enriched_mass_matrix_left_part[0, 0] = \
                 epsilon * mass_1 - epsilon ** 2 * mass_1 + epsilon ** 3 / 3. * mass_1 + mass_0 / 2.
-            self._enriched_mass_matrix_left_part[0, 1] = epsilon ** 2 * mass_1 / 2. - epsilon ** 3 / 3. * mass_1
+            self._enriched_mass_matrix_left_part[0, 1] = \
+                epsilon ** 2 * mass_1 / 2. - epsilon ** 3 / 3. * mass_1
             self._enriched_mass_matrix_left_part[1, 1] = epsilon ** 3 / 3. * mass_1
 
     def compute_enriched_mass_matrix_right_part(self, mass_1, mass_2,  epsilon):
@@ -59,12 +64,16 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
             self._enriched_mass_matrix_right_part[2, 2] = (1 - epsilon) * mass_1 / 2. + mass_2 / 2.
             self._enriched_mass_matrix_right_part[3, 3] = (1 - epsilon) * mass_1 / 2.
         elif self.lump == "somme":
-            self._enriched_mass_matrix_right_part[2, 2] = mass_2 / 2. + (1 - epsilon) * mass_1 / 2. * (1 + epsilon)
-            self._enriched_mass_matrix_right_part[3, 3] = mass_1 / 2. * (1 - epsilon) * (1 - epsilon)
+            self._enriched_mass_matrix_right_part[2, 2] = \
+                mass_2 / 2. + (1 - epsilon) * mass_1 / 2. * (1 + epsilon)
+            self._enriched_mass_matrix_right_part[3, 3] = \
+                mass_1 / 2. * (1 - epsilon) * (1 - epsilon)
         else:
-            self._enriched_mass_matrix_right_part[2, 2] = 1. / 3. * mass_1 - epsilon ** 3 / 3. * mass_1 + mass_2 / 2.
+            self._enriched_mass_matrix_right_part[2, 2] = \
+                1. / 3. * mass_1 - epsilon ** 3 / 3. * mass_1 + mass_2 / 2.
             self._enriched_mass_matrix_right_part[2, 3] = 1. / 6. * mass_1 - \
-                                                          epsilon ** 2 * mass_1 / 2. + epsilon ** 3 / 3. * mass_1
+                                                          epsilon ** 2 * mass_1 / 2. + \
+                                                          epsilon ** 3 / 3. * mass_1
             self._enriched_mass_matrix_right_part[3, 3] = 1. / 3. * mass_1 - \
                                                           epsilon * mass_1 + epsilon ** 2 * mass_1 \
                                                           - epsilon ** 3 / 3. * mass_1
@@ -77,7 +86,8 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         :param cells_mass: array of cells mass
         :return:
         """
-        print("Entre dans la boucle enriched mass pour la  discontinuite {:d}".format(discontinuity.label))
+        print("Entre dans la boucle enriched mass pour la "
+              "discontinuite {:d}".format(discontinuity.label))
         print("Compute mass matrix with Hansbo method")
         epsilon = discontinuity.position_in_ruptured_element
         # Suppose les éléments voisins triés par position croissante

@@ -3,7 +3,6 @@
 A module implementing the Discontinuity class
 """
 import numpy as np
-from xfv.src.data.data_container import DataContainer
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.fields.field import Field
 from xfv.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import \
@@ -19,7 +18,7 @@ class Discontinuity(object):
     __discontinuity_list = []
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
-                 discontinuity_position_in_ruptured_element: float):
+                 discontinuity_position_in_ruptured_element: float, lump_mass: str):
         """
         Initializing a single discontinuity after enrichment.
         :param mask_in_nodes: enriched nodes on the left of the discontinuity
@@ -90,22 +89,14 @@ class Discontinuity(object):
 
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
-        target_dmg_model = DataContainer().material_target.damage_model
-        if target_dmg_model and target_dmg_model.cohesive_model is not None:
-            cohesive_strength = \
-                DataContainer().material_target.damage_model.cohesive_model.cohesive_strength
-        else:
-            cohesive_strength = 0.
-        self.cohesive_force = Field(1, current_value=cohesive_strength, new_value=cohesive_strength)
+        self.cohesive_force = Field(1, current_value=0., new_value=0.)
         self.discontinuity_opening = Field(1, current_value=0., new_value=0.)
         self.damage_variable = Field(1, current_value=0., new_value=0.)
         self.history_max_opening = 0.
-        self.history_min_cohesive_force = cohesive_strength
+        self.history_min_cohesive_force = 1.e+30
 
         # Creation of the enriched mass matrix
-        if DataContainer().material_target.failure_model.type_of_enrichment == "Hansbo":
-            self.mass_matrix_enriched = OneDimensionHansboEnrichedMassMatrix(
-                lump=DataContainer().material_target.failure_model.lump_mass_matrix)
+        self.mass_matrix_enriched = OneDimensionHansboEnrichedMassMatrix(lump_mass)
 
     @classmethod
     def discontinuity_number(cls):

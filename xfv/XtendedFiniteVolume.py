@@ -152,7 +152,8 @@ def main(directory: Path) -> None:
             data.material_target.failure_model.failure_treatment_value)
     elif data.material_target.failure_model.failure_treatment == "Enrichment":
         rupture_treatment = EnrichElement(
-            data.material_target.failure_model.failure_treatment_value)
+            data.material_target.failure_model.failure_treatment_value,
+            data.material_target.failure_model.lump_mass_matrix)
         type_of_enrichment = data.material_target.failure_model.type_of_enrichment
         print("Enrichment method : {}".format(type_of_enrichment))
     # ---------------------------------------------#

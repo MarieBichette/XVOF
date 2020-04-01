@@ -23,7 +23,7 @@ class LossOfStiffnessUnloadingTest(unittest.TestCase):
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
         # Discontinuity creation
-        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5)
+        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5, "somme")
         # Creation of the tested service
         self.test_unloading_model = LossOfStiffnessUnloading()
 
