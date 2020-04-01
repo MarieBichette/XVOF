@@ -1,6 +1,6 @@
 {
   "time-management": {
-    "final-time": 5e-06,
+    "final-time": 10e-06,
     "initial-time-step": 1e-08,
     "constant-time-step": true
   },
@@ -18,8 +18,8 @@
     },
     "failure": {
       "failure-criterion": {
-        "name": "MaximalStress",
-        "value": 5000000000.0
+        "name": "HalfRodComparison",
+        "value": 50
       },
       "failure-treatment": {
         "name": "Enrichment",
@@ -36,9 +36,11 @@
       "value": 0
     },
     "left-boundary": {
-      "type": "velocity",
-      "bc-law": "Constant",
-      "value": 200
+      "type": "pressure",
+      "bc-law": "twostep",
+      "value1": 1e+10,
+      "value2": 0,
+      "time-activation": 1e-06
     }
   },
   "numeric-parameters": {
