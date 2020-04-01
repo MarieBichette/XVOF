@@ -194,17 +194,23 @@ def main(directory: Path) -> None:
     # ---------------------------------------------#
     #  READ CONSTITUTIVE MODELS SHORTCUTS          #
     # ---------------------------------------------#
-    projectile_model = data.material_projectile.constitutive_model
-    if projectile_model is not None:
-        projectile_elasticity: bool = projectile_model.elasticity_model is not None
-        projectile_plasticity: bool = projectile_model.plasticity_model is not None
-        projectile_plasticity_criterion = projectile_model.plasticity_criterion
+    if data.material_projectile is not None:
+        projectile_model = data.material_projectile.constitutive_model
+        if projectile_model is not None:
+            projectile_elasticity: bool = projectile_model.elasticity_model is not None
+            projectile_plasticity: bool = projectile_model.plasticity_model is not None
+            projectile_plasticity_criterion = projectile_model.plasticity_criterion
+        else:
+            projectile_elasticity = False
+            projectile_plasticity = False
+            projectile_plasticity_criterion = None
     else:
         projectile_elasticity = False
         projectile_plasticity = False
         projectile_plasticity_criterion = None
+
     target_model = data.material_target.constitutive_model
-    if projectile_model is not None:
+    if target_model is not None:
         target_elasticity: bool = target_model.elasticity_model is not None
         target_plasticity: bool = target_model.plasticity_model is not None
         target_plasticity_criterion = target_model.plasticity_criterion
