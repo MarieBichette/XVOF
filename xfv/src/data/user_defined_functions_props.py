@@ -6,6 +6,7 @@ from abc import ABCMeta
 from dataclasses import dataclass, field, astuple
 from typing import Union, Type
 
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.custom_functions.custom_function import CustomFunction
 from xfv.src.custom_functions.constant_value import ConstantValue
 from xfv.src.custom_functions.ramp import Ramp
@@ -15,7 +16,7 @@ from xfv.src.custom_functions.march_table import MarchTable
 
 
 @dataclass
-class UserDefinedFunctionProps(metaclass=ABCMeta):
+class UserDefinedFunctionProps(TypeCheckedDataClass, metaclass=ABCMeta):
     """
     This class defines the base class of all user defined function datas.
     A user defined function data class stores the data read from the datafile
