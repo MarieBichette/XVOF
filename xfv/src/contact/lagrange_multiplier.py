@@ -1,13 +1,12 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Definition of Contact management
 """
-from xfv.src.cohesive_model.cohesive_zone_model import CohesiveZoneModel
 
 
-class ContactModel(object):
+class LagrangianMultiplierContact(object):
     """
-    An interface for all cohesive zone model
+    A class for contact management using Lagrangian multipliers
     """
     def __init__(self, disc):
         """
@@ -17,6 +16,7 @@ class ContactModel(object):
         :param stress_1 : contrainte au changement de pente
         :param delta_2 : ouverture critique (sigma = 0)
         """
+        raise NotImplementedError("Méthode pas installée dans le code")
         self.disc = disc
         self._has_contact = False
         self._lambda_multiplier = 0
