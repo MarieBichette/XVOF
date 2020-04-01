@@ -14,7 +14,7 @@ class TypeCheckedDataClass:
     def __post_init__(self):
         # todo implements the type checking recursively to hold for 
         # Optional[Union[str, float]] for example 
-        for field in fields(self):
+        for field in [f_ for f_ in fields(self) if f_.init]:
             value = getattr(self, field.name)
             try:
                 # try to take into account typing generics
