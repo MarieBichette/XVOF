@@ -124,7 +124,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
         self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
         self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
-        np.testing.assert_array_equal(self.mock_discontinuity.additional_dof_coordinates_new,
+        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_coordinates_new,
                                       np.array([[-2., ], [7., ]]))
 
     def test_reinitialize_kinematics_after_contact(self):
