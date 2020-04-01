@@ -122,7 +122,7 @@ class MaterialProps(TypeCheckedDataClass):
     initial_values: InitialValues
     constitutive_model: ConstitutiveModelProps
     failure_model: FailureModelProps
-    damage_model: DamageModelProps
+    damage_model: Optional[DamageModelProps]
 
 
 class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -328,8 +328,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         return cohesive_model_props, cohesive_model_name
 
-    def __fill_in_material_props(self, material) -> Tuple[InitialValues, ConstitutiveModelProps,
-                                                          FailureModelProps, DamageModelProps]:
+    def __fill_in_material_props(self, material) -> Tuple[InitialValues,
+                                                          ConstitutiveModelProps,
+                                                          FailureModelProps,
+                                                          Optional[DamageModelProps]]:
         """
         Returns the values needed to fill the material properties:
             - the initial values
@@ -356,7 +358,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         dmg_props = self.__get_damage_props(material)
         if dmg_props:
-            damage = DamageModelProps(*dmg_props)
+            damage: Optional[DamageModelProps] = DamageModelProps(*dmg_props)
         else:
             damage = None
 
