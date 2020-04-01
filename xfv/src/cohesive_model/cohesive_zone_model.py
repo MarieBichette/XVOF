@@ -17,7 +17,6 @@ class CohesiveZoneModel:
         Construction d'un modèle cohésif
         :param cohesive_law_points: array describing the stress - opening curve of the
         cohesive model
-        # TODO : mettre à jour data container pour construire les modèles cohésifs
         :param unloading_model:
         """
         self._critical_separation = cohesive_law_points[-1, 0]
