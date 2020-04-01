@@ -398,12 +398,14 @@ class OneDimensionCell(Cell):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
         """
+        # TODO : interroger le package rheology
         pass
 
     def compute_yield_stress(self):
         """
         Compute the yield stress according to plasticity constitutve model in XDATA
         """
+        # TODO : interroger le package rheology
         pass
 
     def compute_complete_stress_tensor(self, mask):

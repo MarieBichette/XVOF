@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing the Element1dEnriched class for Hansbo&Hansbo enrichment
 """
@@ -96,14 +96,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
     @staticmethod
     def reconstruct_enriched_hydro_field(classical_field, enriched_field_name):
         """
-        Reconstruction du champ complet � partir des champs classiques et enrichis
+        Reconstruction du champ complet ï¿½ partir des champs classiques et enrichis
         :param classical_field: champ classique de type Field
         :param enriched_field_name: champ enrichi (str)
         :return: champ complet
         :rtype np.array
         """
-        # Pour reconstruire le champ de coordonn�es des cells, les ruptured cells des
-        # discontinuit�s doivent �tre tri�es par cell id pour savoir comment g�rer le d�calage
+        # Pour reconstruire le champ de coordonnï¿½es des cells, les ruptured cells des
+        # discontinuitï¿½s doivent ï¿½tre triï¿½es par cell id pour savoir comment gï¿½rer le dï¿½calage
         insertion_field = np.zeros([len(Discontinuity.discontinuity_list()), 2])
         # insertion_field est un array qui contient ruptured_cell_id, right_field
         for disc in Discontinuity.discontinuity_list():
@@ -122,14 +122,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
     @staticmethod
     def reconstruct_enriched_elasto_field(classical_field, enriched_field_name):
         """
-        Reconstruction du champ complet � partir des champs classiques et enrichis
+        Reconstruction du champ complet ï¿½ partir des champs classiques et enrichis
         :param classical_field: champ classique de type np.array
         :param enriched_field_name: champ enrichi (str)
         :return: champ complet
         :rtype np.array
         """
-        # Pour reconstruire le champ de coordonn�es des cells, les ruptured cells des
-        # discontinuit�s doivent �tre tri�es par cell id pour savoir comment g�rer le d�calage
+        # Pour reconstruire le champ de coordonnï¿½es des cells, les ruptured cells des
+        # discontinuitï¿½s doivent ï¿½tre triï¿½es par cell id pour savoir comment gï¿½rer le dï¿½calage
         insertion_field = np.zeros([len(Discontinuity.discontinuity_list()), 2])
         # insertion_field est un array qui contient ruptured_cell_id, right_field
         for disc in Discontinuity.discontinuity_list():
@@ -290,12 +290,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             density_left = self.density.current_value[mask]
             density_right = disc.additional_dof_density.current_value
             self.density.new_value[mask], disc.additional_dof_density.new_value = \
-                OneDimensionEnrichedCell.compute_new_left_right_density(density_left, density_right, disc)
+                OneDimensionEnrichedCell.compute_new_left_right_density(density_left,
+                                                                        density_right, disc)
 
     def compute_enriched_elements_new_pseudo(self, delta_t):
         """
-        Calcule les nouvelles pseudo viscosit�s gauche et droite pour les �l�ments enrichis
-        � partir de la methode compute_new_pseudo de OneDimensionCell avec les nouvelles
+        Calcule les nouvelles pseudo viscositï¿½s gauche et droite pour les ï¿½lï¿½ments enrichis
+        ï¿½ partir de la methode compute_new_pseudo de OneDimensionCell avec les nouvelles
         valeurs enrichies
         :param delta_t: time_step
         """
@@ -333,21 +334,24 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             self._stress[mask, 2] = self._deviatoric_stress_new[mask, 2] - \
                                     (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-            # indice 0 apr�s les pressure et artificial viscosity :
-            # pour correspondance des tailles de tableau => chaque ligne est une �quation scalaire
-            disc.additional_dof_stress[:, 0] = disc.additional_dof_deviatoric_stress_new[:, 0] - \
-                                               (disc.additional_dof_pressure.new_value[0] +
-                                               disc.additional_dof_artificial_viscosity.new_value[0])
-            disc.additional_dof_stress[:, 1] = disc.additional_dof_deviatoric_stress_new[:, 1] - \
-                                               (disc.additional_dof_pressure.new_value[0] +
-                                               disc.additional_dof_artificial_viscosity.new_value[0])
-            disc.additional_dof_stress[:, 2] = disc.additional_dof_deviatoric_stress_new[:, 2] - \
-                                               (disc.additional_dof_pressure.new_value[0] +
-                                               disc.additional_dof_artificial_viscosity.new_value[0])
+            # index 0 after pressure and pseudo viscosity fields to get scalar values
+            # Each line is a scalar equation
+            disc.additional_dof_stress[:, 0] = \
+                disc.additional_dof_deviatoric_stress_new[:, 0] - \
+                (disc.additional_dof_pressure.new_value[0] +
+                 disc.additional_dof_artificial_viscosity.new_value[0])
+            disc.additional_dof_stress[:, 1] = \
+                disc.additional_dof_deviatoric_stress_new[:, 1] - \
+                (disc.additional_dof_pressure.new_value[0] +
+                 disc.additional_dof_artificial_viscosity.new_value[0])
+            disc.additional_dof_stress[:, 2] = \
+                disc.additional_dof_deviatoric_stress_new[:, 2] - \
+                (disc.additional_dof_pressure.new_value[0] +
+                 disc.additional_dof_artificial_viscosity.new_value[0])
 
     def compute_enriched_deviatoric_strain_rate(self, dt, node_coord_new, node_velocity_new):
         """
-        Compute devaiateur du taux de d�formation
+        Compute devaiateur du taux de dï¿½formation
         :param dt : time step
         :param node_coord_new : array, new nodes coordinates
         :param node_velocity_new : array, new nodes velocity
@@ -359,24 +363,24 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             u_discg_new, u_discd_new = \
                 OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
                     disc, node_velocity_new)
-            u_noeuds_new = node_velocity_new[mask_nodes]  # vitesses noeuds gauche et droite de l'�l�ment rompu � t_n+1
-            x_noeuds_new = node_coord_new[mask_nodes]  # coord noeuds gauche et droite de l'�l�ment rompu � t_n+1
+            u_noeuds_new = node_velocity_new[mask_nodes]  # vitesses noeuds gauche et droite de l'ï¿½lï¿½ment rompu ï¿½ t_n+1
+            x_noeuds_new = node_coord_new[mask_nodes]  # coord noeuds gauche et droite de l'ï¿½lï¿½ment rompu ï¿½ t_n+1
 
-            # Cr�ation des structures coord (resp. vitesse) des bords gauche et droite
-            # de la partie GAUCHE de l'�l�ment rompu (noeud gauche , bord gauche de la discontinuit�)
+            # Crï¿½ation des structures coord (resp. vitesse) des bords gauche et droite
+            # de la partie GAUCHE de l'ï¿½lï¿½ment rompu (noeud gauche , bord gauche de la discontinuitï¿½)
             xg_new = np.array([x_noeuds_new[0], x_noeuds_new[0] + disc.left_part_size.new_value]).reshape(1, 2)
             ug_new = np.array([u_noeuds_new[0], u_discg_new]).reshape(1, 2)
-            # Calcul du tenseur d�viateur des taux de d�formation pour la partie GAUCHE de l'�l�ment rompu
+            # Calcul du tenseur dï¿½viateur des taux de dï¿½formation pour la partie GAUCHE de l'ï¿½lï¿½ment rompu
             self._deviatoric_strain_rate[mask_cells] = OneDimensionCell.general_method_deviator_strain_rate(
-                np.array([True]), dt, xg_new, ug_new)  # mask = np.array(True) pr compatibilit� ac la m�thode g�n�rale
+                np.array([True]), dt, xg_new, ug_new)  # mask = np.array(True) pr compatibilitï¿½ ac la mï¿½thode gï¿½nï¿½rale
 
-            # Cr�ation des structures coord (resp. vitesse) des bords gauche et droite
-            # de la partie DROITE de l'�l�ment rompu  (bord droit de la discontinuit� , noeud droit)
+            # Crï¿½ation des structures coord (resp. vitesse) des bords gauche et droite
+            # de la partie DROITE de l'ï¿½lï¿½ment rompu  (bord droit de la discontinuitï¿½ , noeud droit)
             xd_new = np.array([x_noeuds_new[1] - disc.right_part_size.new_value, x_noeuds_new[1]]).reshape(1, 2)
             ud_new = np.array([u_discd_new, u_noeuds_new[1]]).reshape(1, 2)
-            # Calcul du tenseur d�viateur des taux de d�formation pour la partie DROITE de l'�l�ment rompu
+            # Calcul du tenseur dï¿½viateur des taux de dï¿½formation pour la partie DROITE de l'ï¿½lï¿½ment rompu
             disc._additional_dof_deviatoric_strain_rate = OneDimensionCell.general_method_deviator_strain_rate(
-                np.array([True]), dt, xd_new, ud_new)  # mask = np.array(True) pr compatibilit� ac la m�thode g�n�rale
+                np.array([True]), dt, xd_new, ud_new)  # mask = np.array(True) pr compatibilitï¿½ ac la mï¿½thode gï¿½nï¿½rale
 
     def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new, dt):
         """
@@ -393,33 +397,41 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         self.compute_enriched_shear_modulus()
 
         for disc in Discontinuity.discontinuity_list():
-            # Partie gauche
+            # Left part
             mask_in = disc.ruptured_cell_id
             G = self.shear_modulus.new_value[mask_in]
-            self._deviatoric_stress_new[mask_in, 0] = self._deviatoric_stress_current[mask_in, 0] + \
-                                               2. * G * self._deviatoric_strain_rate[mask_in, 0] * dt
-            self._deviatoric_stress_new[mask_in, 1] = self._deviatoric_stress_current[mask_in, 1] + \
-                                               2. * G * self._deviatoric_strain_rate[mask_in, 1] * dt
-            self._deviatoric_stress_new[mask_in, 2] = self._deviatoric_stress_current[mask_in, 2] + \
-                                               2. * G * self._deviatoric_strain_rate[mask_in, 2] * dt
-            # Partie droite
+            self._deviatoric_stress_new[mask_in, 0] = \
+                self._deviatoric_stress_current[mask_in, 0] + \
+                2. * G * self._deviatoric_strain_rate[mask_in, 0] * dt
+            self._deviatoric_stress_new[mask_in, 1] = \
+                self._deviatoric_stress_current[mask_in, 1] + \
+                2. * G * self._deviatoric_strain_rate[mask_in, 1] * dt
+            self._deviatoric_stress_new[mask_in, 2] = \
+                self._deviatoric_stress_current[mask_in, 2] + \
+                2. * G * self._deviatoric_strain_rate[mask_in, 2] * dt
+            # Right part
             Gd = disc.additional_dof_shear_modulus.new_value
-            disc._additional_dof_deviatoric_stress_new[:, 0] = disc.additional_dof_deviatoric_stress_current[:, 0] + \
-                                                    2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 0] * dt
-            disc._additional_dof_deviatoric_stress_new[:, 1] = disc.additional_dof_deviatoric_stress_current[:, 1] + \
-                                                    2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 1] * dt
-            disc._additional_dof_deviatoric_stress_new[:, 2] = disc.additional_dof_deviatoric_stress_current[:, 2] + \
-                                                    2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 2] * dt
+            disc._additional_dof_deviatoric_stress_new[:, 0] = \
+                disc.additional_dof_deviatoric_stress_current[:, 0] + \
+                2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 0] * dt
+            disc._additional_dof_deviatoric_stress_new[:, 1] = \
+                disc.additional_dof_deviatoric_stress_current[:, 1] + \
+                2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 1] * dt
+            disc._additional_dof_deviatoric_stress_new[:, 2] = \
+                disc.additional_dof_deviatoric_stress_current[:, 2] +\
+                2. * Gd * disc.additional_dof_deviatoric_strain_rate[:, 2] * dt
 
     def compute_enriched_shear_modulus(self):
         """
         Compute the shear modulus for ruptured cell
-        version simple o� G = cste
         """
+        # TODO : interroger le package rheology
         for disc in Discontinuity.discontinuity_list():
             mask = disc.ruptured_cell_id
-            self.shear_modulus.new_value[mask] = DataContainer().material_target.initial_values.shear_modulus_init
-            disc.additional_dof_shear_modulus.new_value = DataContainer().material_target.initial_values.shear_modulus_init
+            self.shear_modulus.new_value[mask] = \
+                DataContainer().material_target.initial_values.shear_modulus_init
+            disc.additional_dof_shear_modulus.new_value = \
+                DataContainer().material_target.initial_values.shear_modulus_init
 
     def apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self, mask):
         """
@@ -427,7 +439,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :param mask: mask to select plastic (enriched) cells where plasticity should be applied
         """
         for disc in Discontinuity.discontinuity_list():
-            # Partie gauche de l'�l�ment rompu :
+            # Partie gauche de l'ï¿½lï¿½ment rompu :
             mask = np.logical_and(disc.mask_ruptured_cell, mask)
             invariant_J2_el = compute_J2(self.deviatoric_stress_new)
             radial_return = self.yield_stress.current_value[mask] / invariant_J2_el[mask]
@@ -438,7 +450,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             # Partie droite :
             if disc.plastic_cells:  # si la cell rompue qu'on regarde est plastique :
                 invariant_J2_el_right = compute_J2(disc.additional_dof_deviatoric_stress_new)
-                radial_return = disc.additional_dof_yield_stress.current_value / invariant_J2_el_right
+                radial_return = \
+                    disc.additional_dof_yield_stress.current_value / invariant_J2_el_right
                 disc._additional_dof_deviatoric_stress_new[:, 0] *= radial_return
                 disc._additional_dof_deviatoric_stress_new[:, 1] *= radial_return
                 disc._additional_dof_deviatoric_stress_new[:, 2] *= radial_return
@@ -450,24 +463,25 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         :param mask: mask to select plastic cells where plasticity should be applied
         """
         for disc in Discontinuity.discontinuity_list():
-            # Partie gauche
+            # Left part
             mask = np.logical_and(disc.mask_ruptured_cell, mask)
-            invariant_J2_el = compute_J2(self._deviatoric_stress_new)  # pas encore corrig� avec plasticit�
+            invariant_J2_el = compute_J2(self._deviatoric_stress_new)  # elastic predictor
             G = self.shear_modulus.current_value[mask]
-            self._equivalent_plastic_strain_rate[mask] += (invariant_J2_el[mask] -
-                                                           self.yield_stress.current_value[mask]) / (3. * G * dt)
-            # Partie droite :
-            if disc.plastic_cells:  # si la cell rompue qu'on regarde est plastique :
-                invariant_J2_el_right = compute_J2(disc.additional_dof_deviatoric_stress_new) # pas encore corrig� avec plasticit�
+            self._equivalent_plastic_strain_rate[mask] += \
+                (invariant_J2_el[mask] - self.yield_stress.current_value[mask]) / (3. * G * dt)
+            # Right part :
+            if disc.plastic_cells:  # if the cracked cell is plastic :
+                invariant_J2_el_right = \
+                    compute_J2(disc.additional_dof_deviatoric_stress_new)  # elastic predictor
                 Gd = disc.additional_dof_shear_modulus.current_value
-                disc._additional_dof_equivalent_plastic_strain_rate += (invariant_J2_el_right -
-                                                                       disc.additional_dof_yield_stress.current_value) \
-                                                                      / (3. * Gd * dt)
+                disc._additional_dof_equivalent_plastic_strain_rate += \
+                    (invariant_J2_el_right -
+                     disc.additional_dof_yield_stress.current_value) / (3. * Gd * dt)
 
     def compute_enriched_plastic_strain_rate(self, mask, dt):
         """
-        Compute the plastic strain rate tensor from elastic prediction and radial return (normal law for Von Mises
-        plasticity) in cracked cells
+        Compute the plastic strain rate tensor from elastic prediction and radial return
+        (normal law for Von Mises plasticity) in cracked cells
         :param mask: mask to identify plastic cells
         :param dt: time step
         """
@@ -476,34 +490,39 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             invariant_J2_el = compute_J2(self.deviatoric_stress_new)
             radial_return = self.yield_stress.current_value[mask] / invariant_J2_el[mask]
             for i in range(0, 3):
-                self._plastic_strain_rate[mask, i] = (1 - radial_return) / \
-                                                 (radial_return * 3 * self.shear_modulus.current_value[mask] * dt) * \
-                                                 self._deviatoric_stress_new[mask, i]
+                self._plastic_strain_rate[mask, i] = \
+                    (1 - radial_return) / (radial_return *
+                                           3 * self.shear_modulus.current_value[mask] *
+                                           dt) * self._deviatoric_stress_new[mask, i]
 
             # Partie droite :
             if disc.plastic_cells:  # si la cell rompue qu'on regarde est plastique :
                 invariant_J2_el_right = compute_J2(disc.additional_dof_deviatoric_stress_new)
-                radial_return = disc.additional_dof_yield_stress.current_value / invariant_J2_el_right
+                radial_return = \
+                    disc.additional_dof_yield_stress.current_value / invariant_J2_el_right
                 for i in range(0, 3):
-                    disc._additional_dof_plastic_strain_rate[:, i] = (1- radial_return) / \
-                                                 (radial_return * 3 * disc.additional_dof_shear_modulus.current_value * dt) * \
-                                                 disc._additional_dof_deviatoric_stress_new[:, i]
+                    disc._additional_dof_plastic_strain_rate[:, i] = \
+                        (1- radial_return) / (radial_return * 3 *
+                                              disc.additional_dof_shear_modulus.current_value *
+                                              dt) * disc._additional_dof_deviatoric_stress_new[:, i]
 
     def compute_enriched_yield_stress(self):
         """
         Compute the yield stress for ruptured cells
-        version simple o� Y = cste
         """
         for disc in Discontinuity.discontinuity_list():
             mask = disc.ruptured_cell_id
-            self.yield_stress.new_value[mask] = DataContainer().material_target.initial_values.yield_stress_init
-            disc.additional_dof_yield_stress.new_value = DataContainer().material_target.initial_values.yield_stress_init
+            # TODO : interroger le package rheology
+            self.yield_stress.new_value[mask] = \
+                DataContainer().material_target.initial_values.yield_stress_init
+            disc.additional_dof_yield_stress.new_value = \
+                DataContainer().material_target.initial_values.yield_stress_init
 
     def compute_enriched_elements_new_time_step(self):
         """
-        Calcule les nouveaux pas de temps (qui d�pendent de la taille des �l�ments pour les �l�ments enrichis � partir
-        de la methode compute_new_time_step de OneDimensionCell avec les nouvelles valeurs enrichies pour les parties
-        gauche et droite de l'�l�ment enrichi
+        Compute the new local time step.
+        The calculation is equivalent to a remeshing time step and thus underestimates the
+        time step for the enriched cells
         """
         cfl = DataContainer().numeric.cfl
         cfl_pseudo = DataContainer().numeric.cfl_pseudo
@@ -511,28 +530,31 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         for disc in Discontinuity.discontinuity_list():
             mask_in = disc.ruptured_cell_id
 
-            # Partie gauche
-            # pour etre compatible avec la m�thode Cell1D : prendre des array de  taille 1
+            # Left part
+            # To be compatible with the method in Cell1D : take arrays of size 1
             density_left = np.array([self.density.current_value[mask_in]])
             density_left_new = np.array([self.density.new_value[mask_in]])
             sound_velocity_left_new = np.array([self.sound_velocity.new_value[mask_in]])
             pseudo_left = np.array([self.pseudo.current_value[mask_in]])
             pseudo_left_new = np.array([self.pseudo.new_value[mask_in]])
 
-            dt_g = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, density_left, density_left_new,
-                                                      disc.left_part_size.new_value, sound_velocity_left_new,
+            dt_g = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, density_left,
+                                                      density_left_new,
+                                                      disc.left_part_size.new_value,
+                                                      sound_velocity_left_new,
                                                       pseudo_left, pseudo_left_new)
 
-            # Partie droite
+            # Right part
             density_right = disc.additional_dof_density.current_value
             density_right_new = disc.additional_dof_density.new_value
             sound_velocity_right_new = disc.additional_dof_sound_velocity.new_value
             pseudo_right = disc.additional_dof_artificial_viscosity.current_value
             pseudo_right_new = disc.additional_dof_artificial_viscosity.new_value
 
-            dt_d = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, density_right, density_right_new,
-                                                      disc.right_part_size.new_value, sound_velocity_right_new,
+            dt_d = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, density_right,
+                                                      density_right_new,
+                                                      disc.right_part_size.new_value,
+                                                      sound_velocity_right_new,
                                                       pseudo_right, pseudo_right_new)
 
             self._dt[mask_in] = min(dt_g, dt_d)
-
