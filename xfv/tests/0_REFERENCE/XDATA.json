@@ -10,18 +10,18 @@
   "matter": {
     "initialization": {
       "initial-velocity": 0.0,
-      "init-thermo": "Cuivre_InitThermo.json"
+      "init-thermo": "../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
     },
     "equation-of-state": {
       "name": "Mie-Gruneisen",
-      "coefficients": "Cuivre_MieGruneisen.json"
+      "coefficients": "../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
     }
   },
   "boundary-conditions": {
     "right-boundary": {
       "type": "pressure",
       "bc-law": "Constant",
-      "value": 0
+      "value": 0.0
     },
     "left-boundary": {
       "type": "pressure",
@@ -38,10 +38,12 @@
   "output": {
     "number-of-images": 500,
     "dump-images": false,
-    "database": {
+    "database": [
+      {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "iteration-period": 1
-    }
+      "time-period": 1e-06
+      }
+    ]
   }
 }
