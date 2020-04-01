@@ -2,14 +2,19 @@
 """
 Implementing the DataContainer class
 """
+from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Tuple, Optional, Union
+from typing import Dict, List, Tuple, Optional, Union, Any
 
 from xfv.src.utilities.singleton import Singleton
-from xfv.src.data.user_defined_functions_props import (
-    UserDefinedFunctionPropsType, ConstantValueFunctionProps, TwoStepsFunctionProps,
-    RampFunctionProps, MarchTableFunctionProps, SuccessiveRampFunctionProps)
+from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
+from xfv.src.data.user_defined_functions_props import (UserDefinedFunctionPropsType,
+                                                       ConstantValueFunctionProps,
+                                                       TwoStepsFunctionProps,
+                                                       RampFunctionProps,
+                                                       MarchTableFunctionProps,
+                                                       SuccessiveRampFunctionProps)
 from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
                                                LinearCohesiveZoneModelProps,
                                                BilinearCohesiveZoneModelProps,
@@ -29,54 +34,63 @@ from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   MinimumPressureCriterionProps)
 
 
-class NumericalProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class NumericalProps(TypeCheckedDataClass):
     a_pseudo: float
     b_pseudo: float
     cfl: float
     cfl_pseudo: float
 
 
-class GeometricalProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class GeometricalProps(TypeCheckedDataClass):
     section: float
     initial_interface_position: float
 
 
-class TimeProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class TimeProps(TypeCheckedDataClass):
     initial_time_step: float
     final_time: float
     is_time_step_constant: bool
     time_step_reduction_factor_for_failure: Optional[float]
 
 
-class DatabaseProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class DatabaseProps(TypeCheckedDataClass):
     identifier: str
     path: str
     time_period: Optional[float]
     iteration_period: Optional[int]
 
 
-class OutputProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class OutputProps(TypeCheckedDataClass):
     number_of_images: int
     dump: bool
     databases: List[DatabaseProps]
 
 
-class BoundaryType(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class BoundaryType(TypeCheckedDataClass):
     type_bc: str
     law: UserDefinedFunctionPropsType
 
 
-class BoundaryConditionsProps(NamedTuple):  # pylint: disable=missing-class-docstring
-    left_BC: BoundaryType
-    right_BC: BoundaryType
+@dataclass  # pylint: disable=missing-class-docstring
+class BoundaryConditionsProps(TypeCheckedDataClass):
+    left_BC: BoundaryType  # pylint: disable=invalid-name
+    right_BC: BoundaryType  # pylint: disable=invalid-name
 
 
-class DamageModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class DamageModelProps(TypeCheckedDataClass):
     cohesive_model: CohesiveZoneModelProps
     name: str
 
 
-class InitialValues(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class InitialValues(TypeCheckedDataClass):
     velocity_init: float
     pression_init: float
     temp_init: float
@@ -85,23 +99,26 @@ class InitialValues(NamedTuple):  # pylint: disable=missing-class-docstring
     yield_stress_init: float
     shear_modulus_init: float
 
-class ConstitutiveModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class ConstitutiveModelProps(TypeCheckedDataClass):
     eos: EquationOfStateProps
-    elasticity_model: ShearModulusProps
-    plasticity_model: YieldStressProps
-    plasticity_criterion: PlasticityCriterionProps
+    elasticity_model: Optional[ShearModulusProps]
+    plasticity_model: Optional[YieldStressProps]
+    plasticity_criterion: Optional[PlasticityCriterionProps]
 
 
-class FailureModelProps(NamedTuple):  # pylint: disable=missing-class-docstring
-    failure_treatment: str
-    failure_treatment_value: float
-    type_of_enrichment: str
-    lump_mass_matrix: str
-    failure_criterion: RuptureCriterionProps
+@dataclass  # pylint: disable=missing-class-docstring
+class FailureModelProps(TypeCheckedDataClass):
+    failure_treatment: Optional[str]
+    failure_treatment_value: Optional[float]
+    type_of_enrichment: Optional[str]
+    lump_mass_matrix: Optional[str]
+    failure_criterion: Optional[RuptureCriterionProps]
     failure_criterion_value: float
 
 
-class MaterialProps(NamedTuple):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class MaterialProps(TypeCheckedDataClass):
     initial_values: InitialValues
     constitutive_model: ConstitutiveModelProps
     failure_model: FailureModelProps
@@ -311,7 +328,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         return cohesive_model_props, cohesive_model_name
 
-    def __fill_in_material_props(self, material):
+    def __fill_in_material_props(self, material) -> Tuple[InitialValues, ConstitutiveModelProps,
+                                                          FailureModelProps, DamageModelProps]:
         """
         Returns the values needed to fill the material properties:
             - the initial values
@@ -452,8 +470,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         return elasticity_model, plasticity_model, plasticity_criterion
 
     @staticmethod
-    def __get_failure_props(matter) -> Tuple[Optional[str], Optional[float],
-                                             Optional[str], Optional[str]]:
+    def __get_failure_props(matter: Any) -> Tuple[Optional[str], Optional[float],
+                                                  Optional[str], Optional[str]]:
         """
         Returns the data needed to fill the FailureModel props
 
