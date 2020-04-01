@@ -14,19 +14,19 @@ from xfv.src.data.data_container import DataContainer
 
 class ImposedPressureTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'Imposed Pressure'
-    Marche bien mais appelle des méthodes de Cell et OneDimensionCell non vérifiées
+    Test case utilisï¿½ pour test les fonctions du module 'Imposed Pressure'
+    Marche bien mais appelle des mï¿½thodes de Cell et OneDimensionCell non vï¿½rifiï¿½es
     """
 
     def setUp(self):
         """
-        Préparation du test
+        Prï¿½paration du test
         """
-        # Création d'un DataContainer bidon :
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        # Crï¿½ation d'un DataContainer bidon :
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
-        # Préparation du test
+        # Prï¿½paration du test
         self._pressure = 0.
 
         self.my_imposed_pressure = IP.ImposedPressure(self._pressure)
@@ -40,7 +40,7 @@ class ImposedPressureTest(unittest.TestCase):
 
     def test_applyTreatment(self):
         """
-        Teste la méthode apply_treatment for ImposedPressure
+        Teste la mï¿½thode apply_treatment for ImposedPressure
         """
         self.my_imposed_pressure.apply_treatment(self.cells, self.ruptured_cells)
         self.cells.increment_variables()

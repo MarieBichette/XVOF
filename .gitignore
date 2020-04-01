@@ -73,5 +73,5 @@ target/
 # Ignore tag files
 tags
 
-# Ignore hdf5 files
-*.hdf5
+# Ignore mypy cache directory
+.mypy_cache

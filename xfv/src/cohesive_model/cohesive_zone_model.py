@@ -2,11 +2,13 @@
 """
 Definition of CohesiveZoneModel class to manage the cohesive discontinuities
 """
+import numpy as np
 
 from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
+from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
-class CohesiveZoneModel(object):
+class CohesiveZoneModel:
     """
     A class for the computation of the cohesive force
     """
@@ -22,7 +24,7 @@ class CohesiveZoneModel(object):
         self._cohesive_law = CohesiveLaw(cohesive_law_points)
         self._unloading_model = unloading_model
 
-    def compute_cohesive_stress(self, disc: Discontinuity):
+    def compute_cohesive_stress(self, disc):
         """
         Compute the cohesive force for the current opening of discontinuity according to the
         current discontinuity opening
@@ -42,7 +44,7 @@ class CohesiveZoneModel(object):
                 disc.history_max_opening = max(abs(disc.history_max_opening), max(new_opening))
                 disc.history_min_cohesive_force = \
                     self._cohesive_law.compute_cohesive_force(disc.history_max_opening)
-                disc.damage_variable.new_value = new_opening / self.critical_separation
+                disc.damage_variable.new_value = new_opening / self._critical_separation
 
             if new_opening >= self._critical_separation:
                 disc.damage_variable.new_value = 1.

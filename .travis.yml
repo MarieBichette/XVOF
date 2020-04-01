@@ -23,6 +23,10 @@ jobs:
         - pip install coveralls
       script: PYTHONPATH=$(pwd) pytest --cov=xfv/src/
       after_success: coveralls
+    - name: "Integration tests"
+      before_script:
+        - sudo apt-get install -y hdf5-tools
+      script: python launch_integration_tests.py
 stages:
   - Tests
   - Lint

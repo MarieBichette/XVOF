@@ -1,29 +1,27 @@
+#!/usr/bin/env python
 # XtendedFiniteVolume doesn't respect the style but we don't care pylint: disable=invalid-name
-#!/usr/bin/env python2.7
 """
 todo: to complete
 """
-import os.path
-import sys
+import argparse
+from pathlib import Path
 import time
-import matplotlib  # pylint: disable=unused-import
-matplotlib.use('Qt4Agg')
 
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
-from xfv.src.data.data_container                import DataContainer
+from xfv.src.data.data_container                import DataContainer, BoundaryType
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
-from xfv.src.data.save_time_data                import CellTimeData, NodeTimeData
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
 from xfv.src.rupturetreatment.enrichelement     import EnrichElement
 from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
+from xfv.src.custom_functions.custom_function   import CustomFunction
 
 
-def __create_mesh(meshfile, enrichment_type):
+def __create_mesh(meshfile: Path, enrichment_type) -> None:
     """
     Create a Mesh1D object from meshfile
 
@@ -81,35 +79,6 @@ def __init_velocity(nodes, data):
                .format(vitesse_interface, node_interface)))
 
 
-def __init_time_figure_plot(output_data, path):
-    """
-    Initialize the time figure plots
-
-    :param output_data: output data
-    :type output_data: data_container.output_props
-    :param path: path toward the directory holding data file
-    :type path: str
-    :return: the list of nodes or cells that must be followed
-    :rtype: List[TimeData]
-    """
-    cells_for_time_figure = []
-    nodes_for_time_figure = []
-    try:
-        for cell_number in output_data.cells_numbers:
-            cells_for_time_figure.append(int(cell_number))
-    except TypeError:
-        pass
-
-    try:
-        for node_number in output_data.nodes_numbers:
-            nodes_for_time_figure.append(int(node_number))
-    except TypeError:
-        pass
-    h_list = [CellTimeData(cell_id, path) for cell_id in cells_for_time_figure]
-    h_list += [NodeTimeData(node_id, path) for node_id in nodes_for_time_figure]
-    return h_list
-
-
 def __init_output(output_data, type_of_enrichment, mesh):
     """
     Returns the OutputManager initialized
@@ -133,12 +102,27 @@ def __init_output(output_data, type_of_enrichment, mesh):
             the_output_mng.register_database_time_ctrl(db_el.identifier, output_db,
                                                        db_el.time_period)
         the_output_mng.register_all_fields(enrichment_registration, mesh.cells,
-                                           mesh.nodes, db_el.identifier,
-                                           db_el.cell_indexes, db_el.node_indexes)
+                                           mesh.nodes, db_el.identifier)
     return the_output_mng
 
 
-def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def _build_boundary_function(boundary: BoundaryType) -> CustomFunction:
+    """
+    Build a boundary function from the boundary infos of the data file
+    """
+    function_obj = boundary.law.build_custom_func()
+    if boundary.type_bc == "velocity":
+        function_obj.register_velocity()
+    elif boundary.type_bc == "pressure":
+        function_obj.register_pressure()
+    else:
+        raise ValueError(f"Unknown boudary type {boundary.type_bc}. "
+                         "Please choose among (velocity, pressure)")
+    return function_obj
+
+
+def main(directory: Path) -> None:
+    #pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Launch the program
     """
@@ -146,18 +130,19 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     #             PARAMETERS INITIALIZATION
     # ------------------------------------------------------------------
     # ---- # DATA FILES
-    path = sys.argv[1]
-    data = DataContainer(os.path.join(path, "XDATA.xml"))
-    meshfile = os.path.join(path, "mesh.txt")
-    print("Running simulation for {:s}".format(os.path.normpath(os.path.abspath(path))))
+    data = DataContainer(directory / "XDATA.json")
+    meshfile = directory / "mesh.txt"
+    print("Running simulation for {}".format(directory.resolve()))
 
     # ---- # TIME MANAGEMENT
     final_time = data.time.final_time
     initial_time_step = data.time.initial_time_step
 
     # ---- # LOADING
-    left_boundary_condition = data.boundary_condition.left_BC
-    right_boundary_condition = data.boundary_condition.right_BC
+    left_bc = data.boundary_condition.left_BC
+    left_boundary_condition = _build_boundary_function(left_bc)
+    right_bc = data.boundary_condition.right_BC
+    right_boundary_condition = _build_boundary_function(right_bc)
 
     # ---- # RUPTURE
     rupture_criterion = data.material_target.failure_model.failure_criterion
@@ -193,7 +178,6 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    history_list = __init_time_figure_plot(data.output, path)
     the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
@@ -263,21 +247,20 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         # ---------------------------------------------#
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#
+        target_model = data.material_target.constitutive_model
+        projectile_model = None
         if data.data_contains_a_projectile:
-            if data.material_projectile.constitutive_model.elasticity_model is not None:
-                my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
-        if data.material_target.constitutive_model.elasticity_model is not None:
+            projectile_model = data.material_projectile.constitutive_model
+        if projectile_model and projectile_model.elasticity_model is not None:
+            my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
+        if target_model.elasticity_model is not None:
             my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
-        if data.data_contains_a_projectile:
-            projectile_model = data.material_projectile.constitutive_model
-            if projectile_model.plasticity_model is not None:
-                my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
-                                          my_mesh.cells.cell_in_projectile)
-
-        target_model = data.material_target.constitutive_model
+        if projectile_model and projectile_model.plasticity_model is not None:
+            my_mesh.get_plastic_cells(projectile_model.plasticity_criterion,
+                                      my_mesh.cells.cell_in_projectile)
         if target_model.plasticity_model is not None:
             my_mesh.get_plastic_cells(target_model.plasticity_criterion,
                                       my_mesh.cells.cell_in_target)
@@ -316,9 +299,9 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
         #         TIME STEP COMPUTATION                #
         # ---------------------------------------------#
         dt_crit = my_mesh.compute_new_time_step()
-        dt = min(dt, dt_crit)  # pylint: disable=invalid-name
-        if dt != dt_crit:
-            print("Reduction of the time step after failure. New time step is " + str(dt_crit))
+        if dt > dt_crit:
+            dt = min(dt, dt_crit)  # pylint: disable=invalid-name
+            print("Reduction of the time step to respect CFL. New time step is " + str(dt_crit))
 
         # ---------------------------------------------#
         #                INCREMENTATION                #
@@ -337,14 +320,15 @@ def main():  #pylint: disable=too-many-locals, too-many-branches, too-many-state
     print("Total time spent in compute operation is : {:15.9g} seconds".format(compute_time))
     plt.show(block=False)
 
-    for item_time_data in history_list:
-        item_time_data.write_fields_history()
-        item_time_data.close_file()
-
     print('Done !')
 
     the_output_mng.finalize()
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="%(prog)s is a one dimensional hydro code to simulate "
+                    "damage and spall activated by strong shock propagation.")
+    parser.add_argument("data_directory", help="Path toward the data directory")
+    args = parser.parse_args()
+    main(Path(args.data_directory))

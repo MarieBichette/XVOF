@@ -79,7 +79,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # ---------------------------------------------
         # Cohesive zone model initialisation
         # ---------------------------------------------
-        self.cohesive_zone_model = DataContainer().get_cohesive_model()
+        self.cohesive_zone_model = None
+        target_dmg_model = DataContainer().material_target.damage_model
+        if target_dmg_model is not None:
+            self.cohesive_zone_model = target_dmg_model.cohesive_model.build_cohesive_model_obj()
         if (DataContainer().material_target.failure_model.failure_treatment != "Enrichment") and \
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
@@ -309,9 +312,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of new time step
         """
-        # self.cells.compute_new_time_step(self.cells.classical)
-        # self.cells.compute_enriched_elements_new_time_step()
-        # return self.cells.dt.min()
+        if not DataContainer().time.is_time_step_constant:
+            self.cells.compute_new_time_step(self.cells.classical)
+            self.cells.compute_enriched_elements_new_time_step()
+            return self.cells.dt.min()
 
         initial_time_step = DataContainer().time.initial_time_step
         dt = initial_time_step  # dt name is ok pylint: disable=invalid-name

@@ -23,7 +23,7 @@ class OneDimensionCellExternalLibTest(unittest.TestCase):
         Tests setup for class
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA.xml")
+                                      "../../../tests/0_UNITTEST/XDATA.json")
         DataContainer(data_file_path)
 
     @classmethod

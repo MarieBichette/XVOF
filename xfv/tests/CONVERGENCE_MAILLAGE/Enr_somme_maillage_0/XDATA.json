@@ -1,0 +1,60 @@
+{
+  "time-management": {
+    "final-time": 2.7e-06,
+    "initial-time-step": 5e-11,
+    "constant-time-step": true,
+    "time-step-reduction-factor-for-failure": 1
+  },
+  "geometry": {
+    "section": 3.141592653589793e-06
+  },
+  "matter": {
+    "initialization": {
+      "initial-velocity": 0.0,
+      "init-thermo": "Tantale_InitThermo.json"
+    },
+    "equation-of-state": {
+      "name": "Mie-Gruneisen",
+      "coefficients": "Tantale_MieGruneisen.json"
+    },
+    "failure": {
+      "failure-criterion": {
+        "name": "HalfRodComparison",
+        "value": 2470
+      },
+      "failure-treatment": {
+        "name": "Enrichment",
+        "value": 0.5,
+        "type-of-enrichment": "Hansbo",
+        "lump-mass-matrix": "somme"
+      }
+    }
+  },
+  "boundary-conditions": {
+    "left-boundary": {
+      "type": "pressure",
+      "bc-law": "constant",
+      "value": -10000000000.0
+    },
+    "right-boundary": {
+      "type": "pressure",
+      "bc-law": "constant",
+      "value": 0.0
+    }
+  },
+  "numeric-parameters": {
+    "linear-pseudo": 0.2,
+    "quadratic-pseudo": 2.0,
+    "cfl": 0.34,
+    "cfl-pseudo": 0.0
+  },
+  "output": {
+    "number-of-images": 500,
+    "dump-images": false,
+    "database": {
+      "identifier": "AllFieldsDb",
+      "path": "all_fields.hdf5",
+      "iteration-period": 10
+    }
+  }
+}

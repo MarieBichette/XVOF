@@ -73,7 +73,7 @@ class MieGruneisen(EquationOfStateBase):
     @property
     def eos_param(self):
         """
-        Accesseur sur les paramètres de l'équation d'état
+        Accesseur sur les paramï¿½tres de l'ï¿½quation d'ï¿½tat
         :return:
         """
         return self.__param
@@ -98,7 +98,7 @@ class MieGruneisen(EquationOfStateBase):
         gampervol[:] = 1. / specific_volume
         gampervol *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
         #
-        targets = epsv > 0  #  Cells in compression (~targets are cells in release)
+        targets = epsv > 0  # ï¿½Cells in compression (~targets are cells in release)
         self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
         self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, ~targets)
         pb = vson < 0

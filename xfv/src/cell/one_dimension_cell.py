@@ -73,10 +73,10 @@ class OneDimensionCell(Cell):
         ï¿½ partir des grandeurs vitesse et position au centre des mailles
         :param mask : tableau de booleen pour identifier les cell ï¿½ calculer
         :param dt : time step (float)
-        :param x_new : array des coordonnées à l'intant n+1 des neouds à gauche et
-        à droite de la cell calculée
-        :param u_new : array des vitesses à l'intant n+1 des neouds à gauche et
-        à droite de la cell calculée
+        :param x_new : array des coordonnï¿½es ï¿½ l'intant n+1 des neouds ï¿½ gauche et
+        ï¿½ droite de la cell calculï¿½e
+        :param u_new : array des vitesses ï¿½ l'intant n+1 des neouds ï¿½ gauche et
+        ï¿½ droite de la cell calculï¿½e
         x_new, u_new sont obligatoirement tous de taille (taille de mask, 2)
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
@@ -160,6 +160,10 @@ class OneDimensionCell(Cell):
         self._damage_variable = np.zeros([number_of_elements, ], dtype=np.float64, order='C')
 
         # Solveur pour EOS :
+        self._target_eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
+        self._projectile_eos = None
+        if DataContainer().data_contains_a_projectile:
+            self._projectile_eos = DataContainer().material_projectile.constitutive_model.eos.build_eos_obj()
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
         self._solver = NewtonRaphson(self._function_to_vanish)
 
@@ -279,26 +283,19 @@ class OneDimensionCell(Cell):
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
-        # Elasticity / Plasticity on the target ?
         target_model = DataContainer().material_target.constitutive_model
-        elasticity_target = target_model.elasticity_model is not None
-        plasticity_target = target_model.plasticity_model is not None
-
-        # Elasticity / Plasticity on the projectile if exists ?
-        elasticity_projectile = False
-        plasticity_projectile = False
+        projectile_model = None
         if DataContainer().data_contains_a_projectile:
             projectile_model = DataContainer().material_projectile.constitutive_model
-            elasticity_projectile = projectile_model.elasticity_model is not None
-            plasticity_projectile = projectile_model.plasticity_model is not None
-
-        elasticity_activated = elasticity_target or elasticity_projectile
-        plasticity_activated = plasticity_target or plasticity_projectile
+        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+            projectile_model and projectile_model.elasticity_model is not None)
+        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+            projectile_model and projectile_model.plasticity_model is not None)
 
         if elasticity_activated or plasticity_activated:
-            # si l'élasticité n'est pas activée, les grandeurs élastiques restent nulles.
-            # L'opération est transparente pour les matériaux hydro.
-            # Donc on peut ne pas distinguer les matériaux.
+            # si l'ï¿½lasticitï¿½ n'est pas activï¿½e, les grandeurs ï¿½lastiques restent nulles.
+            # L'opï¿½ration est transparente pour les matï¿½riaux hydro.
+            # Donc on peut ne pas distinguer les matï¿½riaux.
             self.energy.current_value[mask] += \
                 OneDimensionCell.add_elastic_energy_method(dt,
                                                            self.density.current_value[mask],
@@ -307,27 +304,27 @@ class OneDimensionCell(Cell):
                                                            self._deviatoric_stress_new[mask, :],
                                                            self._deviatoric_strain_rate[mask, :])
 
-        # Appel de l'équation d'état sur le projectile:
+        # Appel de l'ï¿½quation d'ï¿½tat sur le projectile:
         mask_p = np.logical_and(mask, self.cell_in_projectile)
         if DataContainer().data_contains_a_projectile and mask_p.any():
             # Not sure there is cells in the intersection mask_classic / projectile
             # => test it before starting Newton
             self.energy.new_value[mask_p], self.pressure.new_value[mask_p], \
             self.sound_velocity.new_value[mask_p] = OneDimensionCell.apply_equation_of_state(
-                self, DataContainer().material_projectile.constitutive_model.eos,
+                self, self._projectile_eos,
                 self.density.current_value[mask_p], self.density.new_value[mask_p],
                 self.pressure.current_value[mask_p], self.pressure.new_value[mask_p],
                 self.energy.current_value[mask_p], self.energy.new_value[mask_p],
                 self.pseudo.current_value[mask_p], self.sound_velocity.new_value[mask_p])
 
-        # Appel de l'équation d'état sur la cible
+        # Appel de l'ï¿½quation d'ï¿½tat sur la cible
         mask_t = np.logical_and(mask, self.cell_in_target)
         if DataContainer().data_contains_a_target and mask_t.any():
             # Not sure there is cells in the intersection mask_classic / target
             # => test it before starting Newton
             self.energy.new_value[mask_t], self.pressure.new_value[mask_t], \
             self.sound_velocity.new_value[mask_t] = OneDimensionCell.apply_equation_of_state(
-                self, DataContainer().material_target.constitutive_model.eos,
+                self, self._target_eos,
                 self.density.current_value[mask_t], self.density.new_value[mask_t],
                 self.pressure.current_value[mask_t], self.pressure.new_value[mask_t],
                 self.energy.current_value[mask_t], self.energy.new_value[mask_t],
@@ -344,7 +341,7 @@ class OneDimensionCell(Cell):
         size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error.any():
-            raise ValueError("La maille {:} a une longueur négative !".format(
+            raise ValueError("La maille {:} a une longueur nï¿½gative !".format(
                 np.where(cell_error)[0]))
         self._size_t = size.flatten()
 
@@ -359,7 +356,7 @@ class OneDimensionCell(Cell):
         size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error.any():
-            raise ValueError("La maille {:} a une longueur négative !".format(
+            raise ValueError("La maille {:} a une longueur nï¿½gative !".format(
                 np.where(cell_error)[0]))
         self._size_t_plus_dt[mask] = size[mask].flatten()
 
@@ -417,21 +414,14 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-        # Elasticity / Plasticity on the target ?
         target_model = DataContainer().material_target.constitutive_model
-        elasticity_target = target_model.elasticity_model is not None
-        plasticity_target = target_model.plasticity_model is not None
-
-        # Elasticity / Plasticity on the projectile if exists ?
-        elasticity_projectile = False
-        plasticity_projectile = False
+        projectile_model = None
         if DataContainer().data_contains_a_projectile:
             projectile_model = DataContainer().material_projectile.constitutive_model
-            elasticity_projectile = projectile_model.elasticity_model is not None
-            plasticity_projectile = projectile_model.plasticity_model is not None
-
-        elasticity_activated = elasticity_target or elasticity_projectile
-        plasticity_activated = plasticity_target or plasticity_projectile
+        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+            projectile_model and projectile_model.elasticity_model is not None)
+        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+            projectile_model and projectile_model.plasticity_model is not None)
 
         if elasticity_activated or plasticity_activated:
             self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
@@ -459,7 +449,7 @@ class OneDimensionCell(Cell):
                 np.copy(self._deviatoric_stress_current[mask, i]) + 2. * G[mask] * D[mask, i] * dt
 
         # -----------------------------
-        # pour être sur que la trace soit nulle
+        # pour ï¿½tre sur que la trace soit nulle
         trace = self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] \
                 + self._deviatoric_stress_new[mask, 2]
         for i in range(0, 3):
@@ -476,11 +466,11 @@ class OneDimensionCell(Cell):
         """
         connectivity = topologie.nodes_belonging_to_cell
         u_new = vitesse_noeud_new[connectivity][:, :, 0]
-        # velocities of the left and right nodes à coté de cell
+        # velocities of the left and right nodes ï¿½ cotï¿½ de cell
         x_new = coord_noeud_new[connectivity][:, :, 0]
-        # coordinates of the left and right nodes à coté de cell
+        # coordinates of the left and right nodes ï¿½ cotï¿½ de cell
 
-        # Calcul du déviateur de D
+        # Calcul du dï¿½viateur de D
         self._deviatoric_strain_rate[mask, :] = \
             OneDimensionCell.general_method_deviator_strain_rate(mask, dt, x_new, u_new)
 
@@ -491,7 +481,7 @@ class OneDimensionCell(Cell):
         (classical cells where plasticity criterion is activated)
         """
         invariant_J2_el = compute_J2(self.deviatoric_stress_new)
-        # prédiction élastique avant le traitement de la plasticité
+        # prï¿½diction ï¿½lastique avant le traitement de la plasticitï¿½
         radial_return = self.yield_stress.current_value / invariant_J2_el
         plasticity = radial_return < 1.
         plastic_mask = np.logical_and(mask, plasticity)
@@ -523,7 +513,7 @@ class OneDimensionCell(Cell):
         :param dt : float, time step staggered
         """
         invariant_J2_el = compute_J2(self.deviatoric_stress_new)
-        # prédiction élastique avant le traitement de la plasticité
+        # prï¿½diction ï¿½lastique avant le traitement de la plasticitï¿½
         G = self.shear_modulus.current_value
         plasticity = invariant_J2_el > self.yield_stress.current_value
         plastic_mask = np.logical_and(mask, plasticity)

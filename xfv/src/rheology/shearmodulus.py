@@ -7,7 +7,7 @@ Implementation d'une classe de module de cisaillement (interface)
 
 class ShearModulus(object):  # pylint: disable=too-few-public-methods
     """
-    Classe mère de module de cisaillement
+    Classe mï¿½re de module de cisaillement
     """
     def __init__(self, initial_value):
         self.shear_modulus = initial_value
@@ -19,9 +19,3 @@ class ShearModulus(object):  # pylint: disable=too-few-public-methods
         :return : float
         """
         pass
-
-    def get_shear_modulus(self):
-        """
-        Accessor on the value of shear modulus
-        """
-        return self.shear_modulus

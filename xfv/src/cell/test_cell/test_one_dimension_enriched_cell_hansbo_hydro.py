@@ -25,7 +25,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         Tests setup for class
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_enrichment_hydro.json")
         DataContainer(data_file_path)
 
     @classmethod
@@ -115,17 +115,17 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_elements_new_pressure(1.)
 
-        mock_elasto.assert_not_called()
+        eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
 
         mock_eos.assert_any_call(
-            self.my_cells, DataContainer().material_target.constitutive_model.eos,
+            self.my_cells, eos,
             self.my_cells.density.current_value, self.my_cells.density.new_value,
             self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
             self.my_cells.energy.current_value, self.my_cells.energy.new_value,
             self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
 
         mock_eos.assert_any_call(
-            self.my_cells, DataContainer().material_target.constitutive_model.eos,
+            self.my_cells, eos,
             self.mock_discontinuity.additional_dof_density.current_value,
             self.mock_discontinuity.additional_dof_density.new_value,
             self.mock_discontinuity.additional_dof_pressure.current_value,

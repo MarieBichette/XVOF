@@ -88,9 +88,12 @@ class Discontinuity(object):
         self._additional_dof_plastic_strain_rate = np.zeros([1, 3])
         self.plastic_cells = False  # Indicator : right part of cracked cell is plastic
 
-        # Cohesive zone model data (possible equal to 0 if the czm in DataContainer is None)
-        if DataContainer().get_cohesive_model() is not None:
-            cohesive_strength = DataContainer().get_cohesive_model().cohesive_strength
+        # Damage indicators with cohesive zone model
+        # (Always created but null if no damage data in the XDATA.json file...)
+        target_dmg_model = DataContainer().material_target.damage_model
+        if target_dmg_model and target_dmg_model.cohesive_model is not None:
+            cohesive_strength = \
+                DataContainer().material_target.damage_model.cohesive_model.cohesive_strength
         else:
             cohesive_strength = 0.
         self.cohesive_force = Field(1, current_value=cohesive_strength, new_value=cohesive_strength)

@@ -55,7 +55,7 @@ class OutputManager(object, metaclass=Singleton):
                                                 attr_name=field_attr_name, indexes=indexes))
 
     def register_all_fields(self, enrichment_registration, cells, nodes,
-                            database_id, cell_indexes=None, node_indexes=None, disc_indexes=None):
+                            database_id):
         """
         Add all fields to the manager.
         :param enrichment_registration : bool to control if the
@@ -66,10 +66,8 @@ class OutputManager(object, metaclass=Singleton):
         :param node_indexes: indexes of the nodes to be printed
         :param disc_indexes : indexes of the discontinuity to be printed
         """
-        if cell_indexes is None:
-            cell_indexes = slice(0, cells.number_of_cells)
-        if node_indexes is None:
-            node_indexes = slice(0, nodes.number_of_nodes)
+        cell_indexes = slice(0, cells.number_of_cells)
+        node_indexes = slice(0, nodes.number_of_nodes)
         self.register_field("NodeStatus", nodes, ("enriched",),
                             database_names=[database_id], indexes=node_indexes)
         self.register_field("NodeCoordinates", nodes, ("xt",),

@@ -19,7 +19,7 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
         Tests setup for class
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_epp.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_epp.json")
         DataContainer(data_file_path)
 
     @classmethod

@@ -21,7 +21,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         Pr�paration des tests unitaires
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.vit_init = np.zeros([2, 1], dtype='float')
