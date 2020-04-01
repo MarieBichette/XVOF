@@ -37,10 +37,12 @@
   "output": {
     "number-of-images": 0,
     "dump-images": false,
-    "database": {
+    "database": [
+      {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
       "time-period": 1e-06
-    }
+      }
+    ]
   }
 }
