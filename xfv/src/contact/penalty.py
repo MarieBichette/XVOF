@@ -2,13 +2,14 @@
 """
 Definition of Contact management using penalty method
 """
+import numpy as np
 from xfv.src.contact.contact_base import ContactBase
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
 class PenaltyContact(ContactBase):
     """
-    An interface for all cohesive zone model
+    A class to manage contacts using penalty method
     """
     def __init__(self, penalty_stiffness):
         """
@@ -18,8 +19,7 @@ class PenaltyContact(ContactBase):
         super(PenaltyContact, self).__init__()
         self.penalty_stiffness = penalty_stiffness
 
-    def compute_contact_force(self, node_velocity: np.array,
-                              disc: Discontinuity, delta_t: float):
+    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity, delta_t: float):
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
@@ -55,11 +55,11 @@ class PenaltyContact(ContactBase):
         :param delta_t : time step
         :return:
         """
-        epsilon = self.disc.discontinuity_position
+        epsilon = disc.discontinuity_position
 
         # Compute an equivalent node mass for the discontinuity boundaries from the nodal masses
-        mass_matrix_left = self.disc.mass_matrix_enriched.get_mass_matrix_left()
-        mass_matrix_right = self.disc.mass_matrix_enriched.get_mass_matrix_right()
+        mass_matrix_left = disc.mass_matrix_enriched.get_mass_matrix_left()
+        mass_matrix_right = disc.mass_matrix_enriched.get_mass_matrix_right()
         node_mass_1 = mass_matrix_left[0, 0]
         enr_node_mass_2 = mass_matrix_left[1, 1]
         node_mass_2 = mass_matrix_right[2, 2]
