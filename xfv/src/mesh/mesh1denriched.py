@@ -400,33 +400,40 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                                   self.nodes, self.__topology, time)
 
     @timeit_file("/tmp/profil_xfv.src.txt")
-    def apply_plasticity_treatment(self, dt):  # dt is ok. pylint: disable=invalid-name
+    def apply_plasticity_treatment(self, delta_t: float, mask_mesh: np.array):
         """
         Apply plasticity treatment if criterion is activated :
         - compute plastic deviatoric stress tensor
         - compute plastic strain rate
         - compute yield stress
-        :param dt : float, time step
+        :param delta_t : time step
+        :param mask_mesh : mask cells in projectile or target
         """
         # La méthode apply_plastic_corrector_on_deviatoric_stress_tensor modifie
         # la variable dev_stress_new et doit donc être appelée à la fin de
         # l'étape du calcul de plasticité pour conserver la prédiction élastique dans
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
 
+        # Get plastic cells either in projectile or in target
+        mask = np.logical_and(mask_mesh,
+                              self.__plastic_cells)  # pylint: disable=assignment-from-no-return
+
         # Cells plastic classical
-        mask = np.logical_and(
-            self.cells.classical, self.__plastic_cells) # pylint: disable=assignment-from-no-return
+        mask_classic = np.logical_and(self.cells.classical,
+                                      mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
-        self.cells.compute_plastic_strain_rate_tensor(mask, dt)
-        self.cells.compute_equivalent_plastic_strain_rate(mask, dt)
-        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask)
+        self.cells.compute_plastic_strain_rate_tensor(mask_classic, delta_t)
+        self.cells.compute_equivalent_plastic_strain_rate(mask_classic, delta_t)
+        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic)
 
         # Cells plastic enriched
+        mask_enriched = np.logical_and(self.cells.enriched,
+                                       mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_enriched_yield_stress()
-        self.cells.compute_enriched_plastic_strain_rate(self.__plastic_cells, dt)
-        self.cells.compute_enriched_equivalent_plastic_strain_rate(self.__plastic_cells, dt)
+        self.cells.compute_enriched_plastic_strain_rate(mask_enriched, delta_t)
+        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched, delta_t)
         self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(
-            self.__plastic_cells)
+            mask_enriched)
 
     @property
     def velocity_field(self):
