@@ -18,7 +18,7 @@ class Topology1dTest(unittest.TestCase):
         Preparation des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
         self.topology = Topology1D(4, 3)
 
@@ -30,7 +30,7 @@ class Topology1dTest(unittest.TestCase):
         Test de Node1d.elements_voisins
         """
         #
-        # En 1D affecter plus de deux elements à un noeud doit lever
+        # En 1D affecter plus de deux elements ï¿½ un noeud doit lever
         # une exception de type SystemExit
         #
         with self.assertRaises(IndexError):

@@ -21,7 +21,7 @@ class DiscontinuityTest(unittest.TestCase):
         """
         Pr�paration des tests unitaires
         """
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
         self.mask_in = np.array([True, False, False, False])

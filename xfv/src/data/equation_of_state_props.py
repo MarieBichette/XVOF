@@ -3,7 +3,7 @@ This module defines the classes that stores data read from the datafile and
 needed to create EquationOfState objects.
 """
 from dataclasses import dataclass, field, asdict
-from typing import Type
+from typing import Type, Optional
 
 from xfv.src.equationsofstate.equationofstatebase import EquationOfStateBase
 from xfv.src.equationsofstate.miegruneisen import MieGruneisen
@@ -12,6 +12,7 @@ from xfv.src.equationsofstate.miegruneisen import MieGruneisen
 @dataclass  # pylint: disable=missing-class-docstring
 class EquationOfStateProps:
     _eos_class: Type[EquationOfStateBase] = field(init=False, repr=False)
+    _eos_inst: Optional[EquationOfStateBase] = field(init=False, repr=False)
 
     @staticmethod
     def dict_factory(obj):
@@ -20,7 +21,7 @@ class EquationOfStateProps:
         """
         result = {}
         for key, value in obj:
-            if not isinstance(value, type):
+            if not key in ('_eos_class', '_eos_inst'):
                 result[key] = value
         return result
 
@@ -28,8 +29,9 @@ class EquationOfStateProps:
         """
         Build and return the CohesiveModel object
         """
-        return self._eos_class(**asdict(self, dict_factory=self.dict_factory))
-
+        if self._eos_inst is None:
+            self._eos_inst = self._eos_class(**asdict(self, dict_factory=self.dict_factory))
+        return self._eos_inst
 
 @dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
 class MieGruneisenProps(EquationOfStateProps):
@@ -42,3 +44,4 @@ class MieGruneisenProps(EquationOfStateProps):
     b: float  # pylint: disable=invalid-name
     ezero: float
     _eos_class = MieGruneisen
+    _eos_inst = None

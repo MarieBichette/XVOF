@@ -15,14 +15,14 @@ from xfv.src.data.data_container import DataContainer
 
 class Node1dTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'Node1d'
+    Test case utilisï¿½ pour test les fonctions du module 'Node1d'
     """
     def setUp(self):
         """
-        Préparation des tests
+        Prï¿½paration des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_hydro.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
         class Element:
@@ -47,7 +47,7 @@ class Node1dTest(unittest.TestCase):
 
     def test_compute_new_force(self):
         """
-        Test de la méthode Node1d.compute_new_force()
+        Test de la mï¿½thode Node1d.compute_new_force()
         """
         topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new,
@@ -59,7 +59,7 @@ class Node1dTest(unittest.TestCase):
 
     def test_compute_new_velocity(self):
         """
-        Test de la méthode Node1d.compute_new_velocity()
+        Test de la mï¿½thode Node1d.compute_new_velocity()
         """
         topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new,
@@ -88,7 +88,7 @@ class Node1dTest(unittest.TestCase):
 
     def test_apply_correction_reference_bar(self):
         """
-        Test de la méthode apply_correction_reference_bar
+        Test de la mï¿½thode apply_correction_reference_bar
         """
         delta_t = 1.
         mask = np.array([False, False, True, True])

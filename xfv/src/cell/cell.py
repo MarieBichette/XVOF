@@ -116,7 +116,7 @@ class Cell(object):
             # (cas tableau vide [index])
             pass
 
-        # correction de l'init si materiau projectile d�clar� dans XDATA.xml
+        # correction de l'init si materiau projectile d�clar� dans XDATA.json
         # (le mask est vide si pas de projectile donc transparent quand il n'y a pas
         # de projectile déclaré)
         if DataContainer().data_contains_a_projectile:

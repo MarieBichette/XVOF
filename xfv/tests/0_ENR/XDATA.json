@@ -5,16 +5,28 @@
     "constant-time-step": true
   },
   "geometry": {
-    "section": 0.0003141592653589793
+    "section": 3.141592653589793e-06
   },
   "matter": {
     "initialization": {
       "initial-velocity": 0.0,
-      "init-thermo": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
+      "init-thermo": "Cuivre_InitThermo.json"
     },
     "equation-of-state": {
       "name": "Mie-Gruneisen",
-      "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
+      "coefficients": "Cuivre_MieGruneisen.json"
+    },
+    "failure": {
+      "failure-criterion": {
+        "name": "HalfRodComparison",
+        "value": 25
+      },
+      "failure-treatment": {
+        "name": "Enrichment",
+        "value": 0.5,
+        "type-of-enrichment": "Hansbo",
+        "lump-mass-matrix": "somme"
+      }
     }
   },
   "boundary-conditions": {
@@ -26,7 +38,7 @@
     "left-boundary": {
       "type": "velocity",
       "bc-law": "Constant",
-      "value": 200
+      "value": -30
     }
   },
   "numeric-parameters": {
@@ -36,12 +48,12 @@
     "cfl-pseudo": 0.0
   },
   "output": {
-    "number-of-images": 0,
+    "number-of-images": 500,
     "dump-images": false,
     "database": {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 1e-06
+      "iteration-period": 1
     }
   }
 }

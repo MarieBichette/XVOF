@@ -67,8 +67,9 @@ class Discontinuity(object):
         self._additional_dof_plastic_strain_rate = np.zeros([1, 3])
         self.plastic_cells = False  # La partie droite de la cell rompue est plastique
 
-        # endommagement avec mod�le coh�sif (cr�� tout le temps mais reste � 0 si pas d'endommagement dans XDATA.xml...
-        if DataContainer().material_target.damage_model.cohesive_model is not None:
+        # endommagement avec mod�le coh�sif (cr�� tout le temps mais reste � 0 si pas d'endommagement dans XDATA.json...
+        target_dmg_model = DataContainer().material_target.damage_model
+        if target_dmg_model and target_dmg_model.cohesive_model is not None:
             cohesive_strength = DataContainer().material_target.damage_model.cohesive_model.cohesive_strength
         else:
             cohesive_strength = 0
@@ -77,7 +78,7 @@ class Discontinuity(object):
         self.damage_variable = Field(1, current_value=0., new_value=0.)
         self.history_max_opening = 0.
 
-        if DataContainer().material_target.damage_model.cohesive_model is not None:
+        if target_dmg_model and target_dmg_model.cohesive_model is not None:
             self.history_min_cohesive_force = cohesive_strength
         else:  # dans le cas o�  pas de czm activ� : czm_model= None
             self.history_min_cohesive_force = 0.

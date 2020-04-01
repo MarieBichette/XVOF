@@ -23,7 +23,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Tests setup for class
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
-                                      "../../../tests/0_UNITTEST/XDATA_enrichment_epp.xml")
+                                      "../../../tests/0_UNITTEST/XDATA_enrichment_epp.json")
         DataContainer(data_file_path)
 
     @classmethod
@@ -155,7 +155,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         mock_add_elasticity.assert_called()
         mock_add_elasticity.assert_called()
         mock_apply_eos.assert_any_call(self.my_cells,
-                                       DataContainer().material_target.constitutive_model.eos,
+                                       DataContainer().material_target.constitutive_model.eos.build_eos_obj(),
                                        self.my_cells.density.current_value,
                                        self.my_cells.density.new_value,
                                        self.my_cells.pressure.current_value,
@@ -165,7 +165,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                                        self.my_cells.pseudo.current_value,
                                        self.my_cells.sound_velocity.new_value)
         mock_apply_eos.assert_any_call(self.my_cells,
-                                       DataContainer().material_target.constitutive_model.eos,
+                                       DataContainer().material_target.constitutive_model.eos.build_eos_obj(),
                                        self.mock_disc.additional_dof_density.current_value,
                                        self.mock_disc.additional_dof_density.new_value,
                                        self.mock_disc.additional_dof_pressure.current_value,
@@ -441,3 +441,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                                    DataContainer().material_target.initial_values.yield_stress_init)
         np.testing.assert_allclose(self.mock_disc.additional_dof_yield_stress.new_value,
                                    DataContainer().material_target.initial_values.yield_stress_init)
+
+
+if __name__ == "__main__":
+    unittest.main()

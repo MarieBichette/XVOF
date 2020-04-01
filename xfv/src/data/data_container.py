@@ -342,7 +342,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         else:
             damage = None
 
-        if failure.failure_treatment is not None and damage.cohesive_model is not None:
+        if failure.failure_treatment is not None and damage and damage.cohesive_model is not None:
             if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
                     isinstance(failure_criterion, MaximalStressCriterionProps)):
                 print("Failure criterion value and cohesive strength have different value. " \
