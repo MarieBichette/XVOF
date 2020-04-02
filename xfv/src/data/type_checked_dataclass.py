@@ -4,6 +4,7 @@ This module implements the TypeCheckedDataClass
 from dataclasses import dataclass, fields
 from functools import partial
 from operator import le, lt
+from typing import Union
 
 
 @dataclass
@@ -28,14 +29,14 @@ class TypeCheckedDataClass:
             value = getattr(self, _field.name)
             try:
                 # try to take into account typing generics
-                if _field.type._name == 'Union':  # pylint:disable=protected-access
+                if _field.type.__origin__ == Union:  # case of Union or Optional types
                     if not any(isinstance(value, _type) for _type in _field.type.__args__):
                         self._raise_type_error(_field.name, _field.type, value)
-                elif _field.type._name == 'List':  # pylint:disable=protected-access
+                elif _field.type.__origin__ == list:  # case of List types
                     if not all(isinstance(_val, _field.type.__args__[0]) for _val in value):
                         self._raise_type_error(_field.name, _field.type, value)
             except AttributeError:
-                # the _field type is not a typing generic and thus has not _name attribute
+                # the _field type is not a typing generic and thus has not __origin__ attribute
                 if not isinstance(value, _field.type):
                     self._raise_type_error(_field.name, _field.type, value)
 
