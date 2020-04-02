@@ -42,6 +42,10 @@ class NumericalProps(TypeCheckedDataClass):
     cfl: float
     cfl_pseudo: float
 
+    def __post_init__(self):
+        super().__post_init__()  # type checking first
+        self._ensure_positivity('a_pseudo', 'b_pseudo', 'cfl', 'cfl_pseudo')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class GeometricalProps(TypeCheckedDataClass):
