@@ -78,6 +78,13 @@ class DatabaseProps(TypeCheckedDataClass):
     time_period: Optional[float]
     iteration_period: Optional[int]
 
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_strict_positivity('time_period', 'iteration_period')
+        if self.time_period is not None and self.iteration_period is not None:
+            raise ValueError("Please provide one of (time-period, iteration-period) "
+                             "but not both!")
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class OutputProps(TypeCheckedDataClass):
