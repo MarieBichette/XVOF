@@ -45,7 +45,7 @@ class TypeCheckedDataClass:
     def _ensure_predicat(self, predicat, error_string, *args):
         for _field in [f_ for f_ in fields(self) if f_.init]:
             val = getattr(self, _field.name)
-            if _field.name in args and not predicat(val):
+            if _field.name in args and val and not predicat(val):
                 raise ValueError(error_string.format(val, _field.name))
 
     def _ensure_positivity(self, *args):
