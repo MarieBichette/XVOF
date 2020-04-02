@@ -142,6 +142,14 @@ class InitialValues(TypeCheckedDataClass):
     yield_stress_init: float
     shear_modulus_init: float
 
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_strict_positivity('rho_init', 'temp_init')
+        self._ensure_positivity('yield_stress_init', 'shear_modulus_init')
+        # TODO: one the initialization via eos will be done, check that only two fields
+        # are not nill (v and e or v and T)
+
+
 @dataclass  # pylint: disable=missing-class-docstring
 class ConstitutiveModelProps(TypeCheckedDataClass):
     eos: EquationOfStateProps
