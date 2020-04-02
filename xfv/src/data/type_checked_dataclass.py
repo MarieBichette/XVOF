@@ -35,6 +35,8 @@ class TypeCheckedDataClass:
                 elif _field.type.__origin__ == list:  # case of List types
                     if not all(isinstance(_val, _field.type.__args__[0]) for _val in value):
                         self._raise_type_error(_field.name, _field.type, value)
+                else:
+                    raise RuntimeError(f"Unable to determine type of {value}")
             except AttributeError:
                 # the _field type is not a typing generic and thus has not __origin__ attribute
                 if not isinstance(value, _field.type):
