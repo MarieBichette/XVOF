@@ -51,7 +51,7 @@ class NumericalProps(TypeCheckedDataClass):
 class GeometricalProps(TypeCheckedDataClass):
     section: float
     initial_interface_position: float
-    
+
     def __post_init__(self):
         super().__post_init__()  # type checking first
         self._ensure_strict_positivity('section')
@@ -64,6 +64,11 @@ class TimeProps(TypeCheckedDataClass):
     final_time: float
     is_time_step_constant: bool
     time_step_reduction_factor_for_failure: Optional[float]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_positivity('initial_time_step', 'time_step_reduction_factor_for_failure')
+        self._ensure_strict_positivity('final_time')
 
 
 @dataclass  # pylint: disable=missing-class-docstring
