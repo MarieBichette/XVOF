@@ -23,7 +23,7 @@ class TypeCheckedDataClass:
                          f'but was initialized with {repr(value)}')
 
     def __post_init__(self):
-        # note: implements the type checking recursively to hold for
+        # TODO: implements the type checking recursively to hold for
         # Optional[Union[str, float]] for example 
         for _field in [f_ for f_ in fields(self) if f_.init]:
             value = getattr(self, _field.name)
