@@ -102,6 +102,10 @@ class BoundaryType(TypeCheckedDataClass):
     type_bc: str
     law: UserDefinedFunctionPropsType
 
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_value_in('type_bc', ('velocity', 'pressure'))
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class BoundaryConditionsProps(TypeCheckedDataClass):
