@@ -36,3 +36,7 @@ class ShearModulusProps(TypeCheckedDataClass):
 class ConstantShearModulusProps(ShearModulusProps):
     init_value: float
     _shear_modulus_class = ConstantShearModulus
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_positivity('init_value')
