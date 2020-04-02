@@ -167,6 +167,11 @@ class FailureModelProps(TypeCheckedDataClass):
     failure_criterion: Optional[RuptureCriterionProps]
     failure_criterion_value: float
 
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        if self.failure_criterion is None and self.failure_treatment is not None:
+            raise ValueError("A failure criterion is required if failure treatment is set")
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class MaterialProps(TypeCheckedDataClass):

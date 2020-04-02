@@ -161,9 +161,8 @@ def main(directory: Path) -> None:
     else:
         rupture_treatment = None
 
-    if rupture_criterion is None and rupture_treatment is not None:
-        raise ValueError("A failure criterion is required if failure treatment is set")
-
+    # Strong check is made in the FailureModelProps class
+    assert rupture_criterion is not None or rupture_treatment is None
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
