@@ -117,12 +117,19 @@ class BoundaryConditionsProps(TypeCheckedDataClass):
 class DamageModelProps(TypeCheckedDataClass):
     cohesive_model: CohesiveZoneModelProps
     name: str
+    # Do not check if name is among authorized values because
+    # it is done in one of the DataContainer's method and
+    # moving the test here, implies to allow the cohesive_model to be None
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class ContactModelProps(TypeCheckedDataClass):
     contact_model: ContactProps
     name: str
+    # Do not check if name is among authorized values because
+    # it is done in one of the DataContainer's method and
+    # moving the test here, implies to allow the contact_model to be None
+
 
 
 @dataclass  # pylint: disable=missing-class-docstring
