@@ -2,6 +2,8 @@
 This module implements the TypeCheckedDataClass
 """
 from dataclasses import dataclass, fields
+from functools import partial
+from operator import le, lt
 
 
 @dataclass
@@ -11,27 +13,53 @@ class TypeCheckedDataClass:
 
     Inspired from : https://stackoverflow.com/questions/54863458/force-type-conversion-in-python-dataclass-init-method  # pylint:disable=line-too-long
     """
+    def _raise_type_error(self, field_name, field_type, value):
+        """
+        A uniform way of throwing a type error
+        """
+        raise ValueError(f'During filling of class {self.__class__.__name__}:\n'
+                         f'{field_name} should be of type {field_type}, '
+                         f'but was initialized with {repr(value)}')
+
     def __post_init__(self):
-        # todo implements the type checking recursively to hold for 
+        # todo: implements the type checking recursively to hold for
         # Optional[Union[str, float]] for example 
-        for field in [f_ for f_ in fields(self) if f_.init]:
-            value = getattr(self, field.name)
+        for _field in [f_ for f_ in fields(self) if f_.init]:
+            value = getattr(self, _field.name)
             try:
                 # try to take into account typing generics
-                if field.type._name == 'Union':
-                    if not any (isinstance(value, _type) for _type in field.type.__args__):
-                        raise ValueError(f'During filling of class {self.__class__.__name__}:\n'
-                                        f'{field.name} should be of type {field.type}, '
-                                        f'but was initialized with {repr(value)}')
-                elif field.type._name == 'List':
-                    if not all (isinstance(_val, field.type.__args__[0]) for _val in value):
-                        raise ValueError(f'During filling of class {self.__class__.__name__}:\n'
-                                        f'{field.name} should be of type {field.type}, '
-                                        f'but was initialized with {repr(value)}')
+                if _field.type._name == 'Union':  # pylint:disable=protected-access
+                    if not any(isinstance(value, _type) for _type in _field.type.__args__):
+                        self._raise_type_error(_field.name, _field.type, value)
+                elif _field.type._name == 'List':  # pylint:disable=protected-access
+                    if not all(isinstance(_val, _field.type.__args__[0]) for _val in value):
+                        self._raise_type_error(_field.name, _field.type, value)
             except AttributeError:
-                # the field type is not a typing generic and thus has not _name attribute
-                if not isinstance(value, field.type):
-                    raise ValueError(f'During filling of class {self.__class__.__name__}:\n'
-                                     f'{field.name} should be of type {field.type}, '
-                                     f'but was initialized with {repr(value)}')
-                
+                # the _field type is not a typing generic and thus has not _name attribute
+                if not isinstance(value, _field.type):
+                    self._raise_type_error(_field.name, _field.type, value)
+
+    def _ensure_predicat(self, predicat, error_string, *args):
+        for _field in [f_ for f_ in fields(self) if f_.init]:
+            val = getattr(self, _field.name)
+            if _field.name in args and not predicat(val):
+                raise ValueError(error_string.format(val, _field.name))
+
+    def _ensure_positivity(self, *args):
+        predicat = partial(le, 0)
+        error_string = ("{} < 0!\n"
+                        "Please provide a value greater or equal to 0 for the coefficient {:s}")
+        self._ensure_predicat(predicat, error_string, *args)
+
+    def _ensure_strict_positivity(self, *args):
+        predicat = partial(lt, 0)
+        error_string = ("{} <= 0!\n"
+                        "Please provide a value greater than 0 for the coefficient {:s}")
+        self._ensure_predicat(predicat, error_string, *args)
+
+    def _ensure_value_in(self, field_name, authorized_values):
+        val = getattr(self, field_name)
+        if val not in authorized_values:
+            raise ValueError(f"{val} not in {authorized_values}!"
+                             f"Please provide a value in {authorized_values} for "
+                             f"the coefficient {field_name}")
