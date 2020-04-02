@@ -13,7 +13,7 @@ class ClassicalNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
     def __init__(self):
         super(ClassicalNewtonRaphsonIncrement, self).__init__()
 
-    def computeIncrement(self, function_value, derivative_function_value):
+    def compute_increment(self, function_value, derivative_function_value):
         """
         Increment computation
         """

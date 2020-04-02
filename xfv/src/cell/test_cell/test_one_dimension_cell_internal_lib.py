@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 one_dimension_cell module unit tests
 """
 import numpy as np
 import unittest
-import unittest.mock as mock
 import os
-
 from xfv.src.cell.one_dimension_cell import OneDimensionCell as Cell
-from xfv.src.mesh.topology1d import Topology1D
-from xfv.src.fields.field import Field
 from xfv.src.data.data_container import DataContainer
 
 
@@ -30,8 +27,6 @@ class OneDimensionCellInternalLibTest(unittest.TestCase):
     def tearDownClass(cls):
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
-
-        pass
 
     def setUp(self):
         self.test_cell = Cell(3)

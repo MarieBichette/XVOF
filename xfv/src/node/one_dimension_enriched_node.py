@@ -7,7 +7,7 @@ import numpy as np
 
 from xfv.src.node.one_dimension_node import OneDimensionNode
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.mass_matrix.mass_matrix_utilities import multiplicationMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
 
 
 class OneDimensionEnrichedNode(OneDimensionNode):
@@ -58,4 +58,4 @@ class OneDimensionEnrichedNode(OneDimensionNode):
         for disc in Discontinuity.discontinuity_list():
             disc._additional_dof_velocity_new = \
                 disc.additional_dof_velocity_current + delta_t * \
-                multiplicationMasse(inv_matrice_masse, disc.additional_dof_force)
+                multiplication_masse(inv_matrice_masse, disc.additional_dof_force)

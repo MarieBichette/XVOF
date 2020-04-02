@@ -15,7 +15,7 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
     def __init__(self):
         super(VnrEnergyEvolutionForVolumeEnergyFormulation, self).__init__()
 
-    def computeFunctionAndDerivative(self, var_value, mask):
+    def compute_function_and_derivative(self, var_value, mask):
         nrj = var_value[mask]
         eos = self._variables['EquationOfState']
         old_rho = self._variables['OldDensity'][mask]

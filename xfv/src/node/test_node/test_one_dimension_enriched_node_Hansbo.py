@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module OneDimensionEnrichedNode
 """

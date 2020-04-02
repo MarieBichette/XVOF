@@ -1,5 +1,6 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module node
 """
@@ -13,7 +14,7 @@ from xfv.src.data.data_container import DataContainer
 
 class NodeTest(unittest.TestCase):
     """
-    Test case utilis� pour test les fonctions du module 'Node'
+    Test case utilisï¿½ pour test les fonctions du module 'Node'
     """
     def setUp(self):
         """
@@ -25,7 +26,7 @@ class NodeTest(unittest.TestCase):
 
         self.vit_init = np.array([-1.5e+03, 1.2e+03, 0.3e+03], ndmin=2)
         self.poz_init = np.array([0.5, 0.025, -0.1], ndmin=2)
-        # Cr�ation d'un noeud en 3D :
+        # Crï¿½ation d'un noeud en 3D :
         self.my_node = nd.Node(1, position_initiale=self.poz_init,
                                vitesse_initiale=self.vit_init, dim=3)
 
@@ -39,9 +40,9 @@ class NodeTest(unittest.TestCase):
         """
         Test du constructeur Node()
         """
-        # Les valeurs par d�faut de position et de vitesse doivent �tre des vecteurs nuls
-        msg = "Par d�faut, les vecteurs vitesses doivent �tre �gaux au vecteur nul!"
-        msg2 = "Le vecteur force doit �tre initalis� au vecteur nul!"
+        # Les valeurs par dï¿½faut de position et de vitesse doivent ï¿½tre des vecteurs nuls
+        msg = "Par dï¿½faut, les vecteurs vitesses doivent ï¿½tre ï¿½gaux au vecteur nul!"
+        msg2 = "Le vecteur force doit ï¿½tre initalisï¿½ au vecteur nul!"
         default_node_2d = nd.Node(1, np.array([0.5, 0.025], ndmin=2), dim=2)
         np.testing.assert_array_equal(default_node_2d.umundemi.flatten(),
                                       np.zeros(2, dtype=float), msg)
@@ -49,10 +50,10 @@ class NodeTest(unittest.TestCase):
                                       np.zeros(2, dtype=float), msg)
         np.testing.assert_array_equal(default_node_2d.force, np.zeros([1,2], dtype=float), msg2)
         np.testing.assert_array_equal(default_node_2d.masse, np.array([[0., 0.], ]),
-                                      "La masse doit �tre initalis�e � 0!")
+                                      "La masse doit ï¿½tre initalisï¿½e ï¿½ 0!")
 
-        # Si la dimension du noeud ne correspond pas � celle des vecteurs positions
-        # et vitesses alors une exception de type SystemExit (pas top) doit �tre lev�e
+        # Si la dimension du noeud ne correspond pas ï¿½ celle des vecteurs positions
+        # et vitesses alors une exception de type SystemExit (pas top) doit ï¿½tre levï¿½e
         with self.assertRaises(SystemExit):
             nd.Node(1, position_initiale=np.array([[0.1, 2.0],]),
                     vitesse_initiale=np.array([0.1]), dim=1)
@@ -60,7 +61,7 @@ class NodeTest(unittest.TestCase):
             nd.Node(1, position_initiale=np.array([[0.1],]),
                     vitesse_initiale=np.array([0.1, 2.0]), dim=1)
 
-        # Les vecteurs position et vitesse initiaux doivent �tre ceux pass�s en argument
+        # Les vecteurs position et vitesse initiaux doivent ï¿½tre ceux passï¿½s en argument
         # du constructeur (sauf coordtpdt)
         node_2d_a = nd.Node(1, dim=2, position_initiale=np.array([[0.1, -0.2],]),
                             vitesse_initiale=np.array([[-1.2, 2.0],]))
@@ -71,7 +72,7 @@ class NodeTest(unittest.TestCase):
 
     def test_compute_new_coodinates(self):
         """
-        Test de la m�thode Node.compute_new_coodinates()
+        Test de la mï¿½thode Node.compute_new_coodinates()
         """
         self.my_node.compute_new_coodinates(delta_t=0.5e-06)
         np.testing.assert_allclose(self.my_node.xtpdt,
@@ -79,7 +80,7 @@ class NodeTest(unittest.TestCase):
 
     def test_increment(self):
         """
-        Test de la m�thode Node.increment()
+        Test de la mï¿½thode Node.increment()
         """
         self.my_node.compute_new_coodinates(delta_t=0.5e-06)
         self.my_node.increment()

@@ -47,9 +47,9 @@ class NewtonRaphson(NewtonRaphsonBase):
         func_i = 0.  # function evaluation
 
         while not_conv.any() and nit < self.nb_iterations_max:
-            (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i, not_conv)
+            (func_i, dfunc_i_surde) = self.function.compute_function_and_derivative(var_i, not_conv)
             # Correction
-            delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
+            delta = self._increment_method.compute_increment(func_i, dfunc_i_surde)
             var_iplus1[not_conv] = var_i[not_conv] + delta
             not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
             if not not_conv.any():

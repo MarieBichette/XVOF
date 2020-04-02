@@ -1,8 +1,9 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module Discontinuity
-:TODO : tester l'unicit� des discontinuit�s identifi�es par label / mask_in/out
+:TODO : tester l'unicitï¿½ des discontinuitï¿½s identifiï¿½es par label / mask_in/out
 """
 
 import unittest
@@ -14,7 +15,7 @@ from xfv.src.data.data_container import DataContainer
 
 class DiscontinuityTest(unittest.TestCase):
     """
-        Test case utilis� pour test les fonctions du module 'Discontinuity'
+        Test case utilisï¿½ pour test les fonctions du module 'Discontinuity'
         """
 
     def setUp(self):

@@ -400,7 +400,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         contact_props = self.__get_contact_props(material)
         if contact_props:
-            contact: Optional[ContactModelProps]= ContactModelProps(*contact_props)
+            contact: Optional[ContactModelProps] = ContactModelProps(*contact_props)
         else:
             contact = None
 

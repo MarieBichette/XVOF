@@ -2,9 +2,9 @@
 """
 Classe de test du module element1dupgraded
 """
-import numpy as np
 import unittest
 import unittest.mock as mock
+import numpy as np
 import os
 from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.data.data_container import DataContainer
@@ -26,7 +26,6 @@ class OneDimensionEnrichedCellTest(unittest.TestCase):
     def tearDownClass(cls):
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
-        pass
 
     def setUp(self):
         """

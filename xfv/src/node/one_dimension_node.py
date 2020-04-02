@@ -4,7 +4,7 @@
 Module définissant la classe Node1d
 """
 import numpy as np
-from xfv.src.mass_matrix.mass_matrix_utilities import multiplicationMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
 from xfv.src.data.data_container import DataContainer
 from xfv.src.node import Node
 
@@ -110,7 +110,7 @@ class OneDimensionNode(Node):
         # ddl classique de noeud classique (sauf 0 1 2 3 quand enrichissement)
         # = noeuds classiques non concernés par l'enrichissement
         self._upundemi[mask] = self._umundemi[mask] + \
-                               multiplicationMasse(matrice_masse, self.force[mask]) * delta_t
+                               multiplication_masse(matrice_masse, self.force[mask]) * delta_t
 
     def compute_complete_velocity_field(self):
         """
@@ -124,10 +124,10 @@ class OneDimensionNode(Node):
         Apply a correction on velocity field to compute velocity from exact(non lumped)
         mass matrix for elements in mask
         """
-        self._upundemi[mask] += multiplicationMasse(inv_complete_mass_matrix,
-                                                    self.force[mask]) * delta_t
-        self._upundemi[mask] -= multiplicationMasse(inv_wilkins_mass_matrix,
-                                                    self.force[mask]) * delta_t
+        self._upundemi[mask] += multiplication_masse(inv_complete_mass_matrix,
+                                                     self.force[mask]) * delta_t
+        self._upundemi[mask] -= multiplication_masse(inv_wilkins_mass_matrix,
+                                                     self.force[mask]) * delta_t
 
     def apply_pressure(self, ind_node, pressure):
         """

@@ -3,7 +3,7 @@
 Implementation of MinimumPressureCriterion class
 """
 from xfv.src.plasticitycriterion.plasticitycriterion import PlasticityCriterion
-from xfv.src.utilities.stress_invariants_calculation import compute_J2
+from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 class VonMisesCriterion(PlasticityCriterion):
@@ -17,7 +17,7 @@ class VonMisesCriterion(PlasticityCriterion):
         :param cells: cells on which to check the criterion
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
-        return (compute_J2(cells.deviatoric_stress_new) >
+        return (compute_second_invariant(cells.deviatoric_stress_new) >
                 cells.yield_stress.new_value)
 
     @staticmethod
@@ -28,5 +28,5 @@ class VonMisesCriterion(PlasticityCriterion):
         :param disc: current discontinuity
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
-        return (compute_J2(disc.additional_dof_deviatoric_stress_new) >
+        return (compute_second_invariant(disc.additional_dof_deviatoric_stress_new) >
                 disc.additional_dof_yield_stress.new_value)

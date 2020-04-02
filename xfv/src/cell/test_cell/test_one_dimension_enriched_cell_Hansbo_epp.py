@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Cell module unit tests
 """
-import numpy as np
 import unittest
 import unittest.mock as mock
+import numpy as np
 import os
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
@@ -30,7 +31,6 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
     def tearDownClass(cls):
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
-        pass
 
     def setUp(self):
         """
@@ -90,14 +90,16 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                              spec=Discontinuity, **config)
         self.mock_disc = patcher.start()
 
+        self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
+
     def tearDown(self):
         pass
 
     def test_initialize_additional_dof(self):
-        """ Test la m�thode initialize_additional_dof"""
+        """
+        Test la m�thode initialize_additional_dof
+        """
         # todo : coder
-
-
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_pressure_field(self, mock_disc_list):
@@ -154,26 +156,22 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         mock_add_elasticity.assert_called()
         mock_add_elasticity.assert_called()
-        mock_apply_eos.assert_any_call(self.my_cells,
-                                       DataContainer().material_target.constitutive_model.eos.build_eos_obj(),
-                                       self.my_cells.density.current_value,
-                                       self.my_cells.density.new_value,
-                                       self.my_cells.pressure.current_value,
-                                       self.my_cells.pressure.new_value,
-                                       self.my_cells.energy.current_value,
-                                       self.my_cells.energy.new_value,
-                                       self.my_cells.pseudo.current_value,
-                                       self.my_cells.sound_velocity.new_value)
-        mock_apply_eos.assert_any_call(self.my_cells,
-                                       DataContainer().material_target.constitutive_model.eos.build_eos_obj(),
-                                       self.mock_disc.additional_dof_density.current_value,
-                                       self.mock_disc.additional_dof_density.new_value,
-                                       self.mock_disc.additional_dof_pressure.current_value,
-                                       self.mock_disc.additional_dof_pressure.new_value,
-                                       self.mock_disc.additional_dof_energy.current_value,
-                                       self.mock_disc.additional_dof_energy.new_value,
-                                       self.mock_disc.additional_dof_artificial_viscosity.current_value,
-                                       self.mock_disc.additional_dof_sound_velocity.new_value)
+        mock_apply_eos.assert_any_call(
+            self.my_cells, self.test_data.material_target.constitutive_model.eos.build_eos_obj(),
+            self.my_cells.density.current_value, self.my_cells.density.new_value,
+            self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
+            self.my_cells.energy.current_value, self.my_cells.energy.new_value,
+            self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
+        mock_apply_eos.assert_any_call(
+            self.my_cells, self.test_data.material_target.constitutive_model.eos.build_eos_obj(),
+            self.mock_disc.additional_dof_density.current_value,
+            self.mock_disc.additional_dof_density.new_value,
+            self.mock_disc.additional_dof_pressure.current_value,
+            self.mock_disc.additional_dof_pressure.new_value,
+            self.mock_disc.additional_dof_energy.current_value,
+            self.mock_disc.additional_dof_energy.new_value,
+            self.mock_disc.additional_dof_artificial_viscosity.current_value,
+            self.mock_disc.additional_dof_sound_velocity.new_value)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_discontinuity_borders_velocity",
@@ -229,22 +227,21 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_elements_new_pseudo(dt)
 
-        mock_compute_pseudo.assert_any_call(dt, self.my_cells.density.current_value,
-                                            self.my_cells.density.new_value,
-                                            self.mock_disc.left_part_size.new_value,
-                                            self.my_cells.sound_velocity.current_value,
-                                            DataContainer().numeric.a_pseudo,
-                                            DataContainer().numeric.b_pseudo)
-        mock_compute_pseudo.assert_any_call(dt,
-                                            self.mock_disc.additional_dof_density.current_value,
-                                            self.mock_disc.additional_dof_density.new_value,
-                                            self.mock_disc.right_part_size.new_value,
-                                            self.mock_disc.additional_dof_sound_velocity.current_value,
-                                            DataContainer().numeric.a_pseudo,
-                                            DataContainer().numeric.b_pseudo)
+        mock_compute_pseudo.assert_any_call(
+            dt, self.my_cells.density.current_value, self.my_cells.density.new_value,
+            self.mock_disc.left_part_size.new_value, self.my_cells.sound_velocity.current_value,
+            self.test_data.numeric.a_pseudo, self.test_data.numeric.b_pseudo)
+
+        mock_compute_pseudo.assert_any_call(
+            dt, self.mock_disc.additional_dof_density.current_value,
+            self.mock_disc.additional_dof_density.new_value,
+            self.mock_disc.right_part_size.new_value,
+            self.mock_disc.additional_dof_sound_velocity.current_value,
+            self.test_data.numeric.a_pseudo, self.test_data.numeric.b_pseudo)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionCell, "compute_time_step", spec=classmethod, new_callable=mock.MagicMock)
+    @mock.patch.object(OneDimensionCell, "compute_time_step", spec=classmethod,
+                       new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_time_step(self, mock_compute_dt, mock_disc_list):
         """
         Test de la m�thode compute_enriched_elements_new_time_step
@@ -254,22 +251,22 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_elements_new_time_step()
 
-        mock_compute_dt.assert_any_call(DataContainer().numeric.cfl,
-                                        DataContainer().numeric.cfl_pseudo,
+        mock_compute_dt.assert_any_call(self.test_data.numeric.cfl,
+                                        self.test_data.numeric.cfl_pseudo,
                                         self.my_cells.density.current_value,
                                         self.my_cells.density.new_value,
                                         self.mock_disc.left_part_size.new_value,
                                         self.my_cells.sound_velocity.new_value,
                                         self.my_cells.pseudo.current_value,
                                         self.my_cells.pseudo.new_value)
-        mock_compute_dt.assert_called_with(DataContainer().numeric.cfl,
-                                           DataContainer().numeric.cfl_pseudo,
-                                           self.mock_disc.additional_dof_density.current_value,
-                                           self.mock_disc.additional_dof_density.new_value,
-                                           self.mock_disc.right_part_size.new_value,
-                                           self.mock_disc.additional_dof_sound_velocity.new_value,
-                                           self.mock_disc.additional_dof_artificial_viscosity.current_value,
-                                           self.mock_disc.additional_dof_artificial_viscosity.new_value)
+        mock_compute_dt.assert_called_with(
+            self.test_data.numeric.cfl, self.test_data.numeric.cfl_pseudo,
+            self.mock_disc.additional_dof_density.current_value,
+            self.mock_disc.additional_dof_density.new_value,
+            self.mock_disc.right_part_size.new_value,
+            self.mock_disc.additional_dof_sound_velocity.new_value,
+            self.mock_disc.additional_dof_artificial_viscosity.current_value,
+            self.mock_disc.additional_dof_artificial_viscosity.new_value)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_stress_tensor(self, mock_disc_list):
@@ -373,9 +370,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.my_cells.compute_enriched_shear_modulus()
 
         np.testing.assert_allclose(self.my_cells.shear_modulus.new_value,
-                                   DataContainer().material_target.initial_values.shear_modulus_init)
+                                   self.test_data.material_target.initial_values.shear_modulus_init)
         np.testing.assert_allclose(self.mock_disc.additional_dof_shear_modulus.new_value,
-                                   DataContainer().material_target.initial_values.shear_modulus_init)
+                                   self.test_data.material_target.initial_values.shear_modulus_init)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_equivalent_plastic_strain_rate(self, mock_disc_list):
@@ -438,9 +435,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.my_cells.compute_enriched_yield_stress()
 
         np.testing.assert_allclose(self.my_cells.yield_stress.new_value,
-                                   DataContainer().material_target.initial_values.yield_stress_init)
+                                   self.test_data.material_target.initial_values.yield_stress_init)
         np.testing.assert_allclose(self.mock_disc.additional_dof_yield_stress.new_value,
-                                   DataContainer().material_target.initial_values.yield_stress_init)
+                                   self.test_data.material_target.initial_values.yield_stress_init)
 
 
 if __name__ == "__main__":

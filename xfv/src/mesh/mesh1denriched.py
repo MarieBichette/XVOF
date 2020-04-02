@@ -27,6 +27,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :param initial_velocities:
         :param enrichment_type:
         """
+        self.data = DataContainer()  # pylint: disable=no-value-for-parameter
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
@@ -43,7 +44,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
                                                     initial_velocities,
-                                                    section=DataContainer().geometric.section)
+                                                    section=self.data.geometric.section)
 
         # ---------------------------------------------
         # Cells creation
@@ -80,10 +81,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # Cohesive zone model initialisation
         # ---------------------------------------------
         self.cohesive_zone_model = None
-        target_dmg_model = DataContainer().material_target.damage_model
+        target_dmg_model = self.data.material_target.damage_model
         if target_dmg_model is not None:
             self.cohesive_zone_model = target_dmg_model.cohesive_model.build_cohesive_model_obj()
-        if (DataContainer().material_target.failure_model.failure_treatment != "Enrichment") and \
+        if (self.data.material_target.failure_model.failure_treatment != "Enrichment") and \
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
             self.cohesive_zone_model = None
@@ -91,9 +92,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # ---------------------------------------------
         # Contact model initialisation (contact between discontinuities boundaries)
         # ---------------------------------------------
-        if DataContainer().material_target.contact_model is not None:
+        if self.data.material_target.contact_model is not None:
             self.contact_model: ContactBase = \
-                DataContainer().material_target.contact_model.contact_model.build_contact_obj()
+                self.data.material_target.contact_model.contact_model.build_contact_obj()
         else:
             self.contact_model = None
 
@@ -318,14 +319,14 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of new time step
         """
-        if not DataContainer().time.is_time_step_constant:
+        if not self.data.time.is_time_step_constant:
             self.cells.compute_new_time_step(self.cells.classical)
             self.cells.compute_enriched_elements_new_time_step()
             return self.cells.dt.min()
 
-        initial_time_step = DataContainer().time.initial_time_step
+        initial_time_step = self.data.time.initial_time_step
         dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
-        reduction_factor = DataContainer().time.time_step_reduction_factor_for_failure
+        reduction_factor = self.data.time.time_step_reduction_factor_for_failure
         if reduction_factor is not None:
             if self.cells.enriched.any():
                 dt = dt/reduction_factor  # dt name is ok pylint: disable=invalid-name
@@ -373,7 +374,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
         self.__ruptured_cells = \
             np.logical_or(self.__ruptured_cells,
-                          new_cracked_cells_in_target) # pylint: disable=assignment-from-no-return
+                          new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):

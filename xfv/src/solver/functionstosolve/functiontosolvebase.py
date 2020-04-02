@@ -13,23 +13,24 @@ class FunctionToSolveBase(object, metaclass=ABCMeta):
     def __init__(self):
         self._variables = None
 
-    def setVariables(self, variables):
+    def set_variables(self, variables):
         """
         Set of the value of the variables
         """
         if self._variables is None:
             self._variables = variables
         else:
-            raise ValueError("Impossible de fixer deux fois les variables de la fonction à annuler!")
+            raise ValueError("Impossible de fixer deux fois les variables de la fonction à "
+                             "annuler!")
 
-    def eraseVariables(self):
+    def erase_variables(self):
         """
         Reset of _variables
         """
         self._variables = None
 
     @abstractmethod
-    def computeFunctionAndDerivative(self, var_value, mask):
+    def compute_function_and_derivative(self, var_value, mask):
         """
         Return the values of the function and its derivative
 

@@ -6,7 +6,7 @@ Implementing the OneDimensionMassMatrix class
 
 import numpy as np
 from xfv.src.mass_matrix.mass_matrix import compute_wilkins_mass_matrix
-from xfv.src.mass_matrix.mass_matrix_utilities import inverseMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import inverse_masse
 
 
 class OneDimensionMassMatrix(object):
@@ -32,7 +32,7 @@ class OneDimensionMassMatrix(object):
         """
         self.__mass_matrix = compute_wilkins_mass_matrix(topology, cell_mass_vector,
                                                          node_number_by_cell_vector)
-        self.__inv_mass_matrix = inverseMasse(self.__mass_matrix)
+        self.__inv_mass_matrix = inverse_masse(self.__mass_matrix)
         
     def compute_correction_mass_matrix_for_cell_500(self, cell_mass_vector, mask_node, topologie):
         """
@@ -65,7 +65,7 @@ class OneDimensionMassMatrix(object):
             self.__correction_mass_matrix[1, 0] = self.__correction_mass_matrix[0, 1]
             self.__correction_mass_matrix[1, 1] = 2 * mass_500
         self.__correction_mass_matrix *= 1. / 6.
-        self.__inv_correction_mass_matrix = inverseMasse(self.__correction_mass_matrix)
+        self.__inv_correction_mass_matrix = inverse_masse(self.__correction_mass_matrix)
 
     @property
     def mass_matrix(self):

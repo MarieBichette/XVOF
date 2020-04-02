@@ -35,9 +35,6 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         Compute the Hansbo mass matrix for the left part
         DDL are organized : 0 : N1g and 1 : N2g
         """
-        # if self.lump == "diag_cst":
-        #     self._enriched_mass_matrix_left_part[0, 0] = mass_1 / 2. + mass_0 / 2.
-        #     self._enriched_mass_matrix_left_part[1, 1] = mass_1 / 2.
         if self.lump == "menouillard":
             self._enriched_mass_matrix_left_part[0, 0] = epsilon * mass_1 / 2. + mass_0 / 2.
             self._enriched_mass_matrix_left_part[1, 1] = epsilon * mass_1 / 2.
@@ -57,9 +54,6 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         Compute the Hansbo mass matrix for the right part
         DDL are organized : 2 : N2d and 3: N1d
         """
-        # if self.lump == "diag_cst":
-        #     self._enriched_mass_matrix_right_part[2, 2] = mass_1 / 2. + mass_2 / 2.
-        #     self._enriched_mass_matrix_right_part[3, 3] = mass_1 / 2.
         if self.lump == "menouillard":
             self._enriched_mass_matrix_right_part[2, 2] = (1 - epsilon) * mass_1 / 2. + mass_2 / 2.
             self._enriched_mass_matrix_right_part[3, 3] = (1 - epsilon) * mass_1 / 2.
@@ -125,12 +119,16 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         Print the mass matrix * (with aligned members)
         :return:
         """
-        m = self.enriched_mass_matrix
+        m = self.enriched_mass_matrix  # pylint: disable=invalid-name
         print("Enriched mass matrix :")
-        ligne0 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[0, 0], m[0, 1], m[0, 2], m[0, 3])
-        ligne1 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[1, 0], m[1, 1], m[1, 2], m[1, 3])
-        ligne2 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[2, 0], m[2, 1], m[2, 2], m[2, 3])
-        ligne3 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(m[3, 0], m[3, 1], m[3, 2], m[3, 3])
+        ligne0 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(
+            m[0, 0], m[0, 1], m[0, 2], m[0, 3])
+        ligne1 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(
+            m[1, 0], m[1, 1], m[1, 2], m[1, 3])
+        ligne2 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(
+            m[2, 0], m[2, 1], m[2, 2], m[2, 3])
+        ligne3 = "{:+8.7g}   {:+8.7g}   {:+8.7g}   {:+8.7g}".format(
+            m[3, 0], m[3, 1], m[3, 2], m[3, 3])
         print(ligne0)
         print(ligne1)
         print(ligne2)

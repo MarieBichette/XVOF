@@ -11,7 +11,7 @@ from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xfv.src.solver.newtonraphson import NewtonRaphson
 from xfv.src.data.data_container import DataContainer
-from xfv.src.utilities.stress_invariants_calculation import compute_J2
+from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 # noinspection PyArgumentList
@@ -35,7 +35,7 @@ class OneDimensionCell(Cell):
                             'NewDensity': density_new,
                             'Pressure': (pressure + 2. * pseudo),
                             'OldEnergy': energy}
-            cell._function_to_vanish.setVariables(my_variables)
+            cell._function_to_vanish.set_variables(my_variables)
             energy_new_value = cell._solver.compute_solution(energy)
 
             # Eos call to determine final pressure and sound speed values
@@ -46,7 +46,7 @@ class OneDimensionCell(Cell):
             my_variables['EquationOfState'].solveVolumeEnergy(
                 1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
                 sound_velocity_new_value, dummy)
-            cell._function_to_vanish.eraseVariables()
+            cell._function_to_vanish.erase_variables()
         return energy_new_value, pressure_new_value, sound_velocity_new_value
 
     @classmethod
@@ -484,7 +484,7 @@ class OneDimensionCell(Cell):
         :param mask : mask to identify the cells where plasticity should be applied
         (classical cells where plasticity criterion is activated)
         """
-        invariant_J2_el = compute_J2(self.deviatoric_stress_new)
+        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
         # pr�diction �lastique avant le traitement de la plasticit�
         radial_return = self.yield_stress.current_value / invariant_J2_el
         plasticity = radial_return < 1.
@@ -500,7 +500,7 @@ class OneDimensionCell(Cell):
         :param dt: time step
         """
         # A faire avant apply_plastic_corrector_on_deviatoric_stress_tensor
-        invariant_J2_el = compute_J2(self.deviatoric_stress_new)
+        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
         radial_return = self.yield_stress.current_value / invariant_J2_el
         plasticity = radial_return < 1.
         plastic_mask = np.logical_and(mask, plasticity)
@@ -516,7 +516,7 @@ class OneDimensionCell(Cell):
         :param mask: array of bool to select cells of interest
         :param dt : float, time step staggered
         """
-        invariant_J2_el = compute_J2(self.deviatoric_stress_new)
+        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
         # pr�diction �lastique avant le traitement de la plasticit�
         G = self.shear_modulus.current_value
         plasticity = invariant_J2_el > self.yield_stress.current_value

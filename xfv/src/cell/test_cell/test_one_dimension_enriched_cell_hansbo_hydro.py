@@ -111,11 +111,11 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                                 [self.mock_discontinuity.additional_dof_energy.new_value,
                                  self.mock_discontinuity.additional_dof_pressure.new_value,
                                  self.mock_discontinuity.additional_dof_sound_velocity.new_value]]
-        # mock_eos.return_value =
 
         self.my_cells.compute_enriched_elements_new_pressure(1.)
 
-        eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
+        target = DataContainer().material_target  # pylint: disable=no-value-for-parameter
+        eos = target.constitutive_model.eos.build_eos_obj()
 
         mock_eos.assert_any_call(
             self.my_cells, eos,

@@ -1,11 +1,11 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
 Implementing the OneDimensionEnrichedMassMatrix class
 """
 import numpy as np
 
-from xfv.src.mass_matrix.mass_matrix_utilities import SymNDArray, inverseMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import SymNDArray, inverse_masse
 
 
 class OneDimensionEnrichedMassMatrix(object):
@@ -27,7 +27,7 @@ class OneDimensionEnrichedMassMatrix(object):
         for name in sub_matrix_names:
             self._enriched_mass_matrix += getattr(self, name)
         print("Numerical inverse of mass matrix")
-        self._inv_enriched_mass_matrix = inverseMasse(self._enriched_mass_matrix)
+        self._inv_enriched_mass_matrix = inverse_masse(self._enriched_mass_matrix)
 
     @property
     def enriched_mass_matrix(self):
@@ -59,14 +59,17 @@ class OneDimensionEnrichedMassMatrix(object):
         Accessor on the inverse of the mass matrix for enriched degrees of freedom
         :return: extraction of the inverse of the mass matrix for enriched dof
         """
-        return self._inv_enriched_mass_matrix[self._matrix_size - 2:self._matrix_size, self._matrix_size - 2:self._matrix_size]
+        return self._inv_enriched_mass_matrix[self._matrix_size - 2:self._matrix_size,
+                                              self._matrix_size - 2:self._matrix_size]
 
     @property
     def inverse_enriched_mass_matrix_coupling_dof(self):
         """
-        Accessor on the inverse of the mass matrix for coupling between classical and enriched degrees of freedom
+        Accessor on the inverse of the mass matrix for coupling between classical and enriched
+        degrees of freedom
         :return: the coupling part of the inverse of the mass matrix
         """
-        return self._inv_enriched_mass_matrix[0:self._matrix_size - 2, self._matrix_size - 2:self._matrix_size]
+        return self._inv_enriched_mass_matrix[0:self._matrix_size - 2,
+                                              self._matrix_size - 2:self._matrix_size]
 
 
