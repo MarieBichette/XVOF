@@ -6,7 +6,6 @@ import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.rupturetreatment.rupturetreatment import RuptureTreatment
-from xfv.src.data.data_container import DataContainer
 
 
 class EnrichElement(RuptureTreatment):
@@ -16,13 +15,18 @@ class EnrichElement(RuptureTreatment):
     __never_enriched = True
     __debug = False
 
-    def __init__(self, position_rupture):
+    def __init__(self, position_rupture: float, lump_matrix: str):
         super(EnrichElement, self).__init__()
         self.__position_rupture = position_rupture
+        self.__lump = lump_matrix
 
     @property
     def position_rupture(self):
         return self.__position_rupture
+
+    @property
+    def lump_style(self):
+        return self.__lump
 
     def apply_treatment(self, cells, ruptured_cells, nodes, topology, time):
         """
@@ -65,7 +69,7 @@ class EnrichElement(RuptureTreatment):
                         nodes_to_be_enr_mask, nodes.xt[:, 0] > discontinuity_coord)
                     print("==> In nodes : ", np.nonzero(in_nodes))
                     print("==> Out nodes : ", np.nonzero(out_nodes))
-                    disc = Discontinuity(in_nodes, out_nodes, self.__position_rupture)
+                    disc = Discontinuity(in_nodes, out_nodes, self.__position_rupture, self.__lump)
                     disc.find_ruptured_cell_id(topology)
                     cells.classical[cell_tb_enr] = False
                     # Affectation left / right part sizes
@@ -85,8 +89,7 @@ class EnrichElement(RuptureTreatment):
                     disc.left_part_size.current_value = \
                         self.__position_rupture * cells.size_t[cell_tb_enr]
                     # Initialisation de la partie droite des champs pour Hansbo method
-                    if DataContainer().material_target.failure_model.type_of_enrichment \
-                            == "Hansbo" and not disc.initialisation:
+                    if not disc.initialisation:
                         cells.initialize_additional_cell_dof(disc)
                         nodes.initialize_additional_node_dof(disc)
                         disc.have_dof_been_initialized()
@@ -97,7 +100,3 @@ class EnrichElement(RuptureTreatment):
                     On ne peut pas l'enrichir plusieurs fois""". format(cell_tb_enr))
 
         ruptured_cells[:] = False
-
-    @staticmethod
-    def get_discontinuity_position():
-        return DataContainer().material_target.failure_model.rupture_treatment_value

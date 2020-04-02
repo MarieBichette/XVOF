@@ -159,12 +159,14 @@ class OneDimensionCell(Cell):
         # Endommagement / CZM
         self._damage_variable = np.zeros([number_of_elements, ], dtype=np.float64, order='C')
 
-        # Solveur pour EOS :
+        # EOS :
         self._target_eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
         self._projectile_eos = None
         if DataContainer().data_contains_a_projectile:
             self._projectile_eos = DataContainer().material_projectile.constitutive_model.eos.build_eos_obj()
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
+
+        # Solver EOS
         self._solver = NewtonRaphson(self._function_to_vanish)
 
         if DataContainer().hasExternalSolver():
@@ -398,12 +400,14 @@ class OneDimensionCell(Cell):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
         """
+        # TODO : interroger le package rheology
         pass
 
     def compute_yield_stress(self):
         """
         Compute the yield stress according to plasticity constitutve model in XDATA
         """
+        # TODO : interroger le package rheology
         pass
 
     def compute_complete_stress_tensor(self, mask):

@@ -1,8 +1,7 @@
 {
   "time-management": {
     "final-time": 5e-06,
-    "initial-time-step": 1e-08,
-    "constant-time-step": true
+    "initial-time-step": 1e-07
   },
   "geometry": {
     "section": 0.0003141592653589793
@@ -10,23 +9,35 @@
   "matter": {
     "initialization": {
       "initial-velocity": 0.0,
-      "init-thermo": "../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
+      "init-thermo": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
     },
     "equation-of-state": {
       "name": "Mie-Gruneisen",
-      "coefficients": "../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
+      "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
+    },
+    "failure": {
+      "failure-criterion": {
+        "name": "MaximalStress",
+        "value": 5000000000.0
+      },
+      "failure-treatment": {
+        "name": "Enrichment",
+        "value": 0.5,
+        "type-of-enrichment": "Hansbo",
+        "lump-mass-matrix": "somme"
+      }
     }
   },
   "boundary-conditions": {
     "right-boundary": {
       "type": "pressure",
       "bc-law": "Constant",
-      "value": 0.0
+      "value": 0
     },
     "left-boundary": {
-      "type": "pressure",
+      "type": "velocity",
       "bc-law": "Constant",
-      "value": -10000000000.0
+      "value": 200
     }
   },
   "numeric-parameters": {
@@ -36,7 +47,7 @@
     "cfl-pseudo": 0.0
   },
   "output": {
-    "number-of-images": 500,
+    "number-of-images": 0,
     "dump-images": false,
     "database": [
       {

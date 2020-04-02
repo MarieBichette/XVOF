@@ -114,29 +114,31 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.compute_complete_velocity_field()
         np.testing.assert_array_almost_equal(self.my_nodes.velocity_field, np.array([1., 1.]))
 
-    def test_enriched_nodes_compute_new_coordinates(self):
-        """
-        Test de la m�thode enriched_nodes_compute_new_coordinates de la classe
-        """
-        self.my_nodes._upundemi = np.array([[1., ], [2., ]])
-        self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
-
-        np.testing.assert_array_equal(self.my_nodes.xtpdt, np.array([[2., ], [4., ]]))
-
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_coupled_enrichment_terms_compute_new_velocity(self, mock_disc_list):
+    def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):
         """
-        Test de la m�thode coupled_terms_compute_new_velocity
+        Test de la méthode enriched_nodes_compute_new_coordinates de la classe
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_masse_couplage = np.array([[1., 2.], [2., 1.]])
-        self.my_nodes._force = np.array([[1., ], [1., ]])
-        self.my_nodes._upundemi = np.array([[1., ], [1., ]])
-        self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
+        self.mock_discontinuity.additional_dof_coordinates_current = np.array([[1., ], [3., ]])
+        self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
+        self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
+        self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
+        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_coordinates_new,
+                                      np.array([[-2., ], [7., ]]))
 
-        np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
-        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
-                                      np.array([[3., ], [3., ]]))
+    def test_reinitialize_kinematics_after_contact(self):
+        """
+        Test of the method reinitialize_kinematics_after_contact
+        """
+        self.mock_discontinuity.mask_disc_nodes = np.ones([2], dtype=bool)
+        self.my_nodes._umundemi = np.array([[-0.5, ], [1.5, ]])
+        self.my_nodes._xt = np.array([[0., ], [1., ]])
+        self.my_nodes._upundemi = np.array([[-1.5, ], [2.5, ]])
+        self.my_nodes._xtpdt = np.array([[2., ], [3., ]])
+        self.my_nodes.reinitialize_kinematics_after_contact(self.mock_discontinuity)
+        np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[-0.5, ], [1.5, ]]))
+        np.testing.assert_array_equal(self.my_nodes._xtpdt, np.array([[0., ], [1., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_new_force(self, mock_disc_list):
@@ -155,11 +157,8 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_almost_equal(self.my_nodes._force, np.array([[5.5, ], [1.5, ]]))
 
     @unittest.skip("Mod�le coh�sif pas revu")
-    @mock.patch.object(OneDimensionHansboEnrichedNode, "compute_discontinuity_opening",
-                       new_callable=mock.PropertyMock)
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list,
-                                                    mock_compute_discontinuity_opening):
+    def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list):
         """
         Test de la m�thode compute_enriched_nodes_cohesive_forces
         """
@@ -185,7 +184,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         ouverture_ecaille_old = (xd_old - xg_old)[0][0]
         np.testing.assert_allclose(ouverture_ecaille_old, np.array([0.2]))
 
-        # d�finition de ouverture new
+        # definition de ouverture new
         self.my_nodes._xtpdt = np.array([[0., ], [1., ]])
         self.mock_discontinuity.right_part_size.new_value = np.array([0.3])
         self.mock_discontinuity.left_part_size.new_value = np.array([0.3])

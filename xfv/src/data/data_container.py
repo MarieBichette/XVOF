@@ -22,6 +22,7 @@ from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
                                                 ConstantStiffnessUnloadingProps,
                                                 LossOfStiffnessUnloadingProps)
+from xfv.src.data.contact_props import (ContactProps, PenaltyContactProps)
 from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
 from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
 from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
@@ -89,6 +90,12 @@ class DamageModelProps(TypeCheckedDataClass):
     name: str
 
 
+@dataclass
+class ContactModelProps(TypeCheckedDataClass):  # pylint: disable=missing-class-docstring
+    contact_model: ContactProps
+    name: str
+
+
 @dataclass  # pylint: disable=missing-class-docstring
 class InitialValues(TypeCheckedDataClass):
     velocity_init: float
@@ -123,6 +130,7 @@ class MaterialProps(TypeCheckedDataClass):
     constitutive_model: ConstitutiveModelProps
     failure_model: FailureModelProps
     damage_model: Optional[DamageModelProps]
+    contact_model: Optional[ContactModelProps]
 
 
 class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -328,10 +336,31 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         return cohesive_model_props, cohesive_model_name
 
+    @staticmethod
+    def __get_contact_props(matter) -> Optional[Tuple[ContactProps, str]]:
+        """
+        Returns the values needed to fill the contact model properties:
+            - the contact model
+            - the cohesive model name
+        """
+        try:
+            params = matter['failure']['contact-treatment']['contact-model']
+        except KeyError:
+            return None
+        contact_model_name = params['name'].lower()
+        if contact_model_name == "penalty":
+            penalty_stiffness: float = params['penalty-stiffness']
+            contact_model_props: ContactProps = PenaltyContactProps(penalty_stiffness)
+        else:
+            raise ValueError(f"Unknwon contact model: {contact_model_name} ."
+                             "Please choose among (penalty)")
+        return contact_model_props, contact_model_name
+
     def __fill_in_material_props(self, material) -> Tuple[InitialValues,
                                                           ConstitutiveModelProps,
                                                           FailureModelProps,
-                                                          Optional[DamageModelProps]]:
+                                                          Optional[DamageModelProps],
+                                                          Optional[ContactModelProps]]:
         """
         Returns the values needed to fill the material properties:
             - the initial values
@@ -344,6 +373,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             self.__get_equation_of_state_props(material),
             *self.__get_rheology_props(material))
 
+        # TODO : rassembler tout ça !
         failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = (
             self.__get_failure_props(material))
         failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
@@ -365,10 +395,16 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         if failure.failure_treatment is not None and damage and damage.cohesive_model is not None:
             if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
                     isinstance(failure_criterion, MaximalStressCriterionProps)):
-                print("Failure criterion value and cohesive strength have different value. " \
+                print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
 
-        return init, behavior, failure, damage
+        contact_props = self.__get_contact_props(material)
+        if contact_props:
+            contact: Optional[ContactModelProps]= ContactModelProps(*contact_props)
+        else:
+            contact = None
+
+        return init, behavior, failure, damage, contact
 
     def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
                                                     float, float, float]:

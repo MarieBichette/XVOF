@@ -2,10 +2,10 @@
 """
 Definition of UnloadingModelBase
 """
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
-class UnloadingModelBase(object):
+class UnloadingModelBase(object, metaclass=ABCMeta):
     """
     A model for unloading reloading path in cohesive zone model
     """

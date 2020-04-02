@@ -33,12 +33,12 @@
     "right-boundary": {
       "type": "pressure",
       "bc-law": "Constant",
-      "value": 0
+      "value": 0.0
     },
     "left-boundary": {
       "type": "velocity",
       "bc-law": "Constant",
-      "value": -30
+      "value": -30.0
     }
   },
   "numeric-parameters": {
