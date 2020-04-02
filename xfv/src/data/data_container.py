@@ -51,6 +51,11 @@ class NumericalProps(TypeCheckedDataClass):
 class GeometricalProps(TypeCheckedDataClass):
     section: float
     initial_interface_position: float
+    
+    def __post_init__(self):
+        super().__post_init__()  # type checking first
+        self._ensure_strict_positivity('section')
+        self._ensure_positivity('initial_interface_position')
 
 
 @dataclass  # pylint: disable=missing-class-docstring
