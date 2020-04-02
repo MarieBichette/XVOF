@@ -75,3 +75,6 @@ tags
 
 # Ignore mypy cache directory
 .mypy_cache
+
+# Ignore hdf5 bands that are not reference.hdf5
+*all_fields.hdf5
