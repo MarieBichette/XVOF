@@ -92,6 +92,10 @@ class OutputProps(TypeCheckedDataClass):
     dump: bool
     databases: List[DatabaseProps]
 
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_positivity('number_of_images')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class BoundaryType(TypeCheckedDataClass):
