@@ -1,6 +1,6 @@
 {
   "time-management": {
-    "final-time": 10e-06,
+    "final-time": 5e-06,
     "initial-time-step": 1e-08,
     "constant-time-step": true
   },
@@ -19,7 +19,7 @@
     "failure": {
       "failure-criterion": {
         "name": "HalfRodComparison",
-        "value": 50
+        "index": 50
       },
       "failure-treatment": {
         "name": "Enrichment",
@@ -33,13 +33,13 @@
     "right-boundary": {
       "type": "pressure",
       "bc-law": "Constant",
-      "value": 0
+      "value": 0.0
     },
     "left-boundary": {
       "type": "pressure",
       "bc-law": "twostep",
-      "value1": 1e+10,
-      "value2": 0,
+      "value1": -1e+10,
+      "value2": 0.0,
       "time-activation": 1e-06
     }
   },
@@ -50,7 +50,7 @@
     "cfl-pseudo": 0.0
   },
   "output": {
-    "number-of-images": 0,
+    "number-of-images": 500,
     "dump-images": false,
     "database": [
       {
