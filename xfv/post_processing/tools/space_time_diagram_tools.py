@@ -190,6 +190,10 @@ class SpaceTimeDiagramTools:
         count_active_disc = 0
         current_cell_status = self._my_hd.extract_field_at_time("CellStatus", time)[:]
 
+        modified_coord_array = np.copy(coord_array)
+        modified_time_array = np.copy(time_array)
+        modified_field_array = np.copy(field_array)
+
         if current_cell_status.any():
             # Initialisation of variables which will be used later in item loop
             left_size = self._my_hd.extract_field_at_time("AdditionalLeftSize", time)[:]
@@ -208,30 +212,30 @@ class SpaceTimeDiagramTools:
             if not current_cell_status[i_cell_index]:
                 # Current_cell is not enriched yet but will be in the future
                 # Double the value of classical field to anticipate the future fracture
-                modified_coord_array = np.insert(coord_array, moving_index + 1,
-                                                 coord_array[moving_index])
-                modified_time_array = np.insert(time_array, moving_index + 1,
-                                                time_array[moving_index])
-                modified_field_array = np.insert(field_array, moving_index + 1,
-                                                 field_array[moving_index])
+                modified_coord_array = np.insert(modified_coord_array, moving_index + 1,
+                                                 modified_coord_array[moving_index])
+                modified_time_array = np.insert(modified_time_array, moving_index + 1,
+                                                modified_time_array[moving_index])
+                modified_field_array = np.insert(modified_field_array, moving_index + 1,
+                                                 modified_field_array[moving_index])
 
             else:
                 # If the cell is enriched, insert the value for right part of the cracked cell
                 # * for coord_array : add left_size and insert right size of cell
                 left_size_for_cell_i = left_size[count_active_disc, 1]
                 right_size_for_cell_i = right_size[count_active_disc, 1]
-                coord_array[moving_index] += \
+                modified_coord_array[moving_index] += \
                     left_size_for_cell_i / 2. - cell_size[i_cell_index] / 2.
-                right_coordinate = coord_array[moving_index + 1] \
+                right_coordinate = modified_coord_array[moving_index + 1] \
                                    - right_size_for_cell_i / 2. - cell_size[i_cell_index + 1] / 2.
-                modified_coord_array = np.insert(coord_array, moving_index + 1, [right_coordinate])
+                modified_coord_array = np.insert(modified_coord_array, moving_index + 1, [right_coordinate])
 
                 # * for time_array : insert time
-                modified_time_array = np.insert(time_array, moving_index + 1, [time])
+                modified_time_array = np.insert(modified_time_array, moving_index + 1, [time])
 
                 # * for field_array : insert value of right field
                 right_field_for_cell_i = right_field[count_active_disc, 1]
-                modified_field_array = np.insert(field_array, moving_index + 1,
+                modified_field_array = np.insert(modified_field_array, moving_index + 1,
                                                  [right_field_for_cell_i])
                 count_active_disc += 1
             offset += 1
