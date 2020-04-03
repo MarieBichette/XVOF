@@ -100,16 +100,16 @@ class MieGruneisen(EquationOfStateBase):
         epsv = 1 - self.__param.rhozero * specific_volume
         derivative[:] = 1. / specific_volume
         derivative *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
+        dpdv = np.ndarray(specific_volume.shape)
         #
         targets = epsv > 0  # �Cells in compression (~targets are cells in release)
-        self.__compression_case(specific_volume, internal_energy, pressure, vson,
+        self.__compression_case(specific_volume, internal_energy, pressure, dpdv,
                                 derivative, epsv, targets)
-        self.__release_case(specific_volume, internal_energy, pressure, vson,
+        self.__release_case(specific_volume, internal_energy, pressure, dpdv,
                             derivative, epsv, ~targets)
-        vson[:] = np.sqrt(vson[:])
-        vson[vson >= 10000.] = 0.
+        self.__compute_vson2(specific_volume, pressure, derivative, dpdv, vson)
 
-    def __release_case(self, specific_volume, internal_energy, pressure, vson2,  # pylint: disable=too-many-arguments
+    def __release_case(self, specific_volume, internal_energy, pressure, dpdv,  # pylint: disable=too-many-arguments
                        gampervol, epsv, targets):
         """
         Compute the equation of state for cells under release conditions.
@@ -138,13 +138,20 @@ class MieGruneisen(EquationOfStateBase):
         #
         dphi = -self.__czero2 / specific_volume[targets] ** 2
         #
-        dpdv = dphi + (self.__dgam - loc_gampervol) * \
-                      (internal_energy[targets] - einth) / specific_volume[targets]
+        dpdv[targets] = (dphi + (self.__dgam - loc_gampervol) *
+                         (internal_energy[targets] - einth) / specific_volume[targets])
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
 
-        vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
+    @staticmethod
+    def __compute_vson2(specific_volume, pressure, gampervol, dpdv, vson):
+        """
+        Compute the sound speed velocity
+        """
+        vson[:] = specific_volume[:] ** 2 * (pressure[:] * gampervol[:] - dpdv[:])
+        vson[:] = np.sqrt(vson[:])
+        vson[vson >= 10000.] = 0.
 
-    def __compression_case(self, specific_volume, internal_energy, pressure, vson2,  # pylint: disable=too-many-arguments, too-many-locals
+    def __compression_case(self, specific_volume, internal_energy, pressure, dpdv,  # pylint: disable=too-many-arguments, too-many-locals
                            gampervol, epsv, targets):
         """
         Compute the equation of state for cells under compressive conditions.
@@ -180,9 +187,8 @@ class MieGruneisen(EquationOfStateBase):
         #
         deinth = phi * (-1. - loc_epsv * redond_a / denom)
         #
-        dpdv = (dphi +
-                (self.__dgam - loc_gampervol) *
-                (internal_energy[targets] - einth) / specific_volume[targets]
-                - loc_gampervol * deinth)
+        dpdv[targets] = (dphi +
+                         (self.__dgam - loc_gampervol) *
+                         (internal_energy[targets] - einth) / specific_volume[targets]
+                         - loc_gampervol * deinth)
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
-        vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
