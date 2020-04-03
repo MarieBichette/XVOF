@@ -106,17 +106,8 @@ class MieGruneisen(EquationOfStateBase):
                                 derivative, epsv, targets)
         self.__release_case(specific_volume, internal_energy, pressure, vson,
                             derivative, epsv, ~targets)
-        negative_vson = vson < 0
-        if negative_vson.any():
-            msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
-            msg += "specific_volume = {}\n".format(specific_volume[negative_vson])
-            msg += "pressure = {}\n".format(pressure[negative_vson])
-            msg += "dpsurde = {}\n".format(derivative[negative_vson])
-            raise ValueError(msg)
         vson[:] = np.sqrt(vson[:])
-        #
-        negative_vson = vson >= 10000.
-        vson[negative_vson] = 0.
+        vson[vson >= 10000.] = 0.
 
     def __release_case(self, specific_volume, internal_energy, pressure, vson2,  # pylint: disable=too-many-arguments
                        gampervol, epsv, targets):
