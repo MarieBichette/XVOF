@@ -52,10 +52,11 @@ class MieGruneisen(EquationOfStateBase):
     Mie Gruneisen equation of state
     """
 
-    def __init__(self, czero=3940.0, S1=1.489, S2=0., S3=0., rhozero=8930.0, grunzero=2.02, b=0.47, ezero=0.):
+    def __init__(self, czero=3940.0, S1=1.489, S2=0., S3=0., rhozero=8930.0, grunzero=2.02,
+                 b=0.47, ezero=0.):
         #
-        self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero,
-                                              b=b, ezero=ezero)
+        self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero,
+                                              grunzero=grunzero, b=b, ezero=ezero)
         self.__czero2 = self.__param.czero ** 2
         self.__dgam = self.__param.rhozero * (self.__param.grunzero - self.__param.b)
 
@@ -67,7 +68,8 @@ class MieGruneisen(EquationOfStateBase):
         return message
 
     def __repr__(self):
-        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in zip(self.__param._fields, self.__param)])
+        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in zip(self.__param._fields,
+                                                                  self.__param)])
         return "MieGruneisen({:s})".format(msg)
 
     @property
@@ -99,8 +101,10 @@ class MieGruneisen(EquationOfStateBase):
         gampervol *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
         #
         targets = epsv > 0  # �Cells in compression (~targets are cells in release)
-        self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
-        self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, ~targets)
+        self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv,
+                                targets)
+        self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv,
+                            ~targets)
         pb = vson < 0
         if pb.any():
             msg = "Sound speed square < 0 in cells {}\n".format(np.where(pb))
@@ -113,7 +117,8 @@ class MieGruneisen(EquationOfStateBase):
         pb = vson >= 10000.
         vson[pb] = 0.
 
-    def __release_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+    def __release_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv,
+                       targets):
         """
         Compute the equation of state for cells under release conditions.
 
@@ -147,7 +152,8 @@ class MieGruneisen(EquationOfStateBase):
 
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
 
-    def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+    def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol,
+                           epsv, targets):
         """
         Compute the equation of state for cells under compressive conditions.
 
@@ -170,8 +176,10 @@ class MieGruneisen(EquationOfStateBase):
         loc_epsv2 = loc_epsv ** 2
         # Coefficient de gruneisen
         loc_gampervol = gampervol[targets]
-        redond_a = self.__param.S1 + 2. * self.__param.S2 * loc_epsv + 3. * self.__param.S3 * loc_epsv2
-        denom = (1. - (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2) * loc_epsv)
+        redond_a = self.__param.S1 + 2. * self.__param.S2 * loc_epsv \
+                   + 3. * self.__param.S3 * loc_epsv2
+        denom = (1. - (self.__param.S1 + self.__param.S2 * loc_epsv
+                       + self.__param.S3 * loc_epsv2) * loc_epsv)
         phi = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
         einth = self.__param.ezero + phi * loc_epsv / (2. * self.__param.rhozero)
         #
@@ -180,7 +188,8 @@ class MieGruneisen(EquationOfStateBase):
         deinth = phi * (-1. - loc_epsv * redond_a / denom)
         #
         dpdv = dphi + (self.__dgam - loc_gampervol) * \
-                      (internal_energy[targets] - einth) / specific_volume[targets] - loc_gampervol * deinth
+                      (internal_energy[targets] - einth) / \
+               specific_volume[targets] - loc_gampervol * deinth
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
 

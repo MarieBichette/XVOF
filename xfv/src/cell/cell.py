@@ -1,12 +1,12 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing class cell
 """
 
-import numpy as np
 from abc import abstractmethod
 from copy import deepcopy
 import os
+import numpy as np
 
 from xfv.src.data.data_container import DataContainer
 from xfv.src.fields.field import Field
@@ -61,7 +61,7 @@ class Cell(object):
         self.cell_in_target = np.zeros(self.number_of_cells, dtype='bool')
         self.cell_in_projectile = np.zeros(self.number_of_cells, dtype='bool')
 
-        # initialisation par d�faut avec material_target ---------------------
+        # initialisation par dï¿½faut avec material_target ---------------------
         # hydro :
         material_data = DataContainer().material_target.initial_values
         self._fields_manager["Density"] = Field(
@@ -81,28 +81,30 @@ class Cell(object):
 
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
-        Initialisation des champs aux mailles et des caract�ristiques cell_in_target et
+        Initialisation des champs aux mailles et des caractï¿½ristiques cell_in_target et
         cell_in_projectile
         :param mask_node_target: tableau de bool pour les noeuds dans la cible
         :param mask_node_projectile: tableau de bool pour les noeuds dans le projectile
-        :param topology: Topologie donnant les tableaux de connectivit�
+        :param topology: Topologie donnant les tableaux de connectivitï¿½
         :return:
         """
         # Partie mask_cible
         indice_noeuds = np.where(mask_node_target)[0]
-        cell_target = np.unique(topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
-        # on �limine les noeuds extr�mes :
-        # 1 pour ne pas prendre la derni�re maille du projectile qui est connect�e
-        # aussi � un noeud target -1 pour ne pas prendre la maille connect�ee au dernier
+        cell_target = np.unique(
+            topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
+        # on ï¿½limine les noeuds extrï¿½mes :
+        # 1 pour ne pas prendre la derniï¿½re maille du projectile qui est connectï¿½e
+        # aussi ï¿½ un noeud target -1 pour ne pas prendre la maille connectï¿½ee au dernier
         # noeud de la cible, qui n'existe pas
         self.cell_in_target[cell_target] = True
 
         # Partie mask_projectile
         indice_noeuds = np.where(mask_node_projectile)[0]
-        cell_projectile = np.unique(topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
-        # on �limine les noeuds extr�mes :
-        # -1 pour ne pas prendre la premi�re maille de la cible qui est aussi
-        # connect�e � un noeud projectile 1 pour ne pas prendre la maille connect�ee au
+        cell_projectile = np.unique(
+            topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
+        # on ï¿½limine les noeuds extrï¿½mes :
+        # -1 pour ne pas prendre la premiï¿½re maille de la cible qui est aussi
+        # connectï¿½e ï¿½ un noeud projectile 1 pour ne pas prendre la maille connectï¿½ee au
         # premier noeud du projectile, qui n'existe pas
         self.cell_in_projectile[cell_projectile] = True
 
@@ -112,13 +114,13 @@ class Cell(object):
             print("Cells in the target : de {:} a {:}".format(
                 np.where(self.cell_in_target)[0][0], np.where(self.cell_in_target)[0][-1]))
         except IndexError:
-            # pour g�rer  les exceptions o� il n'y a pas de projectile ou de target
+            # pour gï¿½rer  les exceptions oï¿½ il n'y a pas de projectile ou de target
             # (cas tableau vide [index])
             pass
 
-        # correction de l'init si materiau projectile d�clar� dans XDATA.json
+        # correction de l'init si materiau projectile dï¿½clarï¿½ dans XDATA.json
         # (le mask est vide si pas de projectile donc transparent quand il n'y a pas
-        # de projectile déclaré)
+        # de projectile dÃ©clarÃ©)
         if DataContainer().data_contains_a_projectile:
             material_data = DataContainer().material_projectile.initial_values
             self.density.current_value[self.cell_in_projectile] = material_data.rho_init
@@ -127,9 +129,12 @@ class Cell(object):
             self.pressure.new_value[self.cell_in_projectile] = material_data.pression_init
             self.energy.current_value[self.cell_in_projectile] = material_data.energie_init
             self.energy.new_value[self.cell_in_projectile] = material_data.energie_init
-            self.shear_modulus.current_value[self.cell_in_projectile] = material_data.shear_modulus_init
-            self.shear_modulus.new_value[self.cell_in_projectile] = material_data.shear_modulus_init
-            self.yield_stress.current_value[self.cell_in_projectile] = material_data.yield_stress_init
+            self.shear_modulus.current_value[self.cell_in_projectile] = \
+                material_data.shear_modulus_init
+            self.shear_modulus.new_value[self.cell_in_projectile] = \
+                material_data.shear_modulus_init
+            self.yield_stress.current_value[self.cell_in_projectile] = \
+                material_data.yield_stress_init
             self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
 
 
