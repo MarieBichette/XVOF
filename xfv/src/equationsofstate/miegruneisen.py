@@ -17,8 +17,8 @@ Parameters :
  --                    b :       0.5
  --                ezero :         0
  >>> my_eos # doctest:+NORMALIZE_WHITESPACE
- MieGruneisen(czero=3980.000000, S1=1.580000, S2=0.000000, S3=0.000000, rhozero=8129.000000, grunzero=1.600000,
- b=0.500000, ezero=0.000000)
+ MieGruneisen(czero=3980.000000, S1=1.580000, S2=0.000000, S3=0.000000,
+ rhozero=8129.000000, grunzero=1.600000, b=0.500000, ezero=0.000000)
  >>> density = np.array([9000., 8500., 9500.], dtype=np.float64, order='C')
  >>> specific_volume = 1. / density
  >>> internal_energy = np.array([1.0e+04, 1.0e+03, 1.0e+05], dtype=np.float64, order='C')
@@ -34,14 +34,14 @@ Parameters :
  >>> print dpde
  [ 13441.9  13191.9  13691.9]
 """
-import numpy as np
 import os
 from collections import namedtuple
+
+import numpy as np
 
 from xfv.src.equationsofstate.equationofstatebase import EquationOfStateBase
 
 # Deactivate pylint warnings due to NotImplementedError
-# pylint: disable=R0921
 
 MieGruneisenParameters = namedtuple('MieGruneisenParameters', ['czero', 'S1', 'S2', 'S3',
                                                                'rhozero', 'grunzero', 'b', 'ezero'])
@@ -52,9 +52,11 @@ class MieGruneisen(EquationOfStateBase):
     Mie Gruneisen equation of state
     """
 
-    def __init__(self, czero=3940.0, S1=1.489, S2=0., S3=0., rhozero=8930.0, grunzero=2.02, b=0.47, ezero=0.):
+    def __init__(self, czero=3940.0, S1=1.489, S2=0., S3=0., rhozero=8930.0,  # pylint: disable=too-many-arguments
+                 grunzero=2.02, b=0.47, ezero=0.):
         #
-        self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3, rhozero=rhozero, grunzero=grunzero,
+        self.__param = MieGruneisenParameters(czero=czero, S1=S1, S2=S2, S3=S3,
+                                              rhozero=rhozero, grunzero=grunzero,
                                               b=b, ezero=ezero)
         self.__czero2 = self.__param.czero ** 2
         self.__dgam = self.__param.rhozero * (self.__param.grunzero - self.__param.b)
@@ -67,7 +69,8 @@ class MieGruneisen(EquationOfStateBase):
         return message
 
     def __repr__(self):
-        msg = ", ".join(["{:s}={:f}".format(k, v) for k, v in zip(self.__param._fields, self.__param)])
+        msg = ", ".join(["{:s}={:f}".format(k, v)
+                         for k, v in zip(self.__param._fields, self.__param)])
         return "MieGruneisen({:s})".format(msg)
 
     @property
@@ -78,7 +81,7 @@ class MieGruneisen(EquationOfStateBase):
         """
         return self.__param
 
-    def solveVolumeEnergy(self, specific_volume, internal_energy, pressure, vson, gampervol):
+    def solve_volume_energy(self, specific_volume, internal_energy, pressure, vson, derivative):  # pylint: disable=too-many-arguments
         """
         Given the specific volume and internal energy computes the pressure, sound speed and
         derivative of the pressure with respect to the internal energy
@@ -95,25 +98,28 @@ class MieGruneisen(EquationOfStateBase):
         :type gampervol: numpy.array
         """
         epsv = 1 - self.__param.rhozero * specific_volume
-        gampervol[:] = 1. / specific_volume
-        gampervol *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
+        derivative[:] = 1. / specific_volume
+        derivative *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
         #
         targets = epsv > 0  # �Cells in compression (~targets are cells in release)
-        self.__compression_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, targets)
-        self.__release_case(specific_volume, internal_energy, pressure, vson, gampervol, epsv, ~targets)
-        pb = vson < 0
-        if pb.any():
-            msg = "Sound speed square < 0 in cells {}\n".format(np.where(pb))
-            msg += "specific_volume = {}\n".format(specific_volume[pb])
-            msg += "pressure = {}\n".format(pressure[pb])
-            msg += "dpsurde = {}\n".format(gampervol[pb])
+        self.__compression_case(specific_volume, internal_energy, pressure, vson,
+                                derivative, epsv, targets)
+        self.__release_case(specific_volume, internal_energy, pressure, vson,
+                            derivative, epsv, ~targets)
+        negative_vson = vson < 0
+        if negative_vson.any():
+            msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
+            msg += "specific_volume = {}\n".format(specific_volume[negative_vson])
+            msg += "pressure = {}\n".format(pressure[negative_vson])
+            msg += "dpsurde = {}\n".format(derivative[negative_vson])
             raise ValueError(msg)
         vson[:] = np.sqrt(vson[:])
         #
-        pb = vson >= 10000.
-        vson[pb] = 0.
+        negative_vson = vson >= 10000.
+        vson[negative_vson] = 0.
 
-    def __release_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+    def __release_case(self, specific_volume, internal_energy, pressure, vson2,  # pylint: disable=too-many-arguments
+                       gampervol, epsv, targets):
         """
         Compute the equation of state for cells under release conditions.
 
@@ -147,7 +153,8 @@ class MieGruneisen(EquationOfStateBase):
 
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
 
-    def __compression_case(self, specific_volume, internal_energy, pressure, vson2, gampervol, epsv, targets):
+    def __compression_case(self, specific_volume, internal_energy, pressure, vson2,  # pylint: disable=too-many-arguments, too-many-locals
+                           gampervol, epsv, targets):
         """
         Compute the equation of state for cells under compressive conditions.
 
@@ -170,8 +177,11 @@ class MieGruneisen(EquationOfStateBase):
         loc_epsv2 = loc_epsv ** 2
         # Coefficient de gruneisen
         loc_gampervol = gampervol[targets]
-        redond_a = self.__param.S1 + 2. * self.__param.S2 * loc_epsv + 3. * self.__param.S3 * loc_epsv2
-        denom = (1. - (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2) * loc_epsv)
+        redond_a = (self.__param.S1 + 2. * self.__param.S2 * loc_epsv +
+                    3. * self.__param.S3 * loc_epsv2)
+        denom = (1. -
+                 (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2)
+                 * loc_epsv)
         phi = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
         einth = self.__param.ezero + phi * loc_epsv / (2. * self.__param.rhozero)
         #
@@ -179,13 +189,9 @@ class MieGruneisen(EquationOfStateBase):
         #
         deinth = phi * (-1. - loc_epsv * redond_a / denom)
         #
-        dpdv = dphi + (self.__dgam - loc_gampervol) * \
-                      (internal_energy[targets] - einth) / specific_volume[targets] - loc_gampervol * deinth
+        dpdv = (dphi +
+                (self.__dgam - loc_gampervol) *
+                (internal_energy[targets] - einth) / specific_volume[targets]
+                - loc_gampervol * deinth)
         pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
         vson2[targets] = specific_volume[targets] ** 2 * (pressure[targets] * loc_gampervol - dpdv)
-
-    def solveVolumePressure(self, specific_volume, pressure):
-        raise NotImplementedError
-
-    def solveVolumeTemperature(self, specific_volume, temperatue):
-        raise NotImplementedError

@@ -12,9 +12,6 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
     Defines the evolution function of the internal energy that must vanish in VNR scheme
     [v, e] formulation
     """
-    def __init__(self):
-        super(VnrEnergyEvolutionForVolumeEnergyFormulation, self).__init__()
-
     def computeFunctionAndDerivative(self, var_value, mask):
         nrj = var_value[mask]
         eos = self._variables['EquationOfState']
@@ -25,7 +22,7 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         p_i = np.zeros(nrj.shape, dtype=np.float64, order='C')
         dpsurde = np.zeros(nrj.shape, dtype=np.float64, order='C')
         dummy = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
+        eos.solve_volume_energy(1. / new_rho, nrj, p_i, dummy, dpsurde)
         # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
         func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj
