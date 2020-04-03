@@ -357,7 +357,7 @@ class OneDimensionCell(Cell):
         connectivity = topologie.nodes_belonging_to_cell
         size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
         cell_error = (size < 0)
-        if cell_error.any():
+        if cell_error[mask].any():
             raise ValueError("La maille {:} a une longueur n�gative !".format(
                 np.where(cell_error)[0]))
         self._size_t_plus_dt[mask] = size[mask].flatten()
