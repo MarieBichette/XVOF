@@ -5,7 +5,8 @@ Setup script for XtendedFiniteVolume project
 from setuptools import setup, find_packages
 
 
-setup(name='XtendedFiniteVolume',
+setup(python_requires='>3.6',
+      name='XtendedFiniteVolume',
       version='1.0',
       description='A 1D hydrocode with discontinuous fields abilities',
       author='Guillaume Peillex',

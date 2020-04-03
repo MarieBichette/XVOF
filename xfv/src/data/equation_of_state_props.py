@@ -46,3 +46,7 @@ class MieGruneisenProps(EquationOfStateProps):
     ezero: float
     _eos_class = MieGruneisen
     _eos_inst = None
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_strict_positivity('czero', 'rhozero')

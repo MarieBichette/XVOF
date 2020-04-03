@@ -110,14 +110,12 @@ def _build_boundary_function(boundary: BoundaryType) -> CustomFunction:
     """
     Build a boundary function from the boundary infos of the data file
     """
+    assert boundary.type_bc in ('velocity', 'pressure')
     function_obj = boundary.law.build_custom_func()
     if boundary.type_bc == "velocity":
         function_obj.register_velocity()
     elif boundary.type_bc == "pressure":
         function_obj.register_pressure()
-    else:
-        raise ValueError(f"Unknown boudary type {boundary.type_bc}. "
-                         "Please choose among (velocity, pressure)")
     return function_obj
 
 
@@ -163,9 +161,8 @@ def main(directory: Path) -> None:
     else:
         rupture_treatment = None
 
-    if rupture_criterion is None and rupture_treatment is not None:
-        raise ValueError("A failure criterion is required if failure treatment is set")
-
+    # Strong check is made in the FailureModelProps class
+    assert rupture_criterion is not None or rupture_treatment is None
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#

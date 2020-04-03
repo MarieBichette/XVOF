@@ -42,11 +42,20 @@ class NumericalProps(TypeCheckedDataClass):
     cfl: float
     cfl_pseudo: float
 
+    def __post_init__(self):
+        super().__post_init__()  # type checking first
+        self._ensure_positivity('a_pseudo', 'b_pseudo', 'cfl', 'cfl_pseudo')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class GeometricalProps(TypeCheckedDataClass):
     section: float
     initial_interface_position: float
+
+    def __post_init__(self):
+        super().__post_init__()  # type checking first
+        self._ensure_strict_positivity('section')
+        self._ensure_positivity('initial_interface_position')
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -56,6 +65,11 @@ class TimeProps(TypeCheckedDataClass):
     is_time_step_constant: bool
     time_step_reduction_factor_for_failure: Optional[float]
 
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_positivity('initial_time_step', 'time_step_reduction_factor_for_failure')
+        self._ensure_strict_positivity('final_time')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class DatabaseProps(TypeCheckedDataClass):
@@ -64,6 +78,13 @@ class DatabaseProps(TypeCheckedDataClass):
     time_period: Optional[float]
     iteration_period: Optional[int]
 
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_strict_positivity('time_period', 'iteration_period')
+        if self.time_period is not None and self.iteration_period is not None:
+            raise ValueError("Please provide one of (time-period, iteration-period) "
+                             "but not both!")
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class OutputProps(TypeCheckedDataClass):
@@ -71,11 +92,19 @@ class OutputProps(TypeCheckedDataClass):
     dump: bool
     databases: List[DatabaseProps]
 
+    def __post_init__(self):
+        super().__post_init__()
+        self._ensure_positivity('number_of_images')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class BoundaryType(TypeCheckedDataClass):
     type_bc: str
     law: UserDefinedFunctionPropsType
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_value_in('type_bc', ('velocity', 'pressure'))
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -88,12 +117,19 @@ class BoundaryConditionsProps(TypeCheckedDataClass):
 class DamageModelProps(TypeCheckedDataClass):
     cohesive_model: CohesiveZoneModelProps
     name: str
+    # Do not check if name is among authorized values because
+    # it is done in one of the DataContainer's method and
+    # moving the test here, implies to allow the cohesive_model to be None
 
 
-@dataclass
-class ContactModelProps(TypeCheckedDataClass):  # pylint: disable=missing-class-docstring
+@dataclass  # pylint: disable=missing-class-docstring
+class ContactModelProps(TypeCheckedDataClass):
     contact_model: ContactProps
     name: str
+    # Do not check if name is among authorized values because
+    # it is done in one of the DataContainer's method and
+    # moving the test here, implies to allow the contact_model to be None
+
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -105,6 +141,14 @@ class InitialValues(TypeCheckedDataClass):
     energie_init: float
     yield_stress_init: float
     shear_modulus_init: float
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_strict_positivity('rho_init', 'temp_init')
+        self._ensure_positivity('yield_stress_init', 'shear_modulus_init')
+        # TODO: one the initialization via eos will be done, check that only two fields
+        # are not nill (v and e or v and T)
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class ConstitutiveModelProps(TypeCheckedDataClass):
@@ -123,6 +167,11 @@ class FailureModelProps(TypeCheckedDataClass):
     failure_criterion: Optional[RuptureCriterionProps]
     failure_criterion_value: Optional[float]
     failure_criterion_index: Optional[int]
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        if self.failure_criterion is None and self.failure_treatment is not None:
+            raise ValueError("A failure criterion is required if failure treatment is set")
 
 
 @dataclass  # pylint: disable=missing-class-docstring

@@ -4,6 +4,7 @@ needed to create CustomFunction objects.
 """
 from abc import ABCMeta
 from dataclasses import dataclass, field, astuple
+from pathlib import Path
 from typing import Union, Type
 
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
@@ -65,6 +66,14 @@ class RampFunctionProps(UserDefinedFunctionProps):
     end_time: float
     _custom_func_class = Ramp
 
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_positivity('start_time', 'end_time')
+        if self.end_time <= self.start_time:
+            raise ValueError(f"{self.end_time} <= {self.start_time}\n"
+                             "Please respect the chronology. "
+                             "The coefficient end_time should be greater than the start_time one")
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class TwoStepsFunctionProps(UserDefinedFunctionProps):
@@ -73,11 +82,20 @@ class TwoStepsFunctionProps(UserDefinedFunctionProps):
     critical_time: float
     _custom_func_class = TwoSteps
 
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_positivity('critical_time')
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class MarchTableFunctionProps(UserDefinedFunctionProps):
     file: str
     _custom_func_class = MarchTable
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        if not Path(self.file).exists():
+            raise FileNotFoundError(f"The file {self.file} doesn't exists!")
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -89,6 +107,17 @@ class SuccessiveRampFunctionProps(UserDefinedFunctionProps):
         first = self.first_ramp.build_custom_func()
         second = self.second_ramp.build_custom_func()
         return SuccessiveRamp(first, second)
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        if self.first_ramp.end_time > self.second_ramp.start_time:
+            raise ValueError(f"{self.first_ramp.end_time} <= {self.second_ramp.start_time}\n"
+                             "Cannot go into the past."
+                             "You have to build the ramp with increasing times")
+
+        if self.first_ramp.second_value != self.second_ramp.first_value:
+            raise ValueError(f"{self.first_ramp.second_value} != {self.second_ramp.first_value}\n"
+                             "Please use a continuous law!")
 
 
 UserDefinedFunctionPropsType = Union[ConstantValueFunctionProps, MarchTableFunctionProps,
