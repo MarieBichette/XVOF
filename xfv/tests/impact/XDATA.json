@@ -2,8 +2,8 @@
   "time-management": {
     "final-time": 5e-06,
     "initial-time-step": 5e-10,
-    "constant-time-step": true,
-    "time-step-reduction-factor-for-failure": 2
+    "constant-time-step": false,
+    "time-step-reduction-factor-for-failure": 2.0
   },
   "geometry": {
     "section": 3.141592653589793e-06,
@@ -13,14 +13,14 @@
     "projectile": {
       "initialization": {
         "initial-velocity": 654.0,
-        "init-thermo": "Aluminium_InitThermo.json"
+        "init-thermo": "../../data/CONSTITUTIVE_MODEL/Aluminium_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "Aluminium_MieGruneisen.json"
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Aluminium_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "Aluminium_EPP.json",
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Aluminium_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"
@@ -29,14 +29,14 @@
     "target": {
       "initialization": {
         "initial-velocity": 0.0,
-        "init-thermo": "Tantale_InitThermo.json"
+        "init-thermo": "../../data/CONSTITUTIVE_MODEL/Tantale_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "Tantale_MieGruneisen.json"
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Tantale_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "Tantale_EPP.json",
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Tantale_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"
@@ -51,6 +51,10 @@
           "value": 0.5,
           "type-of-enrichment": "Hansbo",
           "lump-mass-matrix": "somme"
+        },
+        "contact": {
+          "name": "Penalty",
+          "penalty-stiffness": 1e+14
         }
       }
     }
@@ -76,10 +80,12 @@
   "output": {
     "number-of-images": 500,
     "dump-images": false,
-    "database": {
+    "database": [
+      {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "iteration-period": 20
-    }
+      "time-period": 1e-08
+      }
+    ]
   }
 }
