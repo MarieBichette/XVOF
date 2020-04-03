@@ -470,9 +470,9 @@ class OneDimensionCell(Cell):
         """
         connectivity = topologie.nodes_belonging_to_cell
         u_new = vitesse_noeud_new[connectivity][:, :, 0]
-        # velocities of the left and right nodes � cot� de cell
+        # velocities of the left and right nodes belonging to cell
         x_new = coord_noeud_new[connectivity][:, :, 0]
-        # coordinates of the left and right nodes � cot� de cell
+        # coordinates of the left and right nodes belonging to cell
 
         # Calcul du d�viateur de D
         self._deviatoric_strain_rate[mask, :] = \
@@ -484,13 +484,11 @@ class OneDimensionCell(Cell):
         :param mask : mask to identify the cells where plasticity should be applied
         (classical cells where plasticity criterion is activated)
         """
-        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
-        # pr�diction �lastique avant le traitement de la plasticit�
-        radial_return = self.yield_stress.current_value / invariant_J2_el
-        plasticity = radial_return < 1.
-        plastic_mask = np.logical_and(mask, plasticity)
+        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        # elastic predictor before applying plasticity
+        radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
         for i in range(0, 3):
-                self._deviatoric_stress_new[plastic_mask, i] *= radial_return[plastic_mask]
+                self._deviatoric_stress_new[mask, i] *= radial_return
 
     def compute_plastic_strain_rate_tensor(self, mask, dt):
         """
@@ -500,15 +498,13 @@ class OneDimensionCell(Cell):
         :param dt: time step
         """
         # A faire avant apply_plastic_corrector_on_deviatoric_stress_tensor
-        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
-        radial_return = self.yield_stress.current_value / invariant_J2_el
-        plasticity = radial_return < 1.
-        plastic_mask = np.logical_and(mask, plasticity)
+        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
+        G = self.shear_modulus.current_value[mask]
         for i in range(0, 3):
-            self._plastic_strain_rate[plastic_mask, i] = \
-                (1 - radial_return[plastic_mask]) * self._deviatoric_stress_new[plastic_mask, i] / \
-                (radial_return[plastic_mask] *
-                 3 * self.shear_modulus.current_value[plastic_mask] * dt)
+            self._plastic_strain_rate[mask, i] = \
+                (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
+                (radial_return * 3 * G * dt)
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):
         """
@@ -516,15 +512,12 @@ class OneDimensionCell(Cell):
         :param mask: array of bool to select cells of interest
         :param dt : float, time step staggered
         """
-        invariant_J2_el = compute_second_invariant(self.deviatoric_stress_new)
-        # pr�diction �lastique avant le traitement de la plasticit�
-        G = self.shear_modulus.current_value
-        plasticity = invariant_J2_el > self.yield_stress.current_value
-        plastic_mask = np.logical_and(mask, plasticity)
+        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        # elastic predictor before applying plasticity
+        G = self.shear_modulus.current_value[mask]
 
-        self._equivalent_plastic_strain_rate[plastic_mask] = \
-            (invariant_J2_el[plastic_mask] - self.yield_stress.current_value[plastic_mask]) / \
-            (3. * G[plastic_mask] * dt)
+        self._equivalent_plastic_strain_rate[mask] = \
+            (invariant_j2_el - self.yield_stress.current_value[mask]) / (3. * G * dt)
 
     def impose_pressure(self, ind_cell, pressure):
         """

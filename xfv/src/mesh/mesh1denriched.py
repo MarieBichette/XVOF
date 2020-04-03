@@ -420,21 +420,21 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                               self.__plastic_cells)  # pylint: disable=assignment-from-no-return
 
         # Cells plastic classical
-        mask_classic = np.logical_and(self.cells.classical,
+        mask_classic_plastic = np.logical_and(self.cells.classical,
                                       mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
-        self.cells.compute_plastic_strain_rate_tensor(mask_classic, delta_t)
-        self.cells.compute_equivalent_plastic_strain_rate(mask_classic, delta_t)
-        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic)
+        self.cells.compute_plastic_strain_rate_tensor(mask_classic_plastic, delta_t)
+        self.cells.compute_equivalent_plastic_strain_rate(mask_classic_plastic, delta_t)
+        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic_plastic)
 
         # Cells plastic enriched
-        mask_enriched = np.logical_and(self.cells.enriched,
+        mask_enriched_plastic = np.logical_and(self.cells.enriched,
                                        mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_enriched_yield_stress()
-        self.cells.compute_enriched_plastic_strain_rate(mask_enriched, delta_t)
-        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched, delta_t)
+        self.cells.compute_enriched_plastic_strain_rate(mask_enriched_plastic, delta_t)
+        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched_plastic, delta_t)
         self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(
-            mask_enriched)
+            mask_enriched_plastic)
 
     @property
     def velocity_field(self):
