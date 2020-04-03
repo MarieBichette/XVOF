@@ -54,7 +54,8 @@ class Node1dTest(unittest.TestCase):
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         np.testing.assert_array_equal(self.my_nodes.force.flatten(),
                                       np.array([2500., -1500., 1000., -2000.]))
 
@@ -66,7 +67,8 @@ class Node1dTest(unittest.TestCase):
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         mask = np.empty([4], dtype=bool)
         mask[:] = True
         mass_matrix = np.array([[1./8., ], [1./4., ], [3./8., ], [1./4., ]])
@@ -83,7 +85,8 @@ class Node1dTest(unittest.TestCase):
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         self.my_nodes.apply_pressure(0, 1.e+09)
         np.testing.assert_array_equal(self.my_nodes.force[0], np.array([3500.]))
 

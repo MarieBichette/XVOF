@@ -270,7 +270,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of nodes forces at t+dt
         """
-        self.nodes.compute_new_force(self.__topology, self.cells.stress_xx)
+        self.nodes.compute_new_force(self.__topology, self.cells.stress_xx, self.cells.classical)
         self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx)
 
     @timeit_file("/tmp/profil_xfv.src.txt")

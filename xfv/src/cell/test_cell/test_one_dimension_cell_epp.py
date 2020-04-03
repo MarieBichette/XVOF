@@ -40,7 +40,7 @@ class OneDimensionCellEPPTest(unittest.TestCase):
         """
         Test de la mï¿½thode apply_plastic_corrector_on_deviatoric_stress_tensor
         """
-        mask = np.array([True, True, True, False])
+        mask = np.array([True, True, False, False])
         self.my_cells._deviatoric_stress_new = np.array([[8e+9, -4e+9, -4e+9],
                                                          [5e+8, -2.5e+8, -2.5e+8],
                                                          [1.e+2, -5e+1, -5e+1],
@@ -58,7 +58,7 @@ class OneDimensionCellEPPTest(unittest.TestCase):
         """
         Test de la mï¿½thode compute_equivalent_plastic_strain_rate
         """
-        mask = np.array([True, True, True, False])
+        mask = np.array([True, True, False, False])
         delta_t = 1.
         self.my_cells._deviatoric_stress_new = np.array([[8e+9, -4e+9, -4e+9],
                                                          [5e+8, -2.5e+8, -2.5e+8],
