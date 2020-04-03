@@ -102,15 +102,18 @@ class SpaceTimeDiagramTools:
         # 2) Build line after line the color map X, Y, Z
         for i_temps in range(self._my_hd.nb_saved_times):
             time = self._my_hd.saved_times[i_temps]
+            cell_size = self._my_hd.extract_field_at_time("CellSize", time)[:]
             coord_array_at_time, time_array_at_time, field_array_at_time = \
                 self._build_classical_xyz_map_for_contourf_plot_at_time(time, dim_x_0,
                                                                         classical_fname)
-            self._include_enrichment(coord_array_at_time, time_array_at_time, field_array_at_time,
-                                     time, cell_size, final_ruptured_cell_id,
-                                     additional_fname)  # modifies coord_at_time, y, z
-            coord_array[i_temps, :] = coord_array_at_time * 1.e3
-            time_array[i_temps, :] = time_array_at_time * 1.e6
-            field_array[i_temps, :] = field_array_at_time
+            modified_coord_array_t, modified_time_array_t, modified_field_array_t = \
+                self._include_enrichment(coord_array_at_time, time_array_at_time,
+                                         field_array_at_time, time, cell_size,
+                                         final_ruptured_cell_id,
+                                         additional_fname)  # modifies coord_at_time, y, z
+            coord_array[i_temps, :] = modified_coord_array_t * 1.e3
+            time_array[i_temps, :] = modified_time_array_t * 1.e6
+            field_array[i_temps, :] = modified_field_array_t
         return coord_array, time_array, field_array  # X, Y, Z
 
     def plot_section_of_color_map(self, coord, time, field, options, begin=None, end=None):
@@ -169,7 +172,7 @@ class SpaceTimeDiagramTools:
         return coord_array, time_array, field_array
 
     def _include_enrichment(self, coord_array, time_array, field_array, time, cell_size,
-                            final_ruptured_cell_id, additional_fname):
+                            final_ruptured_cell_id: np.array, additional_fname: str):
         """
         Modifies the x,y,z array to include enrichment either by dedoubling the data if the disc is
         not created at time t yet, or by inserting the disc data if the disc exists at time t
@@ -205,9 +208,12 @@ class SpaceTimeDiagramTools:
             if not current_cell_status[i_cell_index]:
                 # Current_cell is not enriched yet but will be in the future
                 # Double the value of classical field to anticipate the future fracture
-                coord_array = np.insert(coord_array, moving_index + 1, coord_array[moving_index])
-                time_array = np.insert(time_array, moving_index + 1, time_array[moving_index])
-                field_array = np.insert(field_array, moving_index + 1, field_array[moving_index])
+                modified_coord_array = np.insert(coord_array, moving_index + 1,
+                                                 coord_array[moving_index])
+                modified_time_array = np.insert(time_array, moving_index + 1,
+                                                time_array[moving_index])
+                modified_field_array = np.insert(field_array, moving_index + 1,
+                                                 field_array[moving_index])
 
             else:
                 # If the cell is enriched, insert the value for right part of the cracked cell
@@ -218,13 +224,16 @@ class SpaceTimeDiagramTools:
                     left_size_for_cell_i / 2. - cell_size[i_cell_index] / 2.
                 right_coordinate = coord_array[moving_index + 1] \
                                    - right_size_for_cell_i / 2. - cell_size[i_cell_index + 1] / 2.
-                coord_array = np.insert(coord_array, moving_index + 1, [right_coordinate])
+                modified_coord_array = np.insert(coord_array, moving_index + 1, [right_coordinate])
 
                 # * for time_array : insert time
-                time_array = np.insert(time_array, moving_index + 1, [time])
+                modified_time_array = np.insert(time_array, moving_index + 1, [time])
 
                 # * for field_array : insert value of right field
                 right_field_for_cell_i = right_field[count_active_disc, 1]
-                field_array = np.insert(field_array, moving_index + 1, [right_field_for_cell_i])
+                modified_field_array = np.insert(field_array, moving_index + 1,
+                                                 [right_field_for_cell_i])
                 count_active_disc += 1
             offset += 1
+
+        return modified_coord_array, modified_time_array, modified_field_array

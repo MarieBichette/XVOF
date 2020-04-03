@@ -171,14 +171,22 @@ class OutputManager(object, metaclass=Singleton):
                             value = getattr(disc, field.attr_name[0])
                             for attr_name in field.attr_name[1:]:
                                 value = getattr(value, attr_name).flatten()
-                            try:  # enregistre un tenseur diagonal (3 valeurs)
-                                additional_field.append((cell_id, value[:, 0], value[:, 1],
-                                                         value[:, 2]))
-                            except IndexError:
-                                try:  # enrgistre un vecteur vitesse (2 composantes)
-                                    additional_field.append((cell_id, value[0], value[1]))
-                                except IndexError:  # enregistre un scalaire (champs thermo)
-                                    additional_field.append((cell_id, value))
+
+                            if value.shape == (1, ):
+                                # Register cell scalar field
+                                additional_field.append((cell_id, value[0]))
+
+                            elif value.shape == (2, 1):
+                                # Register node vector field
+                                additional_field.append((cell_id, value[0][0], value[1][0]))
+
+                            elif value.shape == (1, 3):
+                                # Register cell tensor field
+                                additional_field.append((cell_id, value[0, 0], value[0, 1],
+                                                         value[0, 2]))
+                            else:
+                                raise ValueError("Unknown shape to register in database")
+
                         if len(Discontinuity.discontinuity_list()) > 0:
                             # sortir le build info de la boucle for des discontinuites permet
                             # d'enregistrer plusieurs discontinuites a la fois. Le seul "probleme"

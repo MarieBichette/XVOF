@@ -121,7 +121,8 @@ class FailureModelProps(TypeCheckedDataClass):
     type_of_enrichment: Optional[str]
     lump_mass_matrix: Optional[str]
     failure_criterion: Optional[RuptureCriterionProps]
-    failure_criterion_value: float
+    failure_criterion_value: Optional[float]
+    failure_criterion_index: Optional[int]
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -376,10 +377,12 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         # TODO : rassembler tout ça !
         failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = (
             self.__get_failure_props(material))
-        failure_criterion, failure_criterion_value = self.__get_failure_criterion_props(material)
+        failure_criterion, failure_criterion_value, failure_index = \
+            self.__get_failure_criterion_props(material)
 
         failure = FailureModelProps(failure_treatment, failure_treatment_value, type_of_enrichment,
-                                    lump_mass_matrix, failure_criterion, failure_criterion_value)
+                                    lump_mass_matrix, failure_criterion, failure_criterion_value,
+                                    failure_index)
 
         if failure.failure_treatment is not None and failure_criterion is None:
             raise ValueError("Failure criterion expected. "
@@ -551,7 +554,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
     @staticmethod
     def __get_failure_criterion_props(matter) -> Tuple[
-            Optional[RuptureCriterionProps], float]:
+            Optional[RuptureCriterionProps], Optional[float], Optional[int]]:
         """
         Returns the failure criterion properties needed to fill the failure model properties
 
@@ -560,28 +563,37 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         """
         failure_data = matter.get('failure')
         if not failure_data:
-            return None, 0.
+            return None, 0., 0
 
         failure_criterion_data = failure_data['failure-criterion']
 
-        failure_criterion_name = failure_criterion_data['name']
-        failure_criterion_value = failure_criterion_data['value']
+        failure_criterion_name: str = failure_criterion_data['name']
+        failure_criterion_value: Optional[float] = failure_criterion_data.get('value')
+        failure_cell_index: Optional[int] = failure_criterion_data.get('index')
 
         if failure_criterion_name == "MinimumPressure":
+            if failure_criterion_value is None:
+                raise ValueError("Missing value for failure with MinimumPressure criterion")
             failure_criterion: RuptureCriterionProps = (
                 MinimumPressureCriterionProps(failure_criterion_value))
         elif failure_criterion_name == "Damage":
+            if failure_criterion_value is None:
+                raise ValueError("Missing value for failure with MinimumPressure criterion")
             failure_criterion = DamageCriterionProps(failure_criterion_value)
         elif failure_criterion_name == "HalfRodComparison":
-            failure_criterion = HalfRodComparisonCriterionProps(failure_criterion_value)
+            if failure_cell_index is None:
+                raise ValueError("Missing index for failure with HalfRodComparison criterion")
+            failure_criterion = HalfRodComparisonCriterionProps(failure_cell_index)
         elif failure_criterion_name == "MaximalStress":
+            if failure_criterion_value is None:
+                raise ValueError("Missing value for failure with MinimumPressure criterion")
             failure_criterion = MaximalStressCriterionProps(failure_criterion_value)
         else:
             raise ValueError(f"Unknown failure criterion {failure_criterion_name}. "
                              "Please choose among (MinimumPressure, Damage, "
                              "HalfRodComparison, MaximalStress")
 
-        return failure_criterion, failure_criterion_value
+        return failure_criterion, failure_criterion_value, failure_cell_index
 
     def hasExternalSolver(self):  # pylint: disable=invalid-name
         """

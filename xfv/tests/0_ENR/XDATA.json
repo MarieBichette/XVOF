@@ -10,16 +10,16 @@
   "matter": {
     "initialization": {
       "initial-velocity": 0.0,
-      "init-thermo": "Cuivre_InitThermo.json"
+      "init-thermo": "../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
     },
     "equation-of-state": {
       "name": "Mie-Gruneisen",
-      "coefficients": "Cuivre_MieGruneisen.json"
+      "coefficients": "../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
     },
     "failure": {
       "failure-criterion": {
         "name": "HalfRodComparison",
-        "value": 25
+        "index": 25
       },
       "failure-treatment": {
         "name": "Enrichment",
@@ -50,10 +50,12 @@
   "output": {
     "number-of-images": 500,
     "dump-images": false,
-    "database": {
+    "database": [
+      {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "iteration-period": 1
-    }
+      "time-period": 1e-08
+      }
+    ]
   }
 }
