@@ -26,7 +26,7 @@ Parameters :
  >>> pressure = np.zeros(the_shape, dtype=np.float64, order='C')
  >>> sound_speed = np.zeros(the_shape, dtype=np.float64, order='C')
  >>> dpde = np.zeros(the_shape, dtype=np.float64, order='C')
- >>> my_eos.solveVolumeEnergy(specific_volume, internal_energy, pressure, sound_speed, dpde)
+ >>> my_eos.solve_volume_energy(specific_volume, internal_energy, pressure, sound_speed, dpde)
  >>> print pressure
  [  1.61115797e+10   6.26727977e+09   2.87613980e+10]
  >>> print sound_speed

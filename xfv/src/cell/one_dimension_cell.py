@@ -43,7 +43,7 @@ class OneDimensionCell(Cell):
             pressure_new_value = np.zeros(shape, dtype=np.float64, order='C')
             sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
             dummy = np.zeros(shape, dtype=np.float64, order='C')
-            my_variables['EquationOfState'].solveVolumeEnergy(
+            my_variables['EquationOfState'].solve_volume_energy(
                 1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
                 sound_velocity_new_value, dummy)
             cell._function_to_vanish.eraseVariables()
