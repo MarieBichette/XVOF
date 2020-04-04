@@ -94,10 +94,10 @@ class MieGruneisen(EquationOfStateBase):
         :type internal_energy: numpy.array
         :param pressure: pressure (out)
         :type pressure: numpy.array
+        :param derivative: derivative of pressure with respect to the internal energy (out)
+        :type derivative: numpy.array
         :param vson: sound speed (out)
         :type vson: numpy.array
-        :param gampervol: derivative of pressure with respect to the internal energy (out)
-        :type gampervol: numpy.array
         """
         epsv = 1 - self.__param.rhozero * specific_volume
         derivative[:] = 1. / specific_volume
