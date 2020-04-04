@@ -102,7 +102,6 @@ class MieGruneisen(EquationOfStateBase):
         epsv = 1 - self.__param.rhozero * specific_volume
         derivative[:] = 1. / specific_volume
         derivative *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
-        dpdv = np.ndarray(specific_volume.shape)
         einth = np.ndarray(specific_volume.shape)
         phi = np.ndarray(specific_volume.shape)
         #
@@ -110,7 +109,9 @@ class MieGruneisen(EquationOfStateBase):
         self.__compute_eint_phi_compression(epsv, targets, einth, phi)
         self.__compute_eint_phi_release(epsv, ~targets, einth, phi)
         pressure[:] = phi + derivative * (internal_energy - einth)
+
         if vson is not None:
+            dpdv = np.ndarray(specific_volume.shape)
             self.__compute_dpdv_compression(specific_volume, internal_energy, dpdv,
                                             derivative, epsv, targets, einth, phi)
             self.__compute_dpdv_release(specific_volume, internal_energy,
