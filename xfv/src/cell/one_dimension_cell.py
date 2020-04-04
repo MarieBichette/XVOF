@@ -45,7 +45,7 @@ class OneDimensionCell(Cell):
             dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables['EquationOfState'].solve_volume_energy(
                 1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
-                sound_velocity_new_value, dummy)
+                dummy, sound_velocity_new_value)
 
             if np.isnan(sound_velocity_new_value).any():
                 negative_vson = np.where(np.isnan(sound_velocity_new_value))
