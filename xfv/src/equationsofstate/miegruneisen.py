@@ -98,6 +98,8 @@ class MieGruneisen(EquationOfStateBase):
         :type derivative: numpy.array
         :param vson: sound speed (out)
         :type vson: numpy.array
+        :todo: use take to gain perf
+        :todo: check the influence of denom
         """
         epsv = 1 - self.__param.rhozero * specific_volume
         derivative[:] = 1. / specific_volume
