@@ -1,4 +1,5 @@
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Implementing MieGruneisen class
 
@@ -26,7 +27,7 @@ Parameters :
  >>> pressure = np.zeros(the_shape, dtype=np.float64, order='C')
  >>> sound_speed = np.zeros(the_shape, dtype=np.float64, order='C')
  >>> dpde = np.zeros(the_shape, dtype=np.float64, order='C')
- >>> my_eos.solve_volume_energy(specific_volume, internal_energy, pressure, sound_speed, dpde)
+ >>> my_eos.solve_volume_energy(specific_volume, internal_energy, pressure, dpde, sound_speed)
  >>> print pressure
  [  1.61115797e+10   6.26727977e+09   2.87613980e+10]
  >>> print sound_speed
@@ -81,7 +82,8 @@ class MieGruneisen(EquationOfStateBase):
         """
         return self.__param
 
-    def solve_volume_energy(self, specific_volume, internal_energy, pressure, vson, derivative):  # pylint: disable=too-many-arguments
+    def solve_volume_energy(self, specific_volume, internal_energy, pressure,  # pylint: disable=too-many-arguments
+                            derivative, vson=None):
         """
         Given the specific volume and internal energy computes the pressure, sound speed and
         derivative of the pressure with respect to the internal energy
@@ -101,46 +103,35 @@ class MieGruneisen(EquationOfStateBase):
         derivative[:] = 1. / specific_volume
         derivative *= (self.__param.grunzero * (1 - epsv) + self.__param.b * epsv)
         dpdv = np.ndarray(specific_volume.shape)
+        einth = np.ndarray(specific_volume.shape)
+        phi = np.ndarray(specific_volume.shape)
         #
         targets = epsv > 0  # �Cells in compression (~targets are cells in release)
-        self.__compression_case(specific_volume, internal_energy, pressure, dpdv,
-                                derivative, epsv, targets)
-        self.__release_case(specific_volume, internal_energy, pressure, dpdv,
-                            derivative, epsv, ~targets)
-        self.__compute_vson2(specific_volume, pressure, derivative, dpdv, vson)
+        self.__compute_eint_phi_compression(epsv, targets, einth, phi)
+        self.__compute_eint_phi_release(epsv, ~targets, einth, phi)
+        pressure[:] = phi[:] + derivative[:] * (internal_energy[:] - einth[:])
+        if vson is not None:
+            self.__compute_dpdv_compression(specific_volume, internal_energy, dpdv,
+                                            derivative, epsv, targets, einth, phi)
+            self.__compute_dpdv_release(specific_volume, internal_energy,
+                                        derivative, einth, ~targets, dpdv)
+            self.__compute_vson2(specific_volume, pressure, derivative, dpdv, vson)
 
-    def __release_case(self, specific_volume, internal_energy, pressure, dpdv,  # pylint: disable=too-many-arguments
-                       gampervol, epsv, targets):
-        """
-        Compute the equation of state for cells under release conditions.
-
-        :param specific_volume: specific volume (in)
-        :type specific_volume: numpy.array
-        :param internal_energy: internal energy (in)
-        :type internal_energy: numpy.array
-        :param pressure: pressure (out)
-        :type pressure: numpy.array
-        :param vson2: sound speed square (out)
-        :type vson2: numpy.array
-        :param gampervol: derivative of pressure with respect to the internal energy (out)
-        :type gampervol: numpy.array
-        :param epsv: compression of the material
-        :type epsv: numpy.array
-        :param targets: Mask representing the cells in release state
-        :type targets: numpy.array (bool)
-        """
+    def __compute_eint_phi_release(self, epsv, targets, einth, phi):
         loc_epsv = epsv[targets]
-        loc_gampervol = gampervol[targets]
         #
-        phi = self.__param.rhozero * self.__czero2 * loc_epsv / (1. - loc_epsv)
+        phi[targets] = self.__param.rhozero * self.__czero2 * loc_epsv / (1. - loc_epsv)
         # einth ---> e0
-        einth = self.__param.ezero
+        einth[targets] = self.__param.ezero
+
+    def __compute_dpdv_release(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments
+                               gampervol, einth, targets, dpdv):
+        loc_gampervol = gampervol[targets]
         #
         dphi = -self.__czero2 / specific_volume[targets] ** 2
         #
         dpdv[targets] = (dphi + (self.__dgam - loc_gampervol) *
-                         (internal_energy[targets] - einth) / specific_volume[targets])
-        pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
+                         (internal_energy[targets] - einth[targets]) / specific_volume[targets])
 
     @staticmethod
     def __compute_vson2(specific_volume, pressure, gampervol, dpdv, vson):
@@ -151,26 +142,18 @@ class MieGruneisen(EquationOfStateBase):
         vson[:] = np.sqrt(vson[:])
         vson[vson >= 10000.] = 0.
 
-    def __compression_case(self, specific_volume, internal_energy, pressure, dpdv,  # pylint: disable=too-many-arguments, too-many-locals
-                           gampervol, epsv, targets):
-        """
-        Compute the equation of state for cells under compressive conditions.
+    def __compute_eint_phi_compression(self, epsv, targets, einth, phi):
+        loc_epsv = epsv[targets]
+        loc_epsv2 = loc_epsv ** 2
+        # Coefficient de gruneisen
+        denom = (1. -
+                 (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2)
+                 * loc_epsv)
+        phi[targets] = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
+        einth[targets] = self.__param.ezero + phi[targets] * loc_epsv / (2. * self.__param.rhozero)
 
-        :param specific_volume: specific volume (in)
-        :type specific_volume: numpy.array
-        :param internal_energy: internal energy (in)
-        :type internal_energy: numpy.array
-        :param pressure: pressure (out)
-        :type pressure: numpy.array
-        :param vson2: sound speed square (out)
-        :type vson2: numpy.array
-        :param gampervol: derivative of pressure with respect to the internal energy (out)
-        :type gampervol: numpy.array
-        :param epsv: compression of the material
-        :type epsv: numpy.array
-        :param targets: Mask representing the cells in compressive state
-        :type targets: numpy.array (bool)
-        """
+    def __compute_dpdv_compression(self, specific_volume, internal_energy, dpdv,  # pylint: disable=too-many-arguments, too-many-locals
+                                   gampervol, epsv, targets, einth, phi):
         loc_epsv = epsv[targets]
         loc_epsv2 = loc_epsv ** 2
         # Coefficient de gruneisen
@@ -180,16 +163,14 @@ class MieGruneisen(EquationOfStateBase):
         denom = (1. -
                  (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2)
                  * loc_epsv)
-        phi = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
-        einth = self.__param.ezero + phi * loc_epsv / (2. * self.__param.rhozero)
         #
-        dphi = phi * self.__param.rhozero * (-1. / loc_epsv - 2. * redond_a / denom)
+        dphi = phi[targets] * self.__param.rhozero * (-1. / loc_epsv - 2. * redond_a / denom)
         #
-        deinth = phi * (-1. - loc_epsv * redond_a / denom)
+        deinth = phi[targets] * (-1. - loc_epsv * redond_a / denom)
         #
         dpdv[targets] = (dphi +
                          (self.__dgam - loc_gampervol) *
-                         (internal_energy[targets] - einth) / specific_volume[targets]
+                         (internal_energy[targets] - einth[targets]) / specific_volume[targets]
                          - loc_gampervol * deinth)
 
 
