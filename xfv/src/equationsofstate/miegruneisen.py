@@ -109,13 +109,15 @@ class MieGruneisen(EquationOfStateBase):
         targets = epsv > 0  # �Cells in compression (~targets are cells in release)
         self.__compute_eint_phi_compression(epsv, targets, einth, phi)
         self.__compute_eint_phi_release(epsv, ~targets, einth, phi)
-        pressure[:] = phi[:] + derivative[:] * (internal_energy[:] - einth[:])
+        pressure[:] = phi + derivative * (internal_energy - einth)
         if vson is not None:
             self.__compute_dpdv_compression(specific_volume, internal_energy, dpdv,
                                             derivative, epsv, targets, einth, phi)
             self.__compute_dpdv_release(specific_volume, internal_energy,
                                         derivative, einth, ~targets, dpdv)
-            self.__compute_vson2(specific_volume, pressure, derivative, dpdv, vson)
+            vson[:] = specific_volume ** 2 * (pressure * derivative - dpdv)
+            vson[:] = np.sqrt(vson)
+            vson[vson >= 10000.] = 0.
 
     def __compute_eint_phi_release(self, epsv, targets, einth, phi):
         loc_epsv = epsv[targets]
