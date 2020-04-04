@@ -109,20 +109,21 @@ class MieGruneisen(EquationOfStateBase):
         rel_cells = ~comp_cells  # Cells in release
         epsv_comp = epsv[comp_cells]
         epsv_rel = epsv[rel_cells]
-        einth[comp_cells], phi[comp_cells] = self.__compute_eint_phi_compression(epsv_comp)
+        denom = np.ndarray(epsv_comp.shape)
+        einth[comp_cells], phi[comp_cells] = self.__compute_eint_phi_compression(epsv_comp, denom)
         einth[rel_cells], phi[rel_cells] = self.__compute_eint_phi_release(epsv_rel)
         pressure[:] = phi + derivative * (internal_energy - einth)
 
         if vson is not None:
             self.__compute_vson(specific_volume, internal_energy, pressure, derivative,
-                                epsv, einth, phi, comp_cells, rel_cells, vson)
+                                epsv, einth, phi, denom, comp_cells, rel_cells, vson)
 
-    def __compute_eint_phi_compression(self, epsv):
+    def __compute_eint_phi_compression(self, epsv, denom):
         epsv2 = epsv ** 2
         # Coefficient de gruneisen
-        denom = (1. -
-                 (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
-                 * epsv)
+        denom[:] = (1. -
+                    (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
+                    * epsv)
         phi = self.__param.rhozero * self.__czero2 * epsv / denom ** 2
         einth = self.__param.ezero + phi * epsv / (2. * self.__param.rhozero)
         return einth, phi
@@ -134,14 +135,10 @@ class MieGruneisen(EquationOfStateBase):
         return einth, phi
 
     def __compute_dpdv_compression(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments, too-many-locals
-                                   gampervol, epsv, einth, phi):
+                                   gampervol, epsv, einth, phi, denom):
         epsv2 = epsv ** 2
         redond_a = (self.__param.S1 + 2. * self.__param.S2 * epsv +
                     3. * self.__param.S3 * epsv2)
-        denom = (1. -
-                 (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
-                 * epsv)
-        #
         dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a / denom)
         #
         deinth = phi * (-1. - epsv * redond_a / denom)
@@ -160,7 +157,7 @@ class MieGruneisen(EquationOfStateBase):
         return dpdv
 
     def __compute_vson(self, specific_volume, internal_energy, pressure, derivative,  # pylint: disable=too-many-arguments, too-many-locals
-                       epsv, einth, phi, comp_cells, rel_cells, vson):
+                       epsv, einth, phi, denom, comp_cells, rel_cells, vson):
         dpdv = np.ndarray(specific_volume.shape)
         specific_volume_comp = specific_volume[comp_cells]
         specific_volume_rel = specific_volume[rel_cells]
@@ -174,7 +171,7 @@ class MieGruneisen(EquationOfStateBase):
         phi_comp = phi[comp_cells]
         dpdv[comp_cells] = self.__compute_dpdv_compression(
             specific_volume_comp, internal_energy_comp, derivative_comp,
-            epsv_comp, einth_comp, phi_comp)
+            epsv_comp, einth_comp, phi_comp, denom)
         dpdv[rel_cells] = self.__compute_dpdv_release(
             specific_volume_rel, internal_energy_rel, derivative_rel, einth_rel)
         vson[:] = specific_volume ** 2 * (pressure * derivative - dpdv)
