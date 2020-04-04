@@ -191,4 +191,29 @@ class MieGruneisen(EquationOfStateBase):
                          (self.__dgam - loc_gampervol) *
                          (internal_energy[targets] - einth) / specific_volume[targets]
                          - loc_gampervol * deinth)
-        pressure[targets] = phi + loc_gampervol * (internal_energy[targets] - einth)
+
+
+if __name__ == "__main__":
+    import time
+    # pylint: disable=invalid-name
+    eos = MieGruneisen()
+    density = np.ndarray((1000,))
+    int_nrj = np.ndarray((1000,))
+    press = np.ndarray((1000,))
+    sound_speed = np.ndarray((1000,))
+    deriv = np.ndarray((1000,))
+
+    density[:] = 9000.
+    int_nrj[:] = 1.e+05
+    press[:] = 0.
+    sound_speed[:] = 0.
+    deriv[:] = 0.
+
+    spec_vol = 1. / density
+    start_time = time.perf_counter()
+    iter_number = 15000
+    for _ in range(iter_number):
+        eos.solve_volume_energy(spec_vol, int_nrj, press, deriv, sound_speed)
+    end_time = time.perf_counter()
+
+    print(f"{iter_number} iterations : {end_time - start_time} seconds")
