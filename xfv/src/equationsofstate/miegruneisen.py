@@ -105,27 +105,39 @@ class MieGruneisen(EquationOfStateBase):
         einth = np.ndarray(specific_volume.shape)
         phi = np.ndarray(specific_volume.shape)
         #
-        targets = epsv > 0  # �Cells in compression (~targets are cells in release)
-        self.__compute_eint_phi_compression(epsv, targets, einth, phi)
-        self.__compute_eint_phi_release(epsv, ~targets, einth, phi)
+        comp_cells = epsv > 0  # Cells in compression
+        rel_cells = ~comp_cells  # Cells in release
+        epsv_comp = epsv[comp_cells]
+        epsv_rel = epsv[rel_cells]
+        einth[comp_cells], phi[comp_cells] = self.__compute_eint_phi_compression(epsv_comp)
+        einth[rel_cells], phi[rel_cells] = self.__compute_eint_phi_release(epsv_rel)
         pressure[:] = phi + derivative * (internal_energy - einth)
 
         if vson is not None:
             dpdv = np.ndarray(specific_volume.shape)
             self.__compute_dpdv_compression(specific_volume, internal_energy, dpdv,
-                                            derivative, epsv, targets, einth, phi)
+                                            derivative, epsv, comp_cells, einth, phi)
             self.__compute_dpdv_release(specific_volume, internal_energy,
-                                        derivative, einth, ~targets, dpdv)
+                                        derivative, einth, rel_cells, dpdv)
             vson[:] = specific_volume ** 2 * (pressure * derivative - dpdv)
             vson[:] = np.sqrt(vson)
             vson[vson >= 10000.] = 0.
 
-    def __compute_eint_phi_release(self, epsv, targets, einth, phi):
-        loc_epsv = epsv[targets]
-        #
-        phi[targets] = self.__param.rhozero * self.__czero2 * loc_epsv / (1. - loc_epsv)
+    def __compute_eint_phi_compression(self, epsv):
+        epsv2 = epsv ** 2
+        # Coefficient de gruneisen
+        denom = (1. -
+                 (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
+                 * epsv)
+        phi = self.__param.rhozero * self.__czero2 * epsv / denom ** 2
+        einth = self.__param.ezero + phi * epsv / (2. * self.__param.rhozero)
+        return einth, phi
+
+    def __compute_eint_phi_release(self, epsv):
+        phi = self.__param.rhozero * self.__czero2 * epsv / (1. - epsv)
         # einth ---> e0
-        einth[targets] = self.__param.ezero
+        einth = self.__param.ezero
+        return einth, phi
 
     def __compute_dpdv_release(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments
                                gampervol, einth, targets, dpdv):
@@ -135,25 +147,6 @@ class MieGruneisen(EquationOfStateBase):
         #
         dpdv[targets] = (dphi + (self.__dgam - loc_gampervol) *
                          (internal_energy[targets] - einth[targets]) / specific_volume[targets])
-
-    @staticmethod
-    def __compute_vson2(specific_volume, pressure, gampervol, dpdv, vson):
-        """
-        Compute the sound speed velocity
-        """
-        vson[:] = specific_volume[:] ** 2 * (pressure[:] * gampervol[:] - dpdv[:])
-        vson[:] = np.sqrt(vson[:])
-        vson[vson >= 10000.] = 0.
-
-    def __compute_eint_phi_compression(self, epsv, targets, einth, phi):
-        loc_epsv = epsv[targets]
-        loc_epsv2 = loc_epsv ** 2
-        # Coefficient de gruneisen
-        denom = (1. -
-                 (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2)
-                 * loc_epsv)
-        phi[targets] = self.__param.rhozero * self.__czero2 * loc_epsv / denom ** 2
-        einth[targets] = self.__param.ezero + phi[targets] * loc_epsv / (2. * self.__param.rhozero)
 
     def __compute_dpdv_compression(self, specific_volume, internal_energy, dpdv,  # pylint: disable=too-many-arguments, too-many-locals
                                    gampervol, epsv, targets, einth, phi):
