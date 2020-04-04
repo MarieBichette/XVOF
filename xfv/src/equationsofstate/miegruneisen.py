@@ -114,14 +114,8 @@ class MieGruneisen(EquationOfStateBase):
         pressure[:] = phi + derivative * (internal_energy - einth)
 
         if vson is not None:
-            dpdv = np.ndarray(specific_volume.shape)
-            self.__compute_dpdv_compression(specific_volume, internal_energy, dpdv,
-                                            derivative, epsv, comp_cells, einth, phi)
-            self.__compute_dpdv_release(specific_volume, internal_energy,
-                                        derivative, einth, rel_cells, dpdv)
-            vson[:] = specific_volume ** 2 * (pressure * derivative - dpdv)
-            vson[:] = np.sqrt(vson)
-            vson[vson >= 10000.] = 0.
+            self.__compute_vson(specific_volume, internal_energy, pressure, derivative,
+                                epsv, einth, phi, comp_cells, rel_cells, vson)
 
     def __compute_eint_phi_compression(self, epsv):
         epsv2 = epsv ** 2
@@ -139,36 +133,53 @@ class MieGruneisen(EquationOfStateBase):
         einth = self.__param.ezero
         return einth, phi
 
-    def __compute_dpdv_release(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments
-                               gampervol, einth, targets, dpdv):
-        loc_gampervol = gampervol[targets]
-        #
-        dphi = -self.__czero2 / specific_volume[targets] ** 2
-        #
-        dpdv[targets] = (dphi + (self.__dgam - loc_gampervol) *
-                         (internal_energy[targets] - einth[targets]) / specific_volume[targets])
-
-    def __compute_dpdv_compression(self, specific_volume, internal_energy, dpdv,  # pylint: disable=too-many-arguments, too-many-locals
-                                   gampervol, epsv, targets, einth, phi):
-        loc_epsv = epsv[targets]
-        loc_epsv2 = loc_epsv ** 2
-        # Coefficient de gruneisen
-        loc_gampervol = gampervol[targets]
-        redond_a = (self.__param.S1 + 2. * self.__param.S2 * loc_epsv +
-                    3. * self.__param.S3 * loc_epsv2)
+    def __compute_dpdv_compression(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments, too-many-locals
+                                   gampervol, epsv, einth, phi):
+        epsv2 = epsv ** 2
+        redond_a = (self.__param.S1 + 2. * self.__param.S2 * epsv +
+                    3. * self.__param.S3 * epsv2)
         denom = (1. -
-                 (self.__param.S1 + self.__param.S2 * loc_epsv + self.__param.S3 * loc_epsv2)
-                 * loc_epsv)
+                 (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
+                 * epsv)
         #
-        dphi = phi[targets] * self.__param.rhozero * (-1. / loc_epsv - 2. * redond_a / denom)
+        dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a / denom)
         #
-        deinth = phi[targets] * (-1. - loc_epsv * redond_a / denom)
+        deinth = phi * (-1. - epsv * redond_a / denom)
         #
-        dpdv[targets] = (dphi +
-                         (self.__dgam - loc_gampervol) *
-                         (internal_energy[targets] - einth[targets]) / specific_volume[targets]
-                         - loc_gampervol * deinth)
+        dpdv = (dphi + (self.__dgam - gampervol) *
+                (internal_energy - einth) / specific_volume - gampervol * deinth)
+        return dpdv
 
+    def __compute_dpdv_release(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments
+                               gampervol, einth):
+        #
+        dphi = -self.__czero2 / specific_volume ** 2
+        #
+        dpdv = (dphi + (self.__dgam - gampervol) *
+                (internal_energy - einth) / specific_volume)
+        return dpdv
+
+    def __compute_vson(self, specific_volume, internal_energy, pressure, derivative,  # pylint: disable=too-many-arguments, too-many-locals
+                       epsv, einth, phi, comp_cells, rel_cells, vson):
+        dpdv = np.ndarray(specific_volume.shape)
+        specific_volume_comp = specific_volume[comp_cells]
+        specific_volume_rel = specific_volume[rel_cells]
+        internal_energy_comp = internal_energy[comp_cells]
+        internal_energy_rel = internal_energy[rel_cells]
+        derivative_comp = derivative[comp_cells]
+        derivative_rel = derivative[rel_cells]
+        epsv_comp = epsv[comp_cells]
+        einth_comp = einth[comp_cells]
+        einth_rel = einth[rel_cells]
+        phi_comp = phi[comp_cells]
+        dpdv[comp_cells] = self.__compute_dpdv_compression(
+            specific_volume_comp, internal_energy_comp, derivative_comp,
+            epsv_comp, einth_comp, phi_comp)
+        dpdv[rel_cells] = self.__compute_dpdv_release(
+            specific_volume_rel, internal_energy_rel, derivative_rel, einth_rel)
+        vson[:] = specific_volume ** 2 * (pressure * derivative - dpdv)
+        vson[:] = np.sqrt(vson)
+        vson[vson >= 10000.] = 0.
 
 if __name__ == "__main__":
     import time
