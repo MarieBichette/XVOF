@@ -118,40 +118,57 @@ class MieGruneisen(EquationOfStateBase):
             self.__compute_vson(specific_volume, internal_energy, pressure, derivative,
                                 epsv, einth, phi, denom, comp_cells, rel_cells, vson)
 
+    def __compute_denom_1(self, epsv):
+        return 1. - self.__param.S1 * epsv
+
+    def __compute_denom_2(self, epsv):
+        return self.__compute_denom_1(epsv) - self.__param.S2 * epsv * epsv
+
+    def __compute_denom_3(self, epsv):
+        return self.__compute_denom_2(epsv) - self.__param.S3 * epsv * epsv * epsv
+
+    def __compute_redonda_1(self):
+        return self.__param.S1
+
+    def __compute_redonda_2(self, epsv):
+        return self.__compute_redonda_1() + 2. * self.__param.S2 * epsv
+
+    def __compute_redonda_3(self, epsv):
+        return self.__compute_redonda_2(epsv) + 3. * self.__param.S3 * epsv ** 2
+
     def __compute_eint_phi_compression(self, epsv, denom):
-        epsv2 = epsv ** 2
-        # Coefficient de gruneisen
-        denom[:] = (1. -
-                    (self.__param.S1 + self.__param.S2 * epsv + self.__param.S3 * epsv2)
-                    * epsv)
+        if self.__param.S2 and self.__param.S3:
+            denom[:] = self.__compute_denom_3(epsv)
+        elif self.__param.S2:
+            denom[:] = self.__compute_denom_2(epsv)
+        else:
+            denom[:] = self.__compute_denom_1(epsv)
         phi = self.__param.rhozero * self.__czero2 * epsv / denom ** 2
         einth = self.__param.ezero + phi * epsv / (2. * self.__param.rhozero)
         return einth, phi
 
     def __compute_eint_phi_release(self, epsv):
         phi = self.__param.rhozero * self.__czero2 * epsv / (1. - epsv)
-        # einth ---> e0
         einth = self.__param.ezero
         return einth, phi
 
     def __compute_dpdv_compression(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments, too-many-locals
                                    gampervol, epsv, einth, phi, denom):
-        epsv2 = epsv ** 2
-        redond_a = (self.__param.S1 + 2. * self.__param.S2 * epsv +
-                    3. * self.__param.S3 * epsv2)
+        if self.__param.S2 and self.__param.S3:
+            redond_a = self.__compute_redonda_3(epsv)
+        elif self.__param.S2:
+            redond_a = self.__compute_redonda_2(epsv)
+        else:
+            redond_a = self.__compute_redonda_1()
         dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a / denom)
-        #
         deinth = phi * (-1. - epsv * redond_a / denom)
-        #
         dpdv = (dphi + (self.__dgam - gampervol) *
                 (internal_energy - einth) / specific_volume - gampervol * deinth)
         return dpdv
 
     def __compute_dpdv_release(self, specific_volume, internal_energy,  # pylint: disable=too-many-arguments
                                gampervol, einth):
-        #
-        dphi = -self.__czero2 / specific_volume ** 2
-        #
+        dphi = - self.__czero2 / specific_volume ** 2
         dpdv = (dphi + (self.__dgam - gampervol) *
                 (internal_energy - einth) / specific_volume)
         return dpdv
