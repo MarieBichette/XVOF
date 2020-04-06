@@ -157,6 +157,20 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
             self.mock_discontinuity.additional_dof_force, np.array([[-0.5, ], [1.5, ]]))
         np.testing.assert_almost_equal(self.my_nodes._force, np.array([[5.5, ], [1.5, ]]))
 
+    def test_apply_force_on_discontinuity_boundaries(self):
+        """
+        Test of the method apply_force_on_discontinuity_boundaries
+        """
+        stress = 50.
+        self.my_nodes._section = 1.
+        self.my_nodes._force = np.array([[200., ], [400., ]])
+        self.mock_discontinuity.position_in_ruptured_element = 0.5
+        self.mock_discontinuity.additional_dof_force = np.array([[-100., ], [300., ]])
+        self.my_nodes.apply_force_on_discontinuity_boundaries(self.mock_discontinuity, stress)
+        np.testing.assert_almost_equal(self.my_nodes._force, np.array([[225., ], [375., ]]))
+        np.testing.assert_array_almost_equal(
+            self.mock_discontinuity.additional_dof_force, np.array([[-75., ], [275., ]]))
+
     @unittest.skip("Mod�le coh�sif pas revu")
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_compute_enriched_nodes_cohesive_forces(self, mock_disc_list):
