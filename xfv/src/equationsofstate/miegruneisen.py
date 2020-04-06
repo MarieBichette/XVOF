@@ -160,6 +160,8 @@ class MieGruneisen(EquationOfStateBase):
             redond_a = self.__compute_redonda_2(epsv)
         else:
             redond_a = self.__compute_redonda_1()
+        # TODO: perfs => compute 1 / denom instead of denom but
+        # introduces light changes on the references
         dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a / denom)
         deinth = phi * (-1. - epsv * redond_a / denom)
         dpdv = (dphi + (self.__dgam - gampervol) *
