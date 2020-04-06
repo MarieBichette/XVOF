@@ -65,9 +65,9 @@ class NewtonRaphson(NewtonRaphsonBase):
 
         # Error if non convergence
         if nit == self.nb_iterations_max:
-            msg = "Erreur de convergence du NR"
-            msg += "func_i=", func_i
-            msg += "delta=", delta
-            msg += "nit=", nit
+            msg = ("Erreur de convergence du NR\n"
+                   f"func_i = {func_i}\n"
+                   f"delta = {delta}\n"
+                   f"nit = {nit}")
             raise ValueError(msg)
         return res
