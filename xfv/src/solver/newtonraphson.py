@@ -40,20 +40,23 @@ class NewtonRaphson(NewtonRaphsonBase):
         var_iplus1 = np.ndarray(var_i.shape, dtype=np.float64, order='C')
 
         # Newton's parameters initialization
-        not_conv = np.ndarray(var_i.shape, dtype=bool, order='C')  # Convergence criterion cell by cell
+        # Convergence criterion cell by cell
+        not_conv = np.ndarray(var_i.shape, dtype=bool, order='C')
         not_conv[:] = True
+        is_conv = False
         nit = 0  # Number of iterations
         res = 0.  # result
         delta = 0.  # increment
         func_i = 0.  # function evaluation
 
-        while not_conv.any() and nit < self.nb_iterations_max:
-            (func_i, dfunc_i_surde) = self.function.computeFunctionAndDerivative(var_i, not_conv)
+        while not is_conv and nit < self.nb_iterations_max:
+            func_i, dfunc_i_surde = self.function.computeFunctionAndDerivative(var_i, not_conv)
             # Correction
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
             var_iplus1[not_conv] = var_i[not_conv] + delta
             not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
-            if not not_conv.any():
+            is_conv = not not_conv.any()
+            if is_conv:
                 res = var_i
                 break
             # Increment
