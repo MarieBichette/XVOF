@@ -52,9 +52,9 @@
           "type-of-enrichment": "Hansbo",
           "lump-mass-matrix": "somme"
         },
-        "contact": {
+        "contact-treatment": {
           "name": "Penalty",
-          "penalty-stiffness": 1e+14
+          "penalty-stiffness": 1e+17
         }
       }
     }

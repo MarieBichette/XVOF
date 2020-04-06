@@ -394,7 +394,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             - the cohesive model name
         """
         try:
-            params = matter['failure']['contact-treatment']['contact-model']
+            params = matter['failure']['contact-treatment']
         except KeyError:
             return None
         contact_model_name = params['name'].lower()
