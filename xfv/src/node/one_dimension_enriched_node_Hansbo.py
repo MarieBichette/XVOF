@@ -151,6 +151,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
 
         # Apply cohesive stress on enriched nodes
         self._force[disc.mask_in_nodes] += (1. - epsilon) * applied_force  # F1-
-        disc.additional_dof_force[0] += epsilon * applied_force  # F2-
-        self._force[disc.mask_out_nodes] += - epsilon * applied_force  # F2+
-        disc.additional_dof_force[1] += - (1. - epsilon) * applied_force  # F1+
+        disc.additional_dof_force[np.array([True, False])] += epsilon * applied_force  # F2-
+        self._force[disc.mask_out_nodes] -= epsilon * applied_force  # F2+
+        disc.additional_dof_force[np.array([False, True])] -= (1. - epsilon) * applied_force  # F1+
