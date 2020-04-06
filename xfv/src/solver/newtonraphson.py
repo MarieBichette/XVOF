@@ -38,6 +38,7 @@ class NewtonRaphson(NewtonRaphsonBase):
         # Newton's variable
         var_i = init_variable
         var_iplus1 = np.ndarray(var_i.shape, dtype=np.float64, order='C')
+        var_iplus1[:] = var_i
 
         # Newton's parameters initialization
         # Convergence criterion cell by cell
@@ -53,13 +54,14 @@ class NewtonRaphson(NewtonRaphsonBase):
             func_i, dfunc_i_surde = self.function.computeFunctionAndDerivative(var_i, not_conv)
             # Correction
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
+            above_crit = abs(func_i) >= EPSILON * abs(delta) + PRECISION
+            is_conv = not above_crit.any()
             var_iplus1[not_conv] = var_i[not_conv] + delta
-            not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
-            is_conv = not not_conv.any()
             if is_conv:
                 res = var_i
                 break
             # Increment
+            not_conv = above_crit
             var_i = var_iplus1
             nit += 1
 
