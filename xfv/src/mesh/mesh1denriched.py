@@ -193,6 +193,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 contact_force = \
                     self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
                 if contact_force != 0.:
+                    assert contact_force < 0.
                     # Divide the contact force on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
