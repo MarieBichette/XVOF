@@ -1,21 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-Test of the CohesiveLaw
+Test of the PenaltyContact
 """
 import unittest
 import numpy as np
-from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
+from xfv.src.contact.penalty import PenaltyContact
+from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class CohesiveLawTest(unittest.TestCase):
+class PenaltyContactTest(unittest.TestCase):
     """
-    Test case used to test the 'CohesiveLaw' module
+    Test case used to test the 'PenaltyContact' module
     """
     def setUp(self):
         """
         Initialisation des tests
         """
-        pass
+        self.test_penalty_contact = PenaltyContact(10.)
+        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5, "somme")
+        self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_left_part(0., 2., 0.5)
+        self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_right_part(2., 0., 0.5)
 
     def tearDown(self):
         """
@@ -23,87 +27,44 @@ class CohesiveLawTest(unittest.TestCase):
         """
         pass
 
-    def test_init(self):
+    def test_compute_penalty_force(self):
         """
-        Test of the creation of CohesiveLaw
-        :return:
+        Test of the method _compute_penalty_force
         """
-        message = ""
-        # Test dimension of array 2d
-        try:
-            CohesiveLaw(np.array([1, 2, 3]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "array should be 2D")
-        # Test size of the array
-        try:
-            CohesiveLaw(np.array([[1, 2, 3], [4, 5, 6]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "array should be size (x, 2)")
+        result_negative = self.test_penalty_contact._compute_penalty_force(2.)
+        self.assertEqual(result_negative, 0.)
 
-        # Test value of first value of separation = 0
-        try:
-            CohesiveLaw(np.array([[4, 2], [5, 0]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "first value of separation should be 0.")
+        result_positive = self.test_penalty_contact._compute_penalty_force(-5.)
+        self.assertEqual(result_positive, -50.)
 
-        # Test value of stress at critical separation = 0
-        try:
-            CohesiveLaw(np.array([[0, 2], [1, 1]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "last value of stress should be 0.")
-
-        # Test separation are croissant in array
-        try:
-            CohesiveLaw(np.array([[0, 2], [2, 1], [1, 0]]))
-        except AssertionError as e:
-            message = e.args[0]
-        self.assertEqual(message, "separation is not sorted")
-
-    def test_compute_cohesive_force(self):
+    def test_apply_penalty_upper_bound(self):
         """
-        Test of the method compute_cohesive_force of module CohesiveLaw
+        Test of the method _apply_penalty_upper_bound
         """
-        linear_law = CohesiveLaw(np.array([[0., 10.], [5., 0.]]))
-        # Test linear law
-        result = linear_law.compute_cohesive_force(4.)
-        expected = 2.
-        self.assertEqual(result, expected)
+        delta_t = 1.
+        node_velocity = np.array([[100., ], [50., ]])
+        contact_force = 1.e-5
+        bounded_force = self.test_penalty_contact._apply_penalty_upper_bound(self.disc,
+                                                                             node_velocity,
+                                                                             contact_force, delta_t)
+        self.assertEqual(bounded_force, -1.e-5)
 
-        bilinear_law = CohesiveLaw(np.array([[0., 10.], [3., 10.], [5., 0.]]))
-        # Test bilinear law, part 1
-        result = bilinear_law.compute_cohesive_force(2.)
-        expected = 10.
-        self.assertEqual(result, expected)
+        contact_force = - 50.
+        bounded_force = self.test_penalty_contact._apply_penalty_upper_bound(self.disc,
+                                                                             node_velocity,
+                                                                             contact_force, delta_t)
+        self.assertEqual(bounded_force, -4.6875)
 
-        # Test bilinear law, part 2
-        result = bilinear_law.compute_cohesive_force(4.)
-        expected = 5.
-        self.assertEqual(result, expected)
-
-        trilinear_law = CohesiveLaw(np.array([[0., 10.], [1., 8.], [3., 8], [5., 0.]]))
-        # Test trilinear law, part 1
-        result = trilinear_law.compute_cohesive_force(0.5)
-        expected = 9.
-        self.assertEqual(result, expected)
-
-        # Test trilinear law, part 2
-        result = trilinear_law.compute_cohesive_force(2.)
-        expected = 8.
-        self.assertEqual(result, expected)
-
-         # Test trilinear law, part 3
-        result = trilinear_law.compute_cohesive_force(4.)
-        expected = 4.
-        self.assertEqual(result, expected)
-
-        # Above critical separation
-        result = trilinear_law.compute_cohesive_force(20.)
-        expected = 0.
-        self.assertEqual(result, expected)
+    def test_compute_contact_force(self):
+        """
+        Test of the method compute_contact_force
+        """
+        delta_t = 1.
+        node_velocity = np.array([[100., ], [50., ]])
+        self.disc.discontinuity_opening.new_value = - 5.0
+        contact_force = self.test_penalty_contact.compute_contact_force(node_velocity, self.disc,
+                                                                        delta_t)
+        self.assertEqual(contact_force, -4.6875)
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -19,7 +19,8 @@ class PenaltyContact(ContactBase):
         super(PenaltyContact, self).__init__()
         self.penalty_stiffness = penalty_stiffness
 
-    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity, delta_t: float):
+    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity,
+                              delta_t: float) -> float:
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
@@ -32,7 +33,7 @@ class PenaltyContact(ContactBase):
         contact_force = self._apply_penalty_upper_bound(disc, node_velocity, contact_force, delta_t)
         return contact_force
 
-    def _compute_penalty_force(self, opening):
+    def _compute_penalty_force(self, opening) -> float:
         """
         Compute the penalty force to apply in order to penalize contact
         :param opening: discontinuity opening
@@ -43,7 +44,7 @@ class PenaltyContact(ContactBase):
         return self.penalty_stiffness * opening
 
     def _apply_penalty_upper_bound(self, disc: Discontinuity, node_velocity: np.array,
-                                   contact_force: float, delta_t: float):
+                                   contact_force: float, delta_t: float) -> float:
         """
         Apply an upper bound on the computed contact force in order to ensure that the
         force does not induce snapback of the contact nodes
@@ -53,7 +54,6 @@ class PenaltyContact(ContactBase):
         :param node_velocity: node velocity array
         :param contact_force: force to apply
         :param delta_t : time step
-        :return:
         """
         epsilon = disc.discontinuity_position
 
@@ -77,5 +77,5 @@ class PenaltyContact(ContactBase):
 
         # Compute the upper bound of penalty force
         upper_bound = mass_g * mass_d * (velocity_g - velocity_d) / (delta_t * (mass_g + mass_d))
-        bounded_force = min(contact_force, upper_bound)
+        bounded_force = - min(abs(contact_force), abs(upper_bound))
         return bounded_force
