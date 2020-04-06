@@ -343,7 +343,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             - the cohesive model name
         """
         try:
-            params = matter['failure']['damage-treatment']['cohesive-model']
+            params = matter['failure']['cohesive-model']
         except KeyError:
             return None
 
@@ -353,7 +353,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         critical_separation = params['coefficients']['critical-separation']
 
         unloading_model_name = params['unloading-model']['name'].lower()
-        unloading_model_slope = params['unloading-model']['slope']
+        unloading_model_slope: Optional[float] = params['unloading-model'].get('slope')
 
         if unloading_model_name == "progressiveunloading":
             unloading_model_props: UnloadingModelProps = (
