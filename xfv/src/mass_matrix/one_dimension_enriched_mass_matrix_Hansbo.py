@@ -10,7 +10,14 @@ from xfv.src.mass_matrix.one_dimension_enriched_mass_matrix import OneDimensionE
 
 
 class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
+    """
+    A class for the enriched mass matrix for
+    """
     def __init__(self, lump=None):
+        """
+        Build the class
+        :param lump: choice of mass lumping
+        """
         matrix_size = 4
         super(OneDimensionHansboEnrichedMassMatrix, self).__init__(matrix_size)
         self._enriched_mass_matrix_left_part = \
@@ -25,15 +32,24 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
                              f"Please use one of [menouillard, somme, none]")
 
     def get_mass_matrix_left(self):
+        """
+        Accessor on the part of mass matrix concerning the left part of the cracked cell
+        """
         return self._enriched_mass_matrix_left_part
 
     def get_mass_matrix_right(self):
+        """
+        Accessor on the part of mass matrix concerning the right part of the cracked cell
+        """
         return self._enriched_mass_matrix_right_part
 
     def compute_enriched_mass_matrix_left_part(self, mass_0, mass_1, epsilon):
         """
         Compute the Hansbo mass matrix for the left part
         DDL are organized : 0 : N1g and 1 : N2g
+        :param mass_0: mass of the element right on the left of the cracked cell
+        :param mass_1 : mass of the cracked cell
+        :param epsilon: relative position of the disc inside the cracked cell
         """
         if self.lump == "menouillard":
             self._enriched_mass_matrix_left_part[0, 0] = epsilon * mass_1 / 2. + mass_0 / 2.
@@ -53,6 +69,9 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         """
         Compute the Hansbo mass matrix for the right part
         DDL are organized : 2 : N2d and 3: N1d
+        :param mass_1 : mass of the cracked cell
+        :param mass_2: mass of the element right on the right of the cracked cell
+        :param epsilon: relative position of the disc inside the cracked cell
         """
         if self.lump == "menouillard":
             self._enriched_mass_matrix_right_part[2, 2] = (1 - epsilon) * mass_1 / 2. + mass_2 / 2.
@@ -65,16 +84,16 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         else:
             self._enriched_mass_matrix_right_part[2, 2] = \
                 1. / 3. * mass_1 - epsilon ** 3 / 3. * mass_1 + mass_2 / 2.
-            self._enriched_mass_matrix_right_part[2, 3] = 1. / 6. * mass_1 - \
-                                                          epsilon ** 2 * mass_1 / 2. + \
-                                                          epsilon ** 3 / 3. * mass_1
-            self._enriched_mass_matrix_right_part[3, 3] = 1. / 3. * mass_1 - \
-                                                          epsilon * mass_1 + epsilon ** 2 * mass_1 \
-                                                          - epsilon ** 3 / 3. * mass_1
+            self._enriched_mass_matrix_right_part[2, 3] = \
+                1. / 6. * mass_1 - epsilon ** 2 * mass_1 / 2. +  epsilon ** 3 / 3. * mass_1
+            self._enriched_mass_matrix_right_part[3, 3] = \
+                1. / 3. * mass_1 - epsilon * mass_1 + epsilon ** 2 * mass_1 \
+                - epsilon ** 3 / 3. * mass_1
 
     def compute_enriched_mass_matrix(self, discontinuity, topology, cells_mass):
         """
-        Compute the enriched mass matrix for Hansbo shape functions (associated with 1 discontinuity)
+        Compute the enriched mass matrix for Hansbo shape functions
+        (associated with 1 discontinuity)
         :param discontinuity : discontinuity to be considered
         :param topology: topology = connectivity
         :param cells_mass: array of cells mass
@@ -103,7 +122,9 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         self.compute_enriched_mass_matrix_right_part(mass_1, mass_2, epsilon)
 
     def rearrange_dof_in_inv_mass_matrix(self):
-
+        """
+        Rearrange dof to easily compute the node velocity with classical and enriched dof separately
+        """
         res = SymNDArray((self._matrix_size, self._matrix_size), dtype=np.float64, order='C')
         res[:, :] = 0
         res[0, 0] = self._inv_enriched_mass_matrix[0, 0]
