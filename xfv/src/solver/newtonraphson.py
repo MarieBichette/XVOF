@@ -36,33 +36,27 @@ class NewtonRaphson(NewtonRaphsonBase):
             raise ValueError(msg)
 
         # Newton's variable
-        var_i = init_variable
-        var_iplus1 = np.ndarray(var_i.shape, dtype=np.float64, order='C')
-        var_iplus1[:] = var_i
+        var_i = np.ndarray(init_variable.shape, dtype=np.float64, order='C')
+        var_i[:] = init_variable
+        func_i = np.ndarray(var_i.shape, dtype=np.float64, order='C')
+        dfunc_i_surde = np.ndarray(var_i.shape, dtype=np.float64, order='C')
 
         # Newton's parameters initialization
         # Convergence criterion cell by cell
-        not_conv = np.ndarray(var_i.shape, dtype=bool, order='C')
-        not_conv[:] = True
+        above_crit = np.ndarray(var_i.shape, dtype=bool, order='C')
+        above_crit[:] = True
         is_conv = False
         nit = 0  # Number of iterations
-        res = 0.  # result
-        delta = 0.  # increment
-        func_i = 0.  # function evaluation
 
         while not is_conv and nit < self.nb_iterations_max:
-            func_i, dfunc_i_surde = self.function.computeFunctionAndDerivative(var_i, not_conv)
-            # Correction
+            func_i[above_crit], dfunc_i_surde[above_crit] = (
+                self.function.computeFunctionAndDerivative(var_i, above_crit))
             delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
             above_crit = abs(func_i) >= EPSILON * abs(delta) + PRECISION
             is_conv = not above_crit.any()
-            var_iplus1[not_conv] = var_i[not_conv] + delta
             if is_conv:
-                res = var_i
                 break
-            # Increment
-            not_conv = above_crit
-            var_i = var_iplus1
+            var_i += delta
             nit += 1
 
         # Error if non convergence
@@ -72,4 +66,4 @@ class NewtonRaphson(NewtonRaphsonBase):
                    f"delta = {delta}\n"
                    f"nit = {nit}")
             raise ValueError(msg)
-        return res
+        return var_i
