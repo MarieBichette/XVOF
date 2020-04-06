@@ -133,24 +133,33 @@ class SpaceTimeDiagramTools:
         if begin is not None and end is not None:
             plt.contourf(coord[:, begin:end + 1], time[:, begin:end + 1], field[:, begin:end + 1],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, begin], time[:, begin], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, end], time[:, end], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from " + str(begin) + " to " + str(end) + "inclus")
 
         elif begin is None and end is not None:
             plt.contourf(coord[:, :end + 1], time[:, :end + 1], field[:, :end + 1],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, 0], time[:, 0], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, end], time[:, end], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from the beginning to " + str(end) + "inclus")
 
         elif begin is not None and end is None:
             plt.contourf(coord[:, begin:], time[:, begin:], field[:, begin:],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, begin], time[:, begin], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, -1], time[:, -1], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from " + str(begin) + " to the end")
 
         elif begin is None and end is None:
             plt.contourf(coord[:, :], time[:, :], field[:, :],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, 0], time[:, 0], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, -1], time[:, -1], color='black', linewidth=0.5)  # contour d
+            # no contour
             if self._verbose:
                 print("Plot data for all geometry")
 
