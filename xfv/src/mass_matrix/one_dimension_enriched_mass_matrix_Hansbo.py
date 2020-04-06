@@ -1,5 +1,5 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
 Implementing the OneDimensionEnrichedMassMatrix class
 """
@@ -103,7 +103,7 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
               "discontinuite {:d}".format(discontinuity.label))
         print("Compute mass matrix with Hansbo method")
         epsilon = discontinuity.position_in_ruptured_element
-        # Suppose les éléments voisins triés par position croissante
+        # Suppose les Ã©lÃ©ments voisins triÃ©s par position croissante
         connectivity = topology.cells_in_contact_with_node[:]
         mask_in_nodes = discontinuity.mask_in_nodes
         mask_out_nodes = discontinuity.mask_out_nodes
@@ -113,7 +113,7 @@ class OneDimensionHansboEnrichedMassMatrix(OneDimensionEnrichedMassMatrix):
         cell_1 = cells_on_left[1]
         cell_2 = cells_on_right[1]
         if cell_1 != cells_on_right[0]:
-            raise ValueError("Problème d'indice pour l'élément enrichi")
+            raise ValueError("ProblÃ¨me d'indice pour l'Ã©lÃ©ment enrichi")
         mass_0 = cells_mass[cell_0]
         mass_1 = cells_mass[cell_1]
         mass_2 = cells_mass[cell_2]
