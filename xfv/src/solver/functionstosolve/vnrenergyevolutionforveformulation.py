@@ -15,13 +15,9 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
     def computeFunctionAndDerivative(self, var_value, mask):
         nrj = var_value[mask]
         eos = self._variables['EquationOfState']
-        old_rho = self._variables['OldDensity'][mask]
-        new_rho = self._variables['NewDensity'][mask]
-        pressure = self._variables['Pressure'][mask]
-        old_nrj = self._variables['OldEnergy'][mask]
-        p_i = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        dpsurde = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        eos.solve_volume_energy(1. / new_rho, nrj, p_i, dpsurde)
+        p_i = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        dpsurde = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        eos.solve_volume_energy(new_spec_vol, nrj, p_i, dpsurde)
         # Function to vanish
         delta_v = 1. / new_rho - 1. / old_rho
         func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj
