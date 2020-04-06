@@ -44,7 +44,7 @@
       "failure": {
         "failure-criterion": {
           "name": "MaximalStress",
-          "value": 8000000000.0
+          "value": 8e+9
         },
         "failure-treatment": {
           "name": "Enrichment",
@@ -54,7 +54,7 @@
         },
         "contact-treatment": {
           "name": "Penalty",
-          "penalty-stiffness": 1e+17
+          "penalty-stiffness": 1e+18
         }
       }
     }
