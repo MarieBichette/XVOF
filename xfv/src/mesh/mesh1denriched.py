@@ -194,8 +194,18 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                     self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
                 if contact_force != 0.:
                     assert contact_force < 0.
-                    # Divide the contact force on the nodal forces
+                    print("Print pb sur la disc " + str(disc.label) + " : opening = " + str(disc.discontinuity_opening.new_value))
+                    print("Contact force = " + str(contact_force))
+                    print("Node force avant : ")
+                    print(self.nodes.force[disc.mask_disc_nodes])
+                    print("Additional dof force avant")
+                    print(disc.additional_dof_force)
+                    # Divide the contact "force" on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+                    print("Node force après : ")
+                    print(self.nodes.force[disc.mask_disc_nodes])
+                    print("Additional dof force après")
+                    print(disc.additional_dof_force)
 
                     # Reinitialize the kinematics that lead to contact
                     self.nodes.reinitialize_kinematics_after_contact(disc)
@@ -210,6 +220,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
 
                     # Apply correction on the node field
                     self.compute_new_nodes_coordinates(delta_t)
+                    print("Correction de l'ouverture de la disc " + str(disc.label) + " : opening = " + str(
+                        disc.discontinuity_opening.new_value))
 
     @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t: float):
