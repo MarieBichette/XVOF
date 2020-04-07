@@ -233,10 +233,16 @@ class SpaceTimeDiagramTools:
                 # * for coord_array : add left_size and insert right size of cell
                 left_size_for_cell_i = left_size[count_active_disc, 1]
                 right_size_for_cell_i = right_size[count_active_disc, 1]
+                # Here, we compute the coordinates of the left boundary of the discontinuity
+                # instead of the center of the left part of cracked cell for representativeness of
+                # the diagram
                 modified_coord_array[moving_index] += \
-                    left_size_for_cell_i / 2. - cell_size[i_cell_index] / 2.
+                    left_size_for_cell_i - cell_size[i_cell_index] / 2.
+                # In the same idea, we compute the coordinates of the right boundary of the
+                # discontinuity instead of the center of the right part of cracked cell for
+                # representativeness of the diagram
                 right_coordinate = modified_coord_array[moving_index + 1] \
-                                   - right_size_for_cell_i / 2. - cell_size[i_cell_index + 1] / 2.
+                                   - right_size_for_cell_i - cell_size[i_cell_index + 1] / 2.
                 modified_coord_array = np.insert(modified_coord_array, moving_index + 1, [right_coordinate])
 
                 # * for time_array : insert time
