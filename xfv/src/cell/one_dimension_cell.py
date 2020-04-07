@@ -5,7 +5,6 @@ Implementation of the OneDimensionCell class
 """
 import ctypes
 import numpy as np
-from pathlib import Path
 
 from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
@@ -179,12 +178,11 @@ class OneDimensionCell(Cell):
         self._solver = NewtonRaphson(self._function_to_vanish)
 
         if DataContainer().has_external_solver():
-            self._external_library = DataContainer().get_externam_solver_path()
+            self._external_library = DataContainer().get_external_solver_path()
         else:
             self._external_library = None
         if self._external_library is not None:
-            _path = Path(self._external_library).resolve()
-            self._mod = ctypes.cdll.LoadLibrary(_path.as_posix())
+            self._mod = ctypes.cdll.LoadLibrary(self._external_library.as_posix())
             self._computePressureExternal = self._mod.launch_vnr_resolution
             self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
                                                       [ctypes.c_int, ] +

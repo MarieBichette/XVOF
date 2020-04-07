@@ -638,11 +638,12 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         """
         return 'external-solver-library' in self.__datadoc['numeric-parameters'].keys()
 
-    def get_externam_solver_path(self):
+    def get_external_solver_path(self):
         """
         Returns the external solver required in the data
         """
-        return self.__datadoc['numeric-parameters']['external-solver-library']
+        _path = Path(self.__datadoc['numeric-parameters']['external-solver-library'])
+        return self._datafile_dir / _path
 
 
 if __name__ == "__main__":
