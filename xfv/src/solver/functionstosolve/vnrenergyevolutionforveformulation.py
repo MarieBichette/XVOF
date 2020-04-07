@@ -12,23 +12,20 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
     Defines the evolution function of the internal energy that must vanish in VNR scheme
     [v, e] formulation
     """
-    def __init__(self):
-        super(VnrEnergyEvolutionForVolumeEnergyFormulation, self).__init__()
+    def computeFunctionAndDerivative(self, var_value, mask):
+        _mask = np.where(mask)
+        nrj = var_value[_mask]
+        new_spec_vol = 1. / self._variables['NewDensity'][_mask]
 
-    def compute_function_and_derivative(self, var_value, mask):
-        nrj = var_value[mask]
         eos = self._variables['EquationOfState']
-        old_rho = self._variables['OldDensity'][mask]
-        new_rho = self._variables['NewDensity'][mask]
-        pressure = self._variables['Pressure'][mask]
-        old_nrj = self._variables['OldEnergy'][mask]
-        p_i = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        dpsurde = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        dummy = np.zeros(nrj.shape, dtype=np.float64, order='C')
-        eos.solveVolumeEnergy(1. / new_rho, nrj, p_i, dummy, dpsurde)
+        p_i = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+        dpsurde = np.ndarray(nrj.shape, dtype=np.float64, order='C')
+
+        eos.solve_volume_energy(new_spec_vol, nrj, p_i, dpsurde)
         # Function to vanish
-        delta_v = 1. / new_rho - 1. / old_rho
-        func = nrj + p_i * delta_v / 2. + pressure * delta_v / 2. - old_nrj
+        delta_v = new_spec_vol - 1. / self._variables['OldDensity'][_mask]
+        func = (nrj + (p_i + self._variables['Pressure'][_mask]) * delta_v * 0.5 -
+                self._variables['OldEnergy'][_mask])
         # Derivative of the function with respect to internal energy
-        dfunc = 1 + dpsurde * delta_v / 2.
+        dfunc = 1 + dpsurde * delta_v * 0.5
         return func, dfunc

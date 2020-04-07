@@ -9,7 +9,6 @@ from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEn
 from xfv.src.data.data_container import DataContainer
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.utilities.profilingperso import timeit_file
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact_base import ContactBase
 
@@ -129,7 +128,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             self.mass_matrix.compute_correction_mass_matrix_for_cell_500(
                 self.cells.mass, self.mask_last_nodes_of_ref, self.__topology)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_velocities(self, delta_t: float):
         """
         Computation of nodes velocities at t+dt
@@ -223,7 +221,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                     print("Correction de l'ouverture de la disc " + str(disc.label) + " : opening = " + str(
                         disc.discontinuity_opening.new_value))
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_coordinates(self, delta_t: float):
         """
         Computation of nodes coordinates at t+dt
@@ -235,14 +232,12 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         for disc in Discontinuity.discontinuity_list():
             disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_cells_sizes(self):
         """
         Computation of cells sizes at t
         """
         self.cells.compute_size(self.__topology, self.nodes.xt)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_sizes(self, delta_t):
         """
         Computation of cells sizes at t+dt
@@ -250,7 +245,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self.cells.classical)
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.nodes.upundemi)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
@@ -258,7 +252,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_new_density(self.cells.classical)
         self.cells.compute_enriched_elements_new_density()
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_pressures(self, delta_t: float):
         """
         Computation of cells pressure at t+dt
@@ -268,7 +261,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=delta_t)
         self.cells.compute_enriched_elements_new_pressure(delta_t)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
         Computation of cells artificial viscosity at t+dt
@@ -278,7 +270,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_new_pseudo(delta_t, self.cells.classical)
         self.cells.compute_enriched_elements_new_pseudo(delta_t)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_nodes_forces(self):
         """
         Computation of nodes forces at t+dt
@@ -286,7 +277,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.nodes.compute_new_force(self.__topology, self.cells.stress_xx, self.cells.classical)
         self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_cohesive_forces(self):
         """
         Computation of cohesive forces at t+dt
@@ -294,7 +284,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         if self.cohesive_zone_model is not None:
             self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def increment(self):
         """
         Moving to next time step
@@ -304,7 +293,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         for disc in Discontinuity.discontinuity_list():
             disc.additional_dof_increment()
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_deviator_elasticity(self, delta_t, mask):
         """
         Compute the deviatoric part of stress tensor
@@ -319,7 +307,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
                                                              self.nodes.upundemi, delta_t)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def assemble_complete_stress_tensor(self):
         """
         Assembling pressure and stress deviator
@@ -327,7 +314,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         self.cells.compute_complete_stress_tensor(self.cells.classical)
         self.cells.compute_enriched_stress_tensor()
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def compute_new_time_step(self):
         """
         Computation of new time step
@@ -345,7 +331,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 dt = dt/reduction_factor  # dt name is ok pylint: disable=invalid-name
         return dt
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
@@ -362,7 +347,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             msg = "One dimensional mesh : only 'left' or 'right' boundaries are possibles!"
             raise ValueError(msg)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_velocity_boundary_condition(self, surface, velocity):
         """
         Apply a given velocity on left or right boundary
@@ -375,7 +359,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             msg = "One dimensional mesh : only 'left' or 'right' boundaries are possibles!"
             raise ValueError(msg)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
@@ -389,7 +372,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             np.logical_or(self.__ruptured_cells,
                           new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def get_plastic_cells(self, plastic_criterion, mask):
         """
         Find the cells where the plasticity criterion is checked and store them
@@ -403,7 +385,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             disc.plastic_cells = plastic_criterion.check_criterion_on_right_part_cells(disc)
 
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_rupture_treatment(self, treatment, time):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
@@ -413,7 +394,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         treatment.apply_treatment(self.cells, self.__ruptured_cells,
                                   self.nodes, self.__topology, time)
 
-    @timeit_file("/tmp/profil_xfv.src.txt")
     def apply_plasticity_treatment(self, delta_t: float, mask_mesh: np.array):
         """
         Apply plasticity treatment if criterion is activated :

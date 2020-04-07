@@ -43,10 +43,19 @@ class OneDimensionCell(Cell):
             pressure_new_value = np.zeros(shape, dtype=np.float64, order='C')
             sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
             dummy = np.zeros(shape, dtype=np.float64, order='C')
-            my_variables['EquationOfState'].solveVolumeEnergy(
+            my_variables['EquationOfState'].solve_volume_energy(
                 1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
-                sound_velocity_new_value, dummy)
-            cell._function_to_vanish.erase_variables()
+                dummy, sound_velocity_new_value)
+
+            if np.isnan(sound_velocity_new_value).any():
+                negative_vson = np.where(np.isnan(sound_velocity_new_value))
+                msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
+                msg += "density = {}\n".format(my_variables['NewDensity'][negative_vson])
+                msg += "energy = {}\n".format(energy_new_value[negative_vson])
+                msg += "pressure = {}\n".format(pressure_new_value[negative_vson])
+                raise ValueError(msg)
+
+            cell._function_to_vanish.eraseVariables()
         return energy_new_value, pressure_new_value, sound_velocity_new_value
 
     @classmethod

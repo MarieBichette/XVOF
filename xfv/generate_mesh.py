@@ -70,8 +70,8 @@ if __name__ == '__main__':
     # pylint: disable=invalid-name
     parser = argparse.ArgumentParser(
         description="%(prog)s generates 1D mesh files to be used by XtendedFiniteVolume",
-        epilog="Example: %(prog)s base_rep 1,100 0.5,3 will generate a mesh file containing"
-                "a block with a length of 1 meter and 100 cells followed by a block with a "
+        epilog="Example: %(prog)s base_rep 1@100 0.5@3 will generate a mesh file containing"
+                " a block with a length of 1 meter and 100 cells followed by a block with a "
                 "length of 50 cm and 3 cells.")
     parser.add_argument("directory", type=str,
                         help="Path toward the directory where the mesh file will be written")

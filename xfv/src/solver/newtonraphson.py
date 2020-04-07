@@ -11,6 +11,7 @@ from xfv.src.solver.newtonraphsonbase import NewtonRaphsonBase
 EPSILON = 1.0e-06
 PRECISION = 1.0e-08
 
+
 class NewtonRaphson(NewtonRaphsonBase):
     """
     This class implements a Newton Raphson type non linear solver
@@ -36,34 +37,32 @@ class NewtonRaphson(NewtonRaphsonBase):
             raise ValueError(msg)
 
         # Newton's variable
-        var_i = init_variable
-        var_iplus1 = np.zeros(var_i.shape, dtype=np.float64, order='C')
+        var_i = np.ndarray(init_variable.shape, dtype=np.float64, order='C')
+        func_i = np.ndarray(init_variable.shape, dtype=np.float64, order='C')
+        dfunc_i_surde = np.ndarray(init_variable.shape, dtype=np.float64, order='C')
+        non_conv = np.ndarray(var_i.shape, dtype=bool, order='C')
 
         # Newton's parameters initialization
-        not_conv = np.array([True for i in range(len(var_i))])  # Convergence criterion cell by cell
+        var_i[:] = init_variable
+        non_conv[:] = True
+        is_conv = False
         nit = 0  # Number of iterations
-        res = 0.  # result
-        delta = 0.  # increment
-        func_i = 0.  # function evaluation
-
-        while not_conv.any() and nit < self.nb_iterations_max:
-            (func_i, dfunc_i_surde) = self.function.compute_function_and_derivative(var_i, not_conv)
-            # Correction
-            delta = self._increment_method.compute_increment(func_i, dfunc_i_surde)
-            var_iplus1[not_conv] = var_i[not_conv] + delta
-            not_conv[not_conv] = abs(func_i) >= EPSILON * abs(delta) + PRECISION
-            if not not_conv.any():
-                res = var_i
+        while not is_conv and nit < self.nb_iterations_max:
+            func_i[non_conv], dfunc_i_surde[non_conv] = (
+                self.function.computeFunctionAndDerivative(var_i, non_conv))
+            delta = self._increment_method.computeIncrement(func_i, dfunc_i_surde)
+            non_conv = abs(func_i) >= EPSILON * abs(delta) + PRECISION
+            is_conv = not non_conv.any()
+            if is_conv:
                 break
-            # Increment
-            var_i = var_iplus1
+            var_i[non_conv] += delta[non_conv]
             nit += 1
 
         # Error if non convergence
         if nit == self.nb_iterations_max:
-            msg = "Erreur de convergence du NR"
-            msg += "func_i=", func_i
-            msg += "delta=", delta
-            msg += "nit=", nit
+            msg = ("Erreur de convergence du NR\n"
+                   f"func_i = {func_i}\n"
+                   f"delta = {delta}\n"
+                   f"nit = {nit}")
             raise ValueError(msg)
-        return res
+        return var_i
