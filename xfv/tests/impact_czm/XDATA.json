@@ -56,15 +56,11 @@
           "name": "linear",
           "coefficients": {
             "cohesive-strength": 8e+9,
-            "critical-separation": 1e-5
+            "critical-separation": 3e-5
           },
           "unloading-model": {
             "name": "lossofstiffnessunloading"
           }
-        },
-        "contact-treatment": {
-          "name": "Penalty",
-          "penalty-stiffness": 1e+18
         }
       }
     }
@@ -88,7 +84,7 @@
     "cfl-pseudo": 0.0
   },
   "output": {
-    "number-of-images": 500,
+    "number-of-images": 0,
     "dump-images": false,
     "database": [
       {
