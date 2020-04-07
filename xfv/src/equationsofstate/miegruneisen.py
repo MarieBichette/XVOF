@@ -138,12 +138,12 @@ class MieGruneisen(EquationOfStateBase):
 
     def __compute_eint_phi_compression(self, epsv, denom):
         if self.__param.S2 and self.__param.S3:
-            denom[:] = self.__compute_denom_3(epsv)
+            denom[:] = 1. / self.__compute_denom_3(epsv)
         elif self.__param.S2:
-            denom[:] = self.__compute_denom_2(epsv)
+            denom[:] = 1. / self.__compute_denom_2(epsv)
         else:
-            denom[:] = self.__compute_denom_1(epsv)
-        phi = self.__param.rhozero * self.__czero2 * epsv / denom ** 2
+            denom[:] = 1. / self.__compute_denom_1(epsv)
+        phi = self.__param.rhozero * self.__czero2 * epsv * denom ** 2
         einth = self.__param.ezero + phi * epsv / (2. * self.__param.rhozero)
         return einth, phi
 
@@ -160,10 +160,8 @@ class MieGruneisen(EquationOfStateBase):
             redond_a = self.__compute_redonda_2(epsv)
         else:
             redond_a = self.__compute_redonda_1()
-        # TODO: perfs => compute 1 / denom instead of denom but
-        # introduces light changes on the references
-        dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a / denom)
-        deinth = phi * (-1. - epsv * redond_a / denom)
+        dphi = phi * self.__param.rhozero * (-1. / epsv - 2. * redond_a * denom)
+        deinth = phi * (-1. - epsv * redond_a * denom)
         dpdv = (dphi + (self.__dgam - gampervol) *
                 (internal_energy - einth) / specific_volume - gampervol * deinth)
         return dpdv
