@@ -15,7 +15,7 @@ class NewtonRaphsonIncrementBase(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_increment(self, function_value, derivative_function_value):
+    def computeIncrement(self, function_value, derivative_function_value):
         """
         Calcul de l'incrément
         """

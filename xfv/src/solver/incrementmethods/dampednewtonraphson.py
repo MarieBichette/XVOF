@@ -14,7 +14,7 @@ class DampedNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
         super(DampedNewtonRaphsonIncrement, self).__init__()
         self._damping_coefficient = damping_coefficient
 
-    def compute_increment(self, function_value, derivative_function_value):
+    def computeIncrement(self, function_value, derivative_function_value):
         """
         Increment computation
         """
