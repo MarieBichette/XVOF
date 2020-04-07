@@ -178,8 +178,8 @@ class OneDimensionCell(Cell):
         # Solver EOS
         self._solver = NewtonRaphson(self._function_to_vanish)
 
-        if DataContainer().hasExternalSolver():
-            self._external_library = DataContainer().getExternalSolverPath()
+        if DataContainer().has_external_solver():
+            self._external_library = DataContainer().get_externam_solver_path()
         else:
             self._external_library = None
         if self._external_library is not None:
