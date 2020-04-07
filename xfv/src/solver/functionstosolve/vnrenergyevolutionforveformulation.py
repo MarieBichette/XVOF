@@ -24,9 +24,7 @@ class VnrEnergyEvolutionForVolumeEnergyFormulation(FunctionToSolveBase):
         eos.solve_volume_energy(new_spec_vol, nrj, p_i, dpsurde)
         # Function to vanish
         delta_v = new_spec_vol - 1. / self._variables['OldDensity'][_mask]
-        # TODO: perfs => factorizes by delta_v * 0.5 but introduces light changes on references
-        func = (nrj + p_i * delta_v * 0.5 +
-                self._variables['Pressure'][_mask] * delta_v * 0.5 -
+        func = (nrj + (p_i + self._variables['Pressure'][_mask]) * delta_v * 0.5 -
                 self._variables['OldEnergy'][_mask])
         # Derivative of the function with respect to internal energy
         dfunc = 1 + dpsurde * delta_v * 0.5
