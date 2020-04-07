@@ -10,8 +10,6 @@ import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell as Cell
 from xfv.src.data.data_container import DataContainer
 
-# TODO : fix external library path
-
 
 class OneDimensionCellExternalLibTest(unittest.TestCase):
     """
@@ -37,7 +35,6 @@ class OneDimensionCellExternalLibTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @unittest.skip("Solve path to external lib")
     def test_compute_new_pressure_external(self):
         """
         Test of compute_new_pressure method with external solver
@@ -51,6 +48,7 @@ class OneDimensionCellExternalLibTest(unittest.TestCase):
         self.test_cell.energy.new_value = np.array([0., 0., 0.])
         self.test_cell.pressure.new_value = np.array([0., 0., 0.])
         self.test_cell.sound_velocity.new_value = np.array([0., 0., 0.])
+        self.test_cell.cell_in_target = np.array([True, True, True])
         self.test_cell.compute_new_pressure(np.array([True, True, True]), 1.e-6)
         # Function to vanish
         delta_v = 1. / self.test_cell.density.new_value - 1. / self.test_cell.density.current_value
