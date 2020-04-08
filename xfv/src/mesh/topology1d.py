@@ -57,7 +57,7 @@ class Topology1D(Topology):
         """
         Topology.add_cell_in_contact_with_node(self, ind_node, ind_cell)
         for ind in range(self._nbr_of_nodes):
-            conn = self.get_cells_in_contact_with_node(ind)
+            conn = self._cells_in_contact_with_node[ind_node]
             if conn.size > 2:
                 raise RuntimeError(f"The node {ind} is connected to more "
                                    f"than two cells {conn}.\n"
