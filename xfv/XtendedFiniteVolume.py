@@ -247,11 +247,11 @@ def main(directory: Path) -> None:
     dt_crit = 2 * dt
     while simulation_time < final_time:
         loop_begin_time = time.time()
-        # if step % 1000 == 0:
-        msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
-               """ a time step of {:15.9g} seconds""".
-               format(step, simulation_time, dt))
-        print(msg)
+        if step % 1000 == 0:
+            msg = ("""Iteration {:<4d} -- Time : {:15.9g} seconds with"""
+                   """ a time step of {:15.9g} seconds""".
+                   format(step, simulation_time, dt))
+            print(msg)
 
         # ---------------------------------------------#
         #                OUTPUT MANAGEMENT             #
