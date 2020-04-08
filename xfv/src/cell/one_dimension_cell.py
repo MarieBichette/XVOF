@@ -25,8 +25,8 @@ class OneDimensionCell(Cell):
                                 energy, energy_new, pseudo, cson_new):
 
         if cell._external_library is not None:
-            energy_new_value, pressure_new_value, sound_velocity_new_value = \
-                (np.array(x) for x in cell._compute_new_pressure_with_external_lib(
+            energy_new_value, pressure_new_value, sound_velocity_new_value = (
+                cell._compute_new_pressure_with_external_lib(
                     density, density_new, pressure, pseudo, energy, energy_new,
                     pressure_new, cson_new))
         else:
