@@ -7,7 +7,8 @@ import ctypes
 import numpy as np
 
 from xfv.src.cell import Cell
-from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import (
+    VnrEnergyEvolutionForVolumeEnergyFormulation)
 from xfv.src.solver.newtonraphson import NewtonRaphson
 from xfv.src.data.data_container import DataContainer
 from xfv.src.utilities.stress_invariants_calculation import compute_J2
@@ -283,10 +284,7 @@ class OneDimensionCell(Cell):
         n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         self._computePressureExternal(c_density, n_density, c_pressure, c_energy, pb_size,
                                       n_energy, n_pressure, n_sound_speed)
-        energy_n = n_energy[0:pb_size.value]
-        pressure_n = n_pressure[0:pb_size.value]
-        vson_n = n_sound_speed[0:pb_size.value]
-        return energy_n, pressure_n, vson_n
+        return energy_new, pressure_new, vson_new
 
     def compute_new_pressure(self, mask, dt):
         """
