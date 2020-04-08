@@ -56,13 +56,12 @@ class Topology:
 
     def add_cell_in_contact_with_node(self, ind_node, ind_cell):
         """
-        Ajoute l'indice, 'ind_cell', de la maille � la liste des mailles en contact
+        Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
         avec le noeud d'indice 'ind_node'
         """
-        k = 0
-        while self._cells_in_contact_with_node[ind_node, k] != -1:
-            k += 1
-        self._cells_in_contact_with_node[ind_node, k] = ind_cell
+        conn = self._cells_in_contact_with_node[ind_node]
+        first_emplace = np.argwhere(conn == -1)[0]
+        conn[first_emplace[0]] = ind_cell
 
     def get_nodes_belonging_to_cell(self, ind_cell):
         """
