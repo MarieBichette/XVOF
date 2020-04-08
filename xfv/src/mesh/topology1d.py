@@ -42,12 +42,6 @@ class Topology1D(Topology):
         :param nbr_of_cells: Number of cells in the mesh
         """
         Topology.__init__(self, nbr_of_nodes, nbr_of_cells)
-        self._nodes_belonging_to_cell = np.ones(shape=(nbr_of_cells, 2),
-                                                dtype=np.int64, order='C') * (-1)
-        # self._nodes_belonging_to_cell[:, :] = -1
-        self._cells_in_contact_with_node = np.ones(shape=(nbr_of_nodes, 2),
-                                                   dtype=np.int64, order='C') * (-1)
-        # self._cells_in_contact_with_node[:, :] = -1
         self._generate_mesh(nbr_of_cells)
 
     def add_cell_in_contact_with_node(self, ind_node, ind_cell):
