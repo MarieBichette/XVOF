@@ -1,25 +1,25 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Classe gérant la topologie du maillage
+Classe gï¿½rant la topologie du maillage
 """
 import numpy as np
 
 
 class Topology(object):
     """
-    Une classe gérant la topologie et les connectivités d'un maillage
+    Une classe gï¿½rant la topologie et les connectivitï¿½s d'un maillage
     """
     def __init__(self, nbr_of_nodes, nbr_of_cells, dim=1):
         #
         self._dim = dim
         self._nbr_of_nodes = nbr_of_nodes
         self._nbr_of_cells = nbr_of_cells
-        # Array dont chaque item est un array des indices des noeuds appartenant à la maille
+        # Array dont chaque item est un array des indices des noeuds appartenant ï¿½ la maille
         self._nodes_belonging_to_cell = np.ones(shape=(nbr_of_cells, 2 ** self._dim),
                                                 dtype=np.int64, order='C') * (-1)
         # Array dont chaque item est un array des indices des mailles en contact avec le noeud
-        self._cells_in_contact_with_node = np.ones(shape=(nbr_of_cells, 2 ** self._dim),
+        self._cells_in_contact_with_node = np.ones(shape=(nbr_of_nodes, 2 ** self._dim),
                                                    dtype=np.int64, order='C') * (-1)
 
     @property
@@ -46,9 +46,9 @@ class Topology(object):
     def set_nodes_belonging_to_cell(self, ind_cell, ind_node_list):
         """
         Attribue la liste des indices des noeuds, 'nodes_list'
-        appartenant à la maille d'indice 'ind_cell'
-        :param ind_cell: indice de la maille à laquelle attribuer les indices de noeuds
-        : ind_node_list: indices des noeuds appartenant à la cellule d'indice ind_cell
+        appartenant ï¿½ la maille d'indice 'ind_cell'
+        :param ind_cell: indice de la maille ï¿½ laquelle attribuer les indices de noeuds
+        : ind_node_list: indices des noeuds appartenant ï¿½ la cellule d'indice ind_cell
         :type ind_cell: int
         :type ind_node_list: list
         """
@@ -56,7 +56,7 @@ class Topology(object):
 
     def add_cell_in_contact_with_node(self, ind_node, ind_cell):
         """
-        Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
+        Ajoute l'indice, 'ind_cell', de la maille ï¿½ la liste des mailles en contact
         avec le noeud d'indice 'ind_node'
         """
         k = 0
@@ -66,9 +66,9 @@ class Topology(object):
 
     def get_nodes_belonging_to_cell(self, ind_cell):
         """
-        Renvoie un tableau des noeuds appartenant à la maille
+        Renvoie un tableau des noeuds appartenant ï¿½ la maille
         :param ind_cell: indice de la maille dont on veut connaitre les noeuds
-        :return: un tableau des noeuds appartenant à la maille
+        :return: un tableau des noeuds appartenant ï¿½ la maille
         :type ind_cell: int
         :rtype: numpy.array
         """
