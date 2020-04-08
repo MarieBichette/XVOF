@@ -48,12 +48,11 @@ class Topology1D(Topology):
         avec le noeud d'indice 'ind_node'
         """
         Topology.add_cell_in_contact_with_node(self, ind_node, ind_cell)
-        for ind in range(self._nbr_of_nodes):
-            conn = self._cells_in_contact_with_node[ind_node]
-            if conn.size > 2:
-                raise RuntimeError(f"The node {ind} is connected to more "
-                                   f"than two cells {conn}.\n"
-                                   "It is not correct in 1D!")
+        # Note: certainly no need for this check as the variable self._cells_in_contact_with_node
+        # is by construct of shape (nbr_of_nodes, 2)
+        if self._cells_in_contact_with_node.shape[1] != 2:  # pylint:disable=unsubscriptable-object
+            raise RuntimeError("One of the node is connected to more than two cells.\n"
+                               "It is not correct in 1D!")
 
     def _generate_mesh(self, nbr_of_cells):
         """
