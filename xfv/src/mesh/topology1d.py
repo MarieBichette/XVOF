@@ -3,8 +3,6 @@
 """
 Classe g�rant la topologie 1D du maillage
 """
-import numpy as np
-
 from xfv.src.mesh.topology import Topology
 
 
