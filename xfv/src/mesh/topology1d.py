@@ -57,10 +57,11 @@ class Topology1D(Topology):
         """
         Topology.add_cell_in_contact_with_node(self, ind_node, ind_cell)
         for ind in range(self._nbr_of_nodes):
-            cells_in_contact_with_node_number = 0
-            cells_in_contact_with_node_number += np.size(self.get_cells_in_contact_with_node(ind))
-            if cells_in_contact_with_node_number > 2:
-                raise SystemExit
+            conn = self.get_cells_in_contact_with_node(ind)
+            if conn.size > 2:
+                raise RuntimeError(f"The node {ind} is connected to more "
+                                   f"than two cells {conn}.\n"
+                                   "It is not correct in 1D!")
 
     def _generate_mesh(self, nbr_of_cells):
         """
