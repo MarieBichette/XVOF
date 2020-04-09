@@ -8,9 +8,9 @@ import numpy as np
 import os
 
 from xfv.src.cell import Cell
-from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation \
+    import VnrEnergyEvolutionForVolumeEnergyFormulation
 from xfv.src.solver.newtonraphson import NewtonRaphson
-from xfv.src.data.data_container import DataContainer
 from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
@@ -111,9 +111,9 @@ class OneDimensionCell(Cell):
         divu = vpoint / vnplusundemi
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
         mask = np.where(divu < 0.)
-        pseudo[mask] = 1. / vnplusundemi[mask] * (
-                a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
-                b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
+        pseudo[mask] = \
+            1. / vnplusundemi[mask] * (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
+                                       b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask]))
         return pseudo
 
     @classmethod
@@ -145,6 +145,10 @@ class OneDimensionCell(Cell):
         return delta_t
 
     def __init__(self, number_of_elements):
+        """
+        Build the array of cells (1D)
+        :param number_of_elements: number of cells
+        """
         super(OneDimensionCell, self).__init__(number_of_elements)
 
         # By default :all cells are classical (non enriched)
@@ -169,17 +173,18 @@ class OneDimensionCell(Cell):
         self._damage_variable = np.zeros([number_of_elements, ], dtype=np.float64, order='C')
 
         # EOS :
-        self._target_eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
+        self._target_eos = self.data.material_target.constitutive_model.eos.build_eos_obj()
         self._projectile_eos = None
-        if DataContainer().data_contains_a_projectile:
-            self._projectile_eos = DataContainer().material_projectile.constitutive_model.eos.build_eos_obj()
+        if self.data.data_contains_a_projectile:
+            self._projectile_eos = \
+                self.data.material_projectile.constitutive_model.eos.build_eos_obj()
         self._function_to_vanish = VnrEnergyEvolutionForVolumeEnergyFormulation()
 
         # Solver EOS
         self._solver = NewtonRaphson(self._function_to_vanish)
 
-        if DataContainer().hasExternalSolver():
-            self._external_library = DataContainer().getExternalSolverPath()
+        if self.data.hasExternalSolver():
+            self._external_library = self.data.getExternalSolverPath()
         else:
             self._external_library = None
         if self._external_library is not None:
@@ -194,7 +199,7 @@ class OneDimensionCell(Cell):
         """
         Compute mass of the cells
         """
-        self._mass = self.size_t * DataContainer().geometric.section * self.density.current_value
+        self._mass = self.size_t * self.data.geometric.section * self.density.current_value
 
     @property
     def classical(self):
@@ -294,13 +299,15 @@ class OneDimensionCell(Cell):
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
-        target_model = DataContainer().material_target.constitutive_model
+        target_model = self.data.material_target.constitutive_model
         projectile_model = None
-        if DataContainer().data_contains_a_projectile:
-            projectile_model = DataContainer().material_projectile.constitutive_model
-        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+        if self.data.data_contains_a_projectile:
+            projectile_model = self.data.material_projectile.constitutive_model
+        elasticity_activated = np.logical_or(
+            target_model.elasticity_model is not None,
             projectile_model and projectile_model.elasticity_model is not None)
-        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+        plasticity_activated = np.logical_or(
+            target_model.plasticity_model is not None,
             projectile_model and projectile_model.plasticity_model is not None)
 
         if elasticity_activated or plasticity_activated:
@@ -317,7 +324,7 @@ class OneDimensionCell(Cell):
 
         # Appel de l'�quation d'�tat sur le projectile:
         mask_p = np.logical_and(mask, self.cell_in_projectile)
-        if DataContainer().data_contains_a_projectile and mask_p.any():
+        if self.data.data_contains_a_projectile and mask_p.any():
             # Not sure there is cells in the intersection mask_classic / projectile
             # => test it before starting Newton
             self.energy.new_value[mask_p], self.pressure.new_value[mask_p], \
@@ -330,10 +337,10 @@ class OneDimensionCell(Cell):
 
         # Appel de l'�quation d'�tat sur la cible
         mask_t = np.logical_and(mask, self.cell_in_target)
-        if DataContainer().data_contains_a_target and mask_t.any():
+        if self.data.data_contains_a_target and mask_t.any():
             # Not sure there is cells in the intersection mask_classic / target
             # => test it before starting Newton
-            self.energy.new_value[mask_t], self.pressure.new_value[mask_t], \
+            self.energy.new_value[mask_t], self.pressure.new_value[mask_t],\
             self.sound_velocity.new_value[mask_t] = OneDimensionCell.apply_equation_of_state(
                 self, self._target_eos,
                 self.density.current_value[mask_t], self.density.new_value[mask_t],
@@ -342,29 +349,29 @@ class OneDimensionCell(Cell):
                 self.pseudo.current_value[mask_t],
                 self.sound_velocity.new_value[mask_t])
 
-    def compute_size(self, topologie, vecteur_coord_noeuds):
+    def compute_size(self, topology, node_coord):
         """
         Computation of the cells initial length
-        :param topologie : table to link nodes and cells index
-        :param vecteur_coord_noeuds : array with nodes coordinates
+        :param topology : table to link nodes and cells index
+        :param node_coord : array with nodes coordinates
         """
-        connectivity = topologie.nodes_belonging_to_cell
-        size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
+        connectivity = topology.nodes_belonging_to_cell
+        size = node_coord[connectivity[:, 1]] - node_coord[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error.any():
             raise ValueError("La maille {:} a une longueur n�gative !".format(
                 np.where(cell_error)[0]))
         self._size_t = size.flatten()
 
-    def compute_new_size(self, topologie, vecteur_coord_noeuds, mask):
+    def compute_new_size(self, topology, node_coord, mask):
         """
         Computation of the cells length at time t+dt
-        :param topologie : table to link nodes and cells index
-        :param vecteur_coord_noeuds : array with the new nodes coordinates
+        :param topology : table to link nodes and cells index
+        :param node_coord : array with the new nodes coordinates
         :param mask : array of boolean to identify classical cells
         """
-        connectivity = topologie.nodes_belonging_to_cell
-        size = vecteur_coord_noeuds[connectivity[:, 1]] - vecteur_coord_noeuds[connectivity[:, 0]]
+        connectivity = topology.nodes_belonging_to_cell
+        size = node_coord[connectivity[:, 1]] - node_coord[connectivity[:, 0]]
         cell_error = (size < 0)
         if cell_error[mask].any():
             raise ValueError("La maille {:} a une longueur n�gative !".format(
@@ -388,36 +395,35 @@ class OneDimensionCell(Cell):
         self.pseudo.new_value[mask] = OneDimensionCell.compute_pseudo(
             delta_t, self.density.current_value[mask], self.density.new_value[mask],
             self.size_t_plus_dt[mask], self.sound_velocity.current_value[mask],
-            DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+            self.data.numeric.a_pseudo, self.data.numeric.b_pseudo)
 
     def compute_new_time_step(self, mask):
         """
         Computation of the time step in the cells at time t+dt
         :param mask : array of boolean to identify classical cells
         """
-        cfl = DataContainer().numeric.cfl
-        cfl_pseudo = DataContainer().numeric.cfl_pseudo
-        dt = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, self.density.current_value[mask],
-                                                self.density.new_value[mask],
-                                                self.size_t_plus_dt[mask],
-                                                self.sound_velocity.new_value[mask],
-                                                self.pseudo.current_value[mask],
-                                                self.pseudo.new_value[mask])
-        self._dt[mask] = dt
+        cfl = self.data.numeric.cfl
+        cfl_pseudo = self.data.numeric.cfl_pseudo
+        delta_t = OneDimensionCell.compute_time_step(cfl, cfl_pseudo,
+                                                     self.density.current_value[mask],
+                                                     self.density.new_value[mask],
+                                                     self.size_t_plus_dt[mask],
+                                                     self.sound_velocity.new_value[mask],
+                                                     self.pseudo.current_value[mask],
+                                                     self.pseudo.new_value[mask])
+        self._dt[mask] = delta_t
 
     def compute_shear_modulus(self):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
         """
         # TODO : interroger le package rheology
-        pass
 
     def compute_yield_stress(self):
         """
         Compute the yield stress according to plasticity constitutve model in XDATA
         """
         # TODO : interroger le package rheology
-        pass
 
     def compute_complete_stress_tensor(self, mask):
         """
@@ -427,13 +433,15 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
 
-        target_model = DataContainer().material_target.constitutive_model
+        target_model = self.data.material_target.constitutive_model
         projectile_model = None
-        if DataContainer().data_contains_a_projectile:
-            projectile_model = DataContainer().material_projectile.constitutive_model
-        elasticity_activated = np.logical_or(target_model.elasticity_model is not None,
+        if self.data.data_contains_a_projectile:
+            projectile_model = self.data.material_projectile.constitutive_model
+        elasticity_activated = np.logical_or(
+            target_model.elasticity_model is not None,
             projectile_model and projectile_model.elasticity_model is not None)
-        plasticity_activated = np.logical_or(target_model.plasticity_model is not None,
+        plasticity_activated = np.logical_or(
+            target_model.plasticity_model is not None,
             projectile_model and projectile_model.plasticity_model is not None)
 
         if elasticity_activated or plasticity_activated:
@@ -450,11 +458,11 @@ class OneDimensionCell(Cell):
         :param dt : time step (staggered tn+1/2)
         """
         self.compute_shear_modulus()
-        G = self.shear_modulus.current_value
+        G = self.shear_modulus.current_value  # pylint: disable=invalid-name
 
         # Compute rotation rate tensor  and strain rate tensor: W = 0 en 1D
         self.compute_deviator_strain_rate(mask, dt, topologie, coord_noeud_new, vitesse_noeud_new)
-        D = self._deviatoric_strain_rate
+        D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
         for i in range(0, 3):
@@ -463,8 +471,9 @@ class OneDimensionCell(Cell):
 
         # -----------------------------
         # pour �tre sur que la trace soit nulle
-        trace = self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] \
-                + self._deviatoric_stress_new[mask, 2]
+        trace = \
+            self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] \
+            + self._deviatoric_stress_new[mask, 2]
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] -= 1./3. * trace
 
@@ -497,7 +506,7 @@ class OneDimensionCell(Cell):
         # elastic predictor before applying plasticity
         radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
         for i in range(0, 3):
-                self._deviatoric_stress_new[mask, i] *= radial_return
+            self._deviatoric_stress_new[mask, i] *= radial_return
 
     def compute_plastic_strain_rate_tensor(self, mask, dt):
         """
@@ -509,11 +518,11 @@ class OneDimensionCell(Cell):
         # A faire avant apply_plastic_corrector_on_deviatoric_stress_tensor
         invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
         radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
-        G = self.shear_modulus.current_value[mask]
+        shear_modulus = self.shear_modulus.current_value[mask]
         for i in range(0, 3):
             self._plastic_strain_rate[mask, i] = \
                 (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
-                (radial_return * 3 * G * dt)
+                (radial_return * 3 * shear_modulus * dt)
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):
         """
@@ -523,10 +532,10 @@ class OneDimensionCell(Cell):
         """
         invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
         # elastic predictor before applying plasticity
-        G = self.shear_modulus.current_value[mask]
+        shear_modulus = self.shear_modulus.current_value[mask]
 
         self._equivalent_plastic_strain_rate[mask] = \
-            (invariant_j2_el - self.yield_stress.current_value[mask]) / (3. * G * dt)
+            (invariant_j2_el - self.yield_stress.current_value[mask]) / (3. * shear_modulus * dt)
 
     def impose_pressure(self, ind_cell, pressure):
         """
@@ -541,5 +550,5 @@ class OneDimensionCell(Cell):
         """
         Increment cells variables from one iteration to another
         """
-        super(OneDimensionCell,self).increment_variables()
+        super(OneDimensionCell, self).increment_variables()
         self._deviatoric_stress_current[:, :] = self._deviatoric_stress_new[:, :]

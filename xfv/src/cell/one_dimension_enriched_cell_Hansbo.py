@@ -200,10 +200,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         the enriched elements
         :param delta_t : time step
         """
-        target_model = DataContainer().material_target.constitutive_model
+        target_model = self.data.material_target.constitutive_model
         projectile_model = None
-        if DataContainer().data_contains_a_projectile:
-            projectile_model = DataContainer().material_projectile.constitutive_model
+        if self.data.data_contains_a_projectile:
+            projectile_model = self.data.material_projectile.constitutive_model
         elasticity_activated = \
             np.logical_or(target_model.elasticity_model is not None,
                           projectile_model and projectile_model.elasticity_model is not None)
@@ -311,8 +311,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             sound_velocity_left = np.array([self.sound_velocity.current_value[mask_in]])
             pseudo_left_new = OneDimensionCell.compute_pseudo(
                 delta_t, density_left, density_left_new, disc.left_part_size.new_value,
-                sound_velocity_left, DataContainer().numeric.a_pseudo,
-                DataContainer().numeric.b_pseudo)
+                sound_velocity_left, self.data.numeric.a_pseudo,
+                self.data.numeric.b_pseudo)
             # Partie droite :
             density_right = disc.additional_dof_density.current_value
             density_right_new = disc.additional_dof_density.new_value
@@ -320,7 +320,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             pseudo_right_new = OneDimensionCell.compute_pseudo(
                 delta_t, density_right, density_right_new,
                 disc.right_part_size.new_value, sound_velocity_right,
-                DataContainer().numeric.a_pseudo, DataContainer().numeric.b_pseudo)
+                self.data.numeric.a_pseudo, self.data.numeric.b_pseudo)
             self.pseudo.new_value[mask_in] = pseudo_left_new
             disc.additional_dof_artificial_viscosity.new_value = pseudo_right_new
 
@@ -436,9 +436,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         for disc in Discontinuity.discontinuity_list():
             mask = disc.ruptured_cell_id
             self.shear_modulus.new_value[mask] = \
-                DataContainer().material_target.initial_values.shear_modulus_init
+                self.data.material_target.initial_values.shear_modulus_init
             disc.additional_dof_shear_modulus.new_value = \
-                DataContainer().material_target.initial_values.shear_modulus_init
+                self.data.material_target.initial_values.shear_modulus_init
 
     def apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self, mask):
         """
@@ -525,9 +525,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             mask = disc.ruptured_cell_id
             # TODO : interroger le package rheology
             self.yield_stress.new_value[mask] = \
-                DataContainer().material_target.initial_values.yield_stress_init
+                self.data.material_target.initial_values.yield_stress_init
             disc.additional_dof_yield_stress.new_value = \
-                DataContainer().material_target.initial_values.yield_stress_init
+                self.data.material_target.initial_values.yield_stress_init
 
     def compute_enriched_elements_new_time_step(self):
         """
@@ -535,8 +535,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         The calculation is equivalent to a remeshing time step and thus underestimates the
         time step for the enriched cells
         """
-        cfl = DataContainer().numeric.cfl
-        cfl_pseudo = DataContainer().numeric.cfl_pseudo
+        cfl = self.data.numeric.cfl
+        cfl_pseudo = self.data.numeric.cfl_pseudo
 
         for disc in Discontinuity.discontinuity_list():
             mask_in = disc.ruptured_cell_id

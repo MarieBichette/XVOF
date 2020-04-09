@@ -13,21 +13,22 @@ from xfv.src.fields.field import Field
 from xfv.src.fields.fieldsmanager import FieldManager
 
 
-class Cell(object):
+class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """
     A Cell object represents all the mesh cells.
     Its different members are, for most of them, numpy 1D-array of nbr_of_cells length.
 
-    Memory layout is the same as in C/C++, i-e 'row wise'. 
+    Memory layout is the same as in C/C++, i-e 'row wise'.
     """
 
     @classmethod
-    def get_coordinates(cls, nbr_cells, topology, x_coord, y_coord=None,  z_coord=None):
+    def get_coordinates(cls, nbr_cells, topology, x_coord,
+                        y_coord=None, z_coord=None):  # pylint: disable=too-many-arguments
         """
         Return the vector of cell center coordinates at time t
 
         :param nbr_cells: number of cells
-        :param topology: topology 
+        :param topology: topology
         :param x_coord: x coordinate vector
         :param y_coord: y coordinate vector
         :param z_coord: z coordinate vector
@@ -50,7 +51,12 @@ class Cell(object):
                 vec_coord[ielem][2] = z_coord[nodes_index].mean()
         return vec_coord
 
-    def __init__(self, nbr_of_cells):
+    def __init__(self, nbr_of_cells: int):
+        """
+        Constructor of the array of cells
+        :param nbr_of_cells: number of cells
+        """
+        self.data = DataContainer()  # pylint: disable=no-value-for-parameter
         self._nbr_of_cells = nbr_of_cells
         self._dt = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
         self._size_t = np.zeros(self._nbr_of_cells, dtype=np.float64, order='C')
@@ -61,9 +67,9 @@ class Cell(object):
         self.cell_in_target = np.zeros(self.number_of_cells, dtype='bool')
         self.cell_in_projectile = np.zeros(self.number_of_cells, dtype='bool')
 
-        # initialisation par dï¿½faut avec material_target ---------------------
+        # Default initialization for target material ---------------------
         # hydro :
-        material_data = DataContainer().material_target.initial_values
+        material_data = self.data.material_target.initial_values
         self._fields_manager["Density"] = Field(
             self._nbr_of_cells, material_data.rho_init, material_data.rho_init)
         self._fields_manager["Pressure"] = Field(
@@ -85,7 +91,7 @@ class Cell(object):
         cell_in_projectile
         :param mask_node_target: tableau de bool pour les noeuds dans la cible
         :param mask_node_projectile: tableau de bool pour les noeuds dans le projectile
-        :param topology: Topologie donnant les tableaux de connectivitï¿½
+        :param topology: Topologie donnant les tableaux de connectivity
         :return:
         """
         # Partie mask_cible
@@ -121,8 +127,8 @@ class Cell(object):
         # correction de l'init si materiau projectile dï¿½clarï¿½ dans XDATA.json
         # (le mask est vide si pas de projectile donc transparent quand il n'y a pas
         # de projectile dÃ©clarÃ©)
-        if DataContainer().data_contains_a_projectile:
-            material_data = DataContainer().material_projectile.initial_values
+        if self.data.data_contains_a_projectile:
+            material_data = self.data.material_projectile.initial_values
             self.density.current_value[self.cell_in_projectile] = material_data.rho_init
             self.density.new_value[self.cell_in_projectile] = material_data.rho_init
             self.pressure.current_value[self.cell_in_projectile] = material_data.pression_init
@@ -136,7 +142,6 @@ class Cell(object):
             self.yield_stress.current_value[self.cell_in_projectile] = \
                 material_data.yield_stress_init
             self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
-
 
     @property
     def dt(self):
@@ -158,7 +163,7 @@ class Cell(object):
         Size (length, area, volume) of the cells at time t + dt
         """
         return self._size_t_plus_dt
-    
+
     @property
     def mass(self):
         """
@@ -288,7 +293,7 @@ class Cell(object):
         self._size_t[:] = self._size_t_plus_dt[:]
 
     @abstractmethod
-    def compute_new_pressure(self, mask, dt):
+    def compute_new_pressure(self, mask, delta_t):
         """
         Compute the pressure in the cells at time t + dt
         """
