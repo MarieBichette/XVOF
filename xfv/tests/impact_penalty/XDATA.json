@@ -1,9 +1,9 @@
 {
   "time-management": {
-    "final-time": 5e-06,
+    "final-time": 7e-06,
     "initial-time-step": 5e-10,
     "constant-time-step": false,
-    "time-step-reduction-factor-for-failure": 2.0
+    "time-step-reduction-factor-for-failure": 4.0
   },
   "geometry": {
     "section": 3.141592653589793e-06,
@@ -52,15 +52,9 @@
           "type-of-enrichment": "Hansbo",
           "lump-mass-matrix": "somme"
         },
-        "cohesive-model": {
-          "name": "linear",
-          "coefficients": {
-            "cohesive-strength": 8e+9,
-            "critical-separation": 3e-5
-          },
-          "unloading-model": {
-            "name": "lossofstiffnessunloading"
-          }
+        "contact-treatment": {
+          "name": "Penalty",
+          "penalty-stiffness": 2e+18
         }
       }
     }
