@@ -8,6 +8,7 @@ from typing import Type
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.contact.contact_base import ContactBase
 from xfv.src.contact.penalty import PenaltyContact
+from xfv.src.contact.lagrange_multiplier import LagrangianMultiplierContact
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -36,3 +37,8 @@ class ContactProps(TypeCheckedDataClass):
 class PenaltyContactProps(ContactProps):
     penalty_stiffness: float
     _contact_class = PenaltyContact
+
+
+@dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
+class LagrangianMultiplierProps(ContactProps):
+    _contact_class = LagrangianMultiplierContact

@@ -22,7 +22,8 @@ from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
                                                 ConstantStiffnessUnloadingProps,
                                                 LossOfStiffnessUnloadingProps)
-from xfv.src.data.contact_props import (ContactProps, PenaltyContactProps)
+from xfv.src.data.contact_props import (ContactProps, PenaltyContactProps,
+                                        LagrangianMultiplierProps)
 from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
 from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
 from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
@@ -401,9 +402,11 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         if contact_model_name == "penalty":
             penalty_stiffness: float = params['penalty-stiffness']
             contact_model_props: ContactProps = PenaltyContactProps(penalty_stiffness)
+        elif contact_model_name == "lagrangianmultiplier":
+            contact_model_props: ContactProps = LagrangianMultiplierProps()
         else:
             raise ValueError(f"Unknwon contact model: {contact_model_name} ."
-                             "Please choose among (penalty)")
+                             "Please choose among (Penalty|LagrangianMultiplier)")
         return contact_model_props, contact_model_name
 
     def __fill_in_material_props(self, material) -> Tuple[InitialValues,
