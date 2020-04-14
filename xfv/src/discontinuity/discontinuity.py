@@ -237,7 +237,7 @@ class Discontinuity(object):
         self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
 
     @property
-    def discontinuity_position(self):
+    def discontinuity_position(self) -> float:
         """
         Accessor on the discontinuity position
         """
