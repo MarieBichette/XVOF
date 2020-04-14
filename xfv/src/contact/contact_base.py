@@ -31,11 +31,3 @@ class ContactBase(object, metaclass=ABCMeta):
         :param section : section of the bar
         """
         pass
-
-    # @abstractmethod
-    # def compute_time_step_reduction_for_contact(self) -> float:
-    #     """
-    #     Computes the time step to apply when contact is activated
-    #     :return:
-    #     """
-    #     pass
