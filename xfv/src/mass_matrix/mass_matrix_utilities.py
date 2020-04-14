@@ -25,9 +25,10 @@ def multiplication_masse(matrix, vector):
     >>> multiplication_masse(matrice_bis, vecteur_bis)
     array([ 3.75 ,  3.875,  3.   ,  3.75 ])
     """
-    # matrix is a vector (line or column) => term by term product
-    if len(matrix.shape) == 1 or matrix.ndim == 2 and 1 in matrix.shape:
+    if matrix.ndim == 2 and 1 in matrix.shape:  # matrix is a vector  => term by term product
         result = matrix * vector
+    elif matrix.ndim == 1:  # matrix is a vector
+        result = matrix.reshape(matrix.shape[0], 1) * vector
     else:  # matrix is a true matrix (dim >=2) --> matrix vector product
         result = np.dot(matrix, vector)
     return result
