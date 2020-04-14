@@ -1,6 +1,6 @@
 {
   "time-management": {
-    "final-time": 7e-06,
+    "final-time": 3.5e-06,
     "initial-time-step": 5e-10,
     "constant-time-step": false,
     "time-step-reduction-factor-for-failure": 4.0

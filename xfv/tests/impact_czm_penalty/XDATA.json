@@ -1,9 +1,9 @@
 {
   "time-management": {
-    "final-time": 7e-06,
+    "final-time": 5e-06,
     "initial-time-step": 5e-10,
     "constant-time-step": false,
-    "time-step-reduction-factor-for-failure": 2.0
+    "time-step-reduction-factor-for-failure": 4.0
   },
   "geometry": {
     "section": 3.141592653589793e-06,
@@ -64,7 +64,7 @@
         },
         "contact-treatment": {
           "name": "Penalty",
-          "penalty-stiffness": 2e+18
+          "penalty-stiffness": 1e+18
         }
       }
     }
