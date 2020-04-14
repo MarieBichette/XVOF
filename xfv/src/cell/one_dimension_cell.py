@@ -31,8 +31,8 @@ class OneDimensionCell(Cell):
                     pressure_new, cson_new))
         else:
             my_variables = {'EquationOfState': eos,
-                            'OldDensity': density,
-                            'NewDensity': density_new,
+                            'OldSpecificVolume': 1. / density,
+                            'NewSpecificVolume': 1. / density_new,
                             'Pressure': (pressure + 2. * pseudo),
                             'OldEnergy': energy}
             cell._function_to_vanish.setVariables(my_variables)
@@ -44,7 +44,7 @@ class OneDimensionCell(Cell):
             sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
             dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables['EquationOfState'].solve_volume_energy(
-                1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
+                my_variables['NewSpecificVolume'], energy_new_value, pressure_new_value,
                 dummy, sound_velocity_new_value)
 
             if np.isnan(sound_velocity_new_value).any():
