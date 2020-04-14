@@ -77,12 +77,24 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         Initialialise les ddl enrichis aux noeuds
         :param disc: Discontinuity
         """
+        # Warning : enr_node_2 (2-) has the same velocity / coordinates as node 2 (node out)
+        # Warning : enr_node_1 (1+) has the same velocity / coordinates as node 1 (node in)
+        # Consequence => initialization with array is impossible => node by node initialization
+
         # Velocity
-        disc.additional_dof_velocity_current[:] = np.copy(self.umundemi[disc.mask_disc_nodes])
-        disc.additional_dof_velocity_new[:] = np.copy(self.upundemi[disc.mask_disc_nodes])
+        disc.additional_dof_velocity_current[0] = np.copy(self.umundemi[disc.mask_out_nodes])  # 2-
+        disc.additional_dof_velocity_current[1] = np.copy(self.umundemi[disc.mask_in_nodes])  # 1+
+        disc.additional_dof_velocity_new[0] = np.copy(self.upundemi[disc.mask_out_nodes])  # 2-
+        disc.additional_dof_velocity_new[1] = np.copy(self.upundemi[disc.mask_in_nodes])  # 1+
+        # disc.additional_dof_velocity_current[0] = 0.  # 2-
+        # disc.additional_dof_velocity_current[1] = 0.  # 1+
+        # disc.additional_dof_velocity_new[0] = 0.  # 2-
+        # disc.additional_dof_velocity_new[1] = 0.  # 1+
         # Coordinates
-        disc.additional_dof_coordinates_current[:] = np.copy(self.xtpdt[disc.mask_disc_nodes])
-        disc.additional_dof_coordinates_new[:] = np.copy(self.xt[disc.mask_disc_nodes])
+        disc.additional_dof_coordinates_current[0] = np.copy(self.xt[disc.mask_out_nodes])  # 2-
+        disc.additional_dof_coordinates_current[1] = np.copy(self.xt[disc.mask_in_nodes])  # 1+
+        disc.additional_dof_coordinates_new[0] = np.copy(self.xtpdt[disc.mask_out_nodes])  # 2-
+        disc.additional_dof_coordinates_new[1] = np.copy(self.xtpdt[disc.mask_in_nodes])  # 1+
 
     def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
         """
@@ -154,3 +166,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         disc.additional_dof_force[np.array([True, False])] += epsilon * applied_force  # F2-
         self._force[disc.mask_out_nodes] -= epsilon * applied_force  # F2+
         disc.additional_dof_force[np.array([False, True])] -= (1. - epsilon) * applied_force  # F1+
+
+        # self._force[disc.mask_in_nodes] += applied_force  # F1-
+        # disc.additional_dof_force[np.array([True, False])] += applied_force  # F2-
+        # self._force[disc.mask_out_nodes] -= applied_force  # F2+
+        # disc.additional_dof_force[np.array([False, True])] -= applied_force  # F1+
