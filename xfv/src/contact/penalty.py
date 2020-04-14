@@ -23,14 +23,13 @@ class PenaltyContact(ContactBase):
                               delta_t: float) -> float:
         """
         Checks if contact and apply correction
-        :param node_coord: node coordinates array
         :param node_velocity: node velocity array
         :param disc: discontinuity to examine
         :param delta_t : time step
         """
         opening = disc.discontinuity_opening.new_value
         contact_force = self._compute_penalty_force(opening)
-        contact_force = self._apply_penalty_upper_bound(disc, node_velocity, contact_force, delta_t)
+        # contact_force = self._apply_penalty_upper_bound(disc, node_velocity, contact_force, delta_t)
         return contact_force
 
     def _compute_penalty_force(self, opening) -> float:
@@ -49,7 +48,7 @@ class PenaltyContact(ContactBase):
         Apply an upper bound on the computed contact force in order to ensure that the
         force does not induce snapback of the contact nodes
         (nodes enter in contact and separate in the same time step)
-        Computed from Non Linear Finite Element for Continua And Structure, T. Belytschko
+        Computed from Non Linear Finite Element for Continua And Structure, T. Belytschko, p.612
         :param disc: discontinuity to examine
         :param node_velocity: node velocity array
         :param contact_force: force to apply
@@ -79,3 +78,10 @@ class PenaltyContact(ContactBase):
         upper_bound = mass_g * mass_d * (velocity_g - velocity_d) / (delta_t * (mass_g + mass_d))
         bounded_force = - min(abs(contact_force), abs(upper_bound))
         return bounded_force
+
+    # def compute_time_step_reduction_for_contact(self) -> float:
+    #     """
+    #     Computes the time step to apply when contact is activated
+    #     :return:
+    #     """
+    #     return 4
