@@ -11,6 +11,7 @@ import numpy as np
 import os
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
+from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
 
 
 class DiscontinuityTest(unittest.TestCase):
@@ -28,7 +29,8 @@ class DiscontinuityTest(unittest.TestCase):
 
         self.mask_in = np.array([True, False, False, False])
         self.mask_out = np.array([False, True, False, False])
-        self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2, "somme")
+        self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2,
+                                     LumpMenouillardMassMatrixProps())
 
     def tearDown(self):
         DataContainer.clear()

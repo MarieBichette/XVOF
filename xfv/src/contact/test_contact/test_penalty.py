@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 from xfv.src.contact.penalty import PenaltyContact
 from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
 
 
 class PenaltyContactTest(unittest.TestCase):
@@ -17,7 +18,8 @@ class PenaltyContactTest(unittest.TestCase):
         Initialisation des tests
         """
         self.test_penalty_contact = PenaltyContact(10.)
-        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5, "somme")
+        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5,
+                                  LumpMenouillardMassMatrixProps())
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_left_part(0., 2., 0.5)
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_right_part(2., 0., 0.5)
 
@@ -36,32 +38,6 @@ class PenaltyContactTest(unittest.TestCase):
 
         result_positive = self.test_penalty_contact._compute_penalty_force(-5.)
         self.assertEqual(result_positive, -50.)
-
-    def test_apply_penalty_upper_bound_minimum(self):
-        """
-        Test of the method _apply_penalty_upper_bound
-        """
-        delta_t = 1.
-        node_velocity = np.array([[100., ], [50., ]])
-        contact_force = 1.e-5
-        bounded_force = self.test_penalty_contact._apply_penalty_upper_bound(self.disc,
-                                                                             node_velocity,
-                                                                             contact_force, delta_t)
-        self.assertEqual(bounded_force, -1.e-5)
-
-    @unittest.skip("Upper bound for penalty = commented")
-    def test_apply_penalty_upper_bound_maximum(self):
-        """
-        Test of the method _apply_penalty_upper_bound
-        """
-        delta_t = 1.
-        node_velocity = np.array([[100., ], [50., ]])
-        contact_force = - 50.
-        bounded_force = self.test_penalty_contact._apply_penalty_upper_bound(self.disc,
-                                                                             node_velocity,
-                                                                             contact_force,
-                                                                             delta_t)
-        self.assertEqual(bounded_force, -4.6875)
 
     def test_compute_contact_force(self):
         """
