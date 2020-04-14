@@ -191,7 +191,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 contact_force = \
                     self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
                 if contact_force != 0.:
-                    assert contact_force < 0.
+                    # assert contact_force < 0.
                     # Divide the contact "force" on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
@@ -309,10 +309,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         if not self.data.time.is_time_step_constant:
             self.cells.compute_new_time_step(self.cells.classical)
             self.cells.compute_enriched_elements_new_time_step()
-            return self.cells.dt.min()
-
-        initial_time_step = self.data.time.initial_time_step
-        dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
+            dt = self.cells.dt.min()  # dt name is ok pylint: disable=invalid-name
+        else:
+            initial_time_step = self.data.time.initial_time_step
+            dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
         reduction_factor = self.data.time.time_step_reduction_factor_for_failure
         if reduction_factor is not None:
             if self.cells.enriched.any():
