@@ -167,14 +167,12 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Compute the mass matrix of a newly created discontinuity
         :param disc: Discontinuity
         """
-        disc.mass_matrix_enriched.compute_enriched_mass_matrix(
-            disc, self.__topology, self.cells.mass)
-        if self.enrichment_type == "Hansbo":
-            disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
-                "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
-            # Arrange mass matrix to get a structure : classical / enriched dof
-            disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
-        disc.mass_matrix_enriched.print_enriched_mass_matrix()
+        disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology,
+                                                               self.cells.mass)
+        disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
+            "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
+        # Arrange mass matrix to get a structure : classical / enriched dof
+        disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
         disc.has_mass_matrix_been_computed()
 
     def apply_contact_correction(self, delta_t: float):

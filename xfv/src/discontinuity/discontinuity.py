@@ -5,8 +5,7 @@ A module implementing the Discontinuity class
 import numpy as np
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.fields.field import Field
-from xfv.src.mass_matrix.one_dimension_enriched_mass_matrix_Hansbo import \
-    OneDimensionHansboEnrichedMassMatrix
+from xfv.src.data.enriched_mass_matrix_props import EnrichedMassMatrixProps
 
 
 class Discontinuity(object):
@@ -18,7 +17,8 @@ class Discontinuity(object):
     __discontinuity_list = []
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
-                 discontinuity_position_in_ruptured_element: float, lump_mass: str):
+                 discontinuity_position_in_ruptured_element: float,
+                 enriched_mass_matrix_props: EnrichedMassMatrixProps):
         """
         Initializing a single discontinuity after enrichment.
         :param mask_in_nodes: enriched nodes on the left of the discontinuity
@@ -96,7 +96,7 @@ class Discontinuity(object):
         self.history_min_cohesive_force = 1.e+30
 
         # Creation of the enriched mass matrix
-        self.mass_matrix_enriched = OneDimensionHansboEnrichedMassMatrix(lump_mass)
+        self.mass_matrix_enriched = enriched_mass_matrix_props.build_enriched_mass_matrix_obj()
 
     @classmethod
     def discontinuity_number(cls):

@@ -6,6 +6,7 @@ import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.rupturetreatment.rupturetreatment import RuptureTreatment
+from xfv.src.data.enriched_mass_matrix_props import EnrichedMassMatrixProps
 
 
 class EnrichElement(RuptureTreatment):
@@ -15,7 +16,7 @@ class EnrichElement(RuptureTreatment):
     __never_enriched = True
     __debug = False
 
-    def __init__(self, position_rupture: float, lump_matrix: str):
+    def __init__(self, position_rupture: float, lump_matrix: EnrichedMassMatrixProps):
         super(EnrichElement, self).__init__()
         self.__position_rupture = position_rupture
         self.__lump = lump_matrix
@@ -69,6 +70,7 @@ class EnrichElement(RuptureTreatment):
                         nodes_to_be_enr_mask, nodes.xt[:, 0] > discontinuity_coord)
                     print("==> In nodes : ", np.nonzero(in_nodes))
                     print("==> Out nodes : ", np.nonzero(out_nodes))
+                    # Build the discontinuity
                     disc = Discontinuity(in_nodes, out_nodes, self.__position_rupture, self.__lump)
                     disc.find_ruptured_cell_id(topology)
                     cells.classical[cell_tb_enr] = False

@@ -34,6 +34,10 @@ from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   HalfRodComparisonCriterionProps,
                                                   MaximalStressCriterionProps,
                                                   MinimumPressureCriterionProps)
+from xfv.src.data.enriched_mass_matrix_props import (EnrichedMassMatrixProps,
+                                                     ConsistentMassMatrixProps,
+                                                     LumpMenouillardMassMatrixProps,
+                                                     LumpSumMassMatrixProps)
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -164,7 +168,7 @@ class FailureModelProps(TypeCheckedDataClass):
     failure_treatment: Optional[str]
     failure_treatment_value: Optional[float]
     type_of_enrichment: Optional[str]
-    lump_mass_matrix: Optional[str]
+    lump_mass_matrix: Optional[EnrichedMassMatrixProps]
     failure_criterion: Optional[RuptureCriterionProps]
     failure_criterion_value: Optional[float]
     failure_criterion_index: Optional[int]
@@ -564,12 +568,12 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
     @staticmethod
     def __get_failure_props(matter: Any) -> Tuple[Optional[str], Optional[float],
-                                                  Optional[str], Optional[str]]:
+                                                  Optional[str], Optional[EnrichedMassMatrixProps]]:
         """
         Returns the data needed to fill the FailureModel props
 
             - failure_model : rupture treatment model name
-            - failure_treatment_value : position of disconitnuity in cracked element
+            - failure_treatment_value : position of discontinuity in cracked element
             -                           or imposed pressure
             - type_of_enrichment : Hansbo
             - lump_mass_matrix : lumping strategy
@@ -592,11 +596,15 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
                 raise ValueError(f"Unknown enrichment type {type_of_enrichment}. "
                                  "Only Hansbo is available for now")
-            lump_mass_matrix = failure_treatment_data['lump-mass-matrix']
-            if lump_mass_matrix.lower() not in ["menouillard", "somme", "none"]:
-                print(f"Unknown lumping technique {lump_mass_matrix}. "
-                      "Only those lumps are possible : menouillard, somme \n"
-                      "No lumping technique is applied. Mass matrix is consistent")
+            # Choice of the enriched mass matrix lumping
+            lump_name: str = failure_treatment_data['lump-mass-matrix']
+            if lump_name.lower() == "menouillard":
+                lump_mass_matrix = LumpMenouillardMassMatrixProps()
+            elif lump_name.lower() == "somme":
+                lump_mass_matrix = LumpSumMassMatrixProps()
+            else:
+                print("No lump (menouillard|somme). Mass matrix is consistent")
+                lump_mass_matrix = ConsistentMassMatrixProps()
         else:
             failure_treatment_value = 0.
             type_of_enrichment = None
