@@ -37,7 +37,7 @@ class PenaltyContactTest(unittest.TestCase):
         result_positive = self.test_penalty_contact._compute_penalty_force(-5.)
         self.assertEqual(result_positive, -50.)
 
-    def test_apply_penalty_upper_bound(self):
+    def test_apply_penalty_upper_bound_minimum(self):
         """
         Test of the method _apply_penalty_upper_bound
         """
@@ -49,10 +49,18 @@ class PenaltyContactTest(unittest.TestCase):
                                                                              contact_force, delta_t)
         self.assertEqual(bounded_force, -1.e-5)
 
+    @unittest.skip("Upper bound for penalty = commented")
+    def test_apply_penalty_upper_bound_maximum(self):
+        """
+        Test of the method _apply_penalty_upper_bound
+        """
+        delta_t = 1.
+        node_velocity = np.array([[100., ], [50., ]])
         contact_force = - 50.
         bounded_force = self.test_penalty_contact._apply_penalty_upper_bound(self.disc,
                                                                              node_velocity,
-                                                                             contact_force, delta_t)
+                                                                             contact_force,
+                                                                             delta_t)
         self.assertEqual(bounded_force, -4.6875)
 
     def test_compute_contact_force(self):
@@ -64,7 +72,7 @@ class PenaltyContactTest(unittest.TestCase):
         self.disc.discontinuity_opening.new_value = - 5.0
         contact_force = self.test_penalty_contact.compute_contact_force(node_velocity, self.disc,
                                                                         delta_t)
-        self.assertEqual(contact_force, -4.6875)
+        self.assertEqual(contact_force, -50.0)
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
