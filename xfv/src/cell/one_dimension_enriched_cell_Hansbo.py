@@ -3,16 +3,15 @@
 Implementing the Element1dEnriched class for Hansbo&Hansbo enrichment
 """
 import numpy as np
+import os
 
-from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
-from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 # noinspection PyArgumentList
-class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
+class OneDimensionHansboEnrichedCell(OneDimensionCell):
     """
     A collection of 1d enriched elements. Treatment for Hansbo enrichment
     """
@@ -30,25 +29,53 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         u2d = node_velocity[disc.mask_out_nodes]
         u2g = disc.additional_dof_velocity_new[0]
         u1d = disc.additional_dof_velocity_new[1]
-
-        correction_factor_gauche = 1.
-        correction_factor_droite = 1.
-        if DataContainer().material_target.failure_model.lump_mass_matrix == 'diag_eps':
-            print("correction velocity discontinuity boundaries")
-            correction_factor_gauche = 1. / epsilon
-            correction_factor_droite = 1. / (1. - epsilon)
-        u2g_correction = correction_factor_gauche * u2g
-        u1d_correction = correction_factor_droite * u1d
-        ug = u2g_correction * epsilon + u1g * (1. - epsilon)
-        ud = u2d * epsilon + u1d_correction * (1. - epsilon)
+        ug = u2g * epsilon + u1g * (1. - epsilon)
+        ud = u2d * epsilon + u1d * (1. - epsilon)
         return ug, ud
 
-    def __init__(self, number_of_elements):
-        super(OneDimensionHansboEnrichedCell, self).__init__(number_of_elements)
+    @classmethod
+    def compute_new_left_right_size(cls, time_step, disc, u1h, u2h, ug, ud):
+        """
+        Calcule les nouvelles longueurs des parties gauche et droite des éléments enrichis
+        puis transformation classique /enrichi
+        :param time_step: time step
+        :param disc :discontinuity to be considered
+        :param u1h : vitesse vraie du noeud 1
+        :param u2h : vitesse vraie du noeud 2
+        :param ug : vitesse vraie de la frontière gauche de la discontinuité
+        :param ud : vitesse vraie de la frontière droite de la discontinuité
+        """
+        disc.left_part_size.new_value = disc.left_part_size.current_value + (ug - u1h) * time_step
+        disc.right_part_size.new_value = disc.right_part_size.current_value + (u2h - ud) * time_step
 
-    def initialize_additional_cell_dof(self, disc):
+    @classmethod
+    def compute_new_left_right_density(cls, density_left, density_right, disc):
+        """
+        Calcule les nouvelles densités gauche et droite pour les éléments enrichis
+        à partir de la conservation de la masse
+        """
+        density_left_new = (density_left * disc.left_part_size.current_value /
+                            disc.left_part_size.new_value)
+        density_right_new = (density_right * disc.right_part_size.current_value /
+                             disc.right_part_size.new_value)
+        return density_left_new, density_right_new
+
+    def __init__(self, number_of_elements: int):
+        """
+        Build the class OneDimensionHansboEnrichedCell
+        :param number_of_elements: total number of cells
+        """
+        super(OneDimensionHansboEnrichedCell, self).__init__(number_of_elements)
+        #
+        self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
+        print(self._fields_manager)
+        self._classical = np.empty(self.number_of_cells, dtype=np.bool, order='C')
+        self._classical[:] = True
+
+    def initialize_additional_cell_dof(self, disc: Discontinuity):
         """
         Values to intialize the right part fields when discontinuity disc is created
+        :param disc : the current discontinuity
         """
         # Initialization of the current field value
         disc.additional_dof_density.current_value = \
@@ -194,6 +221,79 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
         return self.reconstruct_enriched_elasto_field(self.deviatoric_stress_current,
                                                       "additional_dof_deviatoric_stress_current")
 
+    @property
+    def classical(self):
+        """
+        :return: a mask where True indicate a classical cell
+        """
+        return self._classical
+
+    @property
+    def enriched(self):
+        """
+        :return: a mask where True indicates an enrich cell
+        """
+        return ~self.classical
+
+    def __str__(self):
+        message = "<--ENRICHED CELLS COLLECTION-->" + os.linesep
+        message += "Classical elements are:"
+        message += str(self.classical) + os.linesep
+        message += "Enriched elements are:"
+        message += str(self.enriched)
+        return message
+
+    def print_infos(self):
+        """
+        Printing informations about Elements
+            A REECRIRE AU PROPRE; NOTATIONS ONT CHANGE
+        """
+        message = "{}\n".format(self.__class__)
+        for disc in Discontinuity.discontinuity_list():
+            message += "---- Discontinuity {:} ----".format(disc.label)
+            message += "==> masse volumique classique à t = {}\n". \
+                        format(self.density.current_value[disc.ruptured_cell_id])
+            message += "==> masse volumique enrichie à t = {}\n". \
+                        format(disc.additional_dof_density.current_value)
+            message += "==> masse volumique classique à t+dt = {}\n". \
+                        format(self.density.new_left_value[disc.ruptured_cell_id])
+            message += "==> masse volumique enrichie à t+dt = {}\n". \
+                        format(disc.additional_dof_density.new_value)
+            message += "==> taille à gauche à t = {}\n". \
+                format(disc.left_size.current_value)
+            message += "==> taille à droite à t = {}\n". \
+                format(disc.right_size.current_value)
+            message += "==> taille à gauche à t+dt = {}\n". \
+                format(disc.left_size.new_value)
+            message += "==> taille à droite à t+dt = {}\n". \
+                format(disc.right_size.new_value)
+
+            message += "==> pression à gauche à t = {}\n". \
+                format(self.pressure.current_value[disc.ruptured_cell_id])
+            message += "==> pression à droite à t = {}\n". \
+                format(disc.additional_dof_pressure.current_value)
+            message += "==> vitesse du son à gauche à t = {}\n". \
+                format(self.sound_velocity.current_value[disc.ruptured_cell_id])
+            message += "==> vitesse du son à droite à t = {}\n". \
+                format(disc.additional_dof_sound_velocity.current_value)
+            message += "==> vitesse du son à gauche à t+dt = {}\n". \
+                format(self.sound_velocity.new_value[disc.ruptured_cell_id])
+            message += "==> vitesse du son à droite à t+dt = {}\n". \
+                format(disc.additional_dof_sound_velocity.new_value)
+            message += "==> énergie à gauche à t = {}\n". \
+                format(self.energy.current_value[disc.ruptured_cell_id])
+            message += "==> énergie à droite à t = {}\n". \
+                format(disc.additional_dof_energy.current_value)
+            message += "==> énergie à gauche à t+dt = {}\n". \
+                format(self.energy.new_value[disc.ruptured_cell_id])
+            message += "==> énergie à droite à t+dt = {}\n". \
+                format(disc.additional_dof_energy.new_value)
+            message += "==> pseudo à gauche = {}\n". \
+                format(self.pseudo.current_value[disc.ruptured_cell_id])
+            message += "==> pseudo à droite = {}\n". \
+                format(disc.additional_dof_artificial_viscosity.current_value)
+        print(message)
+
     def compute_enriched_elements_new_pressure(self, delta_t):
         """
         Compute pressure, internal energy and sound velocity in left and right parts of
@@ -281,7 +381,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
                 disc, node_velocity)
             u1g = node_velocity[disc.mask_in_nodes]
             u2d = node_velocity[disc.mask_out_nodes]
-            OneDimensionEnrichedCell.compute_new_left_right_size(time_step, disc, u1g, u2d, ug, ud)
+            OneDimensionHansboEnrichedCell.compute_new_left_right_size(time_step, disc, u1g, u2d, ug, ud)
 
     def compute_enriched_elements_new_density(self):
         """
@@ -293,7 +393,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionEnrichedCell):
             density_left = self.density.current_value[mask]
             density_right = disc.additional_dof_density.current_value
             self.density.new_value[mask], disc.additional_dof_density.new_value = \
-                OneDimensionEnrichedCell.compute_new_left_right_density(density_left,
+                OneDimensionHansboEnrichedCell.compute_new_left_right_density(density_left,
                                                                         density_right, disc)
 
     def compute_enriched_elements_new_pseudo(self, delta_t):

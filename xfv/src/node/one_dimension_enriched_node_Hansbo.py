@@ -4,17 +4,25 @@
 A class defining one dimension enriched nodes
 """
 import numpy as np
-from xfv.src.node.one_dimension_enriched_node import OneDimensionEnrichedNode
 from xfv.src.node.one_dimension_node import OneDimensionNode
 from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
 
 
-class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
+class OneDimensionHansboEnrichedNode(OneDimensionNode):
     """
     A class for the enriched nodes with Hansbo enrichment
     """
 
-    def __init__(self, nbr_of_nodes, initial_positions, initial_velocities, section=1.):
+    def __init__(self, nbr_of_nodes: int, initial_positions: np.array,
+                 initial_velocities: np.array, section=1.):
+        """
+        Build the class OneDimensionHansboEnrichedNode
+        :param nbr_of_nodes: number of nodes
+        :param initial_positions: initial coordinates of nodes
+        :param initial_velocities: initial velocities of nodes
+        :param section: section of the bar
+        """
         super(OneDimensionHansboEnrichedNode, self).__init__(nbr_of_nodes, initial_positions,
                                                              initial_velocities, section=section)
         self._v_field = np.copy(self._upundemi)
@@ -36,6 +44,20 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         return ~ self.enrichment_concerned
 
     @property
+    def classical(self):
+        """
+        :return: boolean mask indicating which nodes are classical
+        """
+        return self._classical
+
+    @property
+    def enriched(self):
+        """
+        :return: boolean mask indicating which nodes are enriched
+        """
+        return ~ self.classical
+
+    @property
     def velocity_field(self):
         """
         Accessor on the true node velocity field
@@ -47,6 +69,17 @@ class OneDimensionHansboEnrichedNode(OneDimensionEnrichedNode):
         Compute the true field of node velocity
         """
         self._v_field = np.copy(self._upundemi)
+
+    def compute_additional_dof_new_velocity(self, delta_t, inv_matrice_masse):
+        """
+        Compute the new velocity enriched degree of freedom
+        :param delta_t: float, time step
+        :param inv_matrice_masse: inverse of the mass matrix
+        """
+        for disc in Discontinuity.discontinuity_list():
+            disc._additional_dof_velocity_new = \
+                disc.additional_dof_velocity_current + delta_t * \
+                multiplication_masse(inv_matrice_masse, disc.additional_dof_force)
 
     def infos(self, index):
         """
