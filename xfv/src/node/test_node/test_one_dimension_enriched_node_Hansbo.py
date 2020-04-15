@@ -116,6 +116,19 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.my_nodes.velocity_field, np.array([1., 1.]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
+    def test_compute_additional_dof_new_velocity(self, mock_disc_list):
+        """
+        Test of the method compute_additional_dof_new_velocity
+        """
+        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
+        inv_mass_additional = np.array([[2., ], [2., ]])
+        self.mock_discontinuity.additional_dof_velocity_current = np.array([[1., ], [3., ]])
+        self.mock_discontinuity.additional_dof_force = np.array([[1., ], [1., ]])
+        self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
+        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new,
+                                             np.array([[3., ], [5., ]]))
+
+    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):
         """
         Test de la méthode enriched_nodes_compute_new_coordinates de la classe

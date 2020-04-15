@@ -90,8 +90,48 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                              spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
-    def tearDown(self):
-        pass
+    def test_classical(self):
+        """
+        Test of the property classical
+        """
+        np.testing.assert_array_equal(self.my_cells.classical, np.zeros([1], dtype="bool"))
+
+    def test_enriched(self):
+        """
+        Test of the property enriched
+        """
+        np.testing.assert_array_equal(self.my_cells.enriched, np.ones([1], dtype="bool"))
+
+    def test_compute_new_left_right_size(self):
+        """
+        Test of compute_new_left_right_size
+        """
+        disc = mock.MagicMock(Discontinuity)
+        type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.0]))
+        type(disc.right_part_size).current_value = mock.PropertyMock(return_value=np.array([1.0]))
+        u1h = 0.
+        u2h = 2.
+        ug = -0.5
+        ud = 1.0
+        OneDimensionHansboEnrichedCell.compute_new_left_right_size(0.5, disc, u1h, u2h, ug, ud)
+        np.testing.assert_array_almost_equal(disc.left_part_size.new_value, np.array([0.75]))
+        np.testing.assert_array_almost_equal(disc.right_part_size.new_value, np.array([1.5]))
+
+    def test_compute_new_left_right_density(self):
+        """
+        Test of compute_new_left_right_density
+        """
+        disc = mock.MagicMock(Discontinuity)
+        type(disc.left_part_size).current_value = mock.PropertyMock(return_value=np.array([1.]))
+        type(disc.left_part_size).new_value = mock.PropertyMock(return_value=np.array([0.5]))
+        type(disc.right_part_size).current_value = mock.PropertyMock(return_value=np.array([1.]))
+        type(disc.right_part_size).new_value = mock.PropertyMock(return_value=np.array([2.]))
+        density_left = 1.
+        density_right = 1.
+        density_left_new, density_right_new = OneDimensionHansboEnrichedCell.\
+            compute_new_left_right_density(density_left, density_right, disc)
+        np.testing.assert_array_almost_equal(density_left_new, np.array([2.]))
+        np.testing.assert_array_almost_equal(density_right_new, np.array([0.5]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionCell, "apply_equation_of_state",

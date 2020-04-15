@@ -9,7 +9,6 @@ import numpy as np
 import os
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xfv.src.cell.one_dimension_enriched_cell import OneDimensionEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
@@ -176,7 +175,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_discontinuity_borders_velocity",
                        spec=classmethod, new_callable=mock.MagicMock)
-    @mock.patch.object(OneDimensionEnrichedCell, "compute_new_left_right_size",
+    @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_new_left_right_size",
                        spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_part_size(self, mock_compute_size,
                                                      mock_disc_border_velocity,
@@ -200,7 +199,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         mock_compute_size.assert_called_with(dt, self.mock_disc, u1g, u2d, ug, ud)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionEnrichedCell, "compute_new_left_right_density",
+    @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_new_left_right_density",
                        spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_element_new_density(self, mock_compute_density, mock_disc_list):
         """
