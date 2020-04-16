@@ -27,7 +27,7 @@ class OneDimensionCell(Cell):
         if cell._external_library is not None:
             energy_new_value, pressure_new_value, sound_velocity_new_value = (
                 cell._compute_new_pressure_with_external_lib(
-                    density, density_new, pressure, pseudo, energy, energy_new,
+                    1. / density, 1. / density_new, pressure, pseudo, energy, energy_new,
                     pressure_new, cson_new))
         else:
             my_variables = {'EquationOfState': eos,
@@ -265,7 +265,7 @@ class OneDimensionCell(Cell):
         """
         return self._plastic_strain_rate
 
-    def _compute_new_pressure_with_external_lib(self, density_current, density_new,
+    def _compute_new_pressure_with_external_lib(self, spec_vol_current, spec_vol_new,
                                                 pressure_current, pseudo_current,
                                                 energy_current, energy_new, pressure_new, vson_new):
         """
@@ -274,15 +274,15 @@ class OneDimensionCell(Cell):
         """
         pb_size = ctypes.c_int()
         pb_size.value = energy_new.shape[0]
-        c_density = density_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_density = density_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        c_spec_vol = spec_vol_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_spec_vol = spec_vol_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         true_pressure = (pressure_current + 2. * pseudo_current)
         c_pressure = true_pressure.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         c_energy = energy_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_energy = energy_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_pressure = pressure_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        self._computePressureExternal(c_density, n_density, c_pressure, c_energy, pb_size,
+        self._computePressureExternal(c_spec_vol, n_spec_vol, c_pressure, c_energy, pb_size,
                                       n_energy, n_pressure, n_sound_speed)
         return energy_new, pressure_new, vson_new
 
