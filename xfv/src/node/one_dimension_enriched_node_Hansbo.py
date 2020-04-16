@@ -136,20 +136,22 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         self._upundemi[disc.mask_disc_nodes] = np.copy(self._umundemi[disc.mask_disc_nodes])
         self._xtpdt[disc.mask_disc_nodes] = np.copy(self._xt[disc.mask_disc_nodes])
 
-    def enriched_nodes_compute_new_coordinates(self, delta_t: float):
+    @staticmethod
+    def enriched_nodes_compute_new_coordinates(disc: Discontinuity, delta_t: float):
         """
         Compute the new nodes coordinates after enrichment
+        :param disc: current discontinuity
         :param delta_t: time step
         """
-        for disc in Discontinuity.discontinuity_list():
-            disc._additional_dof_coordinates_new = disc.additional_dof_coordinates_current + \
-                                                   delta_t * disc.additional_dof_velocity_new
+        disc._additional_dof_coordinates_new = disc.additional_dof_coordinates_current + \
+                                               delta_t * disc.additional_dof_velocity_new
 
-    def compute_enriched_nodes_new_force(self, contrainte_xx: np.array):
+    def compute_enriched_nodes_new_force(self, contrainte_xx: np.array, enr_contrainte_xx):
         """
         Compute the enriched force on enriched nodes and apply correction for classical
         force on enriched nodes (classical ddl)
         :param contrainte_xx : vecteur contrainte xx, array de taille (nb_cell, 1)
+        :param enr_contrainte_xx : vecteur contrainte xx enrichie, array de taille (nb_cell, 1)
         """
         for disc in Discontinuity.discontinuity_list():
             # For each discontinuity, compute the contribution of the cracked cell to the classical
@@ -159,7 +161,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             epsilon = disc.position_in_ruptured_element
 
             sigma_minus = contrainte_xx[cell]
-            sigma_plus = disc.additional_dof_stress[:, 0]
+            sigma_plus = enr_contrainte_xx[cell]
 
             f_node_left_minus = sigma_minus * (1 - epsilon)
             f_node_right_plus = - sigma_plus * epsilon

@@ -425,27 +425,13 @@ class OneDimensionCell(Cell):
         """
         # TODO : interroger le package rheology
 
-    def compute_complete_stress_tensor(self, mask):
+    def compute_complete_stress_tensor(self):
         """
         Compute the Cauchy stress tensor (assemble pression et d�viateur)
-        :param mask : array of boolean to identify classical cells
         """
         for i in range(0, 3):
-            self._stress[mask, i] = - (self.pressure.new_value[mask] + self.pseudo.new_value[mask])
-
-        target_model = self.data.material_target.constitutive_model
-        projectile_model = None
-        if self.data.data_contains_a_projectile:
-            projectile_model = self.data.material_projectile.constitutive_model
-        elasticity_activated = np.logical_or(
-            target_model.elasticity_model is not None,
-            projectile_model and projectile_model.elasticity_model is not None)
-        plasticity_activated = np.logical_or(
-            target_model.plasticity_model is not None,
-            projectile_model and projectile_model.plasticity_model is not None)
-
-        if elasticity_activated or plasticity_activated:
-            self._stress[mask, :] += self._deviatoric_stress_new[mask, :]
+            self._stress[:, i] = - (self.pressure.new_value + self.pseudo.new_value)
+        self._stress += self._deviatoric_stress_new
 
     def compute_deviatoric_stress_tensor(self, mask, topologie, coord_noeud_new,
                                          vitesse_noeud_new, dt):

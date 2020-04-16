@@ -58,35 +58,6 @@ class Discontinuity(object):
         self._additional_dof_coordinates_new = np.zeros([2, 1])
         self._additional_dof_force = np.zeros([2, 1])
 
-        # Cell parts geometry
-        self._left_part_size = Field(1, current_value=0., new_value=0.)
-        self._right_part_size = Field(1, current_value=0., new_value=0.)
-
-        # Additional dof: thermodynamics
-        self._additional_dof_pressure = Field(1, current_value=np.array([0.]),
-                                              new_value=np.array([0.]))
-        self._additional_dof_density = Field(1, current_value=np.array([0.]),
-                                             new_value=np.array([0.]))
-        self._additional_dof_energy = Field(1, current_value=np.array([0.]),
-                                            new_value=np.array([0.]))
-        self._additional_dof_artificial_viscosity = Field(1, current_value=np.array([0.]),
-                                                          new_value=np.array([0.]))
-        self._additional_dof_sound_velocity = Field(1, current_value=np.array([0.]),
-                                                    new_value=np.array([0.]))
-
-        # Additional dof : elasticity
-        self._additional_dof_stress = np.zeros([1, 3])
-        self._additional_dof_deviatoric_stress_current = np.zeros([1, 3])
-        self._additional_dof_deviatoric_stress_new = np.zeros([1, 3])
-        self._additional_dof_deviatoric_strain_rate = np.zeros([1, 3])
-        self._additional_dof_shear_modulus = Field(1, current_value=np.array([0.]),
-                                                   new_value=np.array([0.]))
-        self._additional_dof_yield_stress = Field(1, current_value=np.array([0.]),
-                                                  new_value=np.array([0.]))
-        self._additional_dof_equivalent_plastic_strain_rate = 0.
-        self._additional_dof_plastic_strain_rate = np.zeros([1, 3])
-        self.plastic_cells = False  # Indicator : right part of cracked cell is plastic
-
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
@@ -285,132 +256,14 @@ class Discontinuity(object):
         """
         return self._additional_dof_force
 
-    @property
-    def additional_dof_pressure(self):
-        """
-        Accessor on the additional cell pressure field
-        """
-        return self._additional_dof_pressure
-
-    @property
-    def additional_dof_density(self):
-        """
-        Accessor on the additional cell density field
-        """
-        return self._additional_dof_density
-
-    @property
-    def additional_dof_sound_velocity(self):
-        """
-        Accessor on the additional cell sound speed field
-        """
-        return self._additional_dof_sound_velocity
-
-    @property
-    def additional_dof_energy(self):
-        """
-        Accessor on the additional cell internal energy field
-        """
-        return self._additional_dof_energy
-
-    @property
-    def additional_dof_artificial_viscosity(self):
-        """
-        Accessor on the additional cell artificial viscosity field
-        """
-        return self._additional_dof_artificial_viscosity
-
-    @property
-    def additional_dof_stress(self):
-        """
-        Accessor on the additional cell stress at time t
-        """
-        return self._additional_dof_stress
-
-    @property
-    def additional_dof_deviatoric_stress_current(self):
-        """
-        Accessor on the additional cell deviatoric stress at time t
-        """
-        return self._additional_dof_deviatoric_stress_current
-
-    @property
-    def additional_dof_deviatoric_stress_new(self):
-        """
-        Accessor on the additional cell deviatoric stress at time t+dt
-        """
-        return self._additional_dof_deviatoric_stress_new
-
-    @property
-    def additional_dof_deviatoric_strain_rate(self):
-        """
-        Accessor on the additional cell deviatoric strain rate at time t
-        """
-        return self._additional_dof_deviatoric_strain_rate
-
-    @property
-    def additional_dof_shear_modulus(self):
-        """
-        Accessor on the additional cell shear modulus field
-        """
-        return self._additional_dof_shear_modulus
-
-    @property
-    def additional_dof_yield_stress(self):
-        """
-        Accessor on the additional cell yield stress field
-        """
-        return self._additional_dof_yield_stress
-
-    @property
-    def additional_dof_equivalent_plastic_strain_rate(self):
-        """
-        Accessor on the additional cell equivalent plastic strain rate at time t
-        """
-        return self._additional_dof_equivalent_plastic_strain_rate
-
-    @property
-    def additional_dof_plastic_strain_rate(self):
-        """
-        Accessor on the additional cell plastic strain rate tensor at time t
-        """
-        return self._additional_dof_plastic_strain_rate
-
-    @property
-    def left_part_size(self):
-        """
-        Accessor on the size of the left part of cracked cell field
-        """
-        return self._left_part_size
-
-    @property
-    def right_part_size(self):
-        """
-        Accessor on the size of the right part of cracked cell field
-        """
-        return self._right_part_size
-
     def additional_dof_increment(self):
         """
         Increment the variables of discontinuity
         """
-        # Thermodynamics
-        self._additional_dof_density.increment_values()
-        self._additional_dof_pressure.increment_values()
-        self._additional_dof_energy.increment_values()
-        self._additional_dof_artificial_viscosity.increment_values()
-        self._additional_dof_sound_velocity.increment_values()
         # Kinematics
         self._additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
         self._additional_dof_coordinates_current[:] = self.additional_dof_coordinates_new[:]
-        self._left_part_size.increment_values()
-        self._right_part_size.increment_values()
-        # Elasticity
-        self._additional_dof_deviatoric_stress_current[:] = \
-            self._additional_dof_deviatoric_stress_new[:]
         # Cohesive model
         self.cohesive_force.increment_values()
         self.damage_variable.increment_values()
         self.discontinuity_opening.increment_values()
-
-

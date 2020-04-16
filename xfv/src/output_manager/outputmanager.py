@@ -62,19 +62,18 @@ class OutputManager(object, metaclass=Singleton):
         :param cells: cells from which fields must be printed
         :param nodes: nodes from which fields must be printed
         :param database_id: identifier of the database
-        :param cell_indexes: indexes of the cells to be printed
-        :param node_indexes: indexes of the nodes to be printed
-        :param disc_indexes : indexes of the discontinuity to be printed
         """
-        cell_indexes = slice(0, cells.number_of_cells)
         node_indexes = slice(0, nodes.number_of_nodes)
+        cell_indexes = slice(0, cells.number_of_cells)
+        enriched_cells = np.where(cells.enriched)[0]
+        # Node field
         self.register_field("NodeStatus", nodes, ("enriched",),
                             database_names=[database_id], indexes=node_indexes)
         self.register_field("NodeCoordinates", nodes, ("xt",),
                             database_names=[database_id], indexes=node_indexes)
         self.register_field("ClassicalNodeVelocity", nodes, ("umundemi",),
                             database_names=[database_id], indexes=node_indexes)
-
+        # Cell field
         self.register_field("CellStatus", cells, ("enriched",),
                             database_names=[database_id], indexes=cell_indexes)
         self.register_field("CellSize", cells, ("size_t_plus_dt",),
@@ -100,39 +99,42 @@ class OutputManager(object, metaclass=Singleton):
                             database_names=[database_id], indexes=cell_indexes)
 
         if enrichment_registration:
-            self.register_field("AdditionalPressure", None,
+            # Enriched cell field -> cell support
+            self.register_field("AdditionalPressure", cells,
                                 ("additional_dof_pressure", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalDensity", None,
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalDensity", cells,
                                 ("additional_dof_density", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalInternalEnergy", None,
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalInternalEnergy", cells,
                                 ("additional_dof_energy", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalArtificialViscosity", None,
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalArtificialViscosity", cells,
                                 ("additional_dof_artificial_viscosity", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalSoundVelocity", None,
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalSoundVelocity", cells,
                                 ("additional_dof_sound_velocity", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalLeftSize", None, ("left_part_size", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalRightSize", None, ("right_part_size", "current_value"),
-                                database_names=[database_id])
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalLeftSize", cells, ("left_part_size", "current_value"),
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalRightSize", cells, ("right_part_size", "current_value"),
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalStress", cells, ("additional_dof_stress",),
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalDeviatoricStress", cells,
+                                ("additional_dof_deviatoric_stress_current",),
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalEquivalentPlasticStrainRate", cells,
+                                ("additional_dof_equivalent_plastic_strain_rate",),
+                                database_names=[database_id], indexes=enriched_cells)
+            self.register_field("AdditionalPlasticStrainRate", cells,
+                                ("additional_dof_plastic_strain_rate",),
+                                database_names=[database_id], indexes=enriched_cells)
+            # Enriched node fields -> disc support
             self.register_field("AdditionalNodeVelocity", None,
                                 ("additional_dof_velocity_current",),
                                 database_names=[database_id])
-            self.register_field("AdditionalStress", None, ("additional_dof_stress",),
-                                database_names=[database_id])
-            self.register_field("AdditionalDeviatoricStress", None,
-                                ("additional_dof_deviatoric_stress_current",),
-                                database_names=[database_id])
-            self.register_field("AdditionalEquivalentPlasticStrainRate", None,
-                                ("additional_dof_equivalent_plastic_strain_rate",),
-                                database_names=[database_id])
-            self.register_field("AdditionalPlasticStrainRate", None,
-                                ("additional_dof_plastic_strain_rate",),
-                                database_names=[database_id])
+            # Cohesive fields -> disc support
             self.register_field("AdditionalCohesiveForce", None,
                                 ("cohesive_force", "current_value"),
                                 database_names=[database_id])
@@ -155,34 +157,62 @@ class OutputManager(object, metaclass=Singleton):
             if build_infos.time_controler.db_has_to_be_updated(time, iteration):
                 build_infos.database_object.add_time(time)
                 for field in build_infos.fields:
+                    # Case : classical fields with cell or node support ------------------------
                     if not field.name.startswith("Additional") and field.indexes is not None:
-                        value = getattr(field.owner, field.attr_name[0])
-                        for attr_name in field.attr_name[1:]:
-                            value = getattr(value, attr_name)
+                        value = self.get_value_of_field(field, field.owner)
                         build_infos.database_object.add_field(
                             field.name, value.__getitem__(field.indexes),
                             support=field.owner.__class__.__name__)
-                    elif field.name.startswith("Additional"):
+                    # Case : enriched cell field -----------------------------------------------
+                    # Field registration in this case is a mix between cell classical fields and
+                    # disc fields because of the refactoring of the enriched fields in Cell class
+
+                    elif field.name.startswith("Additional") and field.owner is not None:
+                        mask_enr = field.owner.enriched
+                        if mask_enr.any():
+                            cell_ids = np.where(mask_enr)[0]
+                            value = self.get_value_of_field(field, field.owner)
+                            if len(value.shape) == 1:
+                                # Register cell scalar field
+                                enr_field = np.array([cell_ids.tolist(),
+                                                      value[mask_enr].tolist()]).transpose()
+
+                            elif value.shape[1] == 3:
+                                # Register cell tensor field
+                                enr_field = np.array([cell_ids.tolist(),
+                                                      value[mask_enr, 0].tolist(),
+                                                      value[mask_enr, 1].tolist(),
+                                                      value[mask_enr, 2].tolist()]).transpose()
+                            else:
+                                enr_field = []
+                                raise ValueError(
+                                    "Shape of the enriched cell field is not recognized")
+
+                            build_infos.database_object.add_field(
+                                field.name, enr_field,
+                                support="Discontinuity", enrichment=type_of_enrichment,
+                                discontinuity_position=eps)
+
+                    # Case : enriched disc field (node and cohesive) -------------------------
+                    elif field.name.startswith("Additional") and field.owner is None:
                         # Permet d'identifier les champs enrichis qui doivent se rapporter
                         # a un support disc
-                        additional_field = []
+                        disc_field_collec = []
                         for disc in Discontinuity.discontinuity_list():
                             cell_id = np.where(disc.mask_ruptured_cell)[0][0]
-                            value = getattr(disc, field.attr_name[0])
-                            for attr_name in field.attr_name[1:]:
-                                value = getattr(value, attr_name).flatten()
+                            value = self.get_value_of_field(field, disc)
 
                             if value.shape == (1, ):
                                 # Register cell scalar field
-                                additional_field.append((cell_id, value[0]))
+                                disc_field_collec.append((cell_id, value[0]))
 
                             elif value.shape == (2, 1):
                                 # Register node vector field
-                                additional_field.append((cell_id, value[0][0], value[1][0]))
+                                disc_field_collec.append((cell_id, value[0][0], value[1][0]))
 
                             elif value.shape == (1, 3):
                                 # Register cell tensor field
-                                additional_field.append((cell_id, value[0, 0], value[0, 1],
+                                disc_field_collec.append((cell_id, value[0, 0], value[0, 1],
                                                          value[0, 2]))
                             else:
                                 raise ValueError("Unknown shape to register in database")
@@ -194,13 +224,23 @@ class OutputManager(object, metaclass=Singleton):
                             # mais pas genant pour le moment a priori car on fait reference au
                             # nom de la classe et non a l'objet lui meme
                             build_infos.database_object.add_field(field.name,
-                                                                  np.array(additional_field),
+                                                                  np.array(disc_field_collec),
                                                                   support="Discontinuity",
                                                                   enrichment=type_of_enrichment,
                                                                   discontinuity_position=eps)
                             # todo : faire passer la position de la disc. dans le tableau de
                             #  donnees car peut varier
                             # todo : d'une discontinuite a l'autre
+                    # end enriched disc field -----------------------
+
+    def get_value_of_field(self, field: Field, owner) -> np.array:
+        """
+        Get the np.array associated to the field following all the attribute names list
+        """
+        value = getattr(owner, field.attr_name[0])
+        for attr_name in field.attr_name[1:]:
+            value = getattr(value, attr_name).flatten()
+        return value
 
     def finalize(self):
         """

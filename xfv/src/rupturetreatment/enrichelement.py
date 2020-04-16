@@ -75,9 +75,9 @@ class EnrichElement(RuptureTreatment):
                     disc.find_ruptured_cell_id(topology)
                     cells.classical[cell_tb_enr] = False
                     # Affectation left / right part sizes
-                    disc.right_part_size.new_value = \
+                    cells.right_part_size.new_value = \
                         (1. - self.__position_rupture) * cells.size_t_plus_dt[cell_tb_enr]
-                    disc.left_part_size.new_value = \
+                    cells.left_part_size.new_value = \
                         self.__position_rupture * cells.size_t_plus_dt[cell_tb_enr]
                     # L'initialisation des tailles gauches et droites courantes n'est
                     # pas nécessaire. On initialise simplement avec des tailles fictives de
@@ -86,9 +86,9 @@ class EnrichElement(RuptureTreatment):
                     # d'obtenir une ouverture nulle de la fissure à l'itération de création de
                     # la discontinuité.  Elle sera écrasée après ce calcul lors de l'appel
                     # de mesh.increment().
-                    disc.right_part_size.current_value = \
+                    cells.right_part_size.current_value = \
                         (1. - self.__position_rupture) * cells.size_t[cell_tb_enr]
-                    disc.left_part_size.current_value = \
+                    cells.left_part_size.current_value = \
                         self.__position_rupture * cells.size_t[cell_tb_enr]
                     # Initialisation de la partie droite des champs pour Hansbo method
                     if not disc.initialisation:

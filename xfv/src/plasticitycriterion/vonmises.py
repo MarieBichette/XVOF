@@ -21,12 +21,12 @@ class VonMisesCriterion(PlasticityCriterion):
                 cells.yield_stress.new_value)
 
     @staticmethod
-    def check_criterion_on_right_part_cells(disc):
+    def check_criterion_on_right_part_cells(cells):
         """
         Return the mask of the cells where the VonMises plasticity criterion is verified
 
-        :param disc: current discontinuity
+        :param cells: cells on which to check the criterion
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
-        return (compute_second_invariant(disc.additional_dof_deviatoric_stress_new) >
-                disc.additional_dof_yield_stress.new_value)
+        return (compute_second_invariant(cells.additional_dof_deviatoric_stress_new) >
+                cells.additional_dof_yield_stress.new_value)
