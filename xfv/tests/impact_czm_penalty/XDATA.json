@@ -94,7 +94,7 @@
       {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 1e-08
+      "time-period": 5e-07
       }
     ]
   }
