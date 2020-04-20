@@ -146,22 +146,18 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         """
         Test de la m�thode compute_complete_stress_tensor
         """
-        mask = np.array([True, True, False, False])
         self.my_cells._stress = np.array([[2000., -1000, -1000.],
                                           [50., -25., -25.],
                                           [1000., -500., -500.],
                                           [4000., -2000., -2000.]])
-        self.my_cells._deviatoric_stress_new = np.array([[200., -100, -100.],
-                                                         [5., -2.5, -2.5],
-                                                         [100., -50., -50.],
-                                                         [400., -200., -200.]])
+        self.my_cells._deviatoric_stress_new = np.zeros([4, 3])
         self.my_cells.pressure.new_value = np.array([1000, 25, 500, 2000])
         self.my_cells.pseudo.new_value = np.array([-1, -2, -3, -4])
-        self.my_cells.compute_complete_stress_tensor(mask)
-        expected_result = np.array([[-999., -999, -999.],
-                                    [-23, -23, -23],
-                                    [1000., -500., -500.],
-                                    [4000., -2000., -2000.]])
+        self.my_cells.compute_complete_stress_tensor()
+        expected_result = np.array([[-999., -999., -999.],
+                                    [-23., -23., -23.],
+                                    [-497., -497., -497.],
+                                    [-1996., -1996., -1996.]])
         np.testing.assert_allclose(self.my_cells.stress, expected_result)
 
     def test_impose_pressure(self):

@@ -94,7 +94,6 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         """
         Test de la m�thode compute_complete_stress_tensor
         """
-        mask = np.array([True, True, False, False])
         self.my_cells._stress = np.array([[2000., -1000, -1000.],
                                           [50., -25., -25.],
                                           [1000., -500., -500.],
@@ -104,12 +103,12 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                                          [100., -50., -50.],
                                                          [400., -200., -200.]])
         self.my_cells.pressure.new_value = np.array([1000, 25, 500, 2000])
-        self.my_cells.pseudo.new_value = np.array([-1, -2, -3, -4])
-        self.my_cells.compute_complete_stress_tensor(mask)
+        self.my_cells.pseudo.new_value = np.array([-1, -2, -3, 4])
+        self.my_cells.compute_complete_stress_tensor()
         expected_result = np.array([[-799., -1099, -1099.],
                                      [-18, -25.5, -25.5],
-                                     [1000., -500., -500.],
-                                     [4000., -2000., -2000.]])
+                                     [-397., -547., -547.],
+                                     [-1604., -2204., -2204.]])
         np.testing.assert_allclose(self.my_cells.stress, expected_result)
 
     def test_compute_deviatoric_stress_tensor(self):
