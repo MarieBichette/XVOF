@@ -63,9 +63,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         self._additional_dof_energy = Field(self.number_of_cells,
                                             current_value=np.zeros([self.number_of_cells]),
                                             new_value=np.zeros([self.number_of_cells]))
-        self._additional_dof_artificial_viscosity = Field(self.number_of_cells,
-                                                          current_value=np.zeros([self.number_of_cells]),
-                                                          new_value=np.zeros([self.number_of_cells]))
+        self._additional_dof_artificial_viscosity = \
+            Field(self.number_of_cells, current_value=np.zeros([self.number_of_cells]),
+                  new_value=np.zeros([self.number_of_cells]))
         self._additional_dof_sound_velocity = Field(self.number_of_cells,
                                                     current_value=np.zeros([self.number_of_cells]),
                                                     new_value=np.zeros([self.number_of_cells]))
