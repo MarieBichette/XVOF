@@ -58,7 +58,7 @@ class OutputManager(object, metaclass=Singleton):
                             database_id):
         """
         Add all fields to the manager.
-        :param enrichment_registration : bool to control if the
+        :param enrichment_registration : bool to control if the enriched fields should be registered
         :param cells: cells from which fields must be printed
         :param nodes: nodes from which fields must be printed
         :param database_id: identifier of the database

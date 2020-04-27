@@ -19,12 +19,11 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
     This class defines a one dimensional mesh with potential enrichment
     """
     # noinspection PyArgumentList
-    def __init__(self, initial_coordinates, initial_velocities, enrichment_type):
+    def __init__(self, initial_coordinates, initial_velocities):
         """
         Construction of the mesh
         :param initial_coordinates:
         :param initial_velocities:
-        :param enrichment_type:
         """
         self.data = DataContainer()  # pylint: disable=no-value-for-parameter
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
@@ -34,8 +33,6 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             message = ("""A 1D mesh must have one dimensional vector which is not the case"""
                        """ for initial coordinates vector!""")
             raise ValueError(message)
-
-        self.enrichment_type = enrichment_type
 
         # ---------------------------------------------
         # Nodes creation
