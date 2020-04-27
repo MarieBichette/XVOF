@@ -30,21 +30,21 @@ class EnrichedMassMatrixProps(TypeCheckedDataClass):
 
     def build_enriched_mass_matrix_obj(self):
         """
-        A factory that builds and returns the YieldStress object
+        A factory that builds and returns the EnrichedMassMatrix object
         """
         return self._enr_mass_matrix_class(**asdict(self, dict_factory=self.dict_factory))
 
 
-@dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
+@dataclass  # pylint: disable=missing-class-docstring
 class ConsistentMassMatrixProps(EnrichedMassMatrixProps):
     _enr_mass_matrix_class = EnrichedMassMatrixConsistent
 
 
-@dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
+@dataclass  # pylint: disable=missing-class-docstring
 class LumpMenouillardMassMatrixProps(EnrichedMassMatrixProps):
     _enr_mass_matrix_class = EnrichedMassMatrixLumpMenouillard
 
 
-@dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
+@dataclass  # pylint: disable=missing-class-docstring
 class LumpSumMassMatrixProps(EnrichedMassMatrixProps):
     _enr_mass_matrix_class = EnrichedMassMatrixLumpSum
