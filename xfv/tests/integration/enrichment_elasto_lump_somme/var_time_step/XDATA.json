@@ -27,7 +27,6 @@
       "failure-treatment": {
         "name": "Enrichment",
         "value": 0.5,
-        "type-of-enrichment": "Hansbo",
         "lump-mass-matrix": "somme"
       }
     }
