@@ -1,8 +1,9 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module Discontinuity
-:TODO : tester l'unicit� des discontinuit�s identifi�es par label / mask_in/out
+:TODO : tester l'unicitï¿½ des discontinuitï¿½s identifiï¿½es par label / mask_in/out
 """
 
 import unittest
@@ -10,11 +11,12 @@ import numpy as np
 import os
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
+from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
 
 
 class DiscontinuityTest(unittest.TestCase):
     """
-        Test case utilis� pour test les fonctions du module 'Discontinuity'
+        Test case utilisï¿½ pour test les fonctions du module 'Discontinuity'
         """
 
     def setUp(self):
@@ -27,7 +29,8 @@ class DiscontinuityTest(unittest.TestCase):
 
         self.mask_in = np.array([True, False, False, False])
         self.mask_out = np.array([False, True, False, False])
-        self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2, "somme")
+        self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2,
+                                     LumpMenouillardMassMatrixProps())
 
     def tearDown(self):
         DataContainer.clear()

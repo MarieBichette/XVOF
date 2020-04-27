@@ -1,46 +1,50 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
 Classe de test du module ImposedPressure
 """
 import unittest
-import xfv.src.rupturetreatment.imposedpressure as IP
 import numpy as np
 import os
 
+from xfv.src.rupturetreatment.imposedpressure import ImposedPressure
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 
 
 class ImposedPressureTest(unittest.TestCase):
     """
-    Test case utilis� pour test les fonctions du module 'Imposed Pressure'
-    Marche bien mais appelle des m�thodes de Cell et OneDimensionCell non v�rifi�es
+    Test case utilisï¿½ pour test les fonctions du module 'Imposed Pressure'
+    Marche bien mais appelle des mï¿½thodes de Cell et OneDimensionCell non vï¿½rifiï¿½es
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """
-        Pr�paration du test
+        Preparation of the test
         """
-        # Cr�ation d'un DataContainer bidon :
-        data_file_path = os.path.join(os.path.dirname(__file__), "../../../tests/0_UNITTEST/XDATA_hydro.json")
+        # Creation of a fake DataContainer :
+        data_file_path = os.path.join(os.path.dirname(__file__),
+                                      "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
-        # Pr�paration du test
+        # Preparation of the test
         self._pressure = 0.
-
-        self.my_imposed_pressure = IP.ImposedPressure(self._pressure)
-
+        self.my_imposed_pressure = ImposedPressure(self._pressure)
         self.cells = OneDimensionCell(1000)
         self.cells.pressure_field[:] = 1.
-
-        self.ruptured_cells = np.ndarray(1000, dtype=np.bool, order = 'C')
+        self.ruptured_cells = np.ndarray([1000], dtype=np.bool, order='C')
         self.ruptured_cells[:] = False
         self.ruptured_cells[500] = True
 
-    def test_applyTreatment(self):
+    def tearDown(self) -> None:
         """
-        Teste la m�thode apply_treatment for ImposedPressure
+        End of the tests
+        """
+        DataContainer.clear()
+
+    def test_apply_treatment(self) -> None:
+        """
+        Teste la mï¿½thode apply_treatment for ImposedPressure
         """
         self.my_imposed_pressure.apply_treatment(self.cells, self.ruptured_cells)
         self.cells.increment_variables()

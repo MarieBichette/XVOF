@@ -17,18 +17,24 @@ from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
 max_coord = 0.015
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
-PressureField = Field("Pression [Pa]", "Champ de pression", -20e+09, 20e+09, "./RESULTATS/PressureField")
-DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 7000.0, 12000.0, "./RESULTATS/DensityField")
-InternalEnergyField = Field("Energie interne [J/kg]",
-                            "Champ d energie interne", 0, 100000.0, "./RESULTATS/InternalEnergyField")
-PseudoViscosityField = Field("Pseudoviscosite [Pa]",
-                             "Champ de pseudoviscosite", 0, 1.5e+09, "./RESULTATS/PseudoViscosityField")
-CellPositionField = Field("Position [m]", "Champ de position", 0.0, max_coord, "./RESULTATS/CellPositionField")
-NodePositionField = Field("Position [m]", "Champ de position", 0.0, max_coord, "./RESULTATS/NodePositionField")
-NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -1000.0, 1000.0, "./RESULTATS/NodeVelocityField")
+PressureField = Field("Pression [Pa]", "Champ de pression", -20e+09, 20e+09,
+                      "./RESULTATS/PressureField")
+DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 7000.0, 12000.0,
+                     "./RESULTATS/DensityField")
+InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 100000.0,
+                            "./RESULTATS/InternalEnergyField")
+PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.5e+09,
+                             "./RESULTATS/PseudoViscosityField")
+CellPositionField = Field("Position [m]", "Champ de position", 0.0, max_coord,
+                          "./RESULTATS/CellPositionField")
+NodePositionField = Field("Position [m]", "Champ de position", 0.0, max_coord,
+                          "./RESULTATS/NodePositionField")
+NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -1000.0, 1000.0,
+                          "./RESULTATS/NodeVelocityField")
 DevStressField = Field("Stress Dev [Pa]", "Champ de dev stress", -1.5e+09,
                         1.5e+09, "./RESULTATS/DevStressField")
-StressXXField = Field("Stress XX [Pa]", "Champ de stress XX", -20e+09, 20e+09, "./RESULTATS/StressXXField")
+StressXXField = Field("Stress XX [Pa]", "Champ de stress XX", -20e+09, 20e+09,
+                      "./RESULTATS/StressXXField")
 
 
 class FigureManager(object, metaclass=Singleton):
@@ -61,7 +67,8 @@ class FigureManager(object, metaclass=Singleton):
 
         :param deltat_it: interval between two figures
         """
-        self.__time_ctrl = OutputTimeControler(identifier="FigureManager", iteration_period=deltat_it)
+        self.__time_ctrl = OutputTimeControler(identifier="FigureManager",
+                                               iteration_period=deltat_it)
 
     def update_fields(self):
         """ MAJ des champs par appel des propri�t�s du maillage"""
@@ -95,7 +102,8 @@ class FigureManager(object, metaclass=Singleton):
             raise ve
         if self.__dump:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                              titre=field_Y.titre, interface_id=self.interface, save_path=field_Y.results_path)
+                                  titre=field_Y.titre, interface_id=self.interface,
+                                  save_path=field_Y.results_path)
         else:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
                                   titre=field_Y.titre, interface_id=self.interface)
@@ -120,10 +128,11 @@ class FigureManager(object, metaclass=Singleton):
             raise ve
         if self.__dump:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                              titre=field_Y.titre, interface_id=self.interface + 1, save_path=field_Y.results_path)
+                                  titre=field_Y.titre, interface_id=self.interface + 1,
+                                  save_path=field_Y.results_path)
         else:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                              titre=field_Y.titre, interface_id=self.interface + 1)
+                                  titre=field_Y.titre, interface_id=self.interface + 1)
         phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
         phyfig.set_x_limit(field_X.val_min, field_X.val_max)
         return phyfig
@@ -177,13 +186,13 @@ class FigureManager(object, metaclass=Singleton):
 
     def create_reps(self):
         """
-        Cr�ation des r�pertoires o� sont stock�es les figures
+        Creation of the reps where data is saved
         """
         for (_, _, field) in self.__figures_mailles + self.__figures_noeuds:
             path = field.results_path
             if os.path.exists(path):
-                msg = "Le chemin {:} existe d�j� !".format(path)
-                msg+= "\n Abandon pour �viter d'�craser les donn�es"
+                msg = "Path {:} already exists !".format(path)
+                msg+= "\n Abandon to avoid to override data"
                 raise SystemExit(msg)
             else:
                 os.makedirs(path)

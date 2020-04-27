@@ -22,10 +22,10 @@ class PlasticityCriterion(object, metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def check_criterion_on_right_part_cells(disc):
+    def check_criterion_on_right_part_cells(cells):
         """
         Check the plasticity criterion on the discontinuity in arguments
 
-        :param disc: discontinuity on which to check the criterion
+        :param cells: cells on which to check the criterion
         """
         pass

@@ -1,24 +1,24 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
-Classe de test du module ImposedPressure
+Class to test the module EnrichElement
 """
 import unittest
 
 
-class ImposedPressureTest(unittest.TestCase):
+class EnrichElementTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'EnrichElement'
+    Test case utilisÃ© pour test les fonctions du module 'EnrichElement'
     """
 
     def setUp(self):
         """
-        Préparation du test
+        Preparation of the test
         """
 
     def test_applyTreatment(self):
         """
-        Teste la méthode apply_treatment for EnrichElement
+        Teste la mÃ©thode apply_treatment for EnrichElement
         """
 
 

@@ -1,10 +1,11 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 one_dimension_cell module unit tests
 """
-import numpy as np
 import unittest
+import numpy as np
 import os
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
@@ -25,12 +26,12 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
     def tearDownClass(cls):
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
-        pass
 
     def setUp(self):
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
+        self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
 
     def tearDown(self):
         pass
@@ -49,7 +50,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         energy_new = np.zeros([self.nbr_cells])
         pseudo = np.zeros([self.nbr_cells])
 
-        eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
+        eos = self.test_data.material_target.constitutive_model.eos.build_eos_obj()
 
         energy_new_value, pressure_new_value, sound_velocity_new_value = \
             OneDimensionCell.apply_equation_of_state(self.my_cells, eos, density_current,
@@ -65,9 +66,9 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
 
     def test_add_elastic_energy_method(self):
         """
-        Test de la m�thode add_elastic_energy_method
+        Test de la mï¿½thode add_elastic_energy_method
         """
-        dt = 1.
+        delta_t = 1.
         density_current = np.ones(self.nbr_cells) * 8930.
         density_new = np.ones(self.nbr_cells) * 8950.
         stress_dev_current = np.array([[2, -1, -1],
@@ -82,7 +83,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
                                    [2., -1, -1],
                                    [3., -1.5, -1.5],
                                    [4., -2., -2.]])
-        energy_new = OneDimensionCell.add_elastic_energy_method(dt, density_current, density_new,
+        energy_new = OneDimensionCell.add_elastic_energy_method(delta_t,
+                                                                density_current, density_new,
                                                                 stress_dev_current, stress_dev_new,
                                                                 strain_rate_dev)
         expected_energy = np.array([ 0.001846,  0.00151 ,  0.005034,  0.026846])
@@ -95,10 +97,10 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         mask = np.ones([self.nbr_cells], dtype=np.bool)
         mask[0] = False
         mask[1] = False
-        dt = 1.
+        delta_t = 1.
         x_new = np.array([[-0.5, ], [0.1, ], [0.2, ], [0.35, ], [0.65, ]])
         u_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
-        # Reconstruction des array donn�s par la topologie
+        # Reconstruction des array donnï¿½s par la topologie
         position_new = np.array([[x_new[0], x_new[1]],
                                  [x_new[1], x_new[2]],
                                  [x_new[2], x_new[3]],
@@ -110,7 +112,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333],
                                     [0.266667, -0.133333, -0.133333]])
         dev_strain_rate = np.zeros((self.nbr_cells, 3))
-        dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, dt,
+        dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, delta_t,
                                                                                      position_new,
                                                                                      vitesse_new)
         np.testing.assert_allclose(dev_strain_rate, expected_result, rtol=1.e-05)
@@ -123,9 +125,9 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         rho_old = np.array([8700., 3200, 2171])
         new_size = np.array([0.025, 0.01, 0.005])
         sound_speed = np.array([4400, 3200, 1140])
-        dt = 1.2e-08
+        delta_t = 1.2e-08
         pseudo_a, pseudo_b = 1.2, 0.25
-        result = OneDimensionCell.compute_pseudo(dt, rho_old, rho_new, new_size, sound_speed,
+        result = OneDimensionCell.compute_pseudo(delta_t, rho_old, rho_new, new_size, sound_speed,
                                                  pseudo_a, pseudo_b)
         np.testing.assert_allclose(result, [0.00000000e+00, 2.25427729e+13, 2.00897590e+09])
 

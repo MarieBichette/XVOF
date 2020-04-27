@@ -1,7 +1,7 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
 """
-Classe d�finissant une figure
+Class to define a figure
 """
 import matplotlib.pyplot as plt
 from os import sep
@@ -24,27 +24,25 @@ class PhysicFigure(object):
         self._title = titre
         self._fig.canvas.draw()
         self._save_path = save_path
-        self.interface_id = interface_id # pour s�parer cible et projectile
+        self.interface_id = interface_id  # to separate target and projectile
         plt.show(block=False)
 
-        # x = np.array([0, 0.01])
-        # y = np.array([DataContainer().material_target.failure_model.failure_criterion_value,
-        #               DataContainer().material_target.failure_model.failure_criterion_value])
-        # self._line_ref, = self._ax.plot(x, y, color='red')
-
-
     def set_y_limit(self, val_min=0., val_max=1.0):
-        """ Fixation des limites en y"""
+        """
+        Fixation des limites en y
+        """
         self._ax.set_ylim([val_min, val_max])
 
     def set_x_limit(self, val_min=0., val_max=1.0):
-        """ Fixation des limites en x"""
+        """
+        Fixation des limites en x
+        """
         self._ax.set_xlim([val_min, val_max])
 
     def update(self, X=None, Y=None, title_comp=None):
         """
-        Mise � jour de l'image pour avoir une animation
-        Sauvegarde de l'image si pr�sence d'un path
+        Update image to get animation
+        And save the image if a path is given
         """
         if X is not None:
             self._line_target.set_xdata(X[self.interface_id:])
@@ -58,7 +56,6 @@ class PhysicFigure(object):
         self._ax.draw_artist(self._ax.patch)
         self._ax.draw_artist(self._line_target)
         self._ax.draw_artist(self._line_projectile)
-        # self._ax.draw_artist(self._line_ref)
         self._fig.canvas.update()
         self._fig.canvas.flush_events()
 
@@ -71,7 +68,7 @@ class PhysicFigure(object):
             self._fig.savefig(fig_path)
             self._fig_number += 1
             with open(data_path, "w") as fo:
-                for a,b in zip(X, Y):
+                for a, b in zip(X, Y):
                     fo.write("{:20.18g}{:s}{:20.18g}\n".format(float(a), " ", float(b)))
 
 

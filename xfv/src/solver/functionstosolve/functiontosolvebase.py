@@ -13,14 +13,15 @@ class FunctionToSolveBase(object, metaclass=ABCMeta):
     def __init__(self):
         self._variables = None
 
-    def setVariables(self, variables):
+    def set_variables(self, variables):
         """
         Set of the value of the variables
         """
         if self._variables is None:
             self._variables = variables
         else:
-            raise ValueError("Impossible de fixer deux fois les variables de la fonction à annuler!")
+            raise ValueError("Impossible de fixer deux fois les variables de la fonction à "
+                             "annuler!")
 
     def eraseVariables(self):
         """

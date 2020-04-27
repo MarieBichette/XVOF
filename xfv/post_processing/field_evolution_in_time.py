@@ -45,7 +45,7 @@ def run():
     field_unit["Pressure"] = "[$Pa$]"
     field_unit["PseudoViscosity"] = "[$Pa$]"
     field_unit["InternalEnergy"] = "[$J/kg$]"
-    field_unit["Velocity"] = "[$ms/s$]"
+    field_unit["NodeVelocity"] = "[$ms/s$]"
 
     plt.figure(1)
     plt.xlabel("Time [$\mu$s]")

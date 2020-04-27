@@ -1,5 +1,6 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module node1d
 """
@@ -9,17 +10,17 @@ import numpy as np
 
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.node.one_dimension_node import OneDimensionNode
-from xfv.src.mass_matrix.mass_matrix_utilities import inverseMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import inverse_masse
 from xfv.src.data.data_container import DataContainer
 
 
 class Node1dTest(unittest.TestCase):
     """
-    Test case utilis� pour test les fonctions du module 'Node1d'
+    Test case utilisï¿½ pour test les fonctions du module 'Node1d'
     """
     def setUp(self):
         """
-        Pr�paration des tests
+        Prï¿½paration des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
@@ -47,29 +48,31 @@ class Node1dTest(unittest.TestCase):
 
     def test_compute_new_force(self):
         """
-        Test de la m�thode Node1d.compute_new_force()
+        Test de la mï¿½thode Node1d.compute_new_force()
         """
         topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         np.testing.assert_array_equal(self.my_nodes.force.flatten(),
                                       np.array([2500., -1500., 1000., -2000.]))
 
     def test_compute_new_velocity(self):
         """
-        Test de la m�thode Node1d.compute_new_velocity()
+        Test de la mï¿½thode Node1d.compute_new_velocity()
         """
         topo = Topology1D(4, 3)
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         mask = np.empty([4], dtype=bool)
         mask[:] = True
         mass_matrix = np.array([[1./8., ], [1./4., ], [3./8., ], [1./4., ]])
-        inv_mass_matrix = inverseMasse(mass_matrix)
+        inv_mass_matrix = inverse_masse(mass_matrix)
         self.my_nodes.compute_new_velocity(1.0e-03, mask, inv_mass_matrix)
         np.testing.assert_allclose(self.my_nodes.upundemi.flatten(),
                                    np.array([20., -6., 2.6666667, -8.]))
@@ -82,13 +85,14 @@ class Node1dTest(unittest.TestCase):
         vecteur_contrainte = np.array([self.elem_0.pression_new,
                                        self.elem_1.pression_new,
                                        self.elem_2.pression_new])
-        self.my_nodes.compute_new_force(topo, vecteur_contrainte)
+        # All cells are classical cells
+        self.my_nodes.compute_new_force(topo, vecteur_contrainte, np.ones([3], dtype=bool))
         self.my_nodes.apply_pressure(0, 1.e+09)
         np.testing.assert_array_equal(self.my_nodes.force[0], np.array([3500.]))
 
     def test_apply_correction_reference_bar(self):
         """
-        Test de la m�thode apply_correction_reference_bar
+        Test de la mï¿½thode apply_correction_reference_bar
         """
         delta_t = 1.
         mask = np.array([False, False, True, True])
