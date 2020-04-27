@@ -136,7 +136,6 @@ class ContactModelProps(TypeCheckedDataClass):
     # moving the test here, implies to allow the contact_model to be None
 
 
-
 @dataclass  # pylint: disable=missing-class-docstring
 class InitialValues(TypeCheckedDataClass):
     velocity_init: float
@@ -152,7 +151,7 @@ class InitialValues(TypeCheckedDataClass):
         self._ensure_strict_positivity('rho_init', 'temp_init')
         self._ensure_positivity('yield_stress_init', 'shear_modulus_init')
         # TODO: one the initialization via eos will be done, check that only two fields
-        # are not nill (v and e or v and T)
+        # are not null (v and e or v and T)
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -167,7 +166,6 @@ class ConstitutiveModelProps(TypeCheckedDataClass):
 class FailureModelProps(TypeCheckedDataClass):
     failure_treatment: Optional[str]
     failure_treatment_value: Optional[float]
-    type_of_enrichment: Optional[str]
     lump_mass_matrix: Optional[EnrichedMassMatrixProps]
     failure_criterion: Optional[RuptureCriterionProps]
     failure_criterion_value: Optional[float]
@@ -424,27 +422,25 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             - the damage properties
 
         """
+        # Initialisation
         init = InitialValues(*self.__get_initial_values(material))
 
+        # Bulk material behavior
         behavior = ConstitutiveModelProps(
             self.__get_equation_of_state_props(material),
             *self.__get_rheology_props(material))
 
-        # TODO : rassembler tout ça !
-        failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix = (
+        # Failure treatment
+        failure_treatment, failure_treatment_value, lump_mass_matrix = (
             self.__get_failure_props(material))
-        failure_criterion, failure_criterion_value, failure_index = \
-            self.__get_failure_criterion_props(material)
+        failure_criterion, failure_criterion_value, failure_index = (
+            self.__get_failure_criterion_props(material))
 
-        failure = FailureModelProps(failure_treatment, failure_treatment_value, type_of_enrichment,
+        failure = FailureModelProps(failure_treatment, failure_treatment_value,
                                     lump_mass_matrix, failure_criterion, failure_criterion_value,
                                     failure_index)
 
-        if failure.failure_treatment is not None and failure_criterion is None:
-            raise ValueError("Failure criterion expected. "
-                             "No failure criterion is specified or "
-                             "specified criterion not understood")
-
+        # Damage behavior
         dmg_props = self.__get_damage_props(material)
         if dmg_props:
             damage: Optional[DamageModelProps] = DamageModelProps(*dmg_props)
@@ -457,6 +453,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
 
+        # Contact between discontinuity boundaries treatment
         contact_props = self.__get_contact_props(material)
         if contact_props:
             contact: Optional[ContactModelProps] = ContactModelProps(*contact_props)
@@ -521,11 +518,11 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             with open(self._datafile_dir / json_path, 'r') as json_fid:
                 coef = json.load(json_fid)
                 coef = coef["MieGruneisen"]
-                # Lecture des paramètres
+                # Read parameters
                 params_key = ("ref_sound_velocity", "s1", "s2", "s3", "ref_density",
                               "coefficient_gruneisen", "param_b", "ref_internal_energy")
                 params = [float(coef[p]) for p in params_key]
-            # Création de l'équation d'état
+            # Returns the eos properties
             return MieGruneisenProps(*params)
 
         raise NotImplementedError("Only MieGruneisen equation of state is implemented for now")
@@ -568,49 +565,49 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
     @staticmethod
     def __get_failure_props(matter: Any) -> Tuple[Optional[str], Optional[float],
-                                                  Optional[str], Optional[EnrichedMassMatrixProps]]:
+                                                  Optional[EnrichedMassMatrixProps]]:
         """
         Returns the data needed to fill the FailureModel props
 
             - failure_model : rupture treatment model name
             - failure_treatment_value : position of discontinuity in cracked element
-            -                           or imposed pressure
-            - type_of_enrichment : Hansbo
+                                        or imposed pressure
             - lump_mass_matrix : lumping strategy
         """
         failure_data = matter.get('failure')
         if not failure_data:
-            return None, None, None, None
+            return None, None, None
 
         failure_treatment_data = matter['failure']['failure-treatment']
-
         failure_treatment = failure_treatment_data.get('name')
+
         if failure_treatment is not None:
-            if failure_treatment not in ["ImposedPressure", "Enrichment"]:
-                raise ValueError(f"Unknown failure treatment {failure_treatment}."
-                                 "Please choose among (ImposedPressure, Enrichment)")
+            # Failure treatment is either Enrichment or ImposedPressure
             failure_treatment_value = failure_treatment_data['value']
 
-        if failure_treatment == "Enrichment":
-            type_of_enrichment = failure_treatment_data['type-of-enrichment']
-            if type_of_enrichment not in ['Hansbo'] and failure_treatment == "Enrichment":
-                raise ValueError(f"Unknown enrichment type {type_of_enrichment}. "
-                                 "Only Hansbo is available for now")
-            # Choice of the enriched mass matrix lumping
-            lump_name: str = failure_treatment_data['lump-mass-matrix']
-            if lump_name.lower() == "menouillard":
-                lump_mass_matrix = LumpMenouillardMassMatrixProps()
-            elif lump_name.lower() == "somme":
-                lump_mass_matrix = LumpSumMassMatrixProps()
+            # Case enrichment :
+            if failure_treatment == "Enrichment":
+                # Choice of the enriched mass matrix lumping
+                lump_name: str = failure_treatment_data['lump-mass-matrix']
+                if lump_name.lower() == "menouillard":
+                    lump_mass_matrix = LumpMenouillardMassMatrixProps()
+                elif lump_name.lower() == "somme":
+                    lump_mass_matrix = LumpSumMassMatrixProps()
+                else:
+                    print("No lump (menouillard|somme). Mass matrix is consistent")
+                    lump_mass_matrix = ConsistentMassMatrixProps()
+
+            # Case ImposedPressure :
+            elif failure_treatment == "ImposedPressure":
+                lump_mass_matrix = None
+
             else:
-                print("No lump (menouillard|somme). Mass matrix is consistent")
-                lump_mass_matrix = ConsistentMassMatrixProps()
+                raise ValueError(f"Unknown failure treatment {failure_treatment}."
+                                 "Please choose among (ImposedPressure, Enrichment)")
         else:
             failure_treatment_value = 0.
-            type_of_enrichment = None
             lump_mass_matrix = None
-
-        return failure_treatment, failure_treatment_value, type_of_enrichment, lump_mass_matrix
+        return failure_treatment, failure_treatment_value, lump_mass_matrix
 
     @staticmethod
     def __get_failure_criterion_props(matter) -> Tuple[
@@ -620,40 +617,31 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         :return: failure_criterion : the rupture criterion
                 failure_criterion_value : the threshold value
+                failure_cell_index: the index of the cracked cell at the beginning of the simulation
         """
         failure_data = matter.get('failure')
         if not failure_data:
             return None, 0., 0
 
         failure_criterion_data = failure_data['failure-criterion']
-
-        failure_criterion_name: str = failure_criterion_data['name']
-        failure_criterion_value: Optional[float] = failure_criterion_data.get('value')
+        fail_crit_name: str = failure_criterion_data['name']
+        fail_crit_value: Optional[float] = failure_criterion_data.get('value')
         failure_cell_index: Optional[int] = failure_criterion_data.get('index')
 
-        if failure_criterion_name == "MinimumPressure":
-            if failure_criterion_value is None:
-                raise ValueError("Missing value for failure with MinimumPressure criterion")
-            failure_criterion: RuptureCriterionProps = (
-                MinimumPressureCriterionProps(failure_criterion_value))
-        elif failure_criterion_name == "Damage":
-            if failure_criterion_value is None:
-                raise ValueError("Missing value for failure with MinimumPressure criterion")
-            failure_criterion = DamageCriterionProps(failure_criterion_value)
-        elif failure_criterion_name == "HalfRodComparison":
-            if failure_cell_index is None:
-                raise ValueError("Missing index for failure with HalfRodComparison criterion")
+        if fail_crit_name == "MinimumPressure":
+            failure_criterion = MinimumPressureCriterionProps(fail_crit_value)
+        elif fail_crit_name == "Damage":
+            failure_criterion = DamageCriterionProps(fail_crit_value)
+        elif fail_crit_name == "HalfRodComparison":
             failure_criterion = HalfRodComparisonCriterionProps(failure_cell_index)
-        elif failure_criterion_name == "MaximalStress":
-            if failure_criterion_value is None:
-                raise ValueError("Missing value for failure with MinimumPressure criterion")
-            failure_criterion = MaximalStressCriterionProps(failure_criterion_value)
+        elif fail_crit_name == "MaximalStress":
+            failure_criterion = MaximalStressCriterionProps(fail_crit_value)
         else:
-            raise ValueError(f"Unknown failure criterion {failure_criterion_name}. "
+            raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "
                              "HalfRodComparison, MaximalStress")
 
-        return failure_criterion, failure_criterion_value, failure_cell_index
+        return failure_criterion, fail_crit_value, failure_cell_index
 
     def hasExternalSolver(self):  # pylint: disable=invalid-name
         """
