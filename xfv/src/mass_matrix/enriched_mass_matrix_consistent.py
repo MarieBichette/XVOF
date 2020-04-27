@@ -1,7 +1,6 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Implementing the OneDimensionEnrichedMassMatrix class
+Implementing the EnrichedMassMatrixConsistent class
 """
 import numpy as np
 
@@ -11,12 +10,11 @@ from xfv.src.mass_matrix.enriched_mass_matrix import EnrichedMassMatrix
 
 class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
     """
-    A class for the enriched mass matrix for
+    A class for the consistent enriched mass matrix
     """
     def __init__(self):
         """
         Build the class
-        :param lump: choice of mass lumping
         """
         matrix_size = 4
         super(EnrichedMassMatrix, self).__init__(matrix_size)

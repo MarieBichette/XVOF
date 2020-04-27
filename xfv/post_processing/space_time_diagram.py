@@ -32,7 +32,6 @@ def create_figure():
         plt.register_cmap(cmap=my_cmap)
         plt.set_cmap('custom_cmap')  # set the colormap just created
     else:
-        # the_title = "Space time {:} diagram".format(ARGS.field)
         the_title = "Diagram {:}".format(ARGS.case)
     plt.title(the_title, fontweight='bold')
     return fig

@@ -87,31 +87,24 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
-        Initialisation des champs aux mailles et des caractï¿½ristiques cell_in_target et
-        cell_in_projectile
-        :param mask_node_target: tableau de bool pour les noeuds dans la cible
-        :param mask_node_projectile: tableau de bool pour les noeuds dans le projectile
-        :param topology: Topologie donnant les tableaux de connectivity
+        Initialisation of the cell fields and attributes of cell_in_target and cell_in_projectile
+        :param mask_node_target: bool array for nodes in the target
+        :param mask_node_projectile: bool array for nodes in the target
+        :param topology: mesh connectivity object
         :return:
         """
-        # Partie mask_cible
-        indice_noeuds = np.where(mask_node_target)[0]
+        # Part : mask_target
+        node_indexes = np.where(mask_node_target)[0]
         cell_target = np.unique(
-            topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
-        # on ï¿½limine les noeuds extrï¿½mes :
-        # 1 pour ne pas prendre la derniï¿½re maille du projectile qui est connectï¿½e
-        # aussi ï¿½ un noeud target -1 pour ne pas prendre la maille connectï¿½ee au dernier
-        # noeud de la cible, qui n'existe pas
+            topology.get_cells_in_contact_with_node(node_indexes)[1:-1].flatten())
+        # [1:-1] => elimination of the extremal nodes because their connectivity is incomplete
         self.cell_in_target[cell_target] = True
 
-        # Partie mask_projectile
-        indice_noeuds = np.where(mask_node_projectile)[0]
+        # Part : mask_projectile
+        node_indexes = np.where(mask_node_projectile)[0]
         cell_projectile = np.unique(
-            topology.get_cells_in_contact_with_node(indice_noeuds)[1:-1].flatten())
-        # on ï¿½limine les noeuds extrï¿½mes :
-        # -1 pour ne pas prendre la premiï¿½re maille de la cible qui est aussi
-        # connectï¿½e ï¿½ un noeud projectile 1 pour ne pas prendre la maille connectï¿½ee au
-        # premier noeud du projectile, qui n'existe pas
+            topology.get_cells_in_contact_with_node(node_indexes)[1:-1].flatten())
+        # [1:-1] => elimination of the extremal nodes because their connectivity is incomplete
         self.cell_in_projectile[cell_projectile] = True
 
         try:
@@ -120,13 +113,13 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             print("Cells in the target : de {:} a {:}".format(
                 np.where(self.cell_in_target)[0][0], np.where(self.cell_in_target)[0][-1]))
         except IndexError:
-            # pour gï¿½rer  les exceptions oï¿½ il n'y a pas de projectile ou de target
-            # (cas tableau vide [index])
+            # case where no projectile or target exists.
+            # self.cell_in_projectile or self.cell_in_target arrays are empty
             pass
 
-        # correction de l'init si materiau projectile dï¿½clarï¿½ dans XDATA.json
-        # (le mask est vide si pas de projectile donc transparent quand il n'y a pas
-        # de projectile dÃ©clarÃ©)
+        # Initialisation of the projectile material data if a projectile exists in XDATA.json
+        # (mask is false everywhere if no projectile in the DataContainer
+        # => transparent operation if no projectile declared in the DC)
         if self.data.data_contains_a_projectile:
             material_data = self.data.material_projectile.initial_values
             self.density.current_value[self.cell_in_projectile] = material_data.rho_init

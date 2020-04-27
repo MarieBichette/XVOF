@@ -15,7 +15,7 @@ class PenaltyContactTest(unittest.TestCase):
     """
     def setUp(self):
         """
-        Initialisation des tests
+        Tests initialisation
         """
         self.test_penalty_contact = PenaltyContact(10.)
         self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5,
@@ -51,8 +51,5 @@ class PenaltyContactTest(unittest.TestCase):
         self.assertEqual(contact_force, -50.0)
 
 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# PROGRAMME PRINCIPAL
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 if __name__ == '__main__':
     unittest.main()

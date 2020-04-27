@@ -1,7 +1,6 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Implementing the OneDimensionEnrichedMassMatrix class with total lump
+Implementing the EnrichedMassMatrixLumpSum class with total lump
 """
 from xfv.src.mass_matrix.enriched_mass_matrix_lump import EnrichedMassMatrixLump
 

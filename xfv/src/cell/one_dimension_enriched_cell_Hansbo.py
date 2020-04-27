@@ -93,29 +93,40 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         """
         mask = disc.mask_ruptured_cell
         # Initialization of the current field value
-        self.additional_dof_density.current_value[mask] = np.copy(self.density.current_value[mask])
-        self.additional_dof_pressure.current_value[mask] = np.copy(self.pressure.current_value[mask])
+        self.additional_dof_density.current_value[mask] = \
+            np.copy(self.density.current_value[mask])
+        self.additional_dof_pressure.current_value[mask] = \
+            np.copy(self.pressure.current_value[mask])
         self.additional_dof_sound_velocity.current_value[mask] = \
             np.copy(self.sound_velocity.current_value[mask])
         self.additional_dof_energy.current_value[mask] = np.copy(self.energy.current_value[mask])
         self.additional_dof_artificial_viscosity.current_value[mask] = \
             np.copy(self.pseudo.current_value[mask])
-        self._additional_dof_deviatoric_stress_current[mask] = np.copy(self._deviatoric_stress_current[mask])
-        self.additional_dof_shear_modulus.current_value[mask] = np.copy(self.shear_modulus.current_value[mask])
-        self.additional_dof_yield_stress.current_value[mask] = np.copy(self.yield_stress.current_value[mask])
+        self._additional_dof_deviatoric_stress_current[mask] = \
+            np.copy(self._deviatoric_stress_current[mask])
+        self.additional_dof_shear_modulus.current_value[mask] = \
+            np.copy(self.shear_modulus.current_value[mask])
+        self.additional_dof_yield_stress.current_value[mask] = \
+            np.copy(self.yield_stress.current_value[mask])
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
         self.additional_dof_density.new_value[mask] = np.copy(self.density.new_value[mask])
         self.additional_dof_pressure.new_value[mask] = np.copy(self.pressure.new_value[mask])
-        self.additional_dof_sound_velocity.new_value[mask] = np.copy(self.sound_velocity.new_value[mask])
+        self.additional_dof_sound_velocity.new_value[mask] = \
+            np.copy(self.sound_velocity.new_value[mask])
         self.additional_dof_energy.new_value[mask] = np.copy(self.energy.new_value[mask])
-        self.additional_dof_artificial_viscosity.new_value[mask] = np.copy(self.pseudo.new_value[mask])
-        self.additional_dof_shear_modulus.new_value[mask] = np.copy(self.shear_modulus.new_value[mask])
-        self.additional_dof_yield_stress.new_value[mask] = np.copy(self.yield_stress.new_value[mask])
-        self._additional_dof_deviatoric_stress_new[mask] = np.copy(self._deviatoric_stress_new[mask])
+        self.additional_dof_artificial_viscosity.new_value[mask] = \
+            np.copy(self.pseudo.new_value[mask])
+        self.additional_dof_shear_modulus.new_value[mask] = \
+            np.copy(self.shear_modulus.new_value[mask])
+        self.additional_dof_yield_stress.new_value[mask] = \
+            np.copy(self.yield_stress.new_value[mask])
+        self._additional_dof_deviatoric_stress_new[mask] = \
+            np.copy(self._deviatoric_stress_new[mask])
         # Other quantities initialization
-        self._additional_dof_deviatoric_strain_rate[mask] = np.copy(self._deviatoric_strain_rate[mask])
+        self._additional_dof_deviatoric_strain_rate[mask] = \
+            np.copy(self._deviatoric_strain_rate[mask])
         self._additional_dof_stress[mask] = np.copy(self._stress[mask])
         self._additional_dof_equivalent_plastic_strain_rate[mask] = \
             np.copy(self._equivalent_plastic_strain_rate[mask])
@@ -123,9 +134,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
     def reconstruct_enriched_hydro_field(self, classical_field: Field, enriched_field_name: str):
         """
         True field reconstruction from the classical and enriched fields
-        :param classical_field: champ classique
-        :param enriched_field_name: champ enrichi
-        :return: champ complet
+        :param classical_field: classical field
+        :param enriched_field_name: name of the enriched field
+        :return: complete field
         :rtype np.array
         """
         # To build the coordinates of cell field, the cracked cells of discontinuities must be
@@ -141,12 +152,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
             offset += 1
         return res
 
-    def reconstruct_enriched_elasto_field(self, classical_field, enriched_field_name):
+    def reconstruct_enriched_elasto_field(self, classical_field: np.array,
+                                          enriched_field_name: str):
         """
         True field reconstruction from the classical and enriched fields
-        :param classical_field: champ classique de type np.array
-        :param enriched_field_name: champ enrichi (str)
-        :return: champ complet
+        :param classical_field: classical field
+        :param enriched_field_name: name of the enriched field
+        :return: complete field
         :rtype np.array
         """
         # To build the coordinates of cell field, the cracked cells of discontinuities must be
@@ -495,7 +507,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         :param delta_t: time_step
         """
         mask = self.enriched
-        # Partie gauche :
+        # Left part :
         density_left = self.density.current_value[mask]
         density_left_new = self.density.new_value[mask]
         sound_velocity_left = self.sound_velocity.current_value[mask]
@@ -504,7 +516,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
                                                       size_left, sound_velocity_left,
                                                       self.data.numeric.a_pseudo,
                                                       self.data.numeric.b_pseudo)
-        # Partie droite :
+        # Right part :
         density_right = self.additional_dof_density.current_value[mask]
         density_right_new = self.additional_dof_density.new_value[mask]
         sound_velocity_right = self.additional_dof_sound_velocity.current_value[mask]
@@ -585,7 +597,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         self.compute_enriched_shear_modulus()
         # Left part
         mask = self.enriched
-        G = self.shear_modulus.new_value[mask]
+        G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
         self._deviatoric_stress_new[mask, 0] = self._deviatoric_stress_current[mask, 0] + \
             2. * G * self._deviatoric_strain_rate[mask, 0] * dt
         self._deviatoric_stress_new[mask, 1] = self._deviatoric_stress_current[mask, 1] + \
@@ -593,7 +605,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         self._deviatoric_stress_new[mask, 2] = self._deviatoric_stress_current[mask, 2] + \
             2. * G * self._deviatoric_strain_rate[mask, 2] * dt
         # Right part
-        Gd = self.additional_dof_shear_modulus.new_value[mask]
+        Gd = self.additional_dof_shear_modulus.new_value[mask]  # pylint: disable=invalid-name
         self._additional_dof_deviatoric_stress_new[mask, 0] = \
             self.additional_dof_deviatoric_stress_current[mask, 0] + \
             2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 0] * dt

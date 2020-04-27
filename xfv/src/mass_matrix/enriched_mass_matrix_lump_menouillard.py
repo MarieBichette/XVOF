@@ -1,4 +1,3 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
 Implementing the EnrichedMassMatrixLumpMenouillard class for the enriched mass matrix with
@@ -9,7 +8,7 @@ from xfv.src.mass_matrix.enriched_mass_matrix_lump import EnrichedMassMatrixLump
 
 class EnrichedMassMatrixLumpMenouillard(EnrichedMassMatrixLump):
     """
-    A class for the enriched mass matrix for
+    A class for the lumped enriched mass matrix for Menouillard lumping
     """
     def __init__(self):
         """

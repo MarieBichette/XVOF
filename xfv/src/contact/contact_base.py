@@ -28,6 +28,5 @@ class ContactBase(object, metaclass=ABCMeta):
         :param node_force : node force array
         :param disc: discontinuity to examine
         :param delta_t : time step
-        :param section : section of the bar
         """
         pass

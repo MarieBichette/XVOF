@@ -118,10 +118,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         disc.additional_dof_velocity_current[1] = np.copy(self.umundemi[disc.mask_in_nodes])  # 1+
         disc.additional_dof_velocity_new[0] = np.copy(self.upundemi[disc.mask_out_nodes])  # 2-
         disc.additional_dof_velocity_new[1] = np.copy(self.upundemi[disc.mask_in_nodes])  # 1+
-        # disc.additional_dof_velocity_current[0] = 0.  # 2-
-        # disc.additional_dof_velocity_current[1] = 0.  # 1+
-        # disc.additional_dof_velocity_new[0] = 0.  # 2-
-        # disc.additional_dof_velocity_new[1] = 0.  # 1+
         # Coordinates
         disc.additional_dof_coordinates_current[0] = np.copy(self.xt[disc.mask_out_nodes])  # 2-
         disc.additional_dof_coordinates_current[1] = np.copy(self.xt[disc.mask_in_nodes])  # 1+
@@ -200,8 +196,3 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         disc.additional_dof_force[np.array([True, False])] += epsilon * applied_force  # F2-
         self._force[disc.mask_out_nodes] -= epsilon * applied_force  # F2+
         disc.additional_dof_force[np.array([False, True])] -= (1. - epsilon) * applied_force  # F1+
-
-        # self._force[disc.mask_in_nodes] += applied_force  # F1-
-        # disc.additional_dof_force[np.array([True, False])] += applied_force  # F2-
-        # self._force[disc.mask_out_nodes] -= applied_force  # F2+
-        # disc.additional_dof_force[np.array([False, True])] -= applied_force  # F1+

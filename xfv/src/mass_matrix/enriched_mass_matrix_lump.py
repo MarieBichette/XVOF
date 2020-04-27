@@ -1,7 +1,6 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
-Implementing the OneDimensionEnrichedMassMatrix class
+Implementing the EnrichedMassMatrixLump class
 """
 import numpy as np
 from abc import abstractmethod
@@ -12,12 +11,11 @@ from xfv.src.mass_matrix.mass_matrix_utilities import inverse_masse
 
 class EnrichedMassMatrixLump(EnrichedMassMatrix):
     """
-    A class for the enriched mass matrix for
+    A class for the lumped enriched mass matrix
     """
     def __init__(self):
         """
         Build the class
-        :param lump: choice of mass lumping
         """
         matrix_size = 4
         super(EnrichedMassMatrixLump, self).__init__(matrix_size)

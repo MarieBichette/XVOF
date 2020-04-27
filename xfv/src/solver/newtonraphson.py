@@ -32,9 +32,6 @@ class NewtonRaphson(NewtonRaphsonBase):
         """
         # This case should never append but has been discovered in Unittests...
         if init_variable.size == 0:
-            # msg = ("Initialization variable for Newton has null size. "
-            #        "Impossible to start Newton procedure.")
-            # raise ValueError(msg)
             return init_variable
 
         # Newton's variable
