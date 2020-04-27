@@ -257,7 +257,6 @@ def main(directory: Path) -> None:
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         the_output_mng.update(simulation_time, step,
-                              data.material_target.failure_model.type_of_enrichment,
                               data.material_target.failure_model.failure_treatment_value)
         the_figure_mng.update(simulation_time, step)
         # ---------------------------------------------#

@@ -142,7 +142,7 @@ class OutputManager(object, metaclass=Singleton):
                                 ("discontinuity_opening", "current_value"),
                                 database_names=[database_id])
 
-    def update(self, time, iteration, type_of_enrichment, eps):
+    def update(self, time, iteration, eps):
         """
         If the current time given in argument is above the time of next output then
         the manager asks each of its database to save fields. It's the same for
@@ -190,7 +190,7 @@ class OutputManager(object, metaclass=Singleton):
 
                             build_infos.database_object.add_field(
                                 field.name, enr_field,
-                                support="Discontinuity", enrichment=type_of_enrichment,
+                                support="Discontinuity", enrichment="Hansbo",
                                 discontinuity_position=eps)
 
                     # Case : enriched disc field (node and cohesive) -------------------------
@@ -226,7 +226,7 @@ class OutputManager(object, metaclass=Singleton):
                             build_infos.database_object.add_field(field.name,
                                                                   np.array(disc_field_collec),
                                                                   support="Discontinuity",
-                                                                  enrichment=type_of_enrichment,
+                                                                  enrichment="Hansbo",
                                                                   discontinuity_position=eps)
                             # todo : faire passer la position de la disc. dans le tableau de
                             #  donnees car peut varier
