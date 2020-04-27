@@ -5,8 +5,8 @@
 one_dimension_cell module unit tests
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 

@@ -4,8 +4,8 @@
 Cell module unit tests
 """
 import unittest
-import os
 import unittest.mock as mock
+import os
 import numpy as np
 
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell

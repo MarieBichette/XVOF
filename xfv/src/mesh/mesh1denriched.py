@@ -14,7 +14,7 @@ from xfv.src.contact.contact_base import ContactBase
 
 
 # noinspection PyArgumentList
-class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
+class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-public-methods
     """
     This class defines a one dimensional mesh with potential enrichment
     """

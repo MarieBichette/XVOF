@@ -6,7 +6,7 @@ Classe gérant la topologie du maillage
 import numpy as np
 
 
-class Topology(object):
+class Topology:
     """
     Une classe gérant la topologie et les connectivités d'un maillage
     """
@@ -85,4 +85,3 @@ class Topology(object):
         :rtype: numpy.array
         """
         return self._cells_in_contact_with_node[ind_node]
-

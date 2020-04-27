@@ -4,14 +4,17 @@
 one_dimension_cell module unit tests
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionCellElastoTest(unittest.TestCase):
+    """
+    A class to test the OneDimensionCell module with elasticity physic
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -51,10 +54,10 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                                          [400., -200., -200.]])
 
         self.my_cells._deviatoric_strain_rate = \
-            np.array([[-0.235294,  0.117647,  0.117647],
+            np.array([[-0.235294, 0.117647, 0.117647],
                       [0.4444444, -0.2222222, -0.2222222],
-                      [0.,  0.,  0.],
-                      [0.,  0.,  0.]])
+                      [0., 0., 0.],
+                      [0., 0., 0.]])
 
         self.my_cells.density.new_value = np.array([8940., 8970, 8920., 9000.])
         self.my_cells.sound_velocity.new_value = np.zeros([self.nbr_cells])
@@ -128,9 +131,9 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         self.my_cells.compute_deviatoric_stress_tensor(mask, topo_ex, coord_noeud_new,
                                                        vitesse_noeud_new, delta_t)
         np.testing.assert_allclose(self.my_cells._deviatoric_stress_new,
-                                   np.array([[1999.058824,  -999.529412,  -999.529412],
-                                             [53.555556,   -26.777778,   -26.777778],
-                                             [1010.66666667,  -505.33333333,  -505.33333333],
+                                   np.array([[1999.058824, -999.529412, -999.529412],
+                                             [53.555556, -26.777778, -26.777778],
+                                             [1010.66666667, -505.33333333, -505.33333333],
                                              [0., 0., 0.]]), rtol=1.e-05)
 
     def test_compute_deviator_strain_rate(self):
@@ -147,7 +150,7 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         self.my_cells.compute_deviator_strain_rate(mask, delta_t, topo_ex, coord_noeud_new,
                                                    vitesse_noeud_new)
         np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
-                                   np.array([[-0.235294,  0.117647,  0.117647],
+                                   np.array([[-0.235294, 0.117647, 0.117647],
                                              [0.4444444, -0.2222222, -0.2222222],
                                              [0., 0., 0.], [0., 0., 0.]]), rtol=1.e-05)
 

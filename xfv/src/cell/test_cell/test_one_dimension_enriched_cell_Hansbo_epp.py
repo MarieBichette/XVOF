@@ -5,8 +5,8 @@ Cell module unit tests
 """
 import unittest
 import unittest.mock as mock
-import numpy as np
 import os
+import numpy as np
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
@@ -129,7 +129,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                                       self.my_cells.additional_dof_pressure.new_value,\
                                       self.my_cells.additional_dof_sound_velocity.new_value
         mock_add_elasticity.return_value = self.my_cells.energy.new_value
-        dt = 1
+        dt = 1  # pylint: disable=invalid-name
 
         self.my_cells.compute_enriched_elements_new_pressure(dt)
 
@@ -157,7 +157,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
         vecteur_vitesse_noeuds = np.array([[0.1, ], [0.15, ]])
-        dt = 1.
+        dt = 1.  # pylint: disable=invalid-name
         mock_disc_border_velocity.return_value = np.array([-0.05]), np.array([0.05])
 
         self.my_cells.compute_enriched_elements_new_part_size(dt, vecteur_vitesse_noeuds)
@@ -180,7 +180,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Test de compute_enriched_element_new_pseudo method
         """
         mock_compute_pseudo.return_value = np.array([1.2])
-        dt = 1.
+        dt = 1.  # pylint: disable=invalid-name
 
         self.my_cells.compute_enriched_elements_new_pseudo(dt)
 
@@ -248,7 +248,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Test de la m�thode compute_enriched_deviatoric_strain_rate
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
-        dt = 1.
+        dt = 1.  # pylint: disable=invalid-name
         node_coord_new = np.array([[0.,], [1.,]])
         node_velocity_new = np.array([[-1, ], [1., ]])
         u_disc_g = np.array([-0.5])
@@ -273,7 +273,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Test de la m�thode compute_enriched_deviatoric_stress_tensor
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
-        dt = 1.
+        dt = 1.  # pylint: disable=invalid-name
         coord_noeud_new = np.array([[-1.], [0, ]])
         vitesse_noeud_new = np.array([[50, ], [-20, ]])
         # Mock topo :
@@ -318,7 +318,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Test de la m�thode compute_enriched_equivalent_plastic_strain_rate
         """
         mask = np.array([True])
-        dt = 1.
+        dt = 1.  # pylint: disable=invalid-name
         self.my_cells.plastic_cells = np.array([True])
         exact_equivalent_plastic_strain_rate_left = np.array([0.66666666666666663])
         exact_equivalent_plastic_strain_rate_right = np.array([0.33333333333333331])

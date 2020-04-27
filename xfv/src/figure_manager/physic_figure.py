@@ -1,12 +1,9 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
 Class to define a figure
 """
-import matplotlib.pyplot as plt
 from os import sep
-import numpy as np
-from xfv.src.data.data_container import DataContainer
+import matplotlib.pyplot as plt
 
 
 class PhysicFigure:

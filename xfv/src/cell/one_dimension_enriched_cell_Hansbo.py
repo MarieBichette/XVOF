@@ -2,8 +2,8 @@
 """
 Implementing the Element1dEnriched class for Hansbo&Hansbo enrichment
 """
-import numpy as np
 import os
+import numpy as np
 
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.discontinuity.discontinuity import Discontinuity
@@ -12,7 +12,7 @@ from xfv.src.fields.field import Field
 
 
 # noinspection PyArgumentList
-class OneDimensionHansboEnrichedCell(OneDimensionCell):
+class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-many-public-methods
     """
     A collection of 1d enriched elements. Treatment for Hansbo enrichment
     """
@@ -30,8 +30,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         u2d = node_velocity[disc.mask_out_nodes]
         u2g = disc.additional_dof_velocity_new[0]
         u1d = disc.additional_dof_velocity_new[1]
-        ug = u2g * epsilon + u1g * (1. - epsilon)
-        ud = u2d * epsilon + u1d * (1. - epsilon)
+        ug = u2g * epsilon + u1g * (1. - epsilon)  # pylint: disable=invalid-name
+        ud = u2d * epsilon + u1d * (1. - epsilon)  # pylint: disable=invalid-name
         return ug, ud
 
     def __init__(self, number_of_elements: int):
@@ -547,7 +547,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
             (self.additional_dof_pressure.new_value[mask] +
              self.additional_dof_artificial_viscosity.new_value[mask])
 
-    def compute_enriched_deviatoric_strain_rate(self, dt, node_coord_new, node_velocity_new):
+    def compute_enriched_deviatoric_strain_rate(self, dt,  # pylint: disable=invalid-name
+                                                node_coord_new,
+                                                node_velocity_new):
         """
         Compute devaiateur du taux de dï¿½formation
         :param dt : time step
@@ -585,7 +587,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
                 OneDimensionCell.general_method_deviator_strain_rate(
                 np.array([True]), dt, xd_new, ud_new)  # np.array(True) to be consistent
 
-    def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new, dt):
+    def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new,
+                                                  dt):  # pylint: disable=invalid-name
         """
         Compute the deviatoric part of the stress tensor
         :param node_coord_new : array, new nodes coordinates
@@ -649,7 +652,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         self._additional_dof_deviatoric_stress_new[self.plastic_cells, 1] *= radial_return_right
         self._additional_dof_deviatoric_stress_new[self.plastic_cells, 2] *= radial_return_right
 
-    def compute_enriched_equivalent_plastic_strain_rate(self, mask_p, dt):
+    def compute_enriched_equivalent_plastic_strain_rate(self, mask_p,
+                                                        dt):  # pylint: disable=invalid-name
         """
         Compute the plastic strain rate
         :param dt : time step
@@ -671,7 +675,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):
         self._additional_dof_equivalent_plastic_strain_rate[self.plastic_cells] += \
             (invariant_j2_el_right - yield_stress_right) / (3. * shear_mod_right * dt)
 
-    def compute_enriched_plastic_strain_rate(self, mask_p, dt):
+    def compute_enriched_plastic_strain_rate(self, mask_p, dt):  # pylint: disable=invalid-name
         """
         Compute the plastic strain rate tensor from elastic prediction and radial return
         (normal law for Von Mises plasticity) in cracked cells

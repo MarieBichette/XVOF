@@ -1,14 +1,13 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe de base définissant une méthode d'incrémentation
+Classe de base dÃ©finissant une mÃ©thode d'incrÃ©mentation
 """
 from abc import ABCMeta, abstractmethod
 
 
-class NewtonRaphsonIncrementBase(object, metaclass=ABCMeta):
+class NewtonRaphsonIncrementBase(metaclass=ABCMeta):
     """
-    Classe base définissant une méthode d'incrémentation
+    Classe base dÃ©finissant une mÃ©thode d'incrÃ©mentation
     """
 
     def __init__(self):
@@ -17,6 +16,6 @@ class NewtonRaphsonIncrementBase(object, metaclass=ABCMeta):
     @abstractmethod
     def computeIncrement(self, function_value, derivative_function_value):
         """
-        Calcul de l'incrément
+        Calcul de l'incrÃ©ment
         """
         raise NotImplementedError

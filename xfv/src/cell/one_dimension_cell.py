@@ -14,7 +14,7 @@ from xfv.src.utilities.stress_invariants_calculation import compute_second_invar
 
 
 # noinspection PyArgumentList
-class OneDimensionCell(Cell):
+class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     """
     A class for one dimension cells
     """
@@ -58,7 +58,8 @@ class OneDimensionCell(Cell):
         return energy_new_value, pressure_new_value, sound_velocity_new_value
 
     @classmethod
-    def add_elastic_energy_method(cls, dt, density_current, density_new,
+    def add_elastic_energy_method(cls, dt,  # pylint: disable=invalid-name
+                                  density_current, density_new,
                                   stress_dev_current, stress_dev_new, strain_rate_dev):
         """
         Take into account the additional term in internal energy due to elasticity
@@ -75,7 +76,8 @@ class OneDimensionCell(Cell):
         return energy_new_value
 
     @classmethod
-    def general_method_deviator_strain_rate(cls, mask, dt, x_new, u_new):
+    def general_method_deviator_strain_rate(cls, mask, dt,  # pylint: disable=invalid-name
+                                            x_new, u_new):
         """
         Compute the deviator of strain rate tensor (defined at the center of the cell)
         from the coordinates and velocities interpolated at the center of the cell
@@ -299,7 +301,7 @@ class OneDimensionCell(Cell):
         vson_n = n_sound_speed[0:pb_size.value]
         return energy_n, pressure_n, vson_n
 
-    def compute_new_pressure(self, mask, dt):
+    def compute_new_pressure(self, mask, dt):  # pylint: disable=invalid-name
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
         """
@@ -438,7 +440,7 @@ class OneDimensionCell(Cell):
         self._stress += self._deviatoric_stress_new
 
     def compute_deviatoric_stress_tensor(self, mask, topology, node_coord_new,
-                                         node_velocity_new, dt):
+                                         node_velocity_new, dt):  # pylint: disable=invalid-name
         """
         Compute the deviatoric part of the stress tensor
         :param mask : mask to select classical cells
@@ -467,7 +469,8 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] -= 1./3. * trace
 
-    def compute_deviator_strain_rate(self, mask, dt, topology, node_coord_new, node_velocity_new):
+    def compute_deviator_strain_rate(self, mask, dt,  # pylint: disable=invalid-name
+                                     topology, node_coord_new, node_velocity_new):
         """
         Compute deviateur du taux de dï¿½formation
         :param mask : mask to select classical cells
@@ -498,7 +501,7 @@ class OneDimensionCell(Cell):
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] *= radial_return
 
-    def compute_plastic_strain_rate_tensor(self, mask, dt):
+    def compute_plastic_strain_rate_tensor(self, mask, dt):  # pylint: disable=invalid-name
         """
         Compute the plastic strain rate tensor from elastic prediction and radial return
         (normal law for Von Mises plasticity)
@@ -514,7 +517,7 @@ class OneDimensionCell(Cell):
                 (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
                 (radial_return * 3 * shear_modulus * dt)
 
-    def compute_equivalent_plastic_strain_rate(self, mask, dt):
+    def compute_equivalent_plastic_strain_rate(self, mask, dt):  # pylint: disable=invalid-name
         """
         Compute the plastic strain rate
         :param mask: array of bool to select cells of interest
