@@ -21,7 +21,7 @@ class MatrixUtliitiesTest(unittest.TestCase):
         self._test_matrix = np.array([[1., 2.], [1., 4.]])
         self._test_vecteur = np.array([1., 2.])
 
-    def test_inverseMasse(self):
+    def test_inverse_masse(self):
         """
         Test de la méthode inverse_masse
         """

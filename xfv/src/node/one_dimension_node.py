@@ -151,4 +151,3 @@ class OneDimensionNode(Node):
         :return:
         """
         self._upundemi[ind_node] = velocity
-

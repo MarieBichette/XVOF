@@ -136,4 +136,3 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         print(lign_1)
         print(lign_2)
         print(lign_3)
-

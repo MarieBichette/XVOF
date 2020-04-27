@@ -9,7 +9,7 @@ import numpy as np
 from xfv.src.data.data_container import DataContainer
 
 
-class PhysicFigure(object):
+class PhysicFigure:
     """
     Figure
     """
@@ -70,5 +70,3 @@ class PhysicFigure(object):
             with open(data_path, "w") as fo:
                 for a, b in zip(X, Y):
                     fo.write("{:20.18g}{:s}{:20.18g}\n".format(float(a), " ", float(b)))
-
-

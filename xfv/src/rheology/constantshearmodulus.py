@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Implementation d'une classe de module de cisaillement constant
+Implementation of the ConstantShearModulus class
 """
 
 from xfv.src.rheology.shearmodulus import ShearModulus
