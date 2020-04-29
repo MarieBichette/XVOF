@@ -22,7 +22,7 @@ class CohesiveZoneModelProps(TypeCheckedDataClass):
         """
         Build the cohesive law that is needed by the CohesiveModel
         """
-        raise NotImplementedError("This is an astract method!")
+        raise NotImplementedError("This is an abstract method!")
 
     def build_cohesive_model_obj(self):
         """
@@ -34,6 +34,7 @@ class CohesiveZoneModelProps(TypeCheckedDataClass):
 
 @dataclass  # pylint: disable=missing-class-docstring
 class LinearCohesiveZoneModelProps(CohesiveZoneModelProps):
+
     def _build_cohesive_law(self):
         return np.array([
             [0, self.cohesive_strength],

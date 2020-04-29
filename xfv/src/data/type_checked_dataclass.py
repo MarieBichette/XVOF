@@ -66,3 +66,9 @@ class TypeCheckedDataClass:
             raise ValueError(f"{val} not in {authorized_values}!"
                              f"Please provide a value in {authorized_values} for "
                              f"the coefficient {field_name}")
+
+    def _ensure_defined(self, field_name, class_name, json_path):
+        val = getattr(self, field_name)
+        if val is None:
+            raise ValueError(f"Missing value {json_path} in data file. "
+                             f"Cannot build the {field_name} field for class {class_name}")

@@ -71,8 +71,7 @@ def run():
         velocity = item_history[:, 1]
         time_0 = 0.
         if args.shift_t0:
-            velocity_is_not_zero = np.where(velocity > 1)  # 1 m/s is ok to detect non zero velocity
-            time_0 = time[np.where(velocity_is_not_zero)[0]][0]  # 1st time where non zero velocity
+            time_0 = time[velocity > 1][0]  # 1st time where non zero velocity
             if args.verbose:
                 print("New t0 is : " + str(time_0))
         plt.plot((time - time_0) * 1.e+6, velocity, label=case)

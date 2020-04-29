@@ -55,6 +55,28 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         self.my_cells._deviatoric_stress_new = np.array([[4., 5., 6.]])
         self.my_cells._deviatoric_strain_rate = np.array([[1., 1., 1.]])
 
+        self.my_cells.additional_dof_density.current_value = np.array([4000.])
+        self.my_cells.additional_dof_density.new_value = np.array([4020.])
+        self.my_cells.additional_dof_pressure.current_value = np.array([1.1e+09])
+        self.my_cells.additional_dof_pressure.new_value = np.array([1.3e+09])
+        self.my_cells.additional_dof_energy.current_value = np.array([1.e+06])
+        self.my_cells.additional_dof_energy.new_value = np.array([0.8e+06])
+        self.my_cells.additional_dof_artificial_viscosity.current_value = np.array([1.e+08])
+        self.my_cells.additional_dof_artificial_viscosity.new_value = np.array([1.e+08])
+        self.my_cells.additional_dof_sound_velocity.current_value = np.array([300.])
+        self.my_cells.additional_dof_sound_velocity.new_value = np.array([302.])
+        self.my_cells._additional_dof_deviatoric_stress_current = np.array([[3., 2., 1.],])
+        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.],])
+        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.], ])
+        self.my_cells._additional_dof_deviatoric_strain_rate = np.array([[4., 3., 8.],])
+        self.my_cells.additional_dof_yield_stress.current_value = np.array([10.])
+        self.my_cells._additional_dof_equivalent_plastic_strain_rate = np.array([0.])
+        self.my_cells._additional_dof_stress = np.array([[0., 0., 0.]])
+        self.my_cells.left_part_size.current_value = np.array([0.2])
+        self.my_cells.right_part_size.current_value = np.array([0.3])
+        self.my_cells.left_part_size.new_value = np.array([0.4])
+        self.my_cells.right_part_size.new_value = np.array([0.6])
+
         # configuration d'un mock 'discontinuity'
         config = {'mask_in_nodes': np.array([True, False]),
                   'mask_out_nodes': np.array([False, True]),
@@ -62,78 +84,51 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                       DataContainer().material_target.failure_model.failure_treatment_value),
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': np.array([0]),
-                  'plastic_cells': False,
-                  'additional_dof_density.current_value':np.array([4000.]),
-                  'additional_dof_density.new_value': np.array([4020.]),
-                  'additional_dof_pressure.current_value': np.array([1.1e+09]),
-                  'additional_dof_pressure.new_value': np.array([1.3e+09]),
-                  'additional_dof_energy.current_value': np.array([1.e+06]),
-                  'additional_dof_energy.new_value': np.array([0.8e+06]),
-                  'additional_dof_artificial_viscosity.current_value': np.array([1.e+08]),
-                  'additional_dof_artificial_viscosity.new_value': np.array([1.e+08]),
-                  'additional_dof_sound_velocity.current_value': np.array([300.]),
-                  'additional_dof_sound_velocity.new_value': np.array([302.]),
-                  'additional_dof_deviatoric_stress_current': np.array([[3., 2., 1.],]),
-                  'additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.],]),
-                  '_additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.], ]),
-                  'additional_dof_deviatoric_strain_rate': np.array([[4., 3., 8.],]),
-                  'additional_dof_yield_stress.current_value': np.array([10.]),
-                  '_additional_dof_equivalent_plastic_strain_rate': np.array([0.]),
-                  'additional_dof_velocity_new': np.array([[1., ], [3., ]]),
-                  'additional_dof_stress': np.array([[0., 0., 0.]]),
-                  'left_part_size.current_value': np.array([0.2]),
-                  'right_part_size.current_value': np.array([0.3]),
-                  'left_part_size.new_value': np.array([0.4]),
-                  'right_part_size.new_value': np.array([0.6]),
+                  'plastic_cells': np.array([False]),
+                  'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                  }
         patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()
 
-    def tearDown(self):
-        pass
+    def test_classical(self):
+        """
+        Test of the property classical
+        """
+        np.testing.assert_array_equal(self.my_cells.classical, np.zeros([1], dtype="bool"))
 
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
+    def test_enriched(self):
+        """
+        Test of the property enriched
+        """
+        np.testing.assert_array_equal(self.my_cells.enriched, np.ones([1], dtype="bool"))
+
     @mock.patch.object(OneDimensionCell, "apply_equation_of_state",
                        spec=classmethod, new_callable=mock.MagicMock)
     @mock.patch.object(OneDimensionCell, "add_elastic_energy_method",
                        spec=classmethod, new_callable=mock.MagicMock)
     def test_compute_enriched_elements_new_pressure_without_elasticity(
-            self, mock_elasto, mock_eos, mock_disc):  #pylint: disable=unused-argument
+            self, mock_elasto, mock_eos):  #pylint: disable=unused-argument
         """
         Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """
         # Configuration des mocks
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        mock_eos.side_effect = [[self.my_cells.energy.new_value,
-                                 self.my_cells.pressure.new_value,
-                                 self.my_cells.sound_velocity.new_value],
-                                [self.mock_discontinuity.additional_dof_energy.new_value,
-                                 self.mock_discontinuity.additional_dof_pressure.new_value,
-                                 self.mock_discontinuity.additional_dof_sound_velocity.new_value]]
-        # mock_eos.return_value =
+        mock_eos.side_effect = [[self.my_cells.additional_dof_energy.new_value,
+                                 self.my_cells.additional_dof_pressure.new_value,
+                                 self.my_cells.additional_dof_sound_velocity.new_value]]
 
         self.my_cells.compute_enriched_elements_new_pressure(1.)
 
-        eos = DataContainer().material_target.constitutive_model.eos.build_eos_obj()
-
         mock_eos.assert_any_call(
-            self.my_cells, eos,
-            self.my_cells.density.current_value, self.my_cells.density.new_value,
-            self.my_cells.pressure.current_value, self.my_cells.pressure.new_value,
-            self.my_cells.energy.current_value, self.my_cells.energy.new_value,
-            self.my_cells.pseudo.current_value, self.my_cells.sound_velocity.new_value)
-
-        mock_eos.assert_any_call(
-            self.my_cells, eos,
-            self.mock_discontinuity.additional_dof_density.current_value,
-            self.mock_discontinuity.additional_dof_density.new_value,
-            self.mock_discontinuity.additional_dof_pressure.current_value,
-            self.mock_discontinuity.additional_dof_pressure.new_value,
-            self.mock_discontinuity.additional_dof_energy.current_value,
-            self.mock_discontinuity.additional_dof_energy.new_value,
-            self.mock_discontinuity.additional_dof_artificial_viscosity.current_value,
-            self.mock_discontinuity.additional_dof_sound_velocity.new_value)
+            self.my_cells, self.my_cells._target_eos,
+            self.my_cells.additional_dof_density.current_value,
+            self.my_cells.additional_dof_density.new_value,
+            self.my_cells.additional_dof_pressure.current_value,
+            self.my_cells.additional_dof_pressure.new_value,
+            self.my_cells.additional_dof_energy.current_value,
+            self.my_cells.additional_dof_energy.new_value,
+            self.my_cells.additional_dof_artificial_viscosity.current_value,
+            self.my_cells.additional_dof_sound_velocity.new_value)
 
 
 if __name__ == "__main__":

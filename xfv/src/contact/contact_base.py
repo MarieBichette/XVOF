@@ -19,7 +19,8 @@ class ContactBase(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity, delta_t: float):
+    def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity,
+                              delta_t: float) -> float:
         """
         Checks if contact and apply correction
         :param node_coord: node coordinates array
@@ -27,6 +28,5 @@ class ContactBase(object, metaclass=ABCMeta):
         :param node_force : node force array
         :param disc: discontinuity to examine
         :param delta_t : time step
-        :param section : section of the bar
         """
         pass

@@ -32,23 +32,25 @@ class CohesiveZoneModel:
         cohesive_force = 0.
         new_opening = disc.discontinuity_opening.new_value[0]
 
-        if disc.damage_variable.current_value[0] < 1:
-            if new_opening < disc.history_max_opening:
-                cohesive_force = \
-                    self._unloading_model.compute_unloading_reloading_condition(disc, new_opening)
+        if new_opening <= 0.:
+            cohesive_force = 0.
 
-            elif disc.history_max_opening <= new_opening < self._critical_separation:
-                cohesive_force = self._cohesive_law.compute_cohesive_force(new_opening)
-                # Update the discontinuity indicators
-                disc.history_max_opening = max(abs(disc.history_max_opening), max(new_opening))
-                disc.history_min_cohesive_force = \
-                    self._cohesive_law.compute_cohesive_force(disc.history_max_opening)
-                disc.damage_variable.new_value = new_opening / self._critical_separation
+        elif 0. < new_opening < disc.history_max_opening:
+            cohesive_force = \
+                self._unloading_model.compute_unloading_reloading_condition(disc, new_opening)
 
-            if new_opening >= self._critical_separation:
-                disc.damage_variable.new_value = 1.
-                cohesive_force = 0.
-                disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
-                disc.history_min_cohesive_force = 0.
+        elif disc.history_max_opening <= new_opening < self._critical_separation:
+            cohesive_force = self._cohesive_law.compute_cohesive_force(new_opening)
+            # Update the discontinuity indicators
+            disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
+            disc.history_min_cohesive_force = \
+                self._cohesive_law.compute_cohesive_force(disc.history_max_opening)
+            disc.damage_variable.new_value = new_opening / self._critical_separation
+
+        elif new_opening >= self._critical_separation:
+            disc.damage_variable.new_value = 1.
+            cohesive_force = 0.
+            disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
+            disc.history_min_cohesive_force = 0.
 
         return cohesive_force

@@ -4,7 +4,7 @@
 Module définissant la classe Node1d
 """
 import numpy as np
-from xfv.src.mass_matrix.mass_matrix_utilities import multiplicationMasse
+from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
 from xfv.src.data.data_container import DataContainer
 from xfv.src.node import Node
 
@@ -74,26 +74,30 @@ class OneDimensionNode(Node):
         message = "==> section = {:5.4g}".format(self.section)
         print(message)
 
-    def compute_new_force(self, topologie, contrainte):
+    def compute_new_force(self, topologie, contrainte, classical_cell: np.array):
         """
         Calcul des forces agissant sur les noeuds
         :param topologie: topologie du calcul
         :param contrainte : tenseur des contriante de cauchy sigma xx
+        :param classical_cell: masks of the classical cells
         :type topologie: Topology
         :type contrainte: numpy.array([nbr_of_node-1, 1], dtype=np.float64, order='C')
         """
-        # Suppose les éléments voisins triés par position croissante
-        connectivity = topologie.cells_in_contact_with_node[1:-1]
-        self._force[1:-1][:, 0] = (contrainte[connectivity][:, 1] -
-                                   contrainte[connectivity][:, 0]) * self.section
+        # Initialize node force to 0 because nodes force is now calculated with +=
+        self._force = np.zeros_like(self._force)
 
-        ind_node = 0
-        elements_voisins = topologie.get_cells_in_contact_with_node(ind_node)
-        self._force[ind_node] = contrainte[elements_voisins][1] * self.section
-
-        ind_node = self.number_of_nodes - 1
-        elements_voisins = topologie.get_cells_in_contact_with_node(ind_node)
-        self._force[ind_node] = -contrainte[elements_voisins][0] * self.section
+        # For a node, force = stress on cell right - stress on cell left
+        for cell_index in np.where(classical_cell)[0]:
+            # Each cell gives a contribution to the force on node left and node right
+            cell_connectivity = topologie.get_nodes_belonging_to_cell(cell_index)
+            node_left = cell_connectivity[0]
+            node_right = cell_connectivity[1]
+            # if node is on left of the cell, cell is on right of the node
+            if node_left != -1:
+                self._force[node_left] += contrainte[cell_index] * self.section
+            # if node is on right of the cell, cell is on left of the node
+            if node_right != -1:
+                self._force[node_right] -= contrainte[cell_index] * self.section
 
     def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
@@ -110,7 +114,7 @@ class OneDimensionNode(Node):
         # ddl classique de noeud classique (sauf 0 1 2 3 quand enrichissement)
         # = noeuds classiques non concernés par l'enrichissement
         self._upundemi[mask] = self._umundemi[mask] + \
-                               multiplicationMasse(matrice_masse, self.force[mask]) * delta_t
+                               multiplication_masse(matrice_masse, self.force[mask]) * delta_t
 
     def compute_complete_velocity_field(self):
         """
@@ -124,10 +128,10 @@ class OneDimensionNode(Node):
         Apply a correction on velocity field to compute velocity from exact(non lumped)
         mass matrix for elements in mask
         """
-        self._upundemi[mask] += multiplicationMasse(inv_complete_mass_matrix,
-                                                    self.force[mask]) * delta_t
-        self._upundemi[mask] -= multiplicationMasse(inv_wilkins_mass_matrix,
-                                                    self.force[mask]) * delta_t
+        self._upundemi[mask] += multiplication_masse(inv_complete_mass_matrix,
+                                                     self.force[mask]) * delta_t
+        self._upundemi[mask] -= multiplication_masse(inv_wilkins_mass_matrix,
+                                                     self.force[mask]) * delta_t
 
     def apply_pressure(self, ind_node, pressure):
         """

@@ -21,7 +21,7 @@ from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
 from xfv.src.custom_functions.custom_function   import CustomFunction
 
 
-def __create_mesh(meshfile: Path, enrichment_type) -> None:
+def __create_mesh(meshfile: Path) -> Mesh1dEnriched:
     """
     Create a Mesh1D object from meshfile
 
@@ -33,8 +33,7 @@ def __create_mesh(meshfile: Path, enrichment_type) -> None:
     coord_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
     coord_init[:, 0] = coord_mesh
     vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
-    return Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init,
-                          enrichment_type=enrichment_type)
+    return Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init)
 
 
 def __init_velocity(nodes, data):
@@ -79,21 +78,17 @@ def __init_velocity(nodes, data):
                .format(vitesse_interface, node_interface)))
 
 
-def __init_output(output_data, type_of_enrichment, mesh):
+def __init_output(data: DataContainer, mesh: Mesh1dEnriched) -> OutputManager:
     """
     Returns the OutputManager initialized
-
-    :param output_data: output data
-    :type output_data: data_container.output_props
-    :param type_of_enrichment: type of enrichment
-    :type type_of_enrichment: str
+    :param data: the case data
     :param mesh: the mesh
-    :type mesh: Mesh1DEnriched
     """
-    enrichment_registration = type_of_enrichment == 'Hansbo'
+    enrichment_registration = \
+        data.material_target.failure_model.failure_treatment == "Enrichment"
     np.set_printoptions(formatter={'float': '{: 25.23g}'.format})
     the_output_mng = OutputManager()
-    for db_el in output_data.databases:
+    for db_el in data.output.databases:
         output_db = OutputDatabase(db_el.path)
         if db_el.iteration_period is not None:
             the_output_mng.register_database_iteration_ctrl(db_el.identifier, output_db,
@@ -156,8 +151,6 @@ def main(directory: Path) -> None:
         rupture_treatment = EnrichElement(
             data.material_target.failure_model.failure_treatment_value,
             data.material_target.failure_model.lump_mass_matrix)
-        type_of_enrichment = data.material_target.failure_model.type_of_enrichment
-        print("Enrichment method : {}".format(type_of_enrichment))
     else:
         rupture_treatment = None
 
@@ -166,8 +159,7 @@ def main(directory: Path) -> None:
     # ---------------------------------------------#
     #         MESH CREATION                        #
     # ---------------------------------------------#
-    type_of_enr = data.material_target.failure_model.type_of_enrichment
-    my_mesh = __create_mesh(meshfile, type_of_enr)
+    my_mesh = __create_mesh(meshfile)
 
     # ---------------------------------------------#
     # TARGET AND PROJECTILE VELOCITIES INITIALIZATION
@@ -186,7 +178,7 @@ def main(directory: Path) -> None:
     # ---------------------------------------------#
     #  OUTPUT MANAGER SETUP                        #
     # ---------------------------------------------#
-    the_output_mng = __init_output(data.output, type_of_enr, my_mesh)
+    the_output_mng = __init_output(data, my_mesh)
 
     # ---------------------------------------------#
     #         NODAL MASS COMPUTATION               #
@@ -257,7 +249,6 @@ def main(directory: Path) -> None:
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         the_output_mng.update(simulation_time, step,
-                              data.material_target.failure_model.type_of_enrichment,
                               data.material_target.failure_model.failure_treatment_value)
         the_figure_mng.update(simulation_time, step)
         # ---------------------------------------------#
