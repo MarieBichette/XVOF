@@ -33,8 +33,7 @@
     "linear-pseudo": 0.2,
     "quadratic-pseudo": 1.5,
     "cfl": 0.5,
-    "cfl-pseudo": 0.0,
-    "external-solver-library": "liblaunch_vnr_resolution.so"
+    "cfl-pseudo": 0.0
   },
   "output": {
     "number-of-images": 0,
@@ -43,7 +42,7 @@
       {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 5e-06
+      "time-period": 1e-06
       }
     ]
   }
