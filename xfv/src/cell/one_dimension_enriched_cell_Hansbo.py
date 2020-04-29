@@ -651,7 +651,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             self.additional_dof_deviatoric_stress_new[mask])  # elastic predictor
         shear_mod_right = self.additional_dof_shear_modulus.new_value[mask]
         yield_stress_right = self.additional_dof_yield_stress.new_value[mask]
-        self._additional_dof_equivalent_plastic_strain_rate[mask] += \
+        self._additional_dof_equivalent_plastic_strain_rate[mask] = \
             (invariant_j2_el_right - yield_stress_right) / (3. * shear_mod_right * dt)
 
     def compute_enriched_plastic_strain_rate(self, mask_mesh, dt):  # pylint: disable=invalid-name
