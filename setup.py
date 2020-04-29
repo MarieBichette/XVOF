@@ -19,5 +19,6 @@ setup(python_requires='>3.6',
       install_requires=['h5py',
                         'matplotlib',
                         'numpy>=1.16.0',
-                        'PyQt5']
+                        'PyQt5',
+                        'vnr-internal-energy @ git+https://github.com/hippo91/nonlinear_solver.git@master#egg=vnr-internal-energy-1.0'],
      )
