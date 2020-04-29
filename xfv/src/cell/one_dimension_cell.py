@@ -30,33 +30,41 @@ class OneDimensionCell(Cell):
                     1. / density, 1. / density_new, pressure, pseudo, energy, energy_new,
                     pressure_new, cson_new))
         else:
-            my_variables = {'EquationOfState': eos,
-                            'OldSpecificVolume': 1. / density,
-                            'NewSpecificVolume': 1. / density_new,
-                            'Pressure': (pressure + 2. * pseudo),
-                            'OldEnergy': energy}
-            cell._function_to_vanish.setVariables(my_variables)
-            energy_new_value = cell._solver.compute_solution(energy)
+            try:
+                import vnr_internal_energy
+                pressure = pressure + 2. * pseudo
+                vnr_internal_energy.launch_vnr_resolution(
+                    1. / density, 1. / density_new, pressure, energy, energy_new,
+                    pressure_new, cson_new)
+                return energy_new, pressure_new, cson_new
+            except ImportError:
+                my_variables = {'EquationOfState': eos,
+                                'OldSpecificVolume': 1. / density,
+                                'NewSpecificVolume': 1. / density_new,
+                                'Pressure': (pressure + 2. * pseudo),
+                                'OldEnergy': energy}
+                cell._function_to_vanish.setVariables(my_variables)
+                energy_new_value = cell._solver.compute_solution(energy)
 
-            # Eos call to determine final pressure and sound speed values
-            shape = energy_new.shape
-            pressure_new_value = np.zeros(shape, dtype=np.float64, order='C')
-            sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
-            dummy = np.zeros(shape, dtype=np.float64, order='C')
-            my_variables['EquationOfState'].solve_volume_energy(
-                my_variables['NewSpecificVolume'], energy_new_value, pressure_new_value,
-                dummy, sound_velocity_new_value)
+                # Eos call to determine final pressure and sound speed values
+                shape = energy_new.shape
+                pressure_new_value = np.zeros(shape, dtype=np.float64, order='C')
+                sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
+                dummy = np.zeros(shape, dtype=np.float64, order='C')
+                my_variables['EquationOfState'].solve_volume_energy(
+                    my_variables['NewSpecificVolume'], energy_new_value, pressure_new_value,
+                    dummy, sound_velocity_new_value)
 
-            if np.isnan(sound_velocity_new_value).any():
-                negative_vson = np.where(np.isnan(sound_velocity_new_value))
-                msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
-                msg += "density = {}\n".format(my_variables['NewDensity'][negative_vson])
-                msg += "energy = {}\n".format(energy_new_value[negative_vson])
-                msg += "pressure = {}\n".format(pressure_new_value[negative_vson])
-                raise ValueError(msg)
+                if np.isnan(sound_velocity_new_value).any():
+                    negative_vson = np.where(np.isnan(sound_velocity_new_value))
+                    msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
+                    msg += "density = {}\n".format(my_variables['NewDensity'][negative_vson])
+                    msg += "energy = {}\n".format(energy_new_value[negative_vson])
+                    msg += "pressure = {}\n".format(pressure_new_value[negative_vson])
+                    raise ValueError(msg)
 
-            cell._function_to_vanish.eraseVariables()
-        return energy_new_value, pressure_new_value, sound_velocity_new_value
+                cell._function_to_vanish.eraseVariables()
+            return energy_new_value, pressure_new_value, sound_velocity_new_value
 
     @classmethod
     def add_elastic_energy_method(cls, dt, density_current, density_new,
