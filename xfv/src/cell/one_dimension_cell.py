@@ -419,17 +419,22 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                                      self.pseudo.new_value[mask])
         self._dt[mask] = delta_t
 
-    def compute_shear_modulus(self):
+    def compute_shear_modulus(self, shear_modulus_model, mask):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
+        :param shear_modulus_model : model to compute the shear modulus
+        :param mask : mask to identify the cells to be computed
         """
-        # TODO : interroger le package rheology
+        self.shear_modulus.new_value[mask] = \
+            shear_modulus_model.compute(self.density.new_value[mask])
 
-    def compute_yield_stress(self):
+    def compute_yield_stress(self, yield_stress_model, mask):
         """
-        Compute the yield stress according to plasticity constitutve model in XDATA
+        Compute the yield stress according to plasticity constitutive model in XDATA
+        :param yield_stress_model : model to compute the yield stress
+        :param mask : mask to identify the cells to be computed
         """
-        # TODO : interroger le package rheology
+        self.yield_stress.new_value[mask] = yield_stress_model.compute(self.density.new_value[mask])
 
     def compute_complete_stress_tensor(self):
         """
@@ -449,10 +454,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
         :param dt : time step (staggered tn+1/2)
         """
-        self.compute_shear_modulus()
-        G = self.shear_modulus.current_value  # pylint: disable=invalid-name
+        G = self.shear_modulus.new_value  # pylint: disable=invalid-name
 
-        # Compute rotation rate tensor  and strain rate tensor: W = 0 en 1D
+        # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
         self.compute_deviator_strain_rate(mask, dt, topology, node_coord_new, node_velocity_new)
         D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
 
@@ -497,7 +501,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
         # elastic predictor before applying plasticity
-        radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
+        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] *= radial_return
 
@@ -510,8 +514,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         # To be done before apply_plastic_corrector_on_deviatoric_stress_tensor
         invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
-        radial_return = self.yield_stress.current_value[mask] / invariant_j2_el
-        shear_modulus = self.shear_modulus.current_value[mask]
+        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
+        shear_modulus = self.shear_modulus.new_value[mask]
         for i in range(0, 3):
             self._plastic_strain_rate[mask, i] = \
                 (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
@@ -525,10 +529,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
         # elastic predictor before applying plasticity
-        shear_modulus = self.shear_modulus.current_value[mask]
-
-        self._equivalent_plastic_strain_rate[mask] = \
-            (invariant_j2_el - self.yield_stress.current_value[mask]) / (3. * shear_modulus * dt)
+        G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
+        Y = self.yield_stress.new_value[mask]  # pylint: disable=invalid-name
+        self._equivalent_plastic_strain_rate[mask] = (invariant_j2_el - Y) / (3. * G * dt)
 
     def impose_pressure(self, ind_cell, pressure):
         """
