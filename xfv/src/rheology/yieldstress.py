@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Implementation d'une classe de limite d'élasticité (interface)
+Class for the computation of yield stress
 """
+from abc import abstractmethod
+import numpy as np
 
 
 class YieldStress:  # pylint: disable=too-few-public-methods
@@ -15,9 +17,8 @@ class YieldStress:  # pylint: disable=too-few-public-methods
         """
         self.yield_stress = initial_value
 
-    @classmethod
-    def compute(cls) -> float:
+    @abstractmethod
+    def compute(self, density: np.array) -> np.array:
         """
         Compute the new value of shear modulus
-        :return : float
         """

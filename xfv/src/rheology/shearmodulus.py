@@ -2,6 +2,8 @@
 """
 Interface for the shear modulus calculation
 """
+from abc import abstractmethod
+import numpy as np
 
 
 class ShearModulus:  # pylint: disable=too-few-public-methods
@@ -11,8 +13,8 @@ class ShearModulus:  # pylint: disable=too-few-public-methods
     def __init__(self, initial_value):
         self.shear_modulus = initial_value
 
-    @classmethod
-    def compute(cls):
+    @abstractmethod
+    def compute(self, density: np.array) -> np.array:
         """
         Compute the new value of shear modulus
         """

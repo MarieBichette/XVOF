@@ -4,6 +4,7 @@ Implementation of the ConstantShearModulus class
 """
 
 from xfv.src.rheology.shearmodulus import ShearModulus
+import numpy as np
 
 
 class ConstantShearModulus(ShearModulus):  # pylint: disable=too-few-public-methods
@@ -18,9 +19,8 @@ class ConstantShearModulus(ShearModulus):  # pylint: disable=too-few-public-meth
         """
         super(ConstantShearModulus, self).__init__(init_value)
 
-    @classmethod
-    def compute(cls):
+    def compute(self, density: np.array) -> np.array:
         """
         Compute the shear modulus => returns constant value of shear modulus
         """
-        return cls().shear_modulus
+        return np.ones_like(density) * self.shear_modulus

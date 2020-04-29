@@ -4,6 +4,7 @@ Implementation of the ConstantYieldStress class
 """
 
 from xfv.src.rheology.yieldstress import YieldStress
+import numpy as np
 
 
 class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-methods
@@ -18,10 +19,9 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
         """
         super(ConstantYieldStress, self).__init__(init_value)
 
-    @classmethod
-    def compute(cls):
+    def compute(self, density: np.array) -> np.array:
         """
         Compute the value of the yield stress
         :return: float
         """
-        return cls().yield_stress
+        return np.ones_like(density) * self.yield_stress
