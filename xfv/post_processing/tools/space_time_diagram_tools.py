@@ -102,15 +102,18 @@ class SpaceTimeDiagramTools:
         # 2) Build line after line the color map X, Y, Z
         for i_temps in range(self._my_hd.nb_saved_times):
             time = self._my_hd.saved_times[i_temps]
+            cell_size = self._my_hd.extract_field_at_time("CellSize", time)[:]
             coord_array_at_time, time_array_at_time, field_array_at_time = \
                 self._build_classical_xyz_map_for_contourf_plot_at_time(time, dim_x_0,
                                                                         classical_fname)
-            self._include_enrichment(coord_array_at_time, time_array_at_time, field_array_at_time,
-                                     time, cell_size, final_ruptured_cell_id,
-                                     additional_fname)  # modifies coord_at_time, y, z
-            coord_array[i_temps, :] = coord_array_at_time * 1.e3
-            time_array[i_temps, :] = time_array_at_time * 1.e6
-            field_array[i_temps, :] = field_array_at_time
+            modified_coord_array_t, modified_time_array_t, modified_field_array_t = \
+                self._include_enrichment(coord_array_at_time, time_array_at_time,
+                                         field_array_at_time, time, cell_size,
+                                         final_ruptured_cell_id,
+                                         additional_fname)  # modifies coord_at_time, y, z
+            coord_array[i_temps, :] = modified_coord_array_t * 1.e3
+            time_array[i_temps, :] = modified_time_array_t * 1.e6
+            field_array[i_temps, :] = modified_field_array_t
         return coord_array, time_array, field_array  # X, Y, Z
 
     def plot_section_of_color_map(self, coord, time, field, options, begin=None, end=None):
@@ -130,24 +133,33 @@ class SpaceTimeDiagramTools:
         if begin is not None and end is not None:
             plt.contourf(coord[:, begin:end + 1], time[:, begin:end + 1], field[:, begin:end + 1],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, begin], time[:, begin], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, end], time[:, end], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from " + str(begin) + " to " + str(end) + "inclus")
 
         elif begin is None and end is not None:
             plt.contourf(coord[:, :end + 1], time[:, :end + 1], field[:, :end + 1],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, 0], time[:, 0], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, end], time[:, end], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from the beginning to " + str(end) + "inclus")
 
         elif begin is not None and end is None:
             plt.contourf(coord[:, begin:], time[:, begin:], field[:, begin:],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, begin], time[:, begin], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, -1], time[:, -1], color='black', linewidth=0.5)  # contour d
             if self._verbose:
                 print("Plot from " + str(begin) + " to the end")
 
         elif begin is None and end is None:
             plt.contourf(coord[:, :], time[:, :], field[:, :],
                          options.n_colors, vmin=options.field_min, vmax=options.field_max)
+            plt.plot(coord[:, 0], time[:, 0], color='black', linewidth=0.5)  # contour g
+            plt.plot(coord[:, -1], time[:, -1], color='black', linewidth=0.5)  # contour d
+            # no contour
             if self._verbose:
                 print("Plot data for all geometry")
 
@@ -169,7 +181,7 @@ class SpaceTimeDiagramTools:
         return coord_array, time_array, field_array
 
     def _include_enrichment(self, coord_array, time_array, field_array, time, cell_size,
-                            final_ruptured_cell_id, additional_fname):
+                            final_ruptured_cell_id: np.array, additional_fname: str):
         """
         Modifies the x,y,z array to include enrichment either by dedoubling the data if the disc is
         not created at time t yet, or by inserting the disc data if the disc exists at time t
@@ -214,10 +226,16 @@ class SpaceTimeDiagramTools:
                 # * for coord_array : add left_size and insert right size of cell
                 left_size_for_cell_i = left_size[count_active_disc, 1]
                 right_size_for_cell_i = right_size[count_active_disc, 1]
+                # Here, we compute the coordinates of the left boundary of the discontinuity
+                # instead of the center of the left part of cracked cell for representativeness of
+                # the diagram
                 coord_array[moving_index] += \
-                    left_size_for_cell_i / 2. - cell_size[i_cell_index] / 2.
+                    left_size_for_cell_i - cell_size[i_cell_index] / 2.
+                # In the same idea, we compute the coordinates of the right boundary of the
+                # discontinuity instead of the center of the right part of cracked cell for
+                # representativeness of the diagram
                 right_coordinate = coord_array[moving_index + 1] \
-                                   - right_size_for_cell_i / 2. - cell_size[i_cell_index + 1] / 2.
+                                   - right_size_for_cell_i - cell_size[i_cell_index + 1] / 2.
                 coord_array = np.insert(coord_array, moving_index + 1, [right_coordinate])
 
                 # * for time_array : insert time
@@ -228,3 +246,5 @@ class SpaceTimeDiagramTools:
                 field_array = np.insert(field_array, moving_index + 1, [right_field_for_cell_i])
                 count_active_disc += 1
             offset += 1
+
+        return coord_array, time_array, field_array

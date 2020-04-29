@@ -3,7 +3,7 @@ This module defines the classes that stores data read from the datafile and
 needed to create RuptureCriterion objects.
 """
 from dataclasses import dataclass, field, asdict
-from typing import Type
+from typing import Type, Optional
 
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
@@ -37,23 +37,43 @@ class RuptureCriterionProps(TypeCheckedDataClass):
 
 @dataclass  # pylint: disable=missing-class-docstring
 class MaximalStressCriterionProps(RuptureCriterionProps):
-    sigma_max: float
+    sigma_max: Optional[float]  # optional to personalize the error message
     _rupture_criterion_class = MaximalStressCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  #  typecheck first
+        self._ensure_defined('sigma_max', 'MaximalStressCriterionProps',
+                             'failure/failure-criterion/value')  # ensures that exists
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class DamageCriterionProps(RuptureCriterionProps):
-    d_limite: float
+    d_limite: Optional[float]  # optional to personalize the error message
     _rupture_criterion_class = DamageCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_defined('d_limite', 'DamageCriterionProps',
+                             'failure/failure-criterion/value')
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class HalfRodComparisonCriterionProps(RuptureCriterionProps):
-    ruptured_cell_index: int
+    ruptured_cell_index: Optional[int]  # optional to personalize the error message
     _rupture_criterion_class = HalfRodComparisonCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_defined('ruptured_cell_index', 'HalfRodComparisonCriterionProps',
+                             'failure/failure-criterion/index')  # ensures that exists
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class MinimumPressureCriterionProps(RuptureCriterionProps):
-    pmin: float
+    pmin: Optional[float]  # optional to personalize the error message
     _rupture_criterion_class = MinimumPressureCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_defined('pmin', 'MinimumPressureCriterionProps',
+                             'failure/failure-criterion/value')  # ensures that exists

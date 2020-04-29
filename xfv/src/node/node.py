@@ -173,14 +173,13 @@ class Node(object):
         message += "==> force = {}".format(self.force[index])
         print(message)
 
-    def compute_new_coodinates(self, delta_t):
+    def compute_new_coodinates(self, mask: np.array, delta_t: float):
         """
         Calcul de la coordonnée au temps t+dt
-
-        :param delta_t: pas de temps
-        :type delta_t: float
+        :param mask : mask to select some specific nodes
+        :param delta_t: time step
         """
-        self._xtpdt = self.xt + self.upundemi * delta_t
+        self._xtpdt[mask] = self.xt[mask] + self.upundemi[mask] * delta_t
 
     def increment(self):
         """

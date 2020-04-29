@@ -19,13 +19,13 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
     This class defines a one dimensional mesh with potential enrichment
     """
     # noinspection PyArgumentList
-    def __init__(self, initial_coordinates, initial_velocities, enrichment_type):
+    def __init__(self, initial_coordinates, initial_velocities):
         """
         Construction of the mesh
         :param initial_coordinates:
         :param initial_velocities:
-        :param enrichment_type:
         """
+        self.data = DataContainer()  # pylint: disable=no-value-for-parameter
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
             message = "Initial velocity and coordinates vector doesn't have the same shape!"
             raise ValueError(message)
@@ -34,15 +34,13 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                        """ for initial coordinates vector!""")
             raise ValueError(message)
 
-        self.enrichment_type = enrichment_type
-
         # ---------------------------------------------
         # Nodes creation
         # ---------------------------------------------
         nbr_nodes = np.shape(initial_coordinates)[0]
         self.nodes = OneDimensionHansboEnrichedNode(nbr_nodes, initial_coordinates,
                                                     initial_velocities,
-                                                    section=DataContainer().geometric.section)
+                                                    section=self.data.geometric.section)
 
         # ---------------------------------------------
         # Cells creation
@@ -79,10 +77,10 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # Cohesive zone model initialisation
         # ---------------------------------------------
         self.cohesive_zone_model = None
-        target_dmg_model = DataContainer().material_target.damage_model
+        target_dmg_model = self.data.material_target.damage_model
         if target_dmg_model is not None:
             self.cohesive_zone_model = target_dmg_model.cohesive_model.build_cohesive_model_obj()
-        if (DataContainer().material_target.failure_model.failure_treatment != "Enrichment") and \
+        if (self.data.material_target.failure_model.failure_treatment != "Enrichment") and \
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
             self.cohesive_zone_model = None
@@ -90,9 +88,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # ---------------------------------------------
         # Contact model initialisation (contact between discontinuities boundaries)
         # ---------------------------------------------
-        if DataContainer().material_target.contact_model is not None:
+        if self.data.material_target.contact_model is not None:
             self.contact_model: ContactBase = \
-                DataContainer().material_target.contact_model.contact_model.build_contact_obj()
+                self.data.material_target.contact_model.contact_model.build_contact_obj()
         else:
             self.contact_model = None
 
@@ -132,6 +130,21 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Computation of nodes velocities at t+dt
         :var delta_t: time step
         """
+        self._compute_velocities_for_enrichment_not_concerned_nodes(delta_t)
+        # Compute velocity for enriched nodes
+        for disc in Discontinuity.discontinuity_list():
+            # Compute mass matrix for newly created discontinuities
+            if not disc.mass_matrix_updated:
+                self._compute_discontinuity_mass_matrix(disc)
+            # Compute classical and enriched ddl velocity of enriched nodes
+            self._compute_velocities_for_disc(disc, delta_t)
+        self.nodes.compute_complete_velocity_field()
+
+    def _compute_velocities_for_enrichment_not_concerned_nodes(self, delta_t: float):
+        """
+        Compute classical ddl (far from enrichment = enrichment not concerned)
+        :param delta_t: time step
+        """
         # Compute classical ddl (far from enrichment = enrichment not concerned)
         self.nodes.compute_new_velocity(
             delta_t, self.nodes.enrichment_not_concerned,
@@ -146,34 +159,31 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
                 self.mass_matrix.inverse_mass_matrix[self.mask_last_nodes_of_ref],
                 mask=self.mask_last_nodes_of_ref)
 
-        # Compute velocity for enriched nodes
-        for disc in Discontinuity.discontinuity_list():
-            # Compute mass matrix for newly created discontinuities
-            if not disc.mass_matrix_updated:
-                self._compute_discontinuity_mass_matrix(disc)
-            # Compute classical ddl velocity of enriched nodes
-            self.nodes.compute_new_velocity(
-                delta_t, disc.mask_disc_nodes,
-                disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
-            # Compute enriched ddl velocity of enriched nodes
-            self.nodes.compute_additional_dof_new_velocity(
-                delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
-
-        self.nodes.compute_complete_velocity_field()
+    def _compute_velocities_for_disc(self, disc: Discontinuity, delta_t: float):
+        """
+        Compute the new node velocities for the nodes belonging to a given discontinuity
+        :param disc :current discontinuity
+        :param delta_t: time step
+        """
+        # Compute classical ddl velocity of enriched nodes
+        self.nodes.compute_new_velocity(
+            delta_t, disc.mask_disc_nodes,
+            disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
+        # Compute enriched ddl velocity of enriched nodes
+        self.nodes.compute_additional_dof_new_velocity(
+            delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
 
     def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
         Compute the mass matrix of a newly created discontinuity
         :param disc: Discontinuity
         """
-        disc.mass_matrix_enriched.compute_enriched_mass_matrix(
-            disc, self.__topology, self.cells.mass)
-        if self.enrichment_type == "Hansbo":
-            disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
-                "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
-            # Arrange mass matrix to get a structure : classical / enriched dof
-            disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
-        disc.mass_matrix_enriched.print_enriched_mass_matrix()
+        disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology,
+                                                               self.cells.mass)
+        disc.mass_matrix_enriched.assemble_enriched_mass_matrix(
+            "_enriched_mass_matrix_left_part", "_enriched_mass_matrix_right_part")
+        # Arrange mass matrix to get a structure : classical / enriched dof
+        disc.mass_matrix_enriched.rearrange_dof_in_inv_mass_matrix()
         disc.has_mass_matrix_been_computed()
 
     def apply_contact_correction(self, delta_t: float):
@@ -187,35 +197,39 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             # discontinuities. Here they are treated one after another. Better than nothing but
             # may cause instabilities
             for disc in Discontinuity.discontinuity_list():
-                contact_force = \
-                    self.contact_model.compute_contact_force(self.nodes.upundemi, disc, delta_t)
+                contact_force = self.contact_model.compute_contact_force(self.nodes.upundemi,
+                                                                         disc, delta_t)
                 if contact_force != 0.:
-                    # Divide the contact force on the nodal forces
+                    # Divide the contact "force" on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
                     # Reinitialize the kinematics that lead to contact
                     self.nodes.reinitialize_kinematics_after_contact(disc)
                     disc.reinitialize_kinematics_after_contact()
 
-                    # Apply correction on the velocity field
-                    self.compute_new_nodes_velocities(delta_t)
+                    # Apply correction on the velocity field (only on disc nodes)
+                    self._compute_velocities_for_disc(disc, delta_t)
 
                     # Theoretically, we should apply the velocity boundary condition here,
                     # but it is really not convenient to do this and fracture is not supposed
                     # to occur on the boundary cells. Thus, no boundary conditions is applied
 
-                    # Apply correction on the node field
-                    self.compute_new_nodes_coordinates(delta_t)
+                    # Apply correction on the node coordinates (only on disc nodes)
+                    self.nodes.compute_new_coodinates(disc.mask_disc_nodes, delta_t)  # classical
+                    self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)  # enriched
+                    # Update discontinuity opening
+                    disc.compute_discontinuity_new_opening(self.nodes.xtpdt)  # opening
 
     def compute_new_nodes_coordinates(self, delta_t: float):
         """
         Computation of nodes coordinates at t+dt
         :param delta_t: time step
         """
-        self.nodes.compute_new_coodinates(delta_t)
-        self.nodes.enriched_nodes_compute_new_coordinates(delta_t)
-        # Update discontinuity opening
+        mask_all_nodes = np.ones([self.nodes.number_of_nodes], dtype=bool)
+        self.nodes.compute_new_coodinates(mask_all_nodes, delta_t)
         for disc in Discontinuity.discontinuity_list():
+            self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)
+            # Update discontinuity opening
             disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     def compute_cells_sizes(self):
@@ -243,9 +257,12 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         Computation of cells pressure at t+dt
         :var delta_t: time step
         """
-        self.cells.compute_new_pressure(
-            np.logical_and(self.cells.classical, ~self.__ruptured_cells), dt=delta_t)
-        self.cells.compute_enriched_elements_new_pressure(delta_t)
+        # all classical cells + left part of enriched cells :
+        self.cells.compute_new_pressure(~self.__ruptured_cells, dt=delta_t)
+        # right part of enriched cells
+        if self.cells.enriched.any():
+            # test if any enriched cell in order to avoid error in the Newton initialization
+            self.cells.compute_enriched_elements_new_pressure(delta_t)
 
     def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
@@ -260,8 +277,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Computation of nodes forces at t+dt
         """
-        self.nodes.compute_new_force(self.__topology, self.cells.stress_xx)
-        self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx)
+        self.nodes.compute_new_force(self.__topology, self.cells.stress_xx, self.cells.classical)
+        self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx,
+                                                    self.cells.additional_dof_stress_xx)
 
     def compute_new_cohesive_forces(self):
         """
@@ -276,8 +294,9 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         self.nodes.increment()
         self.cells.increment_variables()
+        self.cells.cell_additional_dof_increment()  # enriched cell variables
         for disc in Discontinuity.discontinuity_list():
-            disc.additional_dof_increment()
+            disc.additional_dof_increment()  # enriched node variables
 
     def compute_deviator_elasticity(self, delta_t, mask):
         """
@@ -290,6 +309,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             mask, self.cells.classical)  # pylint: disable=assignment-from-no-return
         self.cells.compute_deviatoric_stress_tensor(mask, self.__topology,
                                                     self.nodes.xtpdt, self.nodes.upundemi, delta_t)
+        # Remarque : can't be all classical cells + left part of enriched cells because of the
+        # computation of the strain rate
         self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
                                                              self.nodes.upundemi, delta_t)
 
@@ -297,21 +318,23 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         """
         Assembling pressure and stress deviator
         """
-        self.cells.compute_complete_stress_tensor(self.cells.classical)
-        self.cells.compute_enriched_stress_tensor()
+        self.cells.compute_complete_stress_tensor()
+        if self.cells.enriched.any():
+            self.cells.compute_enriched_stress_tensor()
 
     def compute_new_time_step(self):
         """
         Computation of new time step
         """
-        if not DataContainer().time.is_time_step_constant:
+        if not self.data.time.is_time_step_constant:
             self.cells.compute_new_time_step(self.cells.classical)
             self.cells.compute_enriched_elements_new_time_step()
-            return self.cells.dt.min()
+            dt = self.cells.dt.min()  # dt name is ok pylint: disable=invalid-name
+        else:
+            initial_time_step = self.data.time.initial_time_step
+            dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
 
-        initial_time_step = DataContainer().time.initial_time_step
-        dt = initial_time_step  # dt name is ok pylint: disable=invalid-name
-        reduction_factor = DataContainer().time.time_step_reduction_factor_for_failure
+        reduction_factor = self.data.time.time_step_reduction_factor_for_failure
         if reduction_factor is not None:
             if self.cells.enriched.any():
                 dt = dt/reduction_factor  # dt name is ok pylint: disable=invalid-name
@@ -356,7 +379,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         new_cracked_cells_in_target[self.cells.cell_in_projectile] = False
         self.__ruptured_cells = \
             np.logical_or(self.__ruptured_cells,
-                          new_cracked_cells_in_target) # pylint: disable=assignment-from-no-return
+                          new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
 
     def get_plastic_cells(self, plastic_criterion, mask):
         """
@@ -366,10 +389,8 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :param mask: array of bool to select cells of interest
         """
         self.__plastic_cells[mask] = plastic_criterion.check_criterion(self.cells)[mask]
-
-        for disc in Discontinuity.discontinuity_list():
-            disc.plastic_cells = plastic_criterion.check_criterion_on_right_part_cells(disc)
-
+        self.cells.plastic_cells[mask] = \
+            plastic_criterion.check_criterion_on_right_part_cells(self.cells)[mask]
 
     def apply_rupture_treatment(self, treatment, time):
         """
@@ -397,23 +418,22 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # Get plastic cells either in projectile or in target
         mask = np.logical_and(mask_mesh,
                               self.__plastic_cells)  # pylint: disable=assignment-from-no-return
-
         # Cells plastic classical
-        mask_classic = np.logical_and(self.cells.classical,
-                                      mask)  # pylint: disable=assignment-from-no-return
+        mask_classic_plastic = np.logical_and(
+            self.cells.classical, mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_yield_stress()
-        self.cells.compute_plastic_strain_rate_tensor(mask_classic, delta_t)
-        self.cells.compute_equivalent_plastic_strain_rate(mask_classic, delta_t)
-        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic)
+        self.cells.compute_plastic_strain_rate_tensor(mask_classic_plastic, delta_t)
+        self.cells.compute_equivalent_plastic_strain_rate(mask_classic_plastic, delta_t)
+        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic_plastic)
 
         # Cells plastic enriched
-        mask_enriched = np.logical_and(self.cells.enriched,
-                                       mask)  # pylint: disable=assignment-from-no-return
+        mask_enriched_plastic = np.logical_and(
+            self.cells.enriched, mask)  # pylint: disable=assignment-from-no-return
         self.cells.compute_enriched_yield_stress()
-        self.cells.compute_enriched_plastic_strain_rate(mask_enriched, delta_t)
-        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched, delta_t)
+        self.cells.compute_enriched_plastic_strain_rate(mask_enriched_plastic, delta_t)
+        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched_plastic, delta_t)
         self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(
-            mask_enriched)
+            mask_enriched_plastic)
 
     @property
     def velocity_field(self):
@@ -440,11 +460,13 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         modified_coord = np.zeros([len(Discontinuity.discontinuity_list()), 3])
         # modified_coord est un array qui contient ruptured_cell_id, left_size, right_size
         for disc in Discontinuity.discontinuity_list():
-            modified_coord[disc.label - 1, 0] = int(disc.ruptured_cell_id)
-            modified_coord[disc.label - 1, 1] = \
-                self.nodes.xt[disc.mask_in_nodes] + disc.left_part_size.current_value / 2.
-            modified_coord[disc.label - 1, 2] = \
-                self.nodes.xt[disc.mask_out_nodes] - disc.right_part_size.current_value / 2.
+            enr_cell = int(disc.ruptured_cell_id)
+            index = disc.label - 1
+            modified_coord[index, 0] = enr_cell
+            modified_coord[index, 1] = self.nodes.xt[disc.mask_in_nodes] + \
+                                       self.cells.left_part_size.current_value[enr_cell] / 2.
+            modified_coord[index, 2] = self.nodes.xt[disc.mask_out_nodes] - \
+                                       self.cells.right_part_size.current_value[enr_cell] / 2.
         modified_coord = np.sort(modified_coord, 0)
 
         res = self.cells.get_coordinates(self.cells.number_of_cells, self.__topology, self.nodes.xt)

@@ -11,6 +11,7 @@ from xfv.src.solver.newtonraphsonbase import NewtonRaphsonBase
 EPSILON = 1.0e-06
 PRECISION = 1.0e-08
 
+
 class NewtonRaphson(NewtonRaphsonBase):
     """
     This class implements a Newton Raphson type non linear solver
@@ -31,9 +32,7 @@ class NewtonRaphson(NewtonRaphsonBase):
         """
         # This case should never append but has been discovered in Unittests...
         if init_variable.size == 0:
-            msg = ("Initialization variable for Newton has null size. "
-                   "Impossible to start Newton procedure.")
-            raise ValueError(msg)
+            return init_variable
 
         # Newton's variable
         var_i = np.ndarray(init_variable.shape, dtype=np.float64, order='C')
@@ -46,7 +45,6 @@ class NewtonRaphson(NewtonRaphsonBase):
         non_conv[:] = True
         is_conv = False
         nit = 0  # Number of iterations
-
         while not is_conv and nit < self.nb_iterations_max:
             func_i[non_conv], dfunc_i_surde[non_conv] = (
                 self.function.computeFunctionAndDerivative(var_i, non_conv))

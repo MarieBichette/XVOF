@@ -8,6 +8,7 @@ import os
 from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
+from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
 
 
 class LossOfStiffnessUnloadingTest(unittest.TestCase):
@@ -23,7 +24,8 @@ class LossOfStiffnessUnloadingTest(unittest.TestCase):
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
         # Discontinuity creation
-        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5, "somme")
+        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5,
+                                  LumpMenouillardMassMatrixProps())
         # Creation of the tested service
         self.test_unloading_model = LossOfStiffnessUnloading()
 

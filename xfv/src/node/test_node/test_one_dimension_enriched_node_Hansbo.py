@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Classe de test du module OneDimensionEnrichedNode
 """
@@ -37,33 +38,11 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'mask_out_nodes': np.array([False, True]),
                   'label': 1,
                   'position_in_ruptured_element':
-                      DataContainer().material_target.failure_model.failure_treatment_value,
+                      self.test_datacontainer.material_target.failure_model.failure_treatment_value,
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': np.array([0]),
-                  'plastic_cells': False,
-                  'left_part_size.current_value': np.array([0.2]),
-                  'right_part_size.current_value': np.array([0.3]),
-                  'left_part_size.new_value': np.array([0.4]),
-                  'right_part_size.new_value': np.array([0.6]),
+                  'plastic_cells': np.array([False]),
                   'additional_dof_force': np.array([[1., ], [2., ]]),
-                  'additional_dof_density.current_value':np.array([4000.]),
-                  'additional_dof_density.new_value': np.array([4020.]),
-                  'additional_dof_pressure.current_value': np.array([1.1e+09]),
-                  'additional_dof_pressure.new_value': np.array([1.3e+09]),
-                  'additional_dof_energy.current_value': np.array([1.e+06]),
-                  'additional_dof_energy.new_value': np.array([0.8e+06]),
-                  'additional_dof_artificial_viscosity.current_value': np.array([1.e+08]),
-                  'additional_dof_artificial_viscosity.new_value': np.array([1.e+08]),
-                  'additional_dof_sound_velocity.current_value': np.array([300.]),
-                  'additional_dof_sound_velocity.new_value': np.array([302.]),
-                  'additional_dof_deviatoric_stress_current': np.array([[3., 2., 1.],]),
-                  'additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.],]),
-                  'additional_dof_velocity_new': np.array([[1., ], [3., ]]),
-                  'additional_dof_deviatoric_strain_rate': np.array([[4., 3., 8.],]),
-                  'additional_dof_yield_stress.current_value': np.array([10.]),
-                  'additional_dof_stress': np.array([[2., 0., 0.]]),
-                  '_additional_dof_equivalent_plastic_strain_rate': np.array([0.]),
-                  '_additional_dof_deviatoric_stress_new': np.array([[5., 12., 7.], ]),
                   '_additional_dof_velocity_new': np.zeros([2, 1])
                   # 'cohesive_force.current_value': 0.,
                   # 'cohesive_force.new_value': 0.,
@@ -115,6 +94,19 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.my_nodes.velocity_field, np.array([1., 1.]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
+    def test_compute_additional_dof_new_velocity(self, mock_disc_list):
+        """
+        Test of the method compute_additional_dof_new_velocity
+        """
+        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
+        inv_mass_additional = np.array([[2., ], [2., ]])
+        self.mock_discontinuity.additional_dof_velocity_current = np.array([[1., ], [3., ]])
+        self.mock_discontinuity.additional_dof_force = np.array([[1., ], [1., ]])
+        self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
+        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new,
+                                             np.array([[3., ], [5., ]]))
+
+    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):
         """
         Test de la méthode enriched_nodes_compute_new_coordinates de la classe
@@ -123,7 +115,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.mock_discontinuity.additional_dof_coordinates_current = np.array([[1., ], [3., ]])
         self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
         self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
-        self.my_nodes.enriched_nodes_compute_new_coordinates(1.)
+        self.my_nodes.enriched_nodes_compute_new_coordinates(self.mock_discontinuity, 1.)
         np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_coordinates_new,
                                       np.array([[-2., ], [7., ]]))
 
@@ -147,14 +139,29 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         self.mock_discontinuity.position_in_ruptured_element = 0.25
-        vecteur_contrainte_classique = np.array([2.])
+        contrainte_classique = np.array([2.])
+        contrainte_enr = np.array([2.])
         self.my_nodes._force = np.array([[4., ], [2., ]])
         self.my_nodes._section = 1.
-        self.my_nodes.compute_enriched_nodes_new_force(vecteur_contrainte_classique)
+        self.my_nodes.compute_enriched_nodes_new_force(contrainte_classique, contrainte_enr)
 
         np.testing.assert_array_almost_equal(
             self.mock_discontinuity.additional_dof_force, np.array([[-0.5, ], [1.5, ]]))
         np.testing.assert_almost_equal(self.my_nodes._force, np.array([[5.5, ], [1.5, ]]))
+
+    def test_apply_force_on_discontinuity_boundaries(self):
+        """
+        Test of the method apply_force_on_discontinuity_boundaries
+        """
+        stress = 50.
+        self.my_nodes._section = 1.
+        self.my_nodes._force = np.array([[200., ], [400., ]])
+        self.mock_discontinuity.position_in_ruptured_element = 0.5
+        self.mock_discontinuity.additional_dof_force = np.array([[-100., ], [300., ]])
+        self.my_nodes.apply_force_on_discontinuity_boundaries(self.mock_discontinuity, stress)
+        np.testing.assert_almost_equal(self.my_nodes._force, np.array([[225., ], [375., ]]))
+        np.testing.assert_array_almost_equal(
+            self.mock_discontinuity.additional_dof_force, np.array([[-75., ], [275., ]]))
 
     @unittest.skip("Mod�le coh�sif pas revu")
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)

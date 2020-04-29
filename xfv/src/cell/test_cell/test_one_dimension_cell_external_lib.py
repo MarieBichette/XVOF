@@ -1,10 +1,11 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3.7
+# -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 one_dimension_cell module unit tests
 """
-import os
 import unittest
+import os
 import numpy as np
 
 from xfv.src.cell.one_dimension_cell import OneDimensionCell as Cell
@@ -40,7 +41,7 @@ class OneDimensionCellExternalLibTest(unittest.TestCase):
         """
         Test of compute_new_pressure method with external solver
         """
-        self.test_cell._external_library = ""  # pylint:disable=protected-access
+        self.test_cell._external_library = ""  #Â pylint:disable=protected-access
         self.test_cell.energy.current_value = np.array([1.e+06, 0.5e+05, 2.4e+07])
         self.test_cell.pressure.current_value = np.array([1.5e+09, 0.5e+08, 1.2e+10])
         self.test_cell.density.current_value = np.array([8000., 8500., 9500.])
