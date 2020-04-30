@@ -325,7 +325,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         # set partie droite
         self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., -2.5, -2.5], ])
-        self.my_cells.additional_dof_yield_stress.current_value = np.array([10.])
+        self.my_cells.additional_dof_yield_stress.new_value = np.array([10.])
         exact_deviator_plastic_right = np.array([[6.666667, -3.333333, -3.333333]])
         self.my_cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(mask)
         np.testing.assert_allclose(self.my_cells._additional_dof_deviatoric_stress_new,
