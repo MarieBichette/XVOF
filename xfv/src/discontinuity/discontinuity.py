@@ -8,7 +8,7 @@ from xfv.src.fields.field import Field
 from xfv.src.data.enriched_mass_matrix_props import EnrichedMassMatrixProps
 
 
-class Discontinuity(object):
+class Discontinuity:
     """
     A class describing a discontinuity 1D
     """

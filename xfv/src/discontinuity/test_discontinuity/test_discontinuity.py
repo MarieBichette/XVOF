@@ -7,8 +7,8 @@ Classe de test du module Discontinuity
 """
 
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
 from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
@@ -65,7 +65,7 @@ class DiscontinuityTest(unittest.TestCase):
                           np.array([True, True, False, False]),
                           0.2, "somme")
 
-    def test_hasMassMatrixBeenComputed(self):
+    def test_has_mass_matrix_been_computed(self):
         """
         Test of has_mass_matrix_been_computed
         """

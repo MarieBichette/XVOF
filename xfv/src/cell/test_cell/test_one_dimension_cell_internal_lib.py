@@ -3,9 +3,9 @@
 """
 one_dimension_cell module unit tests
 """
-import numpy as np
 import unittest
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell as Cell
 from xfv.src.data.data_container import DataContainer
 
@@ -13,6 +13,9 @@ from xfv.src.data.data_container import DataContainer
 # TODO : move to the package solver !
 
 class OneDimensionCellInternalLibTest(unittest.TestCase):
+    """
+    A class to test the call of eos solver with internal lib
+    """
 
     @classmethod
     def setUpClass(cls):

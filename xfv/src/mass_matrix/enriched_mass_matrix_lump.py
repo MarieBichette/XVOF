@@ -2,8 +2,8 @@
 """
 Implementing the EnrichedMassMatrixLump class
 """
-import numpy as np
 from abc import abstractmethod
+import numpy as np
 
 from xfv.src.mass_matrix.enriched_mass_matrix import EnrichedMassMatrix
 from xfv.src.mass_matrix.mass_matrix_utilities import inverse_masse
@@ -98,7 +98,6 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
         :param mass_1 : mass of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
-        pass
 
     @abstractmethod
     def compute_enriched_mass_matrix_right_part(self, mass_1: float, mass_2: float, epsilon: float):
@@ -109,4 +108,3 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
         :param mass_2: mass of the element right on the right of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
-        pass

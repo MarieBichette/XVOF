@@ -16,7 +16,7 @@ class CohesiveZoneModelProps(TypeCheckedDataClass):
     cohesive_strength: float
     critical_opening: float
     unloading_model: UnloadingModelProps
-    _cohesive_zone_model_class: CohesiveZoneModel = field(init=False, repr=False)
+    _cohesive_zone_model_class = CohesiveZoneModel
 
     def _build_cohesive_law(self):
         """

@@ -5,14 +5,17 @@ one_dimension_cell module unit tests
 """
 import unittest
 import unittest.mock as mock
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionCellHydroTest(unittest.TestCase):
+    """
+    A class to test the OneDimensionCell module in case of hydro behaviour
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -54,7 +57,7 @@ class OneDimensionCellHydroTest(unittest.TestCase):
         """
         topo = mock.MagicMock(Topology1D)
         type(topo).nodes_belonging_to_cell = mock.PropertyMock(
-            return_value=np.array([[0, 1], [1, 2], [2, 3],[3, 4]]))
+            return_value=np.array([[0, 1], [1, 2], [2, 3], [3, 4]]))
         mask = np.array([True, True, False, False])
         self.my_cells._size_t = np.array([0.5, 0.05, 0.05, 0.25])
         node_new_coord = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])

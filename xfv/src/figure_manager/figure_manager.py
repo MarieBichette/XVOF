@@ -1,48 +1,51 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe d�finissant le gestionnaire d'images
+A class to manage the figures and animations
 
-@todo: H�riter de la classe Figure
-@todo: translate in english
-@todo: incorporate the calculation of the time at which images have to be shown (move from Vnr1D...py)
+pylint: disable=invalid-name
+
+@todo: incorporate the calculation of the time at which images have to be shown
+(move from Vnr1D...py)
 """
+from collections import namedtuple
+import os
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-from collections import namedtuple
-from .physic_figure import PhysicFigure
+from xfv.src.figure_manager.physic_figure import PhysicFigure
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
 
 max_coord = 0.015
 Field = namedtuple("Field", ["label", "titre", "val_min", "val_max", "results_path"])
 
-PressureField = Field("Pression [Pa]", "Champ de pression", -20e+09, 20e+09,
-                      "./RESULTATS/PressureField")
-DensityField = Field("Masse volumique [kg/m3]", "Champ de densite", 7000.0, 12000.0,
-                     "./RESULTATS/DensityField")
-InternalEnergyField = Field("Energie interne [J/kg]", "Champ d energie interne", 0, 100000.0,
-                            "./RESULTATS/InternalEnergyField")
-PseudoViscosityField = Field("Pseudoviscosite [Pa]", "Champ de pseudoviscosite", 0, 1.5e+09,
-                             "./RESULTATS/PseudoViscosityField")
-CellPositionField = Field("Position [m]", "Champ de position", 0.0, max_coord,
-                          "./RESULTATS/CellPositionField")
-NodePositionField = Field("Position [m]", "Champ de position", 0.0, max_coord,
-                          "./RESULTATS/NodePositionField")
-NodeVelocityField = Field("Vitesse [m/s]", "Champ de vitesse", -1000.0, 1000.0,
-                          "./RESULTATS/NodeVelocityField")
-DevStressField = Field("Stress Dev [Pa]", "Champ de dev stress", -1.5e+09,
-                        1.5e+09, "./RESULTATS/DevStressField")
-StressXXField = Field("Stress XX [Pa]", "Champ de stress XX", -20e+09, 20e+09,
-                      "./RESULTATS/StressXXField")
+PressureField = Field("Pressure [Pa]", "Pressure Field", -20e+09, 20e+09, "./RESULTS/PressureField")
+DensityField = Field("Density [kg/m3]", "Density Field", 7000.0, 12000.0, "./RESULTS/DensityField")
+InternalEnergyField = Field("Internal Energy [J/kg]", "Internal Energy field", 0, 100000.0,
+                            "./RESULTS/InternalEnergyField")
+PseudoViscosityField = Field("Artificial viscosity [Pa]", "Artificial viscosity field", 0, 1.5e+09,
+                             "./RESULTS/PseudoViscosityField")
+CellPositionField = Field("Position [m]", "Cell position field", 0.0, max_coord,
+                          "./RESULTS/CellPositionField")
+NodePositionField = Field("Position [m]", "Node position field", 0.0, max_coord,
+                          "./RESULTS/NodePositionField")
+NodeVelocityField = Field("Velocity [m/s]", "Velocity field", -1000.0, 1000.0,
+                          "./RESULTS/NodeVelocityField")
+DevStressField = Field("Stress Dev [Pa]", "Deviatoric Stress XX field", -1.5e+09, 1.5e+09,
+                       "./RESULTS/DevStressField")
+StressXXField = Field("Stress XX [Pa]", "Stress XX field", -2e+10, 2e+10, "./RESULTS/StressXXField")
 
 
-class FigureManager(object, metaclass=Singleton):
+class FigureManager(metaclass=Singleton):
     """
-    Gestionnaire de figures
+    A manager for figures and animations during calculation
     """
 
     def __init__(self, mesh_instance, dump=False):
+        """
+        Creation of the instance
+        :param mesh_instance:
+        :param dump:
+        """
         self.__mesh_instance = mesh_instance
         self.__figures_mailles = []
         self.__figures_noeuds = []
@@ -53,7 +56,7 @@ class FigureManager(object, metaclass=Singleton):
         self.__dump = dump
         self.interface = int(np.where(self.__mesh_instance.cells.cell_in_target)[0][0])
 
-    def set_time_controler(self, deltat_t):
+    def set_time_controler(self, deltat_t: float):
         """
         The figures will be updated every delta_t seconds
 
@@ -61,7 +64,7 @@ class FigureManager(object, metaclass=Singleton):
         """
         self.__time_ctrl = OutputTimeControler(identifier="FigureManager", time_period=deltat_t)
 
-    def set_iteration_controler(self, deltat_it):
+    def set_iteration_controler(self, deltat_it: float):
         """
         The figures will be updated every delta_it iterations
 
@@ -71,34 +74,32 @@ class FigureManager(object, metaclass=Singleton):
                                                iteration_period=deltat_it)
 
     def update_fields(self):
-        """ MAJ des champs par appel des propri�t�s du maillage"""
-        self.__champs_mailles = \
-             {CellPositionField: self.__mesh_instance.cells_coordinates[:],
-             PressureField: self.__mesh_instance.pressure_field,
-             # DensityField: self.__mesh_instance.density_field,
-             # DevStressField: self.__mesh_instance.deviatoric_stress_field,
-             StressXXField: self.__mesh_instance.stress_xx_field,
-             }
-        self.__champs_noeuds = \
-            {
-             NodePositionField: self.__mesh_instance.nodes_coordinates[:],
-             NodeVelocityField: self.__mesh_instance.velocity_field
-             }
+        """
+        Update the fields to plot using the mesh update methods
+        """
+        # Add / remove here the fields to be plotted
+        self.__champs_mailles = {CellPositionField: self.__mesh_instance.cells_coordinates[:],
+                                 PressureField: self.__mesh_instance.pressure_field,
+                                 StressXXField: self.__mesh_instance.stress_xx_field
+                                 }
+        self.__champs_noeuds = {NodePositionField: self.__mesh_instance.nodes_coordinates[:],
+                                NodeVelocityField: self.__mesh_instance.velocity_field
+                                }
 
     def create_figure_for_cell_field(self, field_X, field_Y):
         """
-        Cr�ation des figures pour les champs aux mailles
-        (l'axe des X est donc l'abscisse des mailles)
+        Creation of figures for cell fields
+        Abscissa is thus the cell coordinates
         """
         try:
-            X = self.__champs_mailles[field_X]
+            X = self.__champs_mailles[field_X]  # pylint: disable=invalid-name
         except ValueError as ve:
-            print("Le champ {} est inconnu!".format(field_X))
+            print("Field {} is unknown !".format(field_X))
             raise ve
         try:
-            Y = self.__champs_mailles[field_Y]
+            Y = self.__champs_mailles[field_Y]  # pylint: disable=invalid-name
         except ValueError as ve:
-            print("Le champ {} est inconnu!".format(field_Y))
+            print("Field {} is unknown !".format(field_Y))
             raise ve
         if self.__dump:
             phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
@@ -113,16 +114,16 @@ class FigureManager(object, metaclass=Singleton):
 
     def create_figure_for_node_field(self, field_X, field_Y):
         """
-        Cr�ation des figures pour les champs aux noeuds
-        (l'axe des X est donc l'abscisse des noeuds)
+        Creation of figures for nodal fields
+        Abscissa is thus the node coordinates
         """
         try:
-            X = np.array(self.__champs_noeuds[field_X])
+            X = np.array(self.__champs_noeuds[field_X])  # pylint: disable=invalid-name
         except ValueError as ve:
             print("Le champ {} est inconnu!".format(field_X))
             raise ve
         try:
-            Y = np.array(self.__champs_noeuds[field_Y])
+            Y = np.array(self.__champs_noeuds[field_Y])  # pylint: disable=invalid-name
         except ValueError as ve:
             print("Le champ {} est inconnu!".format(field_Y))
             raise ve
@@ -139,8 +140,7 @@ class FigureManager(object, metaclass=Singleton):
 
     def populate_figs(self):
         """
-        Cr�ation des figures associ�es � chacun des champs et ajout �
-        la liste des figures
+        Creation of the figures associtated with fields and add to the list of figures
         """
         champ_X = CellPositionField
         for champ_Y in list(self.__champs_mailles.keys()):
@@ -159,7 +159,8 @@ class FigureManager(object, metaclass=Singleton):
 
     def update_figs(self, title_compl=None):
         """
-        MAJ des champs puis des figures correspondantes
+        Update the fields and the associated figures
+        :param title_compl: title of the figure
         """
         self.update_fields()
         for (fig, champ_x, champ_y) in self.__figures_mailles:
@@ -179,6 +180,8 @@ class FigureManager(object, metaclass=Singleton):
         If the current time given in argument is above the time of next output then
         the manager asks each of its database to save fields. It's the same for
         a current iteration above the iteration of next output
+        :param time : simulation time
+        :param iteration : id of the current iteration
         """
         if self.__time_ctrl is not None:
             if self.__time_ctrl.db_has_to_be_updated(time, iteration):

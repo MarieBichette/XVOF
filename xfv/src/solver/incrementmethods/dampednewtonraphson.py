@@ -1,14 +1,13 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Class définissant la correction amortie appliquée sur la variable d'un Newton Raphson
+Class dÃ©finissant la correction amortie appliquÃ©e sur la variable d'un Newton Raphson
 """
 from xfv.src.solver.incrementmethods.newtonraphsonincrementbase import NewtonRaphsonIncrementBase
 
 
 class DampedNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
     """
-    Class définissant un incrément amorti de l'algorithme de Newton-Raphson
+    Class dÃ©finissant un incrÃ©ment amorti de l'algorithme de Newton-Raphson
     """
     def __init__(self, damping_coefficient=0.9):
         super(DampedNewtonRaphsonIncrement, self).__init__()

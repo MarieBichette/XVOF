@@ -5,8 +5,8 @@
 one_dimension_cell module unit tests
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 
@@ -53,6 +53,17 @@ class OneDimensionCellEPPTest(unittest.TestCase):
                                    [1.e+2, -5e+1, -5e+1],
                                    [4e+9, -2e+9, -2e+9]])
         np.testing.assert_allclose(self.my_cells.deviatoric_stress_new, expected_value)
+
+    def test_compute_yield_stress(self):
+        """
+        Test de la m�thode compute_yield_stress
+        """
+        self.my_cells.compute_yield_stress(
+            self.test_data.material_target.constitutive_model.plasticity_model.build_yield_stress_obj(),
+            np.array([True, True,True, True]))
+        expected_value = self.test_data.material_target.initial_values.yield_stress_init
+        np.testing.assert_allclose(self.my_cells.yield_stress.new_value,
+                                   np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_equivalent_plastic_strain_rate(self):
         """

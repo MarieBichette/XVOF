@@ -3,8 +3,8 @@
 Class to test the module LossOfStiffnessUnloadingTest
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cohesive_model_unloading.loss_of_stiffness_unloading import LossOfStiffnessUnloading
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer

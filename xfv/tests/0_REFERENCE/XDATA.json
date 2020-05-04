@@ -1,11 +1,11 @@
 {
   "time-management": {
-    "final-time": 5e-06,
-    "initial-time-step": 1e-08,
+    "final-time": 1e-06,
+    "initial-time-step": 1e-10,
     "constant-time-step": true
   },
   "geometry": {
-    "section": 0.0003141592653589793
+    "section": 3.141592653589793e-06
   },
   "matter": {
     "initialization": {
@@ -42,7 +42,7 @@
       {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 1e-06
+      "time-period": 1e-09
       }
     ]
   }

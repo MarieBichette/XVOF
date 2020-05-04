@@ -5,7 +5,7 @@ Implementing the EnrichedMassMatrix class
 from abc import abstractmethod
 
 
-class EnrichedMassMatrix(object):
+class EnrichedMassMatrix:
     """
     A class to factorize code for the enriched mass matrix
     """
@@ -47,21 +47,18 @@ class EnrichedMassMatrix(object):
         """
         Accessor on the part of mass matrix concerning the left part of the cracked cell
         """
-        pass
 
     @abstractmethod
     def get_mass_matrix_right(self):
         """
         Accessor on the part of mass matrix concerning the right part of the cracked cell
         """
-        pass
 
     @abstractmethod
     def assemble_enriched_mass_matrix(self, *sub_matrix_names):
         """
         Assemble and inverse the mass matrix after enrichment
         """
-        pass
 
     @abstractmethod
     def inverse_enriched_mass_matrix_classic_dof(self):
@@ -69,7 +66,6 @@ class EnrichedMassMatrix(object):
         Accessor on the inverse of the mass matrix for classical degrees of freedom
         :return: the extraction of the inverse of the mass matrix for classical dof
         """
-        return
 
     @abstractmethod
     def inverse_enriched_mass_matrix_enriched_dof(self):
@@ -77,7 +73,6 @@ class EnrichedMassMatrix(object):
         Accessor on the inverse of the mass matrix for enriched degrees of freedom
         :return: extraction of the inverse of the mass matrix for enriched dof
         """
-        return
 
     @abstractmethod
     def compute_enriched_mass_matrix_left_part(self, mass_0: float, mass_1: float, epsilon: float):
@@ -88,7 +83,6 @@ class EnrichedMassMatrix(object):
         :param mass_1 : mass of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
-        pass
 
     @abstractmethod
     def compute_enriched_mass_matrix_right_part(self, mass_1: float, mass_2: float, epsilon: float):
@@ -99,14 +93,12 @@ class EnrichedMassMatrix(object):
         :param mass_2: mass of the element right on the right of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
-        pass
 
     @abstractmethod
     def rearrange_dof_in_inv_mass_matrix(self):
         """
         Rearrange dof to easily compute the node velocity with classical and enriched dof separately
         """
-        pass
 
     @abstractmethod
     def print_enriched_mass_matrix(self):
@@ -114,4 +106,3 @@ class EnrichedMassMatrix(object):
         Print the mass matrix * (with aligned members)
         :return:
         """
-        pass

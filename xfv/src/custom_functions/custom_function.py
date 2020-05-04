@@ -5,7 +5,7 @@ Implements the CustomFunction abstact base class
 from abc import ABCMeta, abstractmethod
 
 
-class CustomFunction(object, metaclass=ABCMeta):
+class CustomFunction(metaclass=ABCMeta):
     """
     A generic CustomFunction class that should be used to derive
     more specific custom function class

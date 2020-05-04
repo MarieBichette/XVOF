@@ -5,7 +5,7 @@ Definition of UnloadingModelBase
 from abc import ABCMeta, abstractmethod
 
 
-class UnloadingModelBase(object, metaclass=ABCMeta):
+class UnloadingModelBase(metaclass=ABCMeta):
     """
     A model for unloading reloading path in cohesive zone model
     """
@@ -24,5 +24,3 @@ class UnloadingModelBase(object, metaclass=ABCMeta):
         :param new_opening : opening of the discontinuity
         :return: cohesive stress (float)
         """
-        pass
-

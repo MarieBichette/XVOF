@@ -9,7 +9,7 @@ from numpy.linalg import inv
 
 def multiplication_masse(matrix, vector):
     """
-    Fonction pour faire le produit matriciel matrice * vecteur adapté pour la matrice masse sous 
+    Fonction pour faire le produit matriciel matrice * vecteur adapté pour la matrice masse sous
     forme de vecteur
     :param matrix : matrix (array multiD)
     :param vector: vector (array 1D)

@@ -3,10 +3,9 @@
 """
 Cell module unit tests
 """
-import numpy as np
 import unittest
-import unittest.mock as mock
 import os
+import numpy as np
 
 from xfv.src.cell.cell import Cell
 from xfv.src.mesh.topology1d import Topology1D
