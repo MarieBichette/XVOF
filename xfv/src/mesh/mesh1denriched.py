@@ -52,8 +52,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # ----------------------------------------------
         # Mass Matrix creation
         # ----------------------------------------------
-        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes, correction_on_last_cells=None)
-        # self.mass_matrix = OneDimensionMassMatrix(nbr_nodes, correction_on_last_cells="hansbo")
+        self.mass_matrix = OneDimensionMassMatrix(
+            nbr_nodes, self.data.numeric.consistent_mass_matrix_on_last_cells)
 
         # ---------------------------------------------
         # Topology creation
@@ -115,9 +115,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass,
                                              self.nb_nodes_per_cell)
 
-        if self.mass_matrix.correction_on_cell_500 is not None:
-            print('Matrix correction on last cells compatible with {} analyis'.format(
-                self.mass_matrix.correction_on_cell_500))
+        if self.mass_matrix.consistent_mass_matrix_on_last_cells:
+            print('Matrix correction on last cells compatible with {} analysis'.format(
+                self.mass_matrix.consistent_mass_matrix_on_last_cells))
             # Identify the last elements of the reference bar
             self.mask_last_nodes_of_ref = np.zeros(
                 [self.nodes.number_of_nodes], dtype=bool)
@@ -151,7 +151,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             delta_t, self.nodes.enrichment_not_concerned,
             self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
-        if self.mass_matrix.correction_on_cell_500 is not None:
+        if self.mass_matrix.consistent_mass_matrix_on_last_cells:
             # Apply some correction to mimic a consistent mass matrix on the last cells of
             # the reference bar
             inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix

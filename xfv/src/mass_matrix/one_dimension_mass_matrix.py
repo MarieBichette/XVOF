@@ -13,13 +13,13 @@ class OneDimensionMassMatrix:
     A class for 1d mass matrix
     """
 
-    def __init__(self, number_of_nodes, correction_on_last_cells=None):
+    def __init__(self, number_of_nodes, consistent_matrix_on_last_cells=False):
         self.__number_of_nodes = number_of_nodes
         self.__mass_matrix = np.zeros([self.__number_of_nodes, 1], dtype=np.float64, order='C')
         self.__inv_mass_matrix = None
         self.__correction_mass_matrix = None
         self.__inv_correction_mass_matrix = None
-        self.correction_on_cell_500 = correction_on_last_cells
+        self.consistent_mass_matrix_on_last_cells = consistent_matrix_on_last_cells
 
     def compute_mass_matrix(self, topology, cell_mass_vector, node_number_by_cell_vector):
         """

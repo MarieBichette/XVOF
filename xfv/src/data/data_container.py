@@ -46,6 +46,7 @@ class NumericalProps(TypeCheckedDataClass):
     b_pseudo: float
     cfl: float
     cfl_pseudo: float
+    consistent_mass_matrix_on_last_cells: bool
 
     def __post_init__(self):
         super().__post_init__()  # type checking first
@@ -226,7 +227,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         if not (self.data_contains_a_projectile or self.data_contains_a_target):
             self.material_projectile = self.material_target
 
-    def __fill_in_numerical_props(self) -> Tuple[float, float, float, float]:
+    def __fill_in_numerical_props(self) -> Tuple[float, float, float, float, bool]:
         """
         Returns the quantities needed to fill numerical properties:
             - coefficient of linear artificial viscosity
@@ -235,8 +236,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             - CFL coefficient of artificial viscosity
         """
         params: Dict[str, float] = self.__datadoc['numeric-parameters']
+        last_cells_consistent_mass_matrix: bool = params.get(
+            'consistent-mass-matrix-on-last-cells', False)
         return (params['quadratic-pseudo'], params['linear-pseudo'],
-                params['cfl'], params['cfl-pseudo'])
+                params['cfl'], params['cfl-pseudo'], last_cells_consistent_mass_matrix)
 
     def __fill_in_geometrical_props(self) -> Tuple[float, float]:
         """
