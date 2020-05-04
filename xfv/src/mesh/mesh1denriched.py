@@ -7,6 +7,7 @@ import numpy as np
 from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
 from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
+from xfv.src.data.enriched_mass_matrix_props import ConsistentMassMatrixProps
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
@@ -172,6 +173,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # Compute enriched ddl velocity of enriched nodes
         self.nodes.compute_additional_dof_new_velocity(
             delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
+
+        if type(self.data.material_target.failure_model.lump_mass_matrix) == \
+                ConsistentMassMatrixProps:
+            # Compute the contribution of classical ddl on enriched ddl and the reverse
+            # (out of the diagonal terms of the mass matrix)
+            self.nodes.coupled_enrichment_terms_compute_new_velocity(
+                delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof)
 
     def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
