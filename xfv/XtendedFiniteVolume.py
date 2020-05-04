@@ -390,5 +390,10 @@ if __name__ == "__main__":
         description="%(prog)s is a one dimensional hydro code to simulate "
                     "damage and spall activated by strong shock propagation.")
     parser.add_argument("data_directory", help="Path toward the data directory")
+    parser.add_argument("--use-internal-solver", action="store_true",
+                        help="Do not use external library to solve internal energy evolution")
     args = parser.parse_args()
+    if args.use_internal_solver:
+        import xfv.src.cell.one_dimension_cell as cell
+        cell.USE_INTERNAL_SOLVER = True
     main(Path(args.data_directory))
