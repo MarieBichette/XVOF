@@ -21,7 +21,7 @@ jobs:
         - pip install pytest
         - pip install pytest-cov
         - pip install coveralls
-      script: PYTHONPATH=$(pwd) pytest --cov=xfv/src/
+      script: PYTHONPATH=$(pwd) OMP_NUM_THREADS=1 pytest --cov=xfv/src/
       after_success: coveralls
     - name: "Integration tests"
       before_script:
