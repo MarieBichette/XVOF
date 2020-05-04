@@ -42,6 +42,7 @@ class OneDimensionMassMatrix:
         """
         connect = topologie.cells_in_contact_with_node[mask_node]
         mask_cell = np.unique(connect)[1:]
+        shape = len(mask_cell)
         self.__correction_mass_matrix = np.zeros([shape, shape])
         mass_499 = cell_mass_vector[mask_cell][-2]
         mass_500 = cell_mass_vector[mask_cell][-1]
