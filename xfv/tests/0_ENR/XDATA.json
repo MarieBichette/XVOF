@@ -1,7 +1,7 @@
 {
   "time-management": {
-    "final-time": 5e-06,
-    "initial-time-step": 1e-08,
+    "final-time": 1e-06,
+    "initial-time-step": 1e-10,
     "constant-time-step": true
   },
   "geometry": {
@@ -19,7 +19,7 @@
     "failure": {
       "failure-criterion": {
         "name": "HalfRodComparison",
-        "index": 25
+        "index": 200
       },
       "failure-treatment": {
         "name": "Enrichment",
@@ -35,9 +35,9 @@
       "value": 0.0
     },
     "left-boundary": {
-      "type": "velocity",
+      "type": "pressure",
       "bc-law": "Constant",
-      "value": -30.0
+      "value": -10000000000.0
     }
   },
   "numeric-parameters": {
@@ -53,7 +53,7 @@
       {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 1e-08
+      "time-period": 1e-09
       }
     ]
   }

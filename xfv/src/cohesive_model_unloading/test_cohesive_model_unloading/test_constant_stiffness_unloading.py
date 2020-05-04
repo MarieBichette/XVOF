@@ -3,8 +3,8 @@
 Class to test the module ConstantStiffnessUnloadingTest
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cohesive_model_unloading.constant_stiffness_unloading import ConstantStiffnessUnloading
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer

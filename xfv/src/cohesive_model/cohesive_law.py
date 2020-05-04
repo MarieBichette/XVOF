@@ -5,7 +5,7 @@ Definition of CohesiveZoneLaw class
 import numpy as np
 
 
-class CohesiveLaw(object):
+class CohesiveLaw:
     """
     A class for cohesive law implementation
     """

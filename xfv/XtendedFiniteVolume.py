@@ -5,20 +5,23 @@ todo: to complete
 """
 import argparse
 from pathlib import Path
+from typing import Tuple, Optional
 import time
-
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
-from xfv.src.data.data_container                import DataContainer, BoundaryType
+from xfv.src.data.data_container                import DataContainer, BoundaryType, \
+                                                       ConstitutiveModelProps
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
 from xfv.src.rupturetreatment.enrichelement     import EnrichElement
 from xfv.src.rupturetreatment.imposedpressure   import ImposedPressure
 from xfv.src.custom_functions.custom_function   import CustomFunction
+from xfv.src.rheology.shearmodulus              import ShearModulus
+from xfv.src.rheology.yieldstress               import YieldStress
+from xfv.src.plasticitycriterion.plasticitycriterion import PlasticityCriterion
 
 
 def __create_mesh(meshfile: Path) -> Mesh1dEnriched:
@@ -114,8 +117,47 @@ def _build_boundary_function(boundary: BoundaryType) -> CustomFunction:
     return function_obj
 
 
+def _build_material_constitutive_model(
+        material_data: ConstitutiveModelProps) -> Tuple[bool, bool,
+                                                        Optional[ShearModulus],
+                                                        Optional[YieldStress],
+                                                        Optional[PlasticityCriterion]]:
+    """
+    Build the constitutive model objects from the XDATA
+    :param material_data: data.material_projectile.Constitutive_model
+    """
+    if material_data is not None:
+        bool_elasticity: bool = material_data.elasticity_model is not None
+        bool_plasticity: bool = material_data.plasticity_model is not None
+
+        # Set projectile elasticity model
+        if bool_elasticity:
+            shear_modulus_model = material_data.elasticity_model.build_shear_modulus_obj()
+        else:
+            shear_modulus_model = None
+
+        # Set projectile plasticity model
+        if bool_plasticity:
+            yield_stress_model = \
+                material_data.plasticity_model.build_yield_stress_obj()
+            plasticity_criterion = \
+                material_data.plasticity_criterion.build_plasticity_criterion_obj()
+        else:
+            yield_stress_model = None
+            plasticity_criterion = None
+
+    # Default : no model defined => hydro
+    else:
+        bool_elasticity, bool_plasticity = False, False
+        shear_modulus_model = None
+        yield_stress_model, plasticity_criterion = None, None
+
+    return (bool_elasticity, bool_plasticity,
+            shear_modulus_model, yield_stress_model, plasticity_criterion)
+
+
 def main(directory: Path) -> None:
-    #pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Launch the program
     """
@@ -194,36 +236,23 @@ def main(directory: Path) -> None:
     # ---------------------------------------------#
     if data.material_projectile is not None:
         projectile_model = data.material_projectile.constitutive_model
-        if projectile_model is not None:
-            projectile_elasticity: bool = projectile_model.elasticity_model is not None
-            projectile_plasticity: bool = projectile_model.plasticity_model is not None
-            if projectile_plasticity:
-                projectile_plasticity_criterion = \
-                    projectile_model.plasticity_criterion.build_plasticity_criterion_obj()
-            else:
-                projectile_plasticity_criterion = None
-        else:
-            projectile_elasticity = False
-            projectile_plasticity = False
-            projectile_plasticity_criterion = None
+        (projectile_elasticity, projectile_plasticity, projectile_shear_modulus,
+         projectile_yield_stress, projectile_plasticity_criterion) = \
+            _build_material_constitutive_model(projectile_model)
     else:
-        projectile_elasticity = False
-        projectile_plasticity = False
-        projectile_plasticity_criterion = None
+        projectile_elasticity, projectile_plasticity = False, False
+        projectile_shear_modulus = None
+        projectile_yield_stress, projectile_plasticity_criterion = None, None
 
     target_model = data.material_target.constitutive_model
     if target_model is not None:
-        target_elasticity: bool = target_model.elasticity_model is not None
-        target_plasticity: bool = target_model.plasticity_model is not None
-        if target_plasticity:
-            target_plasticity_criterion = \
-                target_model.plasticity_criterion.build_plasticity_criterion_obj()
-        else:
-            target_plasticity_criterion = None
+        (target_elasticity, target_plasticity, target_shear_modulus,
+         target_yield_stress, target_plasticity_criterion) = \
+            _build_material_constitutive_model(target_model)
     else:
-        target_elasticity = False
-        target_plasticity = False
-        target_plasticity_criterion = None
+        target_elasticity, target_plasticity = False, False
+        target_shear_modulus = None
+        target_yield_stress, target_plasticity_criterion = None, None
 
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
@@ -284,19 +313,18 @@ def main(directory: Path) -> None:
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#
         if projectile_elasticity:
-            my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_projectile)
+            my_mesh.apply_elasticity(dt, projectile_shear_modulus, my_mesh.cells.cell_in_projectile)
         if target_elasticity:
-            my_mesh.compute_deviator_elasticity(dt, my_mesh.cells.cell_in_target)
+            my_mesh.apply_elasticity(dt, target_shear_modulus, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #           PLASTICITY COMPUTATION             #
         # ---------------------------------------------#
         if projectile_plasticity:
-            my_mesh.get_plastic_cells(projectile_plasticity_criterion,
-                                      my_mesh.cells.cell_in_projectile)
-            my_mesh.apply_plasticity_treatment(dt, my_mesh.cells.cell_in_projectile)
+            my_mesh.apply_plasticity(dt, projectile_yield_stress, projectile_plasticity_criterion,
+                                     my_mesh.cells.cell_in_projectile)
         if target_plasticity:
-            my_mesh.get_plastic_cells(target_plasticity_criterion, my_mesh.cells.cell_in_target)
-            my_mesh.apply_plasticity_treatment(dt, my_mesh.cells.cell_in_target)
+            my_mesh.apply_plasticity(dt, target_yield_stress, target_plasticity_criterion,
+                                     my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
         #         PSEUDOVISCOSITY COMPUTATION          #
         # ---------------------------------------------#

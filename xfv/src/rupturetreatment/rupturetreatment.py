@@ -5,7 +5,7 @@ Defining an interface for rupture treatments
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureTreatment(object, metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
+class RuptureTreatment(metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     An interface for rupture treatments
     """
@@ -18,4 +18,3 @@ class RuptureTreatment(object, metaclass=ABCMeta):  # pylint: disable=too-few-pu
         :param cells: array of all cells
         :param ruptured_cells: boolean array marking the ruptured cells
         """
-        pass

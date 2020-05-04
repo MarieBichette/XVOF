@@ -6,7 +6,7 @@ Implementing the RuptureCriterion abstract base class
 from abc import ABCMeta, abstractmethod
 
 
-class RuptureCriterion(object, metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
+class RuptureCriterion(metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     An abstract base class for rupture criteria
     """
@@ -20,4 +20,3 @@ class RuptureCriterion(object, metaclass=ABCMeta):  # pylint: disable=too-few-pu
         Check of the rupture criterion on the cells in arguments
         :param cells: cells on which to check the criterion
         """
-        pass

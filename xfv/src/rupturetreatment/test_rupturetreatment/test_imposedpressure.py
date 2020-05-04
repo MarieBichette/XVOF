@@ -4,8 +4,8 @@
 Classe de test du module ImposedPressure
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 
 from xfv.src.rupturetreatment.imposedpressure import ImposedPressure
 from xfv.src.cell.one_dimension_cell import OneDimensionCell

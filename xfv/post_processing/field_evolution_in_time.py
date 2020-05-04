@@ -43,9 +43,10 @@ def run():
     field_unit = dict()
     field_unit["Density"] = "[$kg/m^3$]"
     field_unit["Pressure"] = "[$Pa$]"
-    field_unit["PseudoViscosity"] = "[$Pa$]"
+    field_unit["ArtificialViscosity"] = "[$Pa$]"
     field_unit["InternalEnergy"] = "[$J/kg$]"
     field_unit["NodeVelocity"] = "[$ms/s$]"
+    field_unit["EquivalentPlasticStrainRate"] = "[$s^{-1}$]"
 
     plt.figure(1)
     plt.xlabel("Time [$\mu$s]")
@@ -68,7 +69,7 @@ def run():
             print("Done !")
             print("~~~~~~~~~~~~~")
         # Plot field :
-        plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], label=case)
+        plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], '.-', label=case)
 
 
 if __name__ == "__main__":

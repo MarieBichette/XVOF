@@ -8,7 +8,7 @@ from abc import abstractmethod
 import numpy as np
 
 
-class Node(object):
+class Node:
     """
     Un objet Node représente l'ensemble des noeuds du maillages. Ses différents membres sont
     essentiellement des vecteurs de nbr_of_nodes lignes. Plusieurs colonnes peuvent être

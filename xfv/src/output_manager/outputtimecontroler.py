@@ -3,7 +3,7 @@ Implementing the OutputTimeControler class
 """
 
 
-class OutputTimeControler(object):
+class OutputTimeControler:
     """
     Compute the time or iteration of outputs
     """

@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 
 
-class OutputDatabase(object):
+class OutputDatabase:
     """
     A class to store simulation fields in an hdf5 database
     """

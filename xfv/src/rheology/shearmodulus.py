@@ -1,21 +1,20 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Implementation d'une classe de module de cisaillement (interface)
+Interface for the shear modulus calculation
 """
+from abc import abstractmethod
+import numpy as np
 
 
-class ShearModulus(object):  # pylint: disable=too-few-public-methods
+class ShearModulus:  # pylint: disable=too-few-public-methods
     """
-    Classe m�re de module de cisaillement
+    Abstract class for the shear modulus computation
     """
     def __init__(self, initial_value):
         self.shear_modulus = initial_value
 
-    @classmethod
-    def compute(cls):
+    @abstractmethod
+    def compute(self, density: np.array) -> np.array:
         """
         Compute the new value of shear modulus
-        :return : float
         """
-        pass

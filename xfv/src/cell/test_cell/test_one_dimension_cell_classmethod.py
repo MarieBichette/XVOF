@@ -5,13 +5,16 @@
 one_dimension_cell module unit tests
 """
 import unittest
-import numpy as np
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionCellClassMethodTest(unittest.TestCase):
+    """
+    A class to test the classmethod of the OneDimensionCell module
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -58,7 +61,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
                                                      energy_current, energy_new, pseudo, cson_new)
 
         expected_energy = np.array([487.425148, 94.274747, 28.598207, 16.438778])
-        expected_pressure = np.array([1.103738e+09,  -4.640087e+08,  -2.323383e+08,  -1.549395e+08])
+        expected_pressure = np.array([1.103738e+09, -4.640087e+08, -2.323383e+08, -1.549395e+08])
         expected_sound_speed = np.array([4000.877516, 3926.583447, 3933.306654, 3935.541937])
         np.testing.assert_allclose(energy_new_value, expected_energy, rtol=1.e-5)
         np.testing.assert_allclose(pressure_new_value, expected_pressure, rtol=1.e-5)
@@ -71,23 +74,17 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         delta_t = 1.
         density_current = np.ones(self.nbr_cells) * 8930.
         density_new = np.ones(self.nbr_cells) * 8950.
-        stress_dev_current = np.array([[2, -1, -1],
-                                      [4,-2, -2],
-                                      [10., -5., -5.],
-                                      [40., -20., -20.]])
-        stress_dev_new = np.array([[20., -10, -10.],
-                                   [5., -2.5, -2.5],
-                                   [10., -5., -5.],
-                                   [40., -20., -20.]])
-        strain_rate_dev = np.array([[1., -0.5, -0.5],
-                                   [2., -1, -1],
-                                   [3., -1.5, -1.5],
-                                   [4., -2., -2.]])
+        stress_dev_current = np.array([[2, -1, -1], [4, -2, -2],
+                                       [10., -5., -5.], [40., -20., -20.]])
+        stress_dev_new = np.array([[20., -10, -10.], [5., -2.5, -2.5],
+                                   [10., -5., -5.], [40., -20., -20.]])
+        strain_rate_dev = np.array([[1., -0.5, -0.5], [2., -1, -1],
+                                    [3., -1.5, -1.5], [4., -2., -2.]])
         energy_new = OneDimensionCell.add_elastic_energy_method(delta_t,
                                                                 density_current, density_new,
                                                                 stress_dev_current, stress_dev_new,
                                                                 strain_rate_dev)
-        expected_energy = np.array([ 0.001846,  0.00151 ,  0.005034,  0.026846])
+        expected_energy = np.array([0.001846, 0.00151, 0.005034, 0.026846])
         np.testing.assert_allclose(energy_new, expected_energy, rtol=1.e-3)
 
     def test_general_method_deviator_strain_rate(self):
@@ -104,11 +101,11 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         position_new = np.array([[x_new[0], x_new[1]],
                                  [x_new[1], x_new[2]],
                                  [x_new[2], x_new[3]],
-                                 [x_new[3], x_new[4]]]).reshape((4,2))
+                                 [x_new[3], x_new[4]]]).reshape((4, 2))
         vitesse_new = np.array([[u_new[0], u_new[1]],
                                 [u_new[1], u_new[2]],
                                 [u_new[2], u_new[3]],
-                                [u_new[3], u_new[4]]]).reshape((4,2))
+                                [u_new[3], u_new[4]]]).reshape((4, 2))
         expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333],
                                     [0.266667, -0.133333, -0.133333]])
         dev_strain_rate = np.zeros((self.nbr_cells, 3))
@@ -145,6 +142,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         result = OneDimensionCell.compute_time_step(cfl, cfl_pseudo, rho_old, rho_new, new_size,
                                                     sound_speed, pseudo_old, pseudo_new)
         np.testing.assert_allclose(result, [1.41137110e-06, 7.81250000e-07, 1.09649123e-06])
+
 
 if __name__ == "__main__":
     unittest.main()

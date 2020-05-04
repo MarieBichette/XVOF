@@ -1,11 +1,11 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing FunctionToSolveBase interface
 """
 from abc import ABCMeta, abstractmethod
 
 
-class FunctionToSolveBase(object, metaclass=ABCMeta):
+class FunctionToSolveBase(metaclass=ABCMeta):
     """
     An interface for functions that should be solve by Nexton-Raphson non linear solver
     """
@@ -20,7 +20,7 @@ class FunctionToSolveBase(object, metaclass=ABCMeta):
         if self._variables is None:
             self._variables = variables
         else:
-            raise ValueError("Impossible de fixer deux fois les variables de la fonction à "
+            raise ValueError("Impossible de fixer deux fois les variables de la fonction Ã  "
                              "annuler!")
 
     def eraseVariables(self):

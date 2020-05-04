@@ -14,7 +14,7 @@ DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "field
 Field = namedtuple("Field", ["name", "owner", "attr_name", "indexes"])
 
 
-class OutputManager(object, metaclass=Singleton):
+class OutputManager(metaclass=Singleton):
     """
     The manager of all outputs
     """

@@ -5,7 +5,7 @@ Implementing the Field class
 import numpy as np
 
 
-class Field(object):
+class Field:
     """
     Classical physical field on cells or nodes. Owning current and future values in numpy.arrays
     """

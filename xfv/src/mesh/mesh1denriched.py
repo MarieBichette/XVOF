@@ -14,7 +14,7 @@ from xfv.src.contact.contact_base import ContactBase
 
 
 # noinspection PyArgumentList
-class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, too-many-public-methods
+class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-public-methods
     """
     This class defines a one dimensional mesh with potential enrichment
     """
@@ -298,21 +298,32 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         for disc in Discontinuity.discontinuity_list():
             disc.additional_dof_increment()  # enriched node variables
 
-    def compute_deviator_elasticity(self, delta_t, mask):
+    def apply_elasticity(self, delta_t, shear_modulus_model, mask_material):
         """
         Compute the deviatoric part of stress tensor
         :param delta_t : float, time step staggered
-        :param mask: array of bool to select cells of interest
+        :param shear_modulus_model: model to compute the shear modulus
+        :param mask_material: array of bool to select cells of interest
         """
         # Sert à identifier si on est dans le  projectile ou dans la cible
         mask = np.logical_and(
-            mask, self.cells.classical)  # pylint: disable=assignment-from-no-return
+            mask_material, self.cells.classical)  # pylint: disable=assignment-from-no-return
+
+        # Update the shear modulus (same calculation classic and enr left => mask_material)
+        self.cells.compute_shear_modulus(shear_modulus_model, mask_material)
+        if mask_material.any():
+            # avoid calculation if mask_material = projectile because no enrichment in projectile
+            self.cells.compute_enriched_shear_modulus(shear_modulus_model)
+
+        # Compute the deviatoric stress tensor (only classical cells)
         self.cells.compute_deviatoric_stress_tensor(mask, self.__topology,
                                                     self.nodes.xtpdt, self.nodes.upundemi, delta_t)
-        # Remarque : can't be all classical cells + left part of enriched cells because of the
-        # computation of the strain rate
-        self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
-                                                             self.nodes.upundemi, delta_t)
+        # Compute dev stress tensor for enr cells (left and right parts)
+        # (full enr ddl because coord and velocities are required for strain rate computation)
+        if mask_material.any():
+            # avoid calculation if mask_material = projectile because no enrichment in projectile
+            self.cells.compute_enriched_deviatoric_stress_tensor(self.nodes.xtpdt,
+                                                                 self.nodes.upundemi, delta_t)
 
     def assemble_complete_stress_tensor(self):
         """
@@ -381,7 +392,7 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
             np.logical_or(self.__ruptured_cells,
                           new_cracked_cells_in_target)  # pylint: disable=assignment-from-no-return
 
-    def get_plastic_cells(self, plastic_criterion, mask):
+    def _get_plastic_cells(self, plastic_criterion, mask):
         """
         Find the cells where the plasticity criterion is checked and store them
         :var plastic_criterion: plastic criterion
@@ -389,25 +400,29 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         :param mask: array of bool to select cells of interest
         """
         self.__plastic_cells[mask] = plastic_criterion.check_criterion(self.cells)[mask]
-        self.cells.plastic_cells[mask] = \
+        self.cells.plastic_enr_cells[mask] = \
             plastic_criterion.check_criterion_on_right_part_cells(self.cells)[mask]
 
-    def apply_rupture_treatment(self, treatment, time):
+    def apply_rupture_treatment(self, treatment, time: float):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
         :var treatment: rupture treatment
         :type treatment: RuptureTreatment
+        :param time : simulation time
         """
         treatment.apply_treatment(self.cells, self.__ruptured_cells,
                                   self.nodes, self.__topology, time)
 
-    def apply_plasticity_treatment(self, delta_t: float, mask_mesh: np.array):
+    def apply_plasticity(self, delta_t: float, yield_stress_model, plasticity_criterion,
+                         mask_mesh: np.array):
         """
         Apply plasticity treatment if criterion is activated :
-        - compute plastic deviatoric stress tensor
-        - compute plastic strain rate
         - compute yield stress
+        - tests plasticity criterion
+        - compute plastic strain rate for plastic cells
         :param delta_t : time step
+        :param yield_stress_model: model to compute the yield stress
+        :param plasticity_criterion: model for the plasticity criterion
         :param mask_mesh : mask cells in projectile or target
         """
         # La méthode apply_plastic_corrector_on_deviatoric_stress_tensor modifie
@@ -415,42 +430,44 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         # l'étape du calcul de plasticité pour conserver la prédiction élastique dans
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
 
+        # 1) Compute yield stress
+        self.cells.compute_yield_stress(yield_stress_model, mask_mesh)
+        if mask_mesh.any():
+            self.cells.compute_enriched_yield_stress(yield_stress_model)
+
+        # 2) Get plastic cells (verification of the plasticity criterion)
+        # Criterion is tested for both classical and enriched cells
+        self._get_plastic_cells(plasticity_criterion, mask_mesh)
+
         # Get plastic cells either in projectile or in target
         mask = np.logical_and(mask_mesh,
                               self.__plastic_cells)  # pylint: disable=assignment-from-no-return
-        # Cells plastic classical
-        mask_classic_plastic = np.logical_and(
-            self.cells.classical, mask)  # pylint: disable=assignment-from-no-return
-        self.cells.compute_yield_stress()
-        self.cells.compute_plastic_strain_rate_tensor(mask_classic_plastic, delta_t)
-        self.cells.compute_equivalent_plastic_strain_rate(mask_classic_plastic, delta_t)
-        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask_classic_plastic)
+        # 3) Plasticity treatment for classical plastic cells and left part of enriched cells
+        self.cells.compute_plastic_strain_rate_tensor(mask, delta_t)
+        self.cells.compute_equivalent_plastic_strain_rate(mask, delta_t)
+        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask)
 
-        # Cells plastic enriched
-        mask_enriched_plastic = np.logical_and(
-            self.cells.enriched, mask)  # pylint: disable=assignment-from-no-return
-        self.cells.compute_enriched_yield_stress()
-        self.cells.compute_enriched_plastic_strain_rate(mask_enriched_plastic, delta_t)
-        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_enriched_plastic, delta_t)
-        self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(
-            mask_enriched_plastic)
+        # 4) Plasticity treatment for enriched plastic cells (right part)
+        self.cells.compute_enriched_plastic_strain_rate(mask_mesh, delta_t)
+        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_mesh, delta_t)
+        self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(mask_mesh)
 
     @property
-    def velocity_field(self):
+    def velocity_field(self) -> np.array:
         """
         Node velocity field
         """
         return self.nodes.velocity_field
 
     @property
-    def nodes_coordinates(self):
+    def nodes_coordinates(self) -> np.array:
         """
         Nodes coordinates
         """
         return self.nodes.xt
 
     @property
-    def cells_coordinates(self):
+    def cells_coordinates(self) -> np.array:
         """
         Cells coordinates (coordinates of cells centers)
         """
@@ -487,42 +504,42 @@ class Mesh1dEnriched(object):  # pylint:disable=too-many-instance-attributes, to
         return res
 
     @property
-    def pressure_field(self):
+    def pressure_field(self) -> np.array:
         """
         Pressure field
         """
         return self.cells.pressure_field
 
     @property
-    def density_field(self):
+    def density_field(self) -> np.array:
         """
         Density field
         """
         return self.cells.density_field
 
     @property
-    def energy_field(self):
+    def energy_field(self) -> np.array:
         """
         Internal energy field
         """
         return self.cells.energy_field
 
     @property
-    def artificial_viscosity_field(self):
+    def artificial_viscosity_field(self) -> np.array:
         """
         Artificial viscosity field
         """
         return self.cells.artificial_viscosity_field
 
     @property
-    def deviatoric_stress_field(self):
+    def deviatoric_stress_field(self) -> np.array:
         """
         Deviatoric stress field
         """
         return self.cells.deviatoric_stress_field
 
     @property
-    def stress_xx_field(self):
+    def stress_xx_field(self) -> np.array:
         """
         First component of the Cauchy stress tensor
         """

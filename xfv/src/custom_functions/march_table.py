@@ -21,7 +21,7 @@ class MarchTable(CustomFunction):
         Return the value of the for the time given in argument
 
         :param time: current time
-        :return: the value 
+        :return: the value
         """
         if time > self.time_data[-1]:
             pressure = 0

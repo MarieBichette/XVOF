@@ -5,7 +5,7 @@ Implementing the PlasticityCriterion abstract base class
 from abc import ABCMeta, abstractmethod
 
 
-class PlasticityCriterion(object, metaclass=ABCMeta):
+class PlasticityCriterion(metaclass=ABCMeta):
     """
     An abstract base class for plasticity criteria
     """
@@ -18,7 +18,6 @@ class PlasticityCriterion(object, metaclass=ABCMeta):
 
         :param cells: cells on which to check the criterion
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -28,4 +27,3 @@ class PlasticityCriterion(object, metaclass=ABCMeta):
 
         :param cells: cells on which to check the criterion
         """
-        pass

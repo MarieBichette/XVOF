@@ -4,14 +4,18 @@
 one_dimension_cell module unit tests
 """
 import unittest
-import numpy as np
+import unittest.mock as mock
 import os
+import numpy as np
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionCellElastoTest(unittest.TestCase):
+    """
+    A class to test the OneDimensionCell module with elasticity physic
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -32,6 +36,7 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
         self.mask = np.array([True, True, False, False])
+        self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
 
     def tearDown(self):
         pass
@@ -51,10 +56,10 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                                          [400., -200., -200.]])
 
         self.my_cells._deviatoric_strain_rate = \
-            np.array([[-0.235294,  0.117647,  0.117647],
+            np.array([[-0.235294, 0.117647, 0.117647],
                       [0.4444444, -0.2222222, -0.2222222],
-                      [0.,  0.,  0.],
-                      [0.,  0.,  0.]])
+                      [0., 0., 0.],
+                      [0., 0., 0.]])
 
         self.my_cells.density.new_value = np.array([8940., 8970, 8920., 9000.])
         self.my_cells.sound_velocity.new_value = np.zeros([self.nbr_cells])
@@ -76,18 +81,11 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         """
         Test de la m�thode compute_shear_modulus
         """
-        self.my_cells.compute_shear_modulus()
-        expected_value = DataContainer().material_target.initial_values.shear_modulus_init
+        self.my_cells.compute_shear_modulus(
+            self.test_data.material_target.constitutive_model.elasticity_model.build_shear_modulus_obj(),
+            np.array([True, True,True, True]))
+        expected_value = self.test_data.material_target.initial_values.shear_modulus_init
         np.testing.assert_allclose(self.my_cells.shear_modulus.new_value,
-                                   np.ones([self.nbr_cells]) * expected_value)
-
-    def test_compute_yield_stress(self):
-        """
-        Test de la m�thode compute_yield_stress
-        """
-        self.my_cells.compute_yield_stress()
-        expected_value = DataContainer().material_target.initial_values.yield_stress_init
-        np.testing.assert_allclose(self.my_cells.yield_stress.new_value,
                                    np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_complete_stress_tensor(self):
@@ -111,10 +109,15 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                      [-1604., -2204., -2204.]])
         np.testing.assert_allclose(self.my_cells.stress, expected_result)
 
-    def test_compute_deviatoric_stress_tensor(self):
+    @mock.patch.object(OneDimensionCell, "general_method_deviator_strain_rate", spec=classmethod,
+                       new_callable=mock.MagicMock)
+    def test_compute_deviatoric_stress_tensor(self, mock_compute_D):
         """
         Test de la m�thode compute_deviatoric_stress_tensor
         """
+        mock_compute_D.return_value = np.array([[1., -0.5, -0.5],
+                                               [3., -1.5, -1.5],
+                                               [2., -1., -1.]])  # taille 3 car mask de taille 3
         mask = np.array([True, True, True, False])
         delta_t = 1.
         coord_noeud_new = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
@@ -124,13 +127,17 @@ class OneDimensionCellElastoTest(unittest.TestCase):
                                                              [50., -25., -25.],
                                                              [1000., -500., -500.],
                                                              [4000., -2000., -2000.]])
-        self.my_cells.shear_modulus.current_value = np.array([2., 4., 6., 8.])
+        self.my_cells._deviatoric_strain_rate = np.array([[1., -0.5, -0.5],
+                                                          [3., -1.5, -1.5],
+                                                          [2., -1., -1.],
+                                                          [1., -0.5, -0.5]])
+        self.my_cells.shear_modulus.new_value = np.array([2., 4., 6., 8.])
         self.my_cells.compute_deviatoric_stress_tensor(mask, topo_ex, coord_noeud_new,
                                                        vitesse_noeud_new, delta_t)
         np.testing.assert_allclose(self.my_cells._deviatoric_stress_new,
-                                   np.array([[1999.058824,  -999.529412,  -999.529412],
-                                             [53.555556,   -26.777778,   -26.777778],
-                                             [1010.66666667,  -505.33333333,  -505.33333333],
+                                   np.array([[2004, -1002., -1002.],
+                                             [74., -37., -37.],
+                                             [1024., -512., -512.],
                                              [0., 0., 0.]]), rtol=1.e-05)
 
     def test_compute_deviator_strain_rate(self):
@@ -147,7 +154,7 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         self.my_cells.compute_deviator_strain_rate(mask, delta_t, topo_ex, coord_noeud_new,
                                                    vitesse_noeud_new)
         np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
-                                   np.array([[-0.235294,  0.117647,  0.117647],
+                                   np.array([[-0.235294, 0.117647, 0.117647],
                                              [0.4444444, -0.2222222, -0.2222222],
                                              [0., 0., 0.], [0., 0., 0.]]), rtol=1.e-05)
 

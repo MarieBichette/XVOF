@@ -8,7 +8,7 @@ import numpy as np
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class ContactBase(object, metaclass=ABCMeta):
+class ContactBase(metaclass=ABCMeta):
     """
     An interface for all cohesive zone model
     """
@@ -29,4 +29,3 @@ class ContactBase(object, metaclass=ABCMeta):
         :param disc: discontinuity to examine
         :param delta_t : time step
         """
-        pass
