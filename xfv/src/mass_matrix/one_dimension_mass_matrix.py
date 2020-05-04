@@ -42,27 +42,13 @@ class OneDimensionMassMatrix:
         """
         connect = topologie.cells_in_contact_with_node[mask_node]
         mask_cell = np.unique(connect)[1:]
-        shape = len(mask_cell)
         self.__correction_mass_matrix = np.zeros([shape, shape])
-
-        if shape == 3:
-            mass_498 = cell_mass_vector[mask_cell][-3]
-            mass_499 = cell_mass_vector[mask_cell][-2]
-            mass_500 = cell_mass_vector[mask_cell][-1]
-            self.__correction_mass_matrix[0, 0] = 3 * mass_498 + 2 * mass_499
-            self.__correction_mass_matrix[0, 1] = mass_499
-            self.__correction_mass_matrix[1, 0] = self.__correction_mass_matrix[0, 1]
-            self.__correction_mass_matrix[1, 1] = 2 * mass_500 + 2 * mass_499
-            self.__correction_mass_matrix[1, 2] = mass_500
-            self.__correction_mass_matrix[2, 1] = self.__correction_mass_matrix[1, 2]
-            self.__correction_mass_matrix[2, 2] = 2 * mass_500
-        elif shape == 2:
-            mass_499 = cell_mass_vector[mask_cell][-2]
-            mass_500 = cell_mass_vector[mask_cell][-1]
-            self.__correction_mass_matrix[0, 0] = 2 * mass_500 + 3 * mass_499
-            self.__correction_mass_matrix[0, 1] = mass_500
-            self.__correction_mass_matrix[1, 0] = self.__correction_mass_matrix[0, 1]
-            self.__correction_mass_matrix[1, 1] = 2 * mass_500
+        mass_499 = cell_mass_vector[mask_cell][-2]
+        mass_500 = cell_mass_vector[mask_cell][-1]
+        self.__correction_mass_matrix[0, 0] = 2 * mass_500 + 3 * mass_499
+        self.__correction_mass_matrix[0, 1] = mass_500
+        self.__correction_mass_matrix[1, 0] = self.__correction_mass_matrix[0, 1]
+        self.__correction_mass_matrix[1, 1] = 2 * mass_500
         self.__correction_mass_matrix *= 1. / 6.
         self.__inv_correction_mass_matrix = inverse_masse(self.__correction_mass_matrix)
 
