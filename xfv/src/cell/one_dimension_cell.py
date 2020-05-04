@@ -193,17 +193,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # Solver EOS
         self._solver = NewtonRaphson(self._function_to_vanish)
 
-        if self.data.has_external_solver():
-            self._external_library = self.data.get_external_solver_path()
-        else:
-            self._external_library = None
-        if self._external_library is not None:
-            self._mod = ctypes.cdll.LoadLibrary(self._external_library.as_posix())
-            self._computePressureExternal = self._mod.launch_vnr_resolution
-            self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
-                                                      [ctypes.c_int, ] +
-                                                      [ctypes.POINTER(ctypes.c_double), ] * 3)
-
     def compute_mass(self):
         """
         Compute mass of the cells

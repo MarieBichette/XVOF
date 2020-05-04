@@ -643,19 +643,6 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         return failure_criterion, fail_crit_value, failure_cell_index
 
-    def has_external_solver(self):
-        """
-        Returns True if an external solver is required in the data
-        """
-        return 'external-solver-library' in self.__datadoc['numeric-parameters'].keys()
-
-    def get_external_solver_path(self):
-        """
-        Returns the external solver required in the data
-        """
-        _path = Path(self.__datadoc['numeric-parameters']['external-solver-library'])
-        return self._datafile_dir / _path
-
 
 if __name__ == "__main__":
     # pylint: disable=invalid-name
