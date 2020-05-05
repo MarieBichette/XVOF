@@ -36,17 +36,17 @@ class PhysicFigure:
         """
         self._ax.set_xlim([val_min, val_max])
 
-    def update(self, X=None, Y=None, title_comp=None):
+    def update(self, abscissa=None, ordinate=None, title_comp=None):
         """
         Update image to get animation
         And save the image if a path is given
         """
-        if X is not None:
-            self._line_target.set_xdata(X[self.interface_id:])
-            self._line_projectile.set_xdata(X[:self.interface_id])
-        if Y is not None:
-            self._line_target.set_ydata(Y[self.interface_id:])
-            self._line_projectile.set_ydata(Y[:self.interface_id])
+        if abscissa is not None:
+            self._line_target.set_xdata(abscissa[self.interface_id:])
+            self._line_projectile.set_xdata(abscissa[:self.interface_id])
+        if ordinate is not None:
+            self._line_target.set_ydata(ordinate[self.interface_id:])
+            self._line_projectile.set_ydata(ordinate[:self.interface_id])
         if title_comp is not None:
             self._ax.set_title(self._title + ' ' + title_comp)
 
@@ -64,6 +64,7 @@ class PhysicFigure:
             data_path = data_path.replace(" ", "_")
             self._fig.savefig(fig_path)
             self._fig_number += 1
-            with open(data_path, "w") as fo:
-                for a, b in zip(X, Y):
-                    fo.write("{:20.18g}{:s}{:20.18g}\n".format(float(a), " ", float(b)))
+            with open(data_path, "w") as file_object:
+                for x_data, y_data in zip(abscissa, ordinate):
+                    file_object.write("{:20.18g}{:s}{:20.18g}\n".format(float(x_data), " ",
+                                                                        float(y_data)))

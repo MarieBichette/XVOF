@@ -1,8 +1,7 @@
-#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 # pylint: disable=protected-access
 """
-Classe de test du module node1d
+Classe de test du module OneDimensionNode
 """
 import unittest
 import os
@@ -16,18 +15,24 @@ from xfv.src.data.data_container import DataContainer
 
 class Node1dTest(unittest.TestCase):
     """
-    Test case utilisï¿½ pour test les fonctions du module 'Node1d'
+    Test case used for module module 'OneDimensionNode'
     """
     def setUp(self):
         """
-        Prï¿½paration des tests
+        Preparation des tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
         self.test_datacontainer = DataContainer(data_file_path)
 
         class Element:
+            """
+            A class to mimic cell
+            """
             def __init__(self, poz, pressure, pseudo, masse):
+                """
+                Creation of the instance
+                """
                 self.coord = poz
                 self.pression_new = pressure
                 self.pseudo = pseudo
@@ -98,7 +103,7 @@ class Node1dTest(unittest.TestCase):
         mask = np.array([False, False, True, True])
         inv_complete_mass_matrix = np.array([[1, 2], [2, 3]])
         inv_wilkins_mass_matrix = np.array([[2, 3], [4, 5]])
-        self.my_nodes._force = np.array([[1, ],  [2, ],  [3, ], [3, ]])
+        self.my_nodes._force = np.array([[1, ], [2, ], [3, ], [3, ]])
         self.my_nodes._upundemi = np.zeros([4, 1])
 
         self.my_nodes.apply_correction_reference_bar(delta_t, inv_complete_mass_matrix,

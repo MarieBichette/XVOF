@@ -21,7 +21,7 @@ def create_figure():
     """
     fig = plt.figure(1)
     plt.xlabel("Coordinates [mm]", fontsize=18)
-    plt.ylabel("Time [$\mu s$]", fontsize=18)
+    plt.ylabel("Time [mu s]", fontsize=18)
     if ARGS.gradient:
         the_title = "Space time {:} gradient diagram".format(ARGS.field)
         # Definition of a color map for gradients plot

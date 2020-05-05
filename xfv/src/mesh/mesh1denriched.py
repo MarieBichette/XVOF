@@ -4,8 +4,8 @@ Base class for one dimensional enriched mesh
 """
 
 import numpy as np
-from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xfv.src.cell.one_dimension_enriched_cell_hansbo import OneDimensionHansboEnrichedCell
+from xfv.src.node.one_dimension_enriched_node_hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
 from xfv.src.data.enriched_mass_matrix_props import ConsistentMassMatrixProps
 from xfv.src.mesh.topology1d import Topology1D

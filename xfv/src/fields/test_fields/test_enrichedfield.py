@@ -10,7 +10,7 @@ import xfv.src.fields.enrichedfield as enr_field
 
 class EnrichedFieldTest(unittest.TestCase):
     """
-    Classe test pour EnrichedField.
+    Class to test the class EnrichedField.
     """
 
     def setUp(self):
@@ -21,7 +21,7 @@ class EnrichedFieldTest(unittest.TestCase):
         self.right_field = np.array([2.])
         self.classic_field = np.array([3.])
         self.enriched_field = np.array([-1.])
-        self.my_enrichedField = enr_field.EnrichedField(1, np.array([0.]), np.array([0.]))
+        self.my_enriched_field = enr_field.EnrichedField(1, np.array([0.]), np.array([0.]))
 
     def test_from_geometry_to_enrich_field(self):
         """

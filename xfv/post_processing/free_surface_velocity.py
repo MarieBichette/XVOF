@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" 
+"""
 Plot the free surface velocity eventually with experimental data
 """
 
@@ -47,7 +47,7 @@ def run():
     # ----------------------------------------------------------
     plt.figure(1)
     plt.title("Evolution of the free surface velocity", fontweight='bold')
-    plt.xlabel("Time [$\mu$s]")
+    plt.xlabel("Time [mus]")
     plt.ylabel("Free surface velocity [m/s]")
 
     # ----------------------------------------------------------

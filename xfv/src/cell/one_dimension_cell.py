@@ -3,8 +3,8 @@
 Implementation of the OneDimensionCell class
 """
 import ctypes
-import numpy as np
 import os
+import numpy as np
 
 from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation \
@@ -20,8 +20,22 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     """
 
     @classmethod
-    def apply_equation_of_state(cls, cell, eos, density, density_new, pressure, pressure_new,
+    def apply_equation_of_state(cls, cell: Cell, eos, density, density_new, pressure, pressure_new,
                                 energy, energy_new, pseudo, cson_new):
+        """
+        Apply the equation of state to get the new internal energy, pressure and sound speed
+        :param cell: cell collection [in]
+        :param eos: equation of state object [in]
+        :param density: array of current density [in]
+        :param density_new: array of new velocity [in]
+        :param pressure: array of current pressure [in]
+        :param pressure_new: array of new pressure [out]
+        :param energy: array of current energy [in]
+        :param energy_new: array of new energy [out]
+        :param pseudo: array of artificial viscosity [in]
+        :param cson_new: array of sound speed [out]
+        """
+        # pylint: disable=protected-access
 
         if cell._external_library is not None:
             energy_new_value, pressure_new_value, sound_velocity_new_value = \
@@ -66,13 +80,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         # The factor 1/2 from the mean between density_current et density_new simplifies with
         # the 1/2 coming from the mean between stress_dev_current et stress_dev_new
-        energy_new_value = dt / (density_new + density_current)\
-                           * ((stress_dev_new[:, 0]
-                               + stress_dev_current[:, 0]) * strain_rate_dev[:, 0] +
-                              (stress_dev_new[:, 1]
-                               + stress_dev_current[:, 1]) * strain_rate_dev[:, 1] +
-                              (stress_dev_new[:, 2]
-                               + stress_dev_current[:, 2]) * strain_rate_dev[:, 2])
+        energy_new_value = (dt / (density_new + density_current) *
+                            ((stress_dev_new[:, 0] + stress_dev_current[:, 0]) *
+                             strain_rate_dev[:, 0] +
+                             (stress_dev_new[:, 1] + stress_dev_current[:, 1]) *
+                             strain_rate_dev[:, 1] +
+                             (stress_dev_new[:, 2] + stress_dev_current[:, 2]) *
+                             strain_rate_dev[:, 2]))
         return energy_new_value
 
     @classmethod
@@ -91,12 +105,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         strain_rate_dev = np.zeros([u_new.shape[0], 3])
         # Strain rate tensor
-        x_demi = x_new - dt/2. * u_new
-        D = (u_new[mask, 1] - u_new[mask, 0]) / (x_demi[mask, 1] - x_demi[mask, 0])  # Dxx
+        x_staggered = x_new - dt / 2. * u_new
+        strain_rate = ((u_new[mask, 1] - u_new[mask, 0]) /
+                       (x_staggered[mask, 1] - x_staggered[mask, 0]))  # Dxx
         # Cancel the trace to get the deviator part
-        strain_rate_dev[mask, 0] = 2. / 3. * D
-        strain_rate_dev[mask, 1] = - 1. / 3. * D
-        strain_rate_dev[mask, 2] = - 1. / 3. * D
+        strain_rate_dev[mask, 0] = 2. / 3. * strain_rate
+        strain_rate_dev[mask, 1] = - 1. / 3. * strain_rate
+        strain_rate_dev[mask, 2] = - 1. / 3. * strain_rate
         return strain_rate_dev[mask]
 
     @classmethod
@@ -114,16 +129,16 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         # pylint: disable=too-many-arguments
         # 8 arguments seems necessary
-        vn = 1. / rho_old
-        vnplusun = 1. / rho_new
-        vnplusundemi = (vn + vnplusun) / 2.
-        vpoint = (vnplusun - vn) / delta_t
-        divu = vpoint / vnplusundemi
+        massic_volume_t = 1. / rho_old
+        massic_volume_tpdt = 1. / rho_new
+        massic_volume_staggered = (massic_volume_t + massic_volume_tpdt) / 2.
+        derived_massic_volume = (massic_volume_tpdt - massic_volume_t) / delta_t
+        div_u = derived_massic_volume / massic_volume_staggered
         pseudo = np.zeros(rho_old.shape, dtype=np.float64, order='C')
-        mask = np.where(divu < 0.)
-        pseudo[mask] = (1. / vnplusundemi[mask] *
-                        (a_pseudo * size_new[mask] ** 2 * divu[mask] ** 2 +
-                         b_pseudo * size_new[mask] * cel_son[mask] * abs(divu[mask])))
+        mask = np.where(div_u < 0.)
+        pseudo[mask] = (1. / massic_volume_staggered[mask] *
+                        (a_pseudo * size_new[mask] ** 2 * div_u[mask] ** 2 +
+                         b_pseudo * size_new[mask] * cel_son[mask] * abs(div_u[mask])))
         return pseudo
 
     @classmethod
@@ -445,25 +460,27 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         self._stress += self._deviatoric_stress_new
 
     def compute_deviatoric_stress_tensor(self, mask, topology, node_coord_new,
-                                         node_velocity_new, dt):  # pylint: disable=invalid-name
+                                         node_velocity_new, delta_t):
         """
         Compute the deviatoric part of the stress tensor
         :param mask : mask to select classical cells
         :param topology : table of connectivity : link between cells and nodes id
         :param node_coord_new : array with new nodes coordinates (time n+1)
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
-        :param dt : time step (staggered tn+1/2)
+        :param delta_t : time step (staggered tn+1/2)
         """
         G = self.shear_modulus.new_value  # pylint: disable=invalid-name
 
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
-        self.compute_deviator_strain_rate(mask, dt, topology, node_coord_new, node_velocity_new)
+        self.compute_deviator_strain_rate(mask, delta_t, topology,
+                                          node_coord_new, node_velocity_new)
         D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
         for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] = \
-                np.copy(self._deviatoric_stress_current[mask, i]) + 2. * G[mask] * D[mask, i] * dt
+            self._deviatoric_stress_new[mask, i] = (
+                np.copy(self._deviatoric_stress_current[mask, i]) +
+                2. * G[mask] * D[mask, i] * delta_t)
 
         # -----------------------------
         # To ensure the trace to be null

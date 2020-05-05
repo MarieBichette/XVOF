@@ -24,7 +24,8 @@ class SpaceTimeDiagramTools:
         """
         self._my_hd = OutputDatabaseExploit(path_to_db)
         self._case = os.path.basename(os.path.dirname(path_to_db))
-        self._data_container = DataContainer(os.path.join(os.path.dirname(path_to_db), "XDATA.json"))
+        self._data_container = DataContainer(os.path.join(os.path.dirname(path_to_db),
+                                                          "XDATA.json"))
         self._verbose = verbose
 
     def data_has_interface(self):

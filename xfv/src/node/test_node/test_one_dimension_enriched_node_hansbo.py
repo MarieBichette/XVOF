@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=protected-access
+# pylint: disable=protected-access, unused-argument
 """
 Classe de test du module OneDimensionEnrichedNode
 """
 import unittest
-import os
 import unittest.mock as mock
+import os
 import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
@@ -15,11 +15,11 @@ from xfv.src.data.data_container import DataContainer
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """
-    Test case utilis� pour test les fonctions du module 'OneDimensionHansboEnrichedNode'
+    Test case used for module 'OneDimensionHansboEnrichedNode'
     """
     def setUp(self):
         """
-        Pr�paration des tests unitaires
+        Preparation of the unit tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
@@ -43,7 +43,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'ruptured_cell_id': np.array([0]),
                   'plastic_cells': np.array([False]),
                   'additional_dof_force': np.array([[1., ], [2., ]]),
-                  '_additional_dof_velocity_new': np.zeros([2, 1])
+                  '_additional_dof_velocity_new': np.zeros([2, 1]),
                   # 'cohesive_force.current_value': 0.,
                   # 'cohesive_force.new_value': 0.,
                   # 'discontinuity_opening.current_value': 0.5,

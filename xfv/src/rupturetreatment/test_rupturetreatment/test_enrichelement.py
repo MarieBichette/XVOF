@@ -8,7 +8,7 @@ import unittest
 
 class EnrichElementTest(unittest.TestCase):
     """
-    Test case utilisé pour test les fonctions du module 'EnrichElement'
+    Test case used to test the module 'EnrichElement'
     """
 
     def setUp(self):
@@ -16,9 +16,9 @@ class EnrichElementTest(unittest.TestCase):
         Preparation of the test
         """
 
-    def test_applyTreatment(self):
+    def test_apply_treatment(self):
         """
-        Teste la méthode apply_treatment for EnrichElement
+        Test of the method apply_treatment for EnrichElement
         """
 
 

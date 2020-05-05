@@ -3,8 +3,8 @@
 Implementation of the ConstantShearModulus class
 """
 
-from xfv.src.rheology.shearmodulus import ShearModulus
 import numpy as np
+from xfv.src.rheology.shearmodulus import ShearModulus
 
 
 class ConstantShearModulus(ShearModulus):  # pylint: disable=too-few-public-methods

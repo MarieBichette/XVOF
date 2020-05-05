@@ -8,7 +8,7 @@ import unittest.mock as mock
 import os
 import numpy as np
 
-from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
+from xfv.src.cell.one_dimension_enriched_cell_hansbo import OneDimensionHansboEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
@@ -86,7 +86,7 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                   'ruptured_cell_id': np.array([0]),
                   'plastic_cells': np.array([False]),
                   'additional_dof_velocity_new': np.array([[1., ], [3., ]])
-                 }
+                  }
         patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
         self.mock_discontinuity = patcher.start()

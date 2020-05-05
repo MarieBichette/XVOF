@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" 
+"""
 Plot time evolution of a field for a given item id
 """
 
@@ -11,6 +11,9 @@ from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolut
 
 
 def run():
+    """
+    Run the postprocessing program
+    """
     # ----------------------------------------------------------
     # Read instructions
     # ----------------------------------------------------------
@@ -49,7 +52,7 @@ def run():
     field_unit["EquivalentPlasticStrainRate"] = "[$s^{-1}$]"
 
     plt.figure(1)
-    plt.xlabel("Time [$\mu$s]")
+    plt.xlabel("Time [mus]")
     plt.ylabel(field + field_unit[field])
     plt.title("Time evolution of " + str(field) + " in item " + str(item_id), fontweight='bold')
 

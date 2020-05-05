@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" 
+"""
 Plot error evolution in time of a field for a given item id (for a given reference field)
 """
 
@@ -12,6 +12,9 @@ from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolut
 
 
 def run():
+    """
+    Run the postprocessing program
+    """
     # ----------------------------------------------------------
     # Read instructions
     # ----------------------------------------------------------
@@ -56,9 +59,10 @@ def run():
     field_unit["EquivalentPlasticStrainRate"] = "[$s^{-1}$]"
 
     plt.figure(1)
-    plt.xlabel("Time [$\mu$s]")
+    plt.xlabel("Time [mus]")
     plt.ylabel("Diff " + field + " - ref / max(ref)")
-    plt.title("Error time evolution of " + str(field) + " in item " + str(item_id), fontweight='bold')
+    plt.title("Error time evolution of " + str(field) + " in item " + str(item_id),
+              fontweight='bold')
 
     # ----------------------------------------------------------
     # Read reference data

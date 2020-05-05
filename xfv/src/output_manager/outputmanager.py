@@ -213,7 +213,7 @@ class OutputManager(metaclass=Singleton):
                             elif value.shape == (1, 3):
                                 # Register cell tensor field
                                 disc_field_collec.append((cell_id, value[0, 0], value[0, 1],
-                                                         value[0, 2]))
+                                                          value[0, 2]))
                             else:
                                 raise ValueError("Unknown shape to register in database")
 

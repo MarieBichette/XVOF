@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=protected-access
+# pylint: disable=protected-access, unused-argument
 """
 Cell module unit tests
 """
@@ -7,7 +7,6 @@ import unittest
 import unittest.mock as mock
 import os
 import numpy as np
-from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.cell.one_dimension_enriched_cell_hansbo import OneDimensionHansboEnrichedCell
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
@@ -15,6 +14,10 @@ from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
 class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
+    """
+    A class to test the OneDimensionHansboEnrichedCell module with enrichment,
+    elasticity and plasticity
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -27,6 +30,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Tear down after class tests
+        """
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
 
@@ -242,7 +248,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                        spec=classmethod, new_callable=mock.MagicMock)
     @mock.patch.object(OneDimensionCell, "general_method_deviator_strain_rate",
                        spec=classmethod, new_callable=mock.MagicMock)
-    def test_compute_enriched_deviatoric_strain_rate(self, mock_compute_D, mock_disc_borders,
+    def test_compute_enriched_deviatoric_strain_rate(self, mock_compute_d, mock_disc_borders,
                                                      mock_disc_list):
         """
         Test of the method compute_enriched_deviatoric_strain_rate
@@ -254,19 +260,19 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         u_disc_g = np.array([-0.5])
         u_disc_d = np.array([0.5])
         mock_disc_borders.return_value = u_disc_g, u_disc_d
-        mock_compute_D.return_value = np.array([[1., 1., 1.], ])
+        mock_compute_d.return_value = np.array([[1., 1., 1.], ])
         self.my_cells.plastic_enr_cells = np.array([True])
 
         self.my_cells.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
 
         mock_disc_borders.assert_called_with(self.mock_disc, node_velocity_new)
-        mock_compute_D.assert_called()
+        mock_compute_d.assert_called()
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionCell, "general_method_deviator_strain_rate", spec=classmethod,
                        new_callable=mock.MagicMock)
     def test_compute_enriched_deviatoric_stress_tensor(self,
-                                                       mock_compute_D, mock_disc_list):
+                                                       mock_compute_d, mock_disc_list):
         """
         Test of the method compute_enriched_deviatoric_stress_tensor
         """
@@ -275,18 +281,18 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         coord_noeud_new = np.array([[-1.], [0, ]])
         vitesse_noeud_new = np.array([[50, ], [-20, ]])
-        mock_compute_D.return_value = np.array([[2., -1, -1]])
+        mock_compute_d.return_value = np.array([[2., -1, -1]])
 
         self.my_cells.additional_dof_shear_modulus.new_value = np.array([14.])
         self.my_cells._additional_dof_deviatoric_stress_current = np.array([[0., 0., 0.]])
         self.my_cells._additional_dof_deviatoric_strain_rate = np.array([[2., -1, -1]])
-        exact_new_S_right = np.array([[56., -28, -28]])
+        exact_new_s_right = np.array([[56., -28, -28]])
 
         self.my_cells.compute_enriched_deviatoric_stress_tensor(coord_noeud_new,
                                                                 vitesse_noeud_new, dt)
-        mock_compute_D.assert_called()
+        mock_compute_d.assert_called()
         np.testing.assert_allclose(self.my_cells._additional_dof_deviatoric_stress_new,
-                                   exact_new_S_right)
+                                   exact_new_s_right)
 
     def test_compute_enriched_shear_modulus(self):
         """
