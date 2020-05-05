@@ -9,7 +9,7 @@ import unittest.mock as mock
 import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xfv.src.node.one_dimension_enriched_node_hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
 
 
