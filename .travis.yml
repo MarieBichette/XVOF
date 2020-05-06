@@ -5,6 +5,7 @@ python:
   - "3.7"
 # command to install dependencies
 install:
+  - sudo apt-get install -y swig3.0
   - pip install --upgrade pip
   - pip install .
 # command to run tests
@@ -21,12 +22,13 @@ jobs:
         - pip install pytest
         - pip install pytest-cov
         - pip install coveralls
-      script: PYTHONPATH=$(pwd) pytest --cov=xfv/src/
+      script: PYTHONPATH=$(pwd) OMP_NUM_THREADS=1 pytest --cov=xfv/src/
       after_success: coveralls
     - name: "Integration tests"
       before_script:
-        - sudo apt-get install -y hdf5-tools
+        - sudo apt-get install -y hdf5-tools 
       script: python launch_integration_tests.py
 stages:
   - Tests
   - Lint
+

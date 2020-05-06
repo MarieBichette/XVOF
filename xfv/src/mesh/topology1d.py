@@ -3,8 +3,6 @@
 """
 Classe g�rant la topologie 1D du maillage
 """
-import numpy as np
-
 from xfv.src.mesh.topology import Topology
 
 
@@ -42,12 +40,6 @@ class Topology1D(Topology):
         :param nbr_of_cells: Number of cells in the mesh
         """
         Topology.__init__(self, nbr_of_nodes, nbr_of_cells)
-        self._nodes_belonging_to_cell = np.ones(shape=(nbr_of_cells, 2),
-                                                dtype=np.int64, order='C') * (-1)
-        # self._nodes_belonging_to_cell[:, :] = -1
-        self._cells_in_contact_with_node = np.ones(shape=(nbr_of_nodes, 2),
-                                                   dtype=np.int64, order='C') * (-1)
-        # self._cells_in_contact_with_node[:, :] = -1
         self._generate_mesh(nbr_of_cells)
 
     def add_cell_in_contact_with_node(self, ind_node, ind_cell):
@@ -56,11 +48,11 @@ class Topology1D(Topology):
         avec le noeud d'indice 'ind_node'
         """
         Topology.add_cell_in_contact_with_node(self, ind_node, ind_cell)
-        for ind in range(self._nbr_of_nodes):
-            cells_in_contact_with_node_number = 0
-            cells_in_contact_with_node_number += np.size(self.get_cells_in_contact_with_node(ind))
-            if cells_in_contact_with_node_number > 2:
-                raise SystemExit
+        # Note: certainly no need for this check as the variable self._cells_in_contact_with_node
+        # is by construct of shape (nbr_of_nodes, 2)
+        if self._cells_in_contact_with_node.shape[1] != 2:  # pylint:disable=unsubscriptable-object
+            raise RuntimeError("One of the node is connected to more than two cells.\n"
+                               "It is not correct in 1D!")
 
     def _generate_mesh(self, nbr_of_cells):
         """

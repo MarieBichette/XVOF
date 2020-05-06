@@ -47,7 +47,7 @@
     "quadratic-pseudo": 2.0,
     "cfl": 0.34,
     "cfl-pseudo": 0.0,
-    "external-solver-library": "vnr_internal_energy_evolution.so"
+    "external-solver-library": "../../../../../C/nonlinear_solver/Newton/vnr_internal_energy_evolution.so"
   },
   "output": {
     "number-of-images": 500,

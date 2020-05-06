@@ -3,14 +3,19 @@
 Implementation of the OneDimensionCell class
 """
 import ctypes
-import os
 import numpy as np
 
 from xfv.src.cell import Cell
-from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation \
-    import VnrEnergyEvolutionForVolumeEnergyFormulation
+from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import (
+    VnrEnergyEvolutionForVolumeEnergyFormulation)
 from xfv.src.solver.newtonraphson import NewtonRaphson
 from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
+
+USE_INTERNAL_SOLVER = False
+try:
+    from launch_vnr_resolution_c import launch_vnr_resolution
+except ImportError:
+    USE_INTERNAL_SOLVER = True
 
 
 # noinspection PyArgumentList
@@ -37,15 +42,15 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         # pylint: disable=protected-access
 
-        if cell._external_library is not None:
-            energy_new_value, pressure_new_value, sound_velocity_new_value = \
-                (np.array(x) for x in cell._compute_new_pressure_with_external_lib(
-                    density, density_new, pressure, pseudo, energy, energy_new,
-                    pressure_new, cson_new))
+        if not USE_INTERNAL_SOLVER:
+            pressure = pressure + 2. * pseudo
+            launch_vnr_resolution(1. / density, 1. / density_new, pressure, energy,
+                                  energy_new, pressure_new, cson_new)
+            return energy_new, pressure_new, cson_new
         else:
             my_variables = {'EquationOfState': eos,
-                            'OldDensity': density,
-                            'NewDensity': density_new,
+                            'OldSpecificVolume': 1. / density,
+                            'NewSpecificVolume': 1. / density_new,
                             'Pressure': (pressure + 2. * pseudo),
                             'OldEnergy': energy}
             cell._function_to_vanish.set_variables(my_variables)
@@ -57,7 +62,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             sound_velocity_new_value = np.zeros(shape, dtype=np.float64, order='C')
             dummy = np.zeros(shape, dtype=np.float64, order='C')
             my_variables['EquationOfState'].solve_volume_energy(
-                1. / my_variables['NewDensity'], energy_new_value, pressure_new_value,
+                my_variables['NewSpecificVolume'], energy_new_value, pressure_new_value,
                 dummy, sound_velocity_new_value)
 
             if np.isnan(sound_velocity_new_value).any():
@@ -204,18 +209,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # Solver EOS
         self._solver = NewtonRaphson(self._function_to_vanish)
 
-        if self.data.hasExternalSolver():
-            self._external_library = self.data.getExternalSolverPath()
-        else:
-            self._external_library = None
-        if self._external_library is not None:
-            _path = os.path.join(*(os.path.split(__file__)[:-1] + (self._external_library,)))
-            self._mod = ctypes.cdll.LoadLibrary(_path)
-            self._computePressureExternal = self._mod.launch_vnr_resolution
-            self._computePressureExternal.argtypes = ([ctypes.POINTER(ctypes.c_double), ] * 4 +
-                                                      [ctypes.c_int, ] +
-                                                      [ctypes.POINTER(ctypes.c_double), ] * 3)
-
     def compute_mass(self):
         """
         Compute mass of the cells
@@ -292,7 +285,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         return self._plastic_strain_rate
 
-    def _compute_new_pressure_with_external_lib(self, density_current, density_new,
+    def _compute_new_pressure_with_external_lib(self, spec_vol_current, spec_vol_new,
                                                 pressure_current, pseudo_current,
                                                 energy_current, energy_new, pressure_new, vson_new):
         """
@@ -301,20 +294,17 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         pb_size = ctypes.c_int()
         pb_size.value = energy_new.shape[0]
-        c_density = density_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_density = density_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        c_spec_vol = spec_vol_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        n_spec_vol = spec_vol_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         true_pressure = (pressure_current + 2. * pseudo_current)
         c_pressure = true_pressure.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         c_energy = energy_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_energy = energy_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_pressure = pressure_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        self._computePressureExternal(c_density, n_density, c_pressure, c_energy, pb_size,
+        self._computePressureExternal(c_spec_vol, n_spec_vol, c_pressure, c_energy, pb_size,
                                       n_energy, n_pressure, n_sound_speed)
-        energy_n = n_energy[0:pb_size.value]
-        pressure_n = n_pressure[0:pb_size.value]
-        vson_n = n_sound_speed[0:pb_size.value]
-        return energy_n, pressure_n, vson_n
+        return energy_new, pressure_new, vson_new
 
     def compute_new_pressure(self, mask, dt):  # pylint: disable=invalid-name
         """

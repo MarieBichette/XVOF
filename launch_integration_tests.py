@@ -37,7 +37,7 @@ def launch_integration_test() -> bool:
     """
     Launch the integration test and return True if everything is ok. False otherwise.
     """
-    launch_cmd = f"XtendedFiniteVolume.py {os.getcwd()}"
+    launch_cmd = f"XtendedFiniteVolume.py {os.getcwd()} --use-internal-solver"
     print(f"Executing command: {launch_cmd}")
     try:
         subprocess.check_output(launch_cmd.split())
