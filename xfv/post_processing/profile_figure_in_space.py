@@ -18,7 +18,7 @@ def prepare_figure():
     plt.figure(1)
     plt.title("{:} profile".format(ARGS.field), fontweight='bold')
     plt.xlabel("Position [mm]")
-    plt.ylabel("Free surface velocity [m/s]")
+    plt.ylabel("Field")
 
 
 def run():
