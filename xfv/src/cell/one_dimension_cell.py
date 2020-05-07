@@ -13,7 +13,7 @@ from xfv.src.utilities.stress_invariants_calculation import compute_second_invar
 
 USE_INTERNAL_SOLVER = False
 try:
-    from launch_vnr_resolution_c import launch_vnr_resolution
+    from launch_vnr_resolution_c import launch_vnr_resolution, MieGruneisenParams
 except ImportError:
     USE_INTERNAL_SOLVER = True
 
@@ -43,8 +43,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # pylint: disable=protected-access
 
         if not USE_INTERNAL_SOLVER:
+            params = MieGruneisenParams(**eos.eos_param._asdict())
             pressure = pressure + 2. * pseudo
-            launch_vnr_resolution(1. / density, 1. / density_new, pressure, energy,
+            launch_vnr_resolution(params, 1. / density, 1. / density_new, pressure, energy,
                                   energy_new, pressure_new, cson_new)
             return energy_new, pressure_new, cson_new
         else:
