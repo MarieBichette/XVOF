@@ -3,7 +3,6 @@ Implementing the Hdf5Database class giving access to hdf5 storage
 """
 
 import h5py
-import numpy as np
 
 
 class OutputDatabase:
