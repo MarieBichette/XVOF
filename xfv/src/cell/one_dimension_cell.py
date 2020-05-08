@@ -423,20 +423,21 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
         :param dt : time step (staggered tn+1/2)
         """
-        G = np.diag(self.shear_modulus.new_value[mask])  # pylint: disable=invalid-name
+        G = np.array(self.shear_modulus.new_value[mask])[np.newaxis]  # pylint: disable=invalid-name
+        G = G.T
 
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
         self.compute_deviator_strain_rate(mask, dt, topology, node_coord_new, node_velocity_new)
-        D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
+        D = self._deviatoric_strain_rate[mask]  # pylint: disable=invalid-name
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
-        self._deviatoric_stress_new[mask] = self._deviatoric_stress_current[mask] + 2. * G.dot(D[mask]) * dt
+        _dev_stress_new = self._deviatoric_stress_current[mask] + 2. * np.multiply(G, D) * dt
 
         # -----------------------------
         # To ensure the trace to be null
-        trace = np.sum(self._deviatoric_stress_new[mask], axis=1) / 3.
+        trace = np.sum(_dev_stress_new, axis=1) / 3.
         full_trace = np.array([trace, trace, trace]).transpose()
-        self._deviatoric_stress_new[mask] -= full_trace
+        self._deviatoric_stress_new[mask] = _dev_stress_new - full_trace
 
     def compute_deviator_strain_rate(self, mask, dt,  # pylint: disable=invalid-name
                                      topology, node_coord_new, node_velocity_new):
