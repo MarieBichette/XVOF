@@ -28,8 +28,7 @@ class OutputDatabase:
         Create a dataset corresponding to field_name and storing the values.
         All extra keywords arguments are stored as attributes of the dataset
         """
-        data_set = self.__current_group.create_dataset(f_name, values.shape, np.result_type(values))
-        data_set[...] = values
+        data_set = self.__current_group.create_dataset(f_name, data=values)
         for key, value in list(kwargs.items()):
             data_set.attrs[key] = value
 
