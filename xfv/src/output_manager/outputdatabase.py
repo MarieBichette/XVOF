@@ -11,7 +11,7 @@ class OutputDatabase:
     """
 
     def __init__(self, path_to_hdf5):
-        self.__db = h5py.File(path_to_hdf5, 'w')
+        self.__db = h5py.File(path_to_hdf5, 'w', libver='latest')
         self.__current_group = None
         self.__nb_sav = 0
 
