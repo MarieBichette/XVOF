@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: iso-8859-1 -*-
 """
-Module définissant la classe Node1d
+Module dï¿½finissant la classe Node1d
 """
 import numpy as np
 from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
@@ -11,7 +11,7 @@ from xfv.src.node import Node
 
 class OneDimensionNode(Node):
     """
-    Un objet Node1d représente l'ensemble des noeuds 1d du maillage
+    Un objet Node1d reprï¿½sente l'ensemble des noeuds 1d du maillage
     """
     def __init__(self, nbr_of_nodes, poz_init, vit_init,
                  section=1.):
@@ -59,7 +59,7 @@ class OneDimensionNode(Node):
     @property
     def section(self):
         """
-        Surface associée au noeud
+        Surface associï¿½e au noeud
         """
         return self._section
 
@@ -67,7 +67,7 @@ class OneDimensionNode(Node):
         """
         Affichage des informations concernant le noeud d'indice index
 
-        :param index: indice du noeud à afficher
+        :param index: indice du noeud ï¿½ afficher
         :type index: int
         """
         Node.infos(self, index)
@@ -86,31 +86,33 @@ class OneDimensionNode(Node):
         # Initialize node force to 0 because nodes force is now calculated with +=
         self._force = np.zeros_like(self._force)
 
-        # Suppose les éléments voisins triés par position croissante
+        # Supposes that neighbors cells are sorted by increasing position
         node_in_contact_with_classical_cell = topologie.nodes_belonging_to_cell[classical_cell_mask]
         nodes_left = node_in_contact_with_classical_cell[:, 0]
         nodes_right = node_in_contact_with_classical_cell[:, 1]
 
+        tmp_force = contrainte[classical_cell_mask] * self.section
+
         # For a node, force = stress on cell right - stress on cell left
         # if node is on left of the cell, cell is on right of the node
-        self._force[:-1, 0][nodes_left] += contrainte[classical_cell_mask] * self.section
+        self._force[:-1, 0][nodes_left] += tmp_force
         # if node is on right of the cell, cell is on left of the node
-        self._force[0:, 0][nodes_right] -= contrainte[classical_cell_mask] * self.section
+        self._force[0:, 0][nodes_right] -= tmp_force
 
     def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
-        Calcul de la vitesse au demi pas de temps supérieur
+        Calcul de la vitesse au demi pas de temps supï¿½rieur
         :param delta_t: pas de temps
         :type delta_t: float
-        :param mask : noeuds sélectionnés pour calculer avec cette méthode
+        :param mask : noeuds sï¿½lectionnï¿½s pour calculer avec cette mï¿½thode
             (typiquement : OneDimensionEnrichedNode.classical / .enriched )
-            s'applique sur les degrés de liberté classiques des noeuds classiques ou enrichis
-            ne prend pas en compte le couplage entre degrés de liberté enrichis/classiques
-        :type mask : tableau de booléens
+            s'applique sur les degrï¿½s de libertï¿½ classiques des noeuds classiques ou enrichis
+            ne prend pas en compte le couplage entre degrï¿½s de libertï¿½ enrichis/classiques
+        :type mask : tableau de boolï¿½ens
         :param matrice_masse : inverse de la matrice de masse
         """
         # ddl classique de noeud classique (sauf 0 1 2 3 quand enrichissement)
-        # = noeuds classiques non concernés par l'enrichissement
+        # = noeuds classiques non concernï¿½s par l'enrichissement
         self._upundemi[mask] = self._umundemi[mask] + \
                                multiplication_masse(matrice_masse, self.force[mask]) * delta_t
 
@@ -135,7 +137,7 @@ class OneDimensionNode(Node):
         """
         Appliquer une pressure sur le noeud d'indice "ind_node"
         :param ind_node: indice du noeud sur lequel appliquer la pressure
-        :param pressure: pressure à appliquer
+        :param pressure: pressure ï¿½ appliquer
         :type ind_node: int
         :type pressure: float
         """
