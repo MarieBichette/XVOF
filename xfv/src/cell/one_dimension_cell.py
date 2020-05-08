@@ -270,27 +270,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         return self._plastic_strain_rate
 
-    def _compute_new_pressure_with_external_lib(self, spec_vol_current, spec_vol_new,
-                                                pressure_current, pseudo_current,
-                                                energy_current, energy_new, pressure_new, vson_new):
-        """
-        Computation of the set (internal energy, pressure, sound velocity) for v-e
-        formulation thanks to external C library
-        """
-        pb_size = ctypes.c_int()
-        pb_size.value = energy_new.shape[0]
-        c_spec_vol = spec_vol_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_spec_vol = spec_vol_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        true_pressure = (pressure_current + 2. * pseudo_current)
-        c_pressure = true_pressure.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        c_energy = energy_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_energy = energy_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_pressure = pressure_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        self._computePressureExternal(c_spec_vol, n_spec_vol, c_pressure, c_energy, pb_size,
-                                      n_energy, n_pressure, n_sound_speed)
-        return energy_new, pressure_new, vson_new
-
     def compute_new_pressure(self, mask, dt):  # pylint: disable=invalid-name
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
@@ -444,24 +423,20 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
         :param dt : time step (staggered tn+1/2)
         """
-        G = self.shear_modulus.new_value  # pylint: disable=invalid-name
+        G = np.diag(self.shear_modulus.new_value[mask])  # pylint: disable=invalid-name
 
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
         self.compute_deviator_strain_rate(mask, dt, topology, node_coord_new, node_velocity_new)
         D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] = \
-                np.copy(self._deviatoric_stress_current[mask, i]) + 2. * G[mask] * D[mask, i] * dt
+        self._deviatoric_stress_new[mask] = self._deviatoric_stress_current[mask] + 2. * G.dot(D[mask]) * dt
 
         # -----------------------------
         # To ensure the trace to be null
-        trace = \
-            self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] \
-            + self._deviatoric_stress_new[mask, 2]
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] -= 1./3. * trace
+        trace = np.sum(self._deviatoric_stress_new[mask], axis=1) / 3.
+        full_trace = np.array([trace, trace, trace]).transpose()
+        self._deviatoric_stress_new[mask] -= full_trace
 
     def compute_deviator_strain_rate(self, mask, dt,  # pylint: disable=invalid-name
                                      topology, node_coord_new, node_velocity_new):
