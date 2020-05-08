@@ -41,7 +41,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         super(OneDimensionHansboEnrichedCell, self).__init__(number_of_elements)
         #
-        self._fields_manager.moveClassicalToEnrichedFields(number_of_elements)
         print(self._fields_manager)
         self._classical = np.ones(self.number_of_cells, dtype=np.bool, order='C')
 

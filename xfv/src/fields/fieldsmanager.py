@@ -5,7 +5,6 @@ Implementing field manager class
 :todo: Use Singleton metaclass
 """
 from collections import OrderedDict
-from xfv.src.fields.enrichedfield import EnrichedField
 
 
 class FieldManager(OrderedDict):
