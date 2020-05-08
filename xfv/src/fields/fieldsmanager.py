@@ -26,7 +26,7 @@ class FieldManager(OrderedDict):
         if key not in list(self.keys()) or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
             super(FieldManager, self).__setitem__(key, value)
         else:
-            raise KeyError("Le champ {:s} existe d�j� dans le gestionnaire!".format(key))
+            raise KeyError("The filed {:s} already exists in the manager!".format(key))
 
     def __str__(self):
         """
