@@ -94,15 +94,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         Shape is array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
         x_new, u_new shape is (size(mask), 2)
         """
-        strain_rate_dev = np.zeros([u_new.shape[0], 3])
         # Strain rate tensor
         x_demi = x_new - dt/2. * u_new
-        D = (u_new[mask, 1] - u_new[mask, 0]) / (x_demi[mask, 1] - x_demi[mask, 0])  # Dxx
+        D = (u_new[:, 1] - u_new[:, 0]) / (x_demi[:, 1] - x_demi[:, 0])  # Dxx
+        D = D[mask][np.newaxis].T
         # Cancel the trace to get the deviator part
-        strain_rate_dev[mask, 0] = 2. / 3. * D
-        strain_rate_dev[mask, 1] = - 1. / 3. * D
-        strain_rate_dev[mask, 2] = - 1. / 3. * D
-        return strain_rate_dev[mask]
+        factor = np.array([2. / 3., -1./ 3., -1. / 3.])
+        strain_rate_dev = np.multiply(D, factor)
+        return strain_rate_dev
 
     @classmethod
     def compute_pseudo(cls, delta_t: float, rho_old: np.array, rho_new: np.array,
