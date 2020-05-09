@@ -80,9 +80,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                + stress_dev_current[:, 2]) * strain_rate_dev[:, 2])
         return energy_new_value
 
-    @classmethod
-    def general_method_deviator_strain_rate(cls, mask, dt,  # pylint: disable=invalid-name
-                                            x_new, u_new):
+    @staticmethod
+    def general_method_deviator_strain_rate(dt, x_new, u_new):  # pylint: disable=invalid-name
         """
         Compute the deviator of strain rate tensor (defined at the center of the cell)
         from the coordinates and velocities interpolated at the center of the cell
@@ -95,9 +94,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         x_new, u_new shape is (size(mask), 2)
         """
         # Strain rate tensor
-        x_demi = x_new - dt/2. * u_new
+        x_demi = x_new - dt * 0.5 * u_new
         D = (u_new[:, 1] - u_new[:, 0]) / (x_demi[:, 1] - x_demi[:, 0])  # Dxx
-        D = D[mask][np.newaxis].T
+        D = D[np.newaxis].T
         # Cancel the trace to get the deviator part
         factor = np.array([2. / 3., -1./ 3., -1. / 3.])
         strain_rate_dev = np.multiply(D, factor)
@@ -426,11 +425,12 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         G = G.T
 
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
-        self.compute_deviator_strain_rate(mask, dt, topology, node_coord_new, node_velocity_new)
-        D = self._deviatoric_strain_rate[mask]  # pylint: disable=invalid-name
+        D = self.compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new)
+        D_m = D[mask]
+        self._deviatoric_strain_rate[mask, :] = D_m
 
         # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
-        _dev_stress_new = self._deviatoric_stress_current[mask] + 2. * np.multiply(G, D) * dt
+        _dev_stress_new = self._deviatoric_stress_current[mask] + 2. * np.multiply(G, D_m) * dt
 
         # -----------------------------
         # To ensure the trace to be null
@@ -438,10 +438,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         full_trace = np.array([trace, trace, trace]).transpose()
         self._deviatoric_stress_new[mask] = _dev_stress_new - full_trace
 
-    def compute_deviator_strain_rate(self, mask, dt,  # pylint: disable=invalid-name
-                                     topology, node_coord_new, node_velocity_new):
+    @staticmethod
+    def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
         """
-        Compute deviateur du taux de dï¿½formation
+        Compute strain rate deviator
         :param mask : mask to select classical cells
         :param dt : time step
         :param topology : table of connectivity : link between cells and nodes id
@@ -455,8 +455,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # coordinates of the left and right nodes belonging to cell
 
         # Compute the deviatoric strain rate tensor
-        self._deviatoric_strain_rate[mask, :] = \
-            OneDimensionCell.general_method_deviator_strain_rate(mask, dt, x_new, u_new)
+        return OneDimensionCell.general_method_deviator_strain_rate(dt, x_new, u_new)
 
     def apply_plastic_corrector_on_deviatoric_stress_tensor(self, mask):
         """

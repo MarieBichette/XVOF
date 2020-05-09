@@ -566,9 +566,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             xg_new = xg_new.reshape(1, 2)
             ug_new = np.array([u_noeuds_new[0], u_discg_new]).reshape(1, 2)
             # Compute the deviatoric strain rate tensor for left part
-            self._deviatoric_strain_rate[mask_cells] = \
-                OneDimensionCell.general_method_deviator_strain_rate(
-                np.array([True]), dt, xg_new, ug_new)  # np.array(True) to be consistent
+            D = OneDimensionCell.general_method_deviator_strain_rate(dt, xg_new, ug_new)  # np.array(True) to be consistent
+            self._deviatoric_strain_rate[mask_cells] = D 
 
             # Creation of structure left - right data to call general_method_deviator_strain_rate
             # Left part cell : right boundary of discontinuity - node_right
@@ -576,10 +575,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                                x_noeuds_new[1]])
             xd_new = xd_new.reshape(1, 2)
             ud_new = np.array([u_discd_new, u_noeuds_new[1]]).reshape(1, 2)
+            D = OneDimensionCell.general_method_deviator_strain_rate(dt, xd_new, ud_new)
             # Compute the deviatoric strain rate tensor for right part
-            self._additional_dof_deviatoric_strain_rate[mask_cells] = \
-                OneDimensionCell.general_method_deviator_strain_rate(
-                np.array([True]), dt, xd_new, ud_new)  # np.array(True) to be consistent
+            self._additional_dof_deviatoric_strain_rate[mask_cells] = D
 
     def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new,
                                                   dt):  # pylint: disable=invalid-name

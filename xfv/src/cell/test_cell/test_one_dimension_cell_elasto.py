@@ -117,7 +117,8 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         """
         mock_compute_D.return_value = np.array([[1., -0.5, -0.5],
                                                [3., -1.5, -1.5],
-                                               [2., -1., -1.]])  # taille 3 car mask de taille 3
+                                               [2., -1., -1.],
+                                               [0., 0., 0.]])  
         mask = np.array([True, True, True, False])
         delta_t = 1.
         coord_noeud_new = np.array([[-0.25, ], [0.1, ], [0.2, ], [0.45, ], [0.85, ]])
@@ -151,8 +152,9 @@ class OneDimensionCellElastoTest(unittest.TestCase):
         vitesse_noeud_new = np.array([[0.1, ], [-0.05, ], [0., ], [0.2, ], [0.3, ]])
         topo_ex = Topology1D(5, 4)
         # Test de la m�thode compute_deviator
-        self.my_cells.compute_deviator_strain_rate(mask, delta_t, topo_ex, coord_noeud_new,
-                                                   vitesse_noeud_new)
+        D = self.my_cells.compute_deviator_strain_rate(delta_t, topo_ex, coord_noeud_new,
+                                                       vitesse_noeud_new)
+        self.my_cells._deviatoric_strain_rate[mask] = D[mask]
         np.testing.assert_allclose(self.my_cells._deviatoric_strain_rate,
                                    np.array([[-0.235294, 0.117647, 0.117647],
                                              [0.4444444, -0.2222222, -0.2222222],
