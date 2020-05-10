@@ -627,8 +627,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
         # Right part of the cracked cell :
-        invariant_j2_el_right = compute_second_invariant(
-            self.additional_dof_deviatoric_stress_new[mask])
+        invariant_j2_el_right = np.sqrt(compute_second_invariant(
+            self.additional_dof_deviatoric_stress_new[mask]))
         yield_stress = self.additional_dof_yield_stress.new_value[mask]
         radial_return_right = yield_stress / invariant_j2_el_right
         self._additional_dof_deviatoric_stress_new[mask, 0] *= radial_return_right
@@ -644,8 +644,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
         # Right part :
-        invariant_j2_el_right = compute_second_invariant(
-            self.additional_dof_deviatoric_stress_new[mask])  # elastic predictor
+        invariant_j2_el_right = np.sqrt(compute_second_invariant(
+            self.additional_dof_deviatoric_stress_new[mask]))  # elastic predictor
         shear_mod_right = self.additional_dof_shear_modulus.new_value[mask]
         yield_stress_right = self.additional_dof_yield_stress.new_value[mask]
         self._additional_dof_equivalent_plastic_strain_rate[mask] = \
@@ -660,8 +660,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
         # Right part : right part of enriched cells is plastic ? => self.plastic_enr_cells
-        invariant_j2_el_right = \
-            compute_second_invariant(self.additional_dof_deviatoric_stress_new[mask])
+        invariant_j2_el_right = np.sqrt(
+            compute_second_invariant(self.additional_dof_deviatoric_stress_new[mask]))
         shear_mod_right = self.additional_dof_shear_modulus.new_value[mask]
         yield_stress_right = self.additional_dof_yield_stress.new_value[mask]
         radial_return_right = yield_stress_right / invariant_j2_el_right

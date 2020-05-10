@@ -488,7 +488,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param mask : mask to identify the cells where plasticity should be applied
         (classical cells where plasticity criterion is activated)
         """
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         # elastic predictor before applying plasticity
         radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
         for i in range(0, 3):
@@ -502,7 +502,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param dt: time step
         """
         # To be done before apply_plastic_corrector_on_deviatoric_stress_tensor
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
         shear_modulus = self.shear_modulus.new_value[mask]
         for i in range(0, 3):
@@ -516,7 +516,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param mask: array of bool to select cells of interest
         :param dt : float, time step staggered
         """
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         # elastic predictor before applying plasticity
         G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
         Y = self.yield_stress.new_value[mask]  # pylint: disable=invalid-name
