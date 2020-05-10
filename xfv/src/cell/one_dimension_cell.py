@@ -17,6 +17,17 @@ try:
 except ImportError:
     USE_INTERNAL_SOLVER = True
 
+def consecutive(data, stepsize=1):
+    """
+    Taken from https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-consecutive-elements-in-a-numpy-array
+    """
+    return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+
+def get_slices(mask):
+    data = np.flatnonzero(mask)
+    cons = consecutive(data)
+    return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons])
+
 
 # noinspection PyArgumentList
 class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
@@ -411,6 +422,29 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             self._stress[:, i] = - (self.pressure.new_value + self.pseudo.new_value)
         self._stress += self._deviatoric_stress_new
 
+    @staticmethod
+    def _compute_deviatoric_stress_tensor(shear_modulus, strain_rate_tensor,
+                                          current_deviatoric_stress_tensor, time_step):
+        """
+        Compute the deviatoric stress tensor
+
+        :param shear_modulus: shear modulus
+        :type shear_modulus : numpy.ndarray([nb_cells,])
+        :param strain_rate_tensor : tensor of the strain rate
+        :type strain_rate_tensor: numpy.ndarray([nb_cells, 3])  ( [[eps_xx, eps_yy, eps_zz], ...] )
+        :param current_deviatoric_stress_tensor : deviatoric stress tensor at the current time step
+        :type current_deviatoric_stress_tensor : numpy.ndarray([nb_cells, 3])
+        :param time_step : time step
+        :type time_step : float
+        """
+        G = shear_modulus[np.newaxis].T  # Get a 'vertical' vector 
+        # Reminder : S / dt * (-W * S + S * W) + 2. * G * deviator_strain_rate * dt
+        _dev_stress_new = current_deviatoric_stress_tensor + 2. * np.multiply(G, strain_rate_tensor) * time_step
+        # Ensure the trace to be null
+        trace = np.sum(_dev_stress_new, axis=1) / 3.
+        full_trace = np.array([trace, trace, trace]).transpose()
+        return _dev_stress_new - full_trace
+
     def compute_deviatoric_stress_tensor(self, mask, topology, node_coord_new,
                                          node_velocity_new, dt):  # pylint: disable=invalid-name
         """
@@ -421,22 +455,12 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
         :param dt : time step (staggered tn+1/2)
         """
-        G = np.array(self.shear_modulus.new_value[mask])[np.newaxis]  # pylint: disable=invalid-name
-        G = G.T
-
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
         D = self.compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new)
-        D_m = D[mask]
-        self._deviatoric_strain_rate[mask, :] = D_m
-
-        # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
-        _dev_stress_new = self._deviatoric_stress_current[mask] + 2. * np.multiply(G, D_m) * dt
-
-        # -----------------------------
-        # To ensure the trace to be null
-        trace = np.sum(_dev_stress_new, axis=1) / 3.
-        full_trace = np.array([trace, trace, trace]).transpose()
-        self._deviatoric_stress_new[mask] = _dev_stress_new - full_trace
+        sigma_ss = self._compute_deviatoric_stress_tensor(self.shear_modulus.new_value, D, self._deviatoric_stress_current, dt)
+        sli = get_slices(mask)
+        self._deviatoric_strain_rate[sli] = D[sli]
+        self._deviatoric_stress_new[sli] = sigma_ss[sli]
 
     @staticmethod
     def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
