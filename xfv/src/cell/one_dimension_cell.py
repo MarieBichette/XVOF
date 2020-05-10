@@ -459,8 +459,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         D = self.compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new)
         sigma_ss = self._compute_deviatoric_stress_tensor(self.shear_modulus.new_value, D, self._deviatoric_stress_current, dt)
         sli = get_slices(mask)
-        self._deviatoric_strain_rate[sli] = D[sli]
-        self._deviatoric_stress_new[sli] = sigma_ss[sli]
+        for _sl in sli:
+            self._deviatoric_strain_rate[_sl] = D[_sl]
+            self._deviatoric_stress_new[_sl] = sigma_ss[_sl]
 
     @staticmethod
     def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
