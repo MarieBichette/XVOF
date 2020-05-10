@@ -18,7 +18,7 @@ class VonMisesCriterion(PlasticityCriterion):
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
         return (compute_second_invariant(cells.deviatoric_stress_new) >
-                cells.yield_stress.new_value)
+                cells.yield_stress.new_value**2)
 
     @staticmethod
     def check_criterion_on_right_part_cells(cells):
@@ -29,4 +29,4 @@ class VonMisesCriterion(PlasticityCriterion):
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
         return (compute_second_invariant(cells.additional_dof_deviatoric_stress_new) >
-                cells.additional_dof_yield_stress.new_value)
+                cells.additional_dof_yield_stress.new_value**2)
