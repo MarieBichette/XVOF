@@ -4,6 +4,7 @@ Implementation of the OneDimensionCell class
 """
 import ctypes
 import numpy as np
+from typing import Tuple
 
 from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import (
@@ -17,13 +18,23 @@ try:
 except ImportError:
     USE_INTERNAL_SOLVER = True
 
-def consecutive(data, stepsize=1):
+def consecutive(data: np.ndarray, stepsize=1):
     """
+    Return an array in which each item is an array of contiguous values of the original data array
     Taken from https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-consecutive-elements-in-a-numpy-array
+
+    :param data: the array to be splitted in continuous arrays
+    :param stepsize: the difference between tow values that are considered contiguous
     """
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
 
-def get_slices(mask):
+def get_slices(mask: np.ndarray) -> Tuple[slice]:
+    """
+    Returns a tuple of slices where each slice is a portion of contiguous True values of the
+    mask in parameter
+
+    :param mask: the boolean mask to get slices from
+    """
     data = np.flatnonzero(mask)
     cons = consecutive(data)
     return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons])
