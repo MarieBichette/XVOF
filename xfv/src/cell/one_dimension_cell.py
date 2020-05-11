@@ -37,7 +37,7 @@ def get_slices(mask: np.ndarray) -> Tuple[slice]:
     """
     data = np.flatnonzero(mask)
     cons = consecutive(data)
-    return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons])
+    return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons if arr.size])
 
 
 # noinspection PyArgumentList
