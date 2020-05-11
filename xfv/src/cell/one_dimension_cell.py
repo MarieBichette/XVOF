@@ -37,8 +37,17 @@ def get_slices(mask: np.ndarray) -> Tuple[slice]:
     """
     data = np.flatnonzero(mask)
     cons = consecutive(data)
-    return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons])
+    res = tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons if arr.size])
+    return res
 
+def compute_radial_return(deviatoric_stress: np.ndarray, yield_stress: np.ndarray) -> np.ndarray:
+    """
+    Compute the radial return 
+    """
+    invariant_j2_el = np.sqrt(compute_second_invariant(deviatoric_stress))
+    # elastic predictor before applying plasticity
+    radial_return = yield_stress / invariant_j2_el
+    return radial_return
 
 # noinspection PyArgumentList
 class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
@@ -499,11 +508,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param mask : mask to identify the cells where plasticity should be applied
         (classical cells where plasticity criterion is activated)
         """
-        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
-        # elastic predictor before applying plasticity
-        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] *= radial_return
+        sli = get_slices(mask)
+        for _sl in sli:
+            radial_return = compute_radial_return(self.deviatoric_stress_new[_sl], self.yield_stress.new_value[_sl])
+            self._deviatoric_stress_new[_sl] *= radial_return[np.newaxis].T
 
     def compute_plastic_strain_rate_tensor(self, mask, dt):  # pylint: disable=invalid-name
         """
