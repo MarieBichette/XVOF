@@ -23,6 +23,6 @@ def compute_second_invariant(dev_stress: np.array):
     :param stress : deviatoric stress tensor
     """
     second_invariant = np.multiply(dev_stress, dev_stress)
-    second_invariant = second_invariant.sum(axis=1)
+    second_invariant = second_invariant[:, 0] + second_invariant[:, 1] + second_invariant[:, 2]
     second_invariant *= 3./2.
     return second_invariant
