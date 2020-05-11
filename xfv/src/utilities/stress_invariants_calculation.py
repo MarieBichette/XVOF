@@ -22,6 +22,7 @@ def compute_second_invariant(dev_stress: np.array):
     J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
     :param stress : deviatoric stress tensor
     """
-    second_invariant = np.tensordot(dev_stress, dev_stress)
+    second_invariant = np.multiply(dev_stress, dev_stress)
+    second_invariant = second_invariant.sum(axis=1)
     second_invariant *= 3./2.
     return second_invariant
