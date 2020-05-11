@@ -516,10 +516,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
         shear_modulus = self.shear_modulus.new_value[mask]
-        for i in range(0, 3):
-            self._plastic_strain_rate[mask, i] = \
-                (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
-                (radial_return * 3 * shear_modulus * dt)
+        nume = np.multiply((1. - radial_return)[np.newaxis].T, self._deviatoric_stress_new[mask]) 
+        denom = radial_return * 3 * shear_modulus * dt
+        denom = denom[np.newaxis].T
+        self._plastic_strain_rate[mask] = np.divide(nume, denom)
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):  # pylint: disable=invalid-name
         """
