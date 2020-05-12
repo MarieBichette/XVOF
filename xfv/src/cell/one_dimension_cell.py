@@ -452,7 +452,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # Reminder : S / dt * (-W * S + S * W) + 2. * G * deviator_strain_rate * dt
         _dev_stress_new = current_deviatoric_stress_tensor + 2. * np.multiply(G, strain_rate_tensor) * time_step
         # Ensure the trace to be null
-        trace = np.sum(_dev_stress_new, axis=1) / 3.
+        trace = (_dev_stress_new[:, 0] + _dev_stress_new[:, 1] + _dev_stress_new[:, 2])/ 3.
         full_trace = np.array([trace, trace, trace]).transpose()
         return _dev_stress_new - full_trace
 
