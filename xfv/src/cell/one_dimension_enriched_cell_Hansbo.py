@@ -592,6 +592,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
         # Left part
         mask = self.enriched
+        if not mask.any():
+            return
         G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
         self._deviatoric_stress_new[mask, 0] = self._deviatoric_stress_current[mask, 0] + \
             2. * G * self._deviatoric_strain_rate[mask, 0] * dt
@@ -617,6 +619,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param shear_modulus_model : model to compute the shear modulus
         """
         mask = self.enriched
+        if not mask.any():
+            return
         self.additional_dof_shear_modulus.new_value[mask] = \
             shear_modulus_model.compute(self.additional_dof_density.new_value[mask])
 
