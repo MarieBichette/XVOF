@@ -444,14 +444,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         mask = np.logical_and(mask_mesh,
                               self.__plastic_cells)  # pylint: disable=assignment-from-no-return
         # 3) Plasticity treatment for classical plastic cells and left part of enriched cells
-        invariant_j2_el = np.sqrt(compute_second_invariant(self.cells.deviatoric_stress_new[mask, :]))
-        yield_stress = self.cells.yield_stress.new_value[mask]
-        shear_modulus = self.cells.shear_modulus.new_value[mask]
-        radial_return = self.cells._compute_radial_return(invariant_j2_el, yield_stress)
-        dev_stress = self.cells.deviatoric_stress_new[mask]
-        self.cells._plastic_strain_rate[mask] = self.cells._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
-        self.cells._equivalent_plastic_strain_rate[mask] = self.cells._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
-        self.cells._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+        self.cells.apply_plasticity(mask, delta_t)
 
         # 4) Plasticity treatment for enriched plastic cells (right part)
         self.cells.compute_enriched_plastic_strain_rate(mask_mesh, delta_t)

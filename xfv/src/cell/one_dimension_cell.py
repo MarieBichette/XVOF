@@ -508,6 +508,22 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def _compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt):
         return  (j2 - yield_stress) / (3. * shear_modulus * dt)
 
+    def apply_plasticity(self, mask, delta_t):
+        """
+        Apply plasticity treatment if criterion is activated :
+        - compute yield stress
+        - tests plasticity criterion
+        - compute plastic strain rate for plastic cells
+        """
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
+        yield_stress = self.yield_stress.new_value[mask]
+        shear_modulus = self.shear_modulus.new_value[mask]
+        radial_return = self._compute_radial_return(invariant_j2_el, yield_stress)
+        dev_stress = self.deviatoric_stress_new[mask]
+        self._plastic_strain_rate[mask] = self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
+        self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
+        self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+
     def impose_pressure(self, ind_cell, pressure):
         """
         Pressure imposition
