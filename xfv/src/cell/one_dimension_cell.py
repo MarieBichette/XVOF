@@ -497,18 +497,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def _compute_radial_return(j2, yield_stress):
         return yield_stress / j2
 
-    def apply_plastic_corrector_on_deviatoric_stress_tensor(self, mask):
-        """
-        Correct the elastic trial of deviatoric stress tensor when plasticity criterion is activated
-        :param mask : mask to identify the cells where plasticity should be applied
-        (classical cells where plasticity criterion is activated)
-        """
-        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
-        # elastic predictor before applying plasticity
-        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] *= radial_return
-
     @staticmethod
     def _compute_plastic_strain_rate_tensor(radial_return, shear_modulus, dt, dev_stress):
         nume = np.multiply((1. - radial_return)[np.newaxis].T, dev_stress) 
@@ -516,38 +504,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         denom = denom[np.newaxis].T
         return np.divide(nume, denom)
 
-
-    def compute_plastic_strain_rate_tensor(self, mask, dt):  # pylint: disable=invalid-name
-        """
-        Compute the plastic strain rate tensor from elastic prediction and radial return
-        (normal law for Von Mises plasticity)
-        :param mask: mask to identify plastic cells
-        :param dt: time step
-        """
-        # To be done before apply_plastic_corrector_on_deviatoric_stress_tensor
-        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
-        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
-        shear_modulus = self.shear_modulus.new_value[mask]
-        nume = np.multiply((1. - radial_return)[np.newaxis].T, self._deviatoric_stress_new[mask]) 
-        denom = radial_return * 3 * shear_modulus * dt
-        denom = denom[np.newaxis].T
-        self._plastic_strain_rate[mask] = np.divide(nume, denom)
-
     @staticmethod
     def _compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt):
         return  (j2 - yield_stress) / (3. * shear_modulus * dt)
-
-    def compute_equivalent_plastic_strain_rate(self, mask, dt):  # pylint: disable=invalid-name
-        """
-        Compute the plastic strain rate
-        :param mask: array of bool to select cells of interest
-        :param dt : float, time step staggered
-        """
-        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
-        # elastic predictor before applying plasticity
-        G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
-        Y = self.yield_stress.new_value[mask]  # pylint: disable=invalid-name
-        self._equivalent_plastic_strain_rate[mask] = (invariant_j2_el - Y) / (3. * G * dt)
 
     def impose_pressure(self, ind_cell, pressure):
         """
