@@ -493,6 +493,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # Compute the deviatoric strain rate tensor
         return OneDimensionCell.general_method_deviator_strain_rate(dt, x_new, u_new)
 
+    @staticmethod
+    def _compute_radial_return(j2, yield_stress):
+        return yield_stress / j2
+
     def apply_plastic_corrector_on_deviatoric_stress_tensor(self, mask):
         """
         Correct the elastic trial of deviatoric stress tensor when plasticity criterion is activated
@@ -504,6 +508,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
         for i in range(0, 3):
             self._deviatoric_stress_new[mask, i] *= radial_return
+
+    @staticmethod
+    def _compute_plastic_strain_rate_tensor(radial_return, shear_modulus, dt, dev_stress):
+        nume = np.multiply((1. - radial_return)[np.newaxis].T, dev_stress) 
+        denom = radial_return * 3 * shear_modulus * dt
+        denom = denom[np.newaxis].T
+        return np.divide(nume, denom)
+
 
     def compute_plastic_strain_rate_tensor(self, mask, dt):  # pylint: disable=invalid-name
         """
@@ -520,6 +532,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         denom = radial_return * 3 * shear_modulus * dt
         denom = denom[np.newaxis].T
         self._plastic_strain_rate[mask] = np.divide(nume, denom)
+
+    @staticmethod
+    def _compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt):
+        return  (j2 - yield_stress) / (3. * shear_modulus * dt)
 
     def compute_equivalent_plastic_strain_rate(self, mask, dt):  # pylint: disable=invalid-name
         """
