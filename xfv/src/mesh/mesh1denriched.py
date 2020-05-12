@@ -433,7 +433,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
 
         # 1) Compute yield stress
         self.cells.compute_yield_stress(yield_stress_model, mask_mesh)
-        if mask_mesh.any():
+        if mask_mesh.any() and self.cells.enriched.any():
             self.cells.compute_enriched_yield_stress(yield_stress_model)
 
         # 2) Get plastic cells (verification of the plasticity criterion)
