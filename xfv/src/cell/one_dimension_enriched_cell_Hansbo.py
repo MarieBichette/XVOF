@@ -651,6 +651,27 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._additional_dof_equivalent_plastic_strain_rate[mask] = \
             (invariant_j2_el_right - yield_stress_right) / (3. * shear_mod_right * dt)
 
+    def apply_plasticity_enr(self, mask_mesh, delta_t):
+        """
+        Apply plasticity treatment if criterion is activated :
+        - compute yield stress
+        - tests plasticity criterion
+        - compute plastic strain rate for plastic cells
+        """
+        mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
+        if not mask.any():
+            return
+        # Right part : right part of enriched cells is plastic ? => self.plastic_enr_cells
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.additional_dof_deviatoric_stress_new[mask]))
+        yield_stress = self.additional_dof_yield_stress.new_value[mask]
+        shear_modulus = self.additional_dof_shear_modulus.new_value[mask]
+        radial_return = self._compute_radial_return(invariant_j2_el, yield_stress)
+        dev_stress = self.additional_dof_deviatoric_stress_new[mask]
+        self._plastic_strain_rate[mask] = self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
+        self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
+        self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+
+
     def compute_enriched_plastic_strain_rate(self, mask_mesh, dt):  # pylint: disable=invalid-name
         """
         Compute the plastic strain rate tensor from elastic prediction and radial return

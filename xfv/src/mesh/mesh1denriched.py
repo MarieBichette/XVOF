@@ -447,9 +447,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         self.cells.apply_plasticity(mask, delta_t)
 
         # 4) Plasticity treatment for enriched plastic cells (right part)
-        self.cells.compute_enriched_plastic_strain_rate(mask_mesh, delta_t)
-        self.cells.compute_enriched_equivalent_plastic_strain_rate(mask_mesh, delta_t)
-        self.cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(mask_mesh)
+        self.cells.apply_plasticity_enr(mask_mesh, delta_t)
 
     @property
     def velocity_field(self) -> np.array:
