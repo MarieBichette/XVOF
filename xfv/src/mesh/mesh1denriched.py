@@ -11,6 +11,7 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact_base import ContactBase
+from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 # noinspection PyArgumentList
@@ -443,9 +444,14 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         mask = np.logical_and(mask_mesh,
                               self.__plastic_cells)  # pylint: disable=assignment-from-no-return
         # 3) Plasticity treatment for classical plastic cells and left part of enriched cells
-        self.cells.compute_plastic_strain_rate_tensor(mask, delta_t)
-        self.cells.compute_equivalent_plastic_strain_rate(mask, delta_t)
-        self.cells.apply_plastic_corrector_on_deviatoric_stress_tensor(mask)
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.cells.deviatoric_stress_new[mask, :]))
+        yield_stress = self.cells.yield_stress.new_value[mask]
+        shear_modulus = self.cells.shear_modulus.new_value[mask]
+        radial_return = self.cells._compute_radial_return(invariant_j2_el, yield_stress)
+        dev_stress = self.cells.deviatoric_stress_new[mask]
+        self.cells._plastic_strain_rate[mask] = self.cells._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
+        self.cells._equivalent_plastic_strain_rate[mask] = self.cells._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
+        self.cells._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
 
         # 4) Plasticity treatment for enriched plastic cells (right part)
         self.cells.compute_enriched_plastic_strain_rate(mask_mesh, delta_t)
