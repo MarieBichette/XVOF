@@ -4,6 +4,7 @@ Implementation of the OneDimensionCell class
 """
 import ctypes
 import numpy as np
+from typing import Tuple
 
 from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import (
@@ -16,6 +17,27 @@ try:
     from launch_vnr_resolution_c import launch_vnr_resolution, MieGruneisenParams
 except ImportError:
     USE_INTERNAL_SOLVER = True
+
+def consecutive(data: np.ndarray, stepsize=1):
+    """
+    Return an array in which each item is an array of contiguous values of the original data array
+    Taken from https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-consecutive-elements-in-a-numpy-array
+
+    :param data: the array to be splitted in continuous arrays
+    :param stepsize: the difference between tow values that are considered contiguous
+    """
+    return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
+
+def get_slices(mask: np.ndarray) -> Tuple[slice]:
+    """
+    Returns a tuple of slices where each slice is a portion of contiguous True values of the
+    mask in parameter
+
+    :param mask: the boolean mask to get slices from
+    """
+    data = np.flatnonzero(mask)
+    cons = consecutive(data)
+    return tuple([np.s_[arr[0]:arr[-1]+1] for arr in cons if arr.size])
 
 
 # noinspection PyArgumentList
@@ -95,9 +117,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                              strain_rate_dev[:, 2]))
         return energy_new_value
 
-    @classmethod
-    def general_method_deviator_strain_rate(cls, mask, dt,  # pylint: disable=invalid-name
-                                            x_new, u_new):
+    @staticmethod
+    def general_method_deviator_strain_rate(dt, x_new, u_new):  # pylint: disable=invalid-name
         """
         Compute the deviator of strain rate tensor (defined at the center of the cell)
         from the coordinates and velocities interpolated at the center of the cell
@@ -109,16 +130,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         Shape is array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
         x_new, u_new shape is (size(mask), 2)
         """
-        strain_rate_dev = np.zeros([u_new.shape[0], 3])
         # Strain rate tensor
-        x_staggered = x_new - dt / 2. * u_new
-        strain_rate = ((u_new[mask, 1] - u_new[mask, 0]) /
-                       (x_staggered[mask, 1] - x_staggered[mask, 0]))  # Dxx
+        x_demi = x_new - dt * 0.5 * u_new
+        D = (u_new[:, 1] - u_new[:, 0]) / (x_demi[:, 1] - x_demi[:, 0])  # Dxx
+        D = D[np.newaxis].T
         # Cancel the trace to get the deviator part
-        strain_rate_dev[mask, 0] = 2. / 3. * strain_rate
-        strain_rate_dev[mask, 1] = - 1. / 3. * strain_rate
-        strain_rate_dev[mask, 2] = - 1. / 3. * strain_rate
-        return strain_rate_dev[mask]
+        factor = np.array([2. / 3., -1./ 3., -1. / 3.])
+        strain_rate_dev = np.multiply(D, factor)
+        return strain_rate_dev
 
     @classmethod
     def compute_pseudo(cls, delta_t: float, rho_old: np.array, rho_new: np.array,
@@ -286,27 +305,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         return self._plastic_strain_rate
 
-    def _compute_new_pressure_with_external_lib(self, spec_vol_current, spec_vol_new,
-                                                pressure_current, pseudo_current,
-                                                energy_current, energy_new, pressure_new, vson_new):
-        """
-        Computation of the set (internal energy, pressure, sound velocity) for v-e
-        formulation thanks to external C library
-        """
-        pb_size = ctypes.c_int()
-        pb_size.value = energy_new.shape[0]
-        c_spec_vol = spec_vol_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_spec_vol = spec_vol_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        true_pressure = (pressure_current + 2. * pseudo_current)
-        c_pressure = true_pressure.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        c_energy = energy_current.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_energy = energy_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_pressure = pressure_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        n_sound_speed = vson_new.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-        self._computePressureExternal(c_spec_vol, n_spec_vol, c_pressure, c_energy, pb_size,
-                                      n_energy, n_pressure, n_sound_speed)
-        return energy_new, pressure_new, vson_new
-
     def compute_new_pressure(self, mask, dt):  # pylint: disable=invalid-name
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
@@ -431,8 +429,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param shear_modulus_model : model to compute the shear modulus
         :param mask : mask to identify the cells to be computed
         """
-        self.shear_modulus.new_value[mask] = \
-            shear_modulus_model.compute(self.density.new_value[mask])
+        self.shear_modulus.new_value[mask] = shear_modulus_model.compute(self.density.new_value[mask])
 
     def compute_yield_stress(self, yield_stress_model, mask):
         """
@@ -450,6 +447,29 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             self._stress[:, i] = - (self.pressure.new_value + self.pseudo.new_value)
         self._stress += self._deviatoric_stress_new
 
+    @staticmethod
+    def _compute_deviatoric_stress_tensor(shear_modulus, strain_rate_tensor,
+                                          current_deviatoric_stress_tensor, time_step):
+        """
+        Compute the deviatoric stress tensor
+
+        :param shear_modulus: shear modulus
+        :type shear_modulus : numpy.ndarray([nb_cells,])
+        :param strain_rate_tensor : tensor of the strain rate
+        :type strain_rate_tensor: numpy.ndarray([nb_cells, 3])  ( [[eps_xx, eps_yy, eps_zz], ...] )
+        :param current_deviatoric_stress_tensor : deviatoric stress tensor at the current time step
+        :type current_deviatoric_stress_tensor : numpy.ndarray([nb_cells, 3])
+        :param time_step : time step
+        :type time_step : float
+        """
+        G = shear_modulus[np.newaxis].T  # Get a 'vertical' vector 
+        # Reminder : S / dt * (-W * S + S * W) + 2. * G * deviator_strain_rate * dt
+        _dev_stress_new = current_deviatoric_stress_tensor + 2. * np.multiply(G, strain_rate_tensor) * time_step
+        # Ensure the trace to be null
+        trace = (_dev_stress_new[:, 0] + _dev_stress_new[:, 1] + _dev_stress_new[:, 2])/ 3.
+        full_trace = np.array([trace, trace, trace]).transpose()
+        return _dev_stress_new - full_trace
+
     def compute_deviatoric_stress_tensor(self, mask, topology, node_coord_new,
                                          node_velocity_new, delta_t):
         """
@@ -460,31 +480,19 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param node_velocity_new : array with new nodes velocities (time n+1/2)
         :param delta_t : time step (staggered tn+1/2)
         """
-        G = self.shear_modulus.new_value  # pylint: disable=invalid-name
-
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
-        self.compute_deviator_strain_rate(mask, delta_t, topology,
-                                          node_coord_new, node_velocity_new)
-        D = self._deviatoric_strain_rate  # pylint: disable=invalid-name
+        D = self.compute_deviator_strain_rate(delta_t, topology, node_coord_new, node_velocity_new)
+        sigma_ss = self._compute_deviatoric_stress_tensor(self.shear_modulus.new_value, D,
+                                                          self._deviatoric_stress_current, delta_t)
+        sli = get_slices(mask)
+        for _sl in sli:
+            self._deviatoric_strain_rate[_sl] = D[_sl]
+            self._deviatoric_stress_new[_sl] = sigma_ss[_sl]
 
-        # Rappel : S / dt * (-W * S + S * W) + 2. * G * deviateur_strain_rate[mask] * dt
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] = (
-                np.copy(self._deviatoric_stress_current[mask, i]) +
-                2. * G[mask] * D[mask, i] * delta_t)
-
-        # -----------------------------
-        # To ensure the trace to be null
-        trace = \
-            self._deviatoric_stress_new[mask, 0] + self._deviatoric_stress_new[mask, 1] \
-            + self._deviatoric_stress_new[mask, 2]
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] -= 1./3. * trace
-
-    def compute_deviator_strain_rate(self, mask, dt,  # pylint: disable=invalid-name
-                                     topology, node_coord_new, node_velocity_new):
+    @staticmethod
+    def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
         """
-        Compute deviateur du taux de dï¿½formation
+        Compute strain rate deviator
         :param mask : mask to select classical cells
         :param dt : time step
         :param topology : table of connectivity : link between cells and nodes id
@@ -498,48 +506,38 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         # coordinates of the left and right nodes belonging to cell
 
         # Compute the deviatoric strain rate tensor
-        self._deviatoric_strain_rate[mask, :] = \
-            OneDimensionCell.general_method_deviator_strain_rate(mask, dt, x_new, u_new)
+        return OneDimensionCell.general_method_deviator_strain_rate(dt, x_new, u_new)
 
-    def apply_plastic_corrector_on_deviatoric_stress_tensor(self, mask):
-        """
-        Correct the elastic trial of deviatoric stress tensor when plasticity criterion is activated
-        :param mask : mask to identify the cells where plasticity should be applied
-        (classical cells where plasticity criterion is activated)
-        """
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
-        # elastic predictor before applying plasticity
-        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
-        for i in range(0, 3):
-            self._deviatoric_stress_new[mask, i] *= radial_return
+    @staticmethod
+    def _compute_radial_return(j2, yield_stress):
+        return yield_stress / j2
 
-    def compute_plastic_strain_rate_tensor(self, mask, dt):  # pylint: disable=invalid-name
+    @staticmethod
+    def _compute_plastic_strain_rate_tensor(radial_return, shear_modulus, dt, dev_stress):
+        nume = np.multiply((1. - radial_return)[np.newaxis].T, dev_stress) 
+        denom = radial_return * 3 * shear_modulus * dt
+        denom = denom[np.newaxis].T
+        return np.divide(nume, denom)
+
+    @staticmethod
+    def _compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt):
+        return  (j2 - yield_stress) / (3. * shear_modulus * dt)
+
+    def apply_plasticity(self, mask, delta_t):
         """
-        Compute the plastic strain rate tensor from elastic prediction and radial return
-        (normal law for Von Mises plasticity)
-        :param mask: mask to identify plastic cells
-        :param dt: time step
+        Apply plasticity treatment if criterion is activated :
+        - compute yield stress
+        - tests plasticity criterion
+        - compute plastic strain rate for plastic cells
         """
-        # To be done before apply_plastic_corrector_on_deviatoric_stress_tensor
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
-        radial_return = self.yield_stress.new_value[mask] / invariant_j2_el
+        invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
+        yield_stress = self.yield_stress.new_value[mask]
         shear_modulus = self.shear_modulus.new_value[mask]
-        for i in range(0, 3):
-            self._plastic_strain_rate[mask, i] = \
-                (1 - radial_return) * self._deviatoric_stress_new[mask, i] / \
-                (radial_return * 3 * shear_modulus * dt)
-
-    def compute_equivalent_plastic_strain_rate(self, mask, dt):  # pylint: disable=invalid-name
-        """
-        Compute the plastic strain rate
-        :param mask: array of bool to select cells of interest
-        :param dt : float, time step staggered
-        """
-        invariant_j2_el = compute_second_invariant(self.deviatoric_stress_new[mask, :])
-        # elastic predictor before applying plasticity
-        G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
-        Y = self.yield_stress.new_value[mask]  # pylint: disable=invalid-name
-        self._equivalent_plastic_strain_rate[mask] = (invariant_j2_el - Y) / (3. * G * dt)
+        radial_return = self._compute_radial_return(invariant_j2_el, yield_stress)
+        dev_stress = self.deviatoric_stress_new[mask]
+        self._plastic_strain_rate[mask] = self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
+        self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
+        self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
 
     def impose_pressure(self, ind_cell, pressure):
         """

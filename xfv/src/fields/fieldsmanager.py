@@ -5,7 +5,6 @@ Implementing field manager class
 :todo: Use Singleton metaclass
 """
 from collections import OrderedDict
-from xfv.src.fields.enrichedfield import EnrichedField
 
 
 class FieldManager(OrderedDict):
@@ -23,11 +22,10 @@ class FieldManager(OrderedDict):
         :param key: name of the field
         :param value: Field object
         """
-        if (key not in list(self.keys()) or
-                isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField)):
+        if key not in list(self.keys()):
             super(FieldManager, self).__setitem__(key, value)
         else:
-            raise KeyError("The field {:s} already exists in FieldManager!".format(key))
+            raise KeyError("The filed {:s} already exists in the manager!".format(key))
 
     def __str__(self):
         """
@@ -39,13 +37,6 @@ class FieldManager(OrderedDict):
         # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field)
         #                        for name, field in self.items()))
         return msg
-
-    def move_classical_to_enriched_fields(self, size):
-        """
-        Turn all classical fields into enriched ones
-        """
-        for name, field in list(self.items()):
-            self[name] = EnrichedField(size, field.current_value, field.new_value)
 
     def increment_fields(self):
         """

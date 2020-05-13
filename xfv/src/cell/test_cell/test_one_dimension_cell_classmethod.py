@@ -109,9 +109,8 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         expected_result = np.array([[0., 0., 0.], [0., 0., 0.], [2.666667, -1.333333, -1.333333],
                                     [0.266667, -0.133333, -0.133333]])
         dev_strain_rate = np.zeros((self.nbr_cells, 3))
-        dev_strain_rate[mask] = OneDimensionCell.general_method_deviator_strain_rate(mask, delta_t,
-                                                                                     position_new,
-                                                                                     vitesse_new)
+        D = OneDimensionCell.general_method_deviator_strain_rate(delta_t, position_new, vitesse_new)
+        dev_strain_rate[mask] = D[mask]
         np.testing.assert_allclose(dev_strain_rate, expected_result, rtol=1.e-05)
 
     def test_compute_pseudo(self):

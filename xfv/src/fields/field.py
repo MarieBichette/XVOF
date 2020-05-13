@@ -42,10 +42,10 @@ class Field:
     @property
     def current_value(self):
         """
-        :return: a copy of current field value
+        :return: the current field value
         :rtype: numpy.array
         """
-        return self.__current[:]
+        return self.__current
 
     @current_value.setter
     def current_value(self, value):
@@ -60,10 +60,10 @@ class Field:
     @property
     def new_value(self):
         """
-        :return: a copy of the future field value
+        :return: the future field value
         :rtype: numpy.array
         """
-        return self.__future[:]
+        return self.__future
 
     @new_value.setter
     def new_value(self, value):

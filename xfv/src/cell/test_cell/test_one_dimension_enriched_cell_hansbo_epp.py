@@ -11,6 +11,7 @@ from xfv.src.cell.one_dimension_enriched_cell_hansbo import OneDimensionHansboEn
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
 from xfv.src.data.data_container import DataContainer
 from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
@@ -309,34 +310,28 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         """
         Test of the method compute_enriched_equivalent_plastic_strain_rate
         """
-        mask = np.array([True])
         dt = 1.  # pylint: disable=invalid-name
-        self.my_cells.plastic_enr_cells = np.array([True])
         exact_equivalent_plastic_strain_rate_right = np.array([0.33333333333333331])
-        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[4, -2., -2.]])
-        self.my_cells.additional_dof_shear_modulus.new_value = np.array([4.])
-        self.my_cells.additional_dof_yield_stress.new_value = np.array([2.])
+        deviatoric_stress_new = np.array([[4, -2., -2.]])
+        j2 = np.sqrt(compute_second_invariant(deviatoric_stress_new))
+        shear_modulus = np.array([4.])
+        yield_stress = np.array([2.])
 
-        self.my_cells.compute_enriched_equivalent_plastic_strain_rate(mask, dt)
+        res = self.my_cells._compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt)
 
-        np.testing.assert_allclose(
-            self.my_cells._additional_dof_equivalent_plastic_strain_rate,
-            exact_equivalent_plastic_strain_rate_right)
+        np.testing.assert_allclose(res, exact_equivalent_plastic_strain_rate_right)
 
     def test_apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self):
         """
         Test of the method apply_plastic_correction_on_enriched_deviatoric_stress_tensor
         """
-        mask = np.array([True])
-        self.my_cells.plastic_enr_cells = np.array([True])
-
-        # set partie droite
-        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., -2.5, -2.5], ])
-        self.my_cells.additional_dof_yield_stress.new_value = np.array([10.])
+        deviatoric_stress_new = np.array([[5., -2.5, -2.5], ])
+        j2 = np.sqrt(compute_second_invariant(deviatoric_stress_new))
+        yield_stress = np.array([10.])
         exact_deviator_plastic_right = np.array([[6.666667, -3.333333, -3.333333]])
-        self.my_cells.apply_plastic_correction_on_enriched_deviatoric_stress_tensor(mask)
-        np.testing.assert_allclose(self.my_cells._additional_dof_deviatoric_stress_new,
-                                   exact_deviator_plastic_right, rtol=1.e-5)
+        radial_return = self.my_cells._compute_radial_return(j2, yield_stress)
+        deviatoric_stress_new *= radial_return[np.newaxis].T
+        np.testing.assert_allclose(deviatoric_stress_new, exact_deviator_plastic_right, rtol=1.e-5)
 
     def test_compute_enriched_yield_stress(self):
         """

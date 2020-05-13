@@ -16,19 +16,13 @@ def compute_trace(stress: np.array):
     return trace
 
 
-def compute_second_invariant(stress: np.array):
+def compute_second_invariant(dev_stress: np.array):
     """
-    Compute the second invariant of stress tensor
+    Compute the square of the second invariant of stress tensor
     J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
-    :param stress : stress tensor
+    :param stress : deviatoric stress tensor
     """
-    trace = compute_trace(stress)
-    # Compute the deviatoric stress
-    dev_stress = np.copy(stress)
-    dev_stress[:, 0] -= 1. / 3. * trace
-    dev_stress[:, 1] -= 1. / 3. * trace
-    dev_stress[:, 2] -= 1. / 3. * trace
-    second_invariant = dev_stress[:, 0]**2. + dev_stress[:, 1]**2 + dev_stress[:, 2]**2
+    second_invariant = np.multiply(dev_stress, dev_stress)
+    second_invariant = second_invariant[:, 0] + second_invariant[:, 1] + second_invariant[:, 2]
     second_invariant *= 3./2.
-    second_invariant = np.sqrt(second_invariant)
     return second_invariant
