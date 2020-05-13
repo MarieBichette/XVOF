@@ -155,8 +155,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param disc: current discontinuity
         :param delta_t: time step
         """
-        disc._additional_dof_coordinates_new = disc.additional_dof_coordinates_current + \
-                                               delta_t * disc.additional_dof_velocity_new
+        disc._additional_dof_coordinates_new = (disc.additional_dof_coordinates_current +
+                                                delta_t * disc.additional_dof_velocity_new)
 
     def compute_enriched_nodes_new_force(self, contrainte_xx: np.array, enr_contrainte_xx):
         """
