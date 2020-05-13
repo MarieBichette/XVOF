@@ -414,8 +414,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param shear_modulus_model : model to compute the shear modulus
         :param mask : mask to identify the cells to be computed
         """
-        self.shear_modulus.new_value[mask] = \
-            shear_modulus_model.compute(self.density.new_value[mask])
+        self.shear_modulus.new_value[mask] = shear_modulus_model.compute(self.density.new_value[mask])
 
     def compute_yield_stress(self, yield_stress_model, mask):
         """
