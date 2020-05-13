@@ -211,22 +211,23 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
                     # Divide the contact "force" on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
-                    # Reinitialize the kinematics that lead to contact
-                    self.nodes.reinitialize_kinematics_after_contact(disc)
-                    disc.reinitialize_kinematics_after_contact()
+            # Update the kinematics with contact correction
+            for disc in Discontinuity.discontinuity_list():
+                # Reinitialize the kinematics that lead to contact in order to recompute it
+                self.nodes.reinitialize_kinematics_after_contact(disc)
+                disc.reinitialize_kinematics_after_contact()
 
-                    # Apply correction on the velocity field (only on disc nodes)
-                    self._compute_velocities_for_disc(disc, delta_t)
+                # Apply correction on the velocity field (only on disc nodes)
+                self._compute_velocities_for_disc(disc, delta_t)
 
-                    # Theoretically, we should apply the velocity boundary condition here,
-                    # but it is really not convenient to do this and fracture is not supposed
-                    # to occur on the boundary cells. Thus, no boundary conditions is applied
+                # Theoretically, we should apply the velocity boundary condition here,
+                # but it is really not convenient to do this and fracture is not supposed
+                # to occur on the boundary cells. Thus, no boundary conditions is applied
 
-                    # Apply correction on the node coordinates (only on disc nodes)
-                    self.nodes.compute_new_coodinates(disc.mask_disc_nodes, delta_t)  # classical
-                    self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)  # enriched
-                    # Update discontinuity opening
-                    disc.compute_discontinuity_new_opening(self.nodes.xtpdt)  # opening
+                # Apply correction on the node coordinates (only on disc nodes)
+                self.nodes.compute_new_coodinates(disc.mask_disc_nodes, delta_t)  # classical
+                self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)  # enriched
+                disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     def compute_new_nodes_coordinates(self, delta_t: float):
         """
