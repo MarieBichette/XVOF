@@ -46,9 +46,9 @@ def run():
     # Prepare figure
     # ----------------------------------------------------------
     plt.figure(1)
-    plt.title("Evolution of the free surface velocity", fontweight='bold')
-    plt.xlabel("Time [mus]")
-    plt.ylabel("Free surface velocity [m/s]")
+    plt.title("Evolution of the free surface velocity", fontweight='bold', fontsize=18)
+    plt.xlabel("Time [mus]", fontsize=16)
+    plt.ylabel("Free surface velocity [m/s]", fontsize=16)
 
     # ----------------------------------------------------------
     # Plot free surface velocity for each case
