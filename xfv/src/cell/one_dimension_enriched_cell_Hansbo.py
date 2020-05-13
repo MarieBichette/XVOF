@@ -624,37 +624,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self.additional_dof_shear_modulus.new_value[mask] = \
             shear_modulus_model.compute(self.additional_dof_density.new_value[mask])
 
-    def apply_plastic_correction_on_enriched_deviatoric_stress_tensor(self, mask_mesh):
-        """
-        Correct the elastic trial of deviatoric stress tensor when plasticity criterion is activated
-        :param mask_mesh:  mask to identify the part of the mesh (projectile or target)
-        """
-        mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
-        # Right part of the cracked cell :
-        invariant_j2_el_right = np.sqrt(compute_second_invariant(
-            self.additional_dof_deviatoric_stress_new[mask]))
-        yield_stress = self.additional_dof_yield_stress.new_value[mask]
-        radial_return_right = yield_stress / invariant_j2_el_right
-        self._additional_dof_deviatoric_stress_new[mask, 0] *= radial_return_right
-        self._additional_dof_deviatoric_stress_new[mask, 1] *= radial_return_right
-        self._additional_dof_deviatoric_stress_new[mask, 2] *= radial_return_right
-
-    def compute_enriched_equivalent_plastic_strain_rate(self, mask_mesh,
-                                                        dt):  # pylint: disable=invalid-name
-        """
-        Compute the plastic strain rate
-        :param dt : time step
-        :param mask_mesh:  mask to identify the part of the mesh (projectile or target)
-        """
-        mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
-        # Right part :
-        invariant_j2_el_right = np.sqrt(compute_second_invariant(
-            self.additional_dof_deviatoric_stress_new[mask]))  # elastic predictor
-        shear_mod_right = self.additional_dof_shear_modulus.new_value[mask]
-        yield_stress_right = self.additional_dof_yield_stress.new_value[mask]
-        self._additional_dof_equivalent_plastic_strain_rate[mask] = \
-            (invariant_j2_el_right - yield_stress_right) / (3. * shear_mod_right * dt)
-
     def apply_plasticity_enr(self, mask_mesh, delta_t):
         """
         Apply plasticity treatment if criterion is activated :
@@ -674,26 +643,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._plastic_strain_rate[mask] = self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
         self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
         self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
-
-
-    def compute_enriched_plastic_strain_rate(self, mask_mesh, dt):  # pylint: disable=invalid-name
-        """
-        Compute the plastic strain rate tensor from elastic prediction and radial return
-        (normal law for Von Mises plasticity) in cracked cells
-        :param mask_mesh : mask to identify the part of the mesh (projectile or target)
-        :param dt: time step
-        """
-        mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
-        # Right part : right part of enriched cells is plastic ? => self.plastic_enr_cells
-        invariant_j2_el_right = np.sqrt(
-            compute_second_invariant(self.additional_dof_deviatoric_stress_new[mask]))
-        shear_mod_right = self.additional_dof_shear_modulus.new_value[mask]
-        yield_stress_right = self.additional_dof_yield_stress.new_value[mask]
-        radial_return_right = yield_stress_right / invariant_j2_el_right
-        for i in range(0, 3):
-            self._additional_dof_plastic_strain_rate[mask, i] = \
-                (1 - radial_return_right) / (radial_return_right * 3 * shear_mod_right * dt) * \
-                self._additional_dof_deviatoric_stress_new[mask, i]
 
     def compute_enriched_yield_stress(self, yield_stress_model):
         """
