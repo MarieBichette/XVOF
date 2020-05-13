@@ -28,5 +28,7 @@ class VonMisesCriterion(PlasticityCriterion):
         :param cells: cells on which to check the criterion
         :return: the mask of the cells where the VonMises plasticity criterion is verified
         """
+        if not cells.enriched.any():
+            return
         return (compute_second_invariant(cells.additional_dof_deviatoric_stress_new) >
                 cells.additional_dof_yield_stress.new_value**2)

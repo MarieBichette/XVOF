@@ -401,8 +401,10 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :param mask: array of bool to select cells of interest
         """
         self.__plastic_cells[mask] = plastic_criterion.check_criterion(self.cells)[mask]
-        self.cells.plastic_enr_cells[mask] = \
-            plastic_criterion.check_criterion_on_right_part_cells(self.cells)[mask]
+        plastic_enr_cells = plastic_criterion.check_criterion_on_right_part_cells(self.cells)
+        if plastic_enr_cells is not None:
+            self.cells.plastic_enr_cells[mask] = plastic_enr_cells[mask]
+            
 
     def apply_rupture_treatment(self, treatment, time: float):
         """

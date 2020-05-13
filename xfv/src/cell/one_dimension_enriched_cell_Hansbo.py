@@ -501,6 +501,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param delta_t: time_step
         """
         mask = self.enriched
+        if not mask.any():
+            return
         # Left part :
         density_left = self.density.current_value[mask]
         density_left_new = self.density.new_value[mask]
