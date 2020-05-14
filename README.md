@@ -13,6 +13,8 @@ Material behavior includes simple models for hydrodynamics, elasticity, plastici
 - Linear elasticity and perfect plasticity is implemented
 - **No** viscous plasticity is considered
 
+For the equation of state, an external library C can be used in order to reduce computation time (faster operations + parallel computation). This library is computed using cmake and translated to a python module using SWIG. See below for how to use it.
+
 ###### Failure models
 Two rupture models are available :
 
@@ -42,7 +44,7 @@ This code is now ported in Python3.7, using type hints for local variables and m
 ## Installation
 - Download the GitHub XVOF repository
 - To install the lib C for equation of state computation :
-from XVOF repository type : ***(python3.7 -m) pip install -e .***
+from XVOF repository type : ***pip install -e .***
 
 ## Test case creation
 Each case is composed of :
@@ -52,3 +54,7 @@ Each case is composed of :
 To launch a test case :
 - Create a data set "XDATA.json" and a meshfile "mesh.txt"
 - Type : ***OMP_NUM_THREADS=2 python3.7 XtendedFiniteVolume <case-repository>***
+By default, the external lib C is used if it has been previously installed. 
+
+To enforce the internal computation of the equation of state (with python module), type
+***python3.7 XtendedFiniteVolume <case-repository> --use-internal-solver***
