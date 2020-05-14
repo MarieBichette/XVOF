@@ -3,11 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-XVOF
+XVOF Documentation
 ================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
 Cell
@@ -85,12 +85,143 @@ Equation Of State
 .. autoclass:: MieGruneisen
    :members:
 
+Fields
+=================
+.. module:: fields
+.. autoclass:: Field
+   :members:
+.. autoclass:: FieldManager
+   :members:
+
+FigureManager (animation)
+============================
+.. module:: figure_manager
+.. autoclass:: PhysicFigure
+   :members:
+.. autoclass:: FigureManager
+   :members:
+
+Mass Matrix
+==================
+.. module:: mass_matrix
+.. autoclass:: EnrichedMassMatrix
+   :members:
+.. autoclass:: EnrichedMassMatrixConsistent
+   :members:
+.. autoclass:: EnrichedMassMatrixLump
+   :members:
+.. autoclass:: EnrichedMassMatrixLumpMenouillard
+   :members:
+.. autoclass:: EnrichedMassMatrixLumpSum
+   :members:
+.. autoclass:: OneDimensionMassMatrix
+   :members:
+.. autoclass:: SymNDArray
+   :members:
+.. autofunction:: compute_wilkins_mass_matrix
+.. autofunction:: multiplication_masse
+.. autofunction:: inverse_masse
+.. autofunction:: lump_matrix
+
+Mesh
+===================
+.. module:: mesh
+.. autoclass:: Mesh1dEnriched
+   :members:
+.. autoclass:: Topology
+   :members:
+.. autoclass:: Topology1D
+   :members:
+
+Nodes
+==================
 .. module:: node
 .. autoclass:: Node
    :members:
+.. autoclass:: OneDimensionNode
+   :members:
+.. autoclass:: OneDimensionHansboEnrichedNode
+   :members:
 
+Outputs
+=====================
+.. module:: output_manager
+.. autoclass:: OutputDatabase
+   :members:
+.. autoclass:: OutputManager
+   :members:
+.. autoclass:: OutputTimeControler
+   :members:
+.. autoclass:: OutputDatabaseExploit
+   :members:
+.. autofunction:: build_node_true_field
+.. autofunction:: build_cell_true_field
 
-Indices and tables
+Outputs
+=====================
+.. module:: plasticitycriterion
+.. autoclass:: PlasticityCriterion
+   :members:
+.. autoclass:: VonMisesCriterion
+   :members:
+
+Rheology
+=============
+.. module:: rheology
+.. autoclass:: ShearModulus
+   :members:
+.. autoclass:: ConstantShearModulus
+   :members:
+.. autoclass:: YieldStress
+   :members:
+.. autoclass:: ConstantYieldStress
+   :members:
+
+Rupture criterion
+=========================
+.. module:: rupturecriterion
+.. autoclass:: RuptureCriterion
+   :members:
+.. autoclass:: HalfRodComparisonCriterion
+   :members:
+.. autoclass:: DamageCriterion
+   :members:
+.. autoclass:: MinimumPressureCriterion
+   :members:
+.. autoclass:: MaximalStressCriterion
+   :members:
+
+Rupture treatments
+=========================
+.. module:: rupturetreatment
+.. autoclass:: RuptureTreatment
+   :members:
+.. autoclass:: ImposedPressure
+   :members:
+.. autoclass:: EnrichElement
+   :members:
+
+Solver
+======================
+.. module:: solver
+.. autoclass:: NewtonRaphsonBase
+   :members:
+.. autoclass:: NewtonRaphson
+   :members:
+.. autoclass:: ClassicalNewtonRaphsonIncrement
+   :members:
+
+Utilities
+===============
+.. module:: utilities
+.. autofunction:: timeit_file
+.. autofunction:: compute_second_invariant
+.. autofunction:: compute_trace
+.. autofunction:: captured_output
+.. autoclass:: Singleton
+   :members:
+
+Index and tables
 ==================
 
 * :ref:`genindex`
