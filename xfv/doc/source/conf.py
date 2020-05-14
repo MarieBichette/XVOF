@@ -58,6 +58,9 @@ extensions.append("guzzle_sphinx_theme")
 html_theme_options = {
     # Set the name of the project to appear in the sidebar
     "project_nav_name": "Project Name",
+
+    # Allow the project link to be overriden to a custom URL.
+    "projectlink": "http://xvof-project.url",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
