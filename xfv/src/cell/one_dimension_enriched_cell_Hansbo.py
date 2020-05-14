@@ -568,8 +568,6 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param node_coord_new : array, new nodes coordinates
         :param node_velocity_new : array, new nodes velocity
         """
-        node_coord_new = np.copy(node_coord_new)
-        node_velocity_new = np.copy(node_velocity_new)
         disc_list = Discontinuity.discontinuity_list()
         if not disc_list:
             return
