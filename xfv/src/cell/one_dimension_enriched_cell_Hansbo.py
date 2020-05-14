@@ -571,32 +571,31 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         for disc in Discontinuity.discontinuity_list():
             u_noeuds_new_in = node_velocity_new[disc.mask_in_nodes]
             u_noeuds_new_out = node_velocity_new[disc.mask_out_nodes]
+            x_noeuds_new_in = node_coord_new[disc.mask_in_nodes]
+            x_noeuds_new_out = node_coord_new[disc.mask_out_nodes]
             u2g = disc.additional_dof_velocity_new[0]
             u1d = disc.additional_dof_velocity_new[1]
             epsilon = disc.position_in_ruptured_element
             u_discg_new, u_discd_new = self._compute_discontinuity_borders_velocity(epsilon, u_noeuds_new_in, u1d, u2g, u_noeuds_new_out)
 
-            mask_nodes = disc.mask_in_nodes + disc.mask_out_nodes
             mask_cells = disc.ruptured_cell_id
-            u_noeuds_new = node_velocity_new[mask_nodes]  # left / right node velocity at time n+1
-            x_noeuds_new = node_coord_new[mask_nodes]  # left / right node coordinates at time n+1
 
             # Creation of structure left - right data to call general_method_deviator_strain_rate
             # Left part cell : node_g - left boundary of discontinuity
-            xg_new = np.array([x_noeuds_new[0],
-                               x_noeuds_new[0] + self.left_part_size.new_value[mask_cells]])
+            xg_new = np.array([x_noeuds_new_in,
+                               x_noeuds_new_in + self.left_part_size.new_value[mask_cells]])
             xg_new = xg_new.reshape(1, 2)
-            ug_new = np.array([u_noeuds_new[0], u_discg_new]).reshape(1, 2)
+            ug_new = np.array([u_noeuds_new_in, u_discg_new]).reshape(1, 2)
             # Compute the deviatoric strain rate tensor for left part
             D = OneDimensionCell.general_method_deviator_strain_rate(dt, xg_new, ug_new)  # np.array(True) to be consistent
             self._deviatoric_strain_rate[mask_cells] = D 
 
             # Creation of structure left - right data to call general_method_deviator_strain_rate
             # Left part cell : right boundary of discontinuity - node_right
-            xd_new = np.array([x_noeuds_new[1] - self.right_part_size.new_value[mask_cells],
-                               x_noeuds_new[1]])
+            xd_new = np.array([x_noeuds_new_out - self.right_part_size.new_value[mask_cells],
+                               x_noeuds_new_out])
             xd_new = xd_new.reshape(1, 2)
-            ud_new = np.array([u_discd_new, u_noeuds_new[1]]).reshape(1, 2)
+            ud_new = np.array([u_discd_new, u_noeuds_new_out]).reshape(1, 2)
             D = OneDimensionCell.general_method_deviator_strain_rate(dt, xd_new, ud_new)
             # Compute the deviatoric strain rate tensor for right part
             self._additional_dof_deviatoric_strain_rate[mask_cells] = D
