@@ -82,7 +82,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                   'position_in_ruptured_element':
                       DataContainer().material_target.failure_model.failure_treatment_value,
                   'mask_ruptured_cell': np.array([True]),
-                  'ruptured_cell_id': np.array([0]),
+                  'ruptured_cell_id': 0,
                   'plastic_cells': np.array([False]),
                   'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                   }
@@ -254,8 +254,8 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         node_velocity_new = np.array([[-1, ], [1., ]])
         u2g = self.mock_disc.additional_dof_velocity_new[0]
         u1d = self.mock_disc.additional_dof_velocity_new[1]
-        u_disc_g = np.array([[-0.5]])
-        u_disc_d = np.array([[0.5]])
+        u_disc_g = np.array([-0.5])
+        u_disc_d = np.array([0.5])
         mock_disc_borders.return_value = u_disc_g, u_disc_d
         mock_compute_D.return_value = np.array([[1., 1., 1.], [1., 1., 1.]])
         self.my_cells.plastic_enr_cells = np.array([True])
