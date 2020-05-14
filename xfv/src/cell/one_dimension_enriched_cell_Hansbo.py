@@ -571,32 +571,28 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         disc_list = Discontinuity.discontinuity_list()
         if not disc_list:
             return
+        
+        nb_disc = len(disc_list)
+        u2g_arr = np.ndarray((nb_disc,))
+        u1d_arr = np.ndarray((nb_disc,))
+        eps_arr = np.ndarray((nb_disc,))
+        mask_nodes_in = np.ndarray((nb_disc,), dtype=int)
+        mask_nodes_out = np.ndarray((nb_disc,), dtype=int)
+        mask_cells_arr = np.ndarray((nb_disc,), dtype=int)
+        for ind, disc in enumerate(disc_list):
+            # Only one node is True so np.where returns a tuple with just one array
+            # This array has a size of 1 => [0][0]
+            mask_nodes_in[ind] = np.where(disc.mask_in_nodes)[0][0]
+            mask_nodes_out[ind] = np.where(disc.mask_out_nodes)[0][0]
+            u2g_arr[ind] = disc.additional_dof_velocity_new[0]
+            u1d_arr[ind] = disc.additional_dof_velocity_new[1]
+            eps_arr[ind] = disc.position_in_ruptured_element
+            mask_cells_arr[ind] = disc.ruptured_cell_id
 
-        mask_in = np.copy(disc_list[0].mask_in_nodes)
-        mask_out = np.copy(disc_list[0].mask_out_nodes)
-        u2g_arr_total = np.ndarray(mask_in.shape)
-        u1d_arr_total = np.ndarray(mask_in.shape)
-        u2g_arr_total[mask_in] = disc_list[0].additional_dof_velocity_new[0]
-        u1d_arr_total[mask_out] = disc_list[0].additional_dof_velocity_new[1]
-        eps = [disc_list[0].position_in_ruptured_element]
-        mask_cells = [disc_list[0].ruptured_cell_id]
-        for disc in disc_list[1:]:
-            mask_in |= disc.mask_in_nodes
-            mask_out |= disc.mask_out_nodes
-            u2g_arr_total[disc.mask_in_nodes] = disc.additional_dof_velocity_new[0]
-            u1d_arr_total[disc.mask_out_nodes] = disc.additional_dof_velocity_new[1]
-            eps.append(disc.position_in_ruptured_element)
-            mask_cells.append(disc.ruptured_cell_id)
-        eps_arr = np.array(eps)
-        u2g_arr = u2g_arr_total[mask_in]
-        u1d_arr = u1d_arr_total[mask_out]
-        u_noeuds_new_in_arr = node_velocity_new[mask_in]
-        u_noeuds_new_out_arr = node_velocity_new[mask_out]
-        x_noeuds_new_in_arr = node_coord_new[mask_in]
-        x_noeuds_new_out_arr = node_coord_new[mask_out]
-        # Sorted here is important because mask_cells holds cell indices which must correspond
-        # to the node fields extracted with a mask of booleean
-        mask_cells_arr = np.array(sorted(mask_cells))
+        u_noeuds_new_in_arr = node_velocity_new[mask_nodes_in]
+        u_noeuds_new_out_arr = node_velocity_new[mask_nodes_out]
+        x_noeuds_new_in_arr = node_coord_new[mask_nodes_in]
+        x_noeuds_new_out_arr = node_coord_new[mask_nodes_out]
 
         xg_new_arr = np.concatenate((x_noeuds_new_in_arr, x_noeuds_new_in_arr + self.left_part_size.new_value[mask_cells_arr][np.newaxis].T), axis=1)
         xd_new_arr = np.concatenate((x_noeuds_new_out_arr - self.right_part_size.new_value[mask_cells_arr][np.newaxis].T, x_noeuds_new_out_arr), axis=1)
@@ -612,6 +608,49 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
         self._deviatoric_strain_rate[mask_cells_arr] = Dg
         self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = Dd
+
+        # # Copy because they are modified in place by operator |=
+        # mask_in = np.copy(disc_list[0].mask_in_nodes)
+        # mask_out = np.copy(disc_list[0].mask_out_nodes)
+
+        # u2g_arr_total = np.ndarray(mask_in.shape)
+        # u1d_arr_total = np.ndarray(mask_in.shape)
+        # u2g_arr_total[mask_in] = disc_list[0].additional_dof_velocity_new[0]
+        # u1d_arr_total[mask_out] = disc_list[0].additional_dof_velocity_new[1]
+        # eps = [disc_list[0].position_in_ruptured_element]
+        # mask_cells = [disc_list[0].ruptured_cell_id]
+        # for disc in disc_list[1:]:
+        #     mask_in |= disc.mask_in_nodes
+        #     mask_out |= disc.mask_out_nodes
+        #     u2g_arr_total[disc.mask_in_nodes] = disc.additional_dof_velocity_new[0]
+        #     u1d_arr_total[disc.mask_out_nodes] = disc.additional_dof_velocity_new[1]
+        #     eps.append(disc.position_in_ruptured_element)
+        #     mask_cells.append(disc.ruptured_cell_id)
+        # eps_arr = np.array(eps)
+        # u2g_arr = u2g_arr_total[mask_in]
+        # u1d_arr = u1d_arr_total[mask_out]
+        # u_noeuds_new_in_arr = node_velocity_new[mask_in]
+        # u_noeuds_new_out_arr = node_velocity_new[mask_out]
+        # x_noeuds_new_in_arr = node_coord_new[mask_in]
+        # x_noeuds_new_out_arr = node_coord_new[mask_out]
+        # # Sorted here is important because mask_cells holds cell indices which must correspond
+        # # to the node fields extracted with a mask of booleean
+        # mask_cells_arr = np.array(sorted(mask_cells))
+
+        # xg_new_arr = np.concatenate((x_noeuds_new_in_arr, x_noeuds_new_in_arr + self.left_part_size.new_value[mask_cells_arr][np.newaxis].T), axis=1)
+        # xd_new_arr = np.concatenate((x_noeuds_new_out_arr - self.right_part_size.new_value[mask_cells_arr][np.newaxis].T, x_noeuds_new_out_arr), axis=1)
+        # x_new_arr = np.concatenate((xg_new_arr, xd_new_arr))
+
+        # u_discg_new_arr, u_discd_new_arr = self._compute_discontinuity_borders_velocity(eps_arr, u_noeuds_new_in_arr[:, 0], u1d_arr, u2g_arr, u_noeuds_new_out_arr[:, 0])
+
+        # ug_new_arr = np.concatenate((u_noeuds_new_in_arr, u_discg_new_arr[np.newaxis].T), axis=1)
+        # ud_new_arr = np.concatenate((u_discd_new_arr[np.newaxis].T, u_noeuds_new_out_arr), axis=1)
+        # u_new_arr = np.concatenate((ug_new_arr, ud_new_arr))
+
+        # Dg, Dd = np.split(OneDimensionCell.general_method_deviator_strain_rate(dt, x_new_arr, u_new_arr), 2)
+
+        # self._deviatoric_strain_rate[mask_cells_arr] = Dg
+        # self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = Dd
 
     def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new,
                                                   dt):  # pylint: disable=invalid-name
