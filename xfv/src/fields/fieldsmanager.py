@@ -22,7 +22,7 @@ class FieldManager(OrderedDict):
         :param key: name of the field
         :param value: Field object
         """
-        if key not in list(self.keys()) or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
+        if key not in list(self.keys()):
             super(FieldManager, self).__setitem__(key, value)
         else:
             raise KeyError("The filed {:s} already exists in the manager!".format(key))
@@ -36,13 +36,6 @@ class FieldManager(OrderedDict):
         # msg = "FieldManager contents :" + os.linesep
         # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
         return msg
-
-    def moveClassicalToEnrichedFields(self, size):
-        """
-        Turn all classical fields into enriched ones
-        """
-        for name, field in list(self.items()):
-            self[name] = EnrichedField(size, field.current_value, field.new_value)
 
     def incrementFields(self):
         """
