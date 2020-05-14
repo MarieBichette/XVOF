@@ -563,7 +563,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                                                 node_coord_new,
                                                 node_velocity_new):
         """
-        Compute devaiateur du taux de dï¿½formation
+        Compute the deviatoric strain rate for enriched cells
+
         :param dt : time step
         :param node_coord_new : array, new nodes coordinates
         :param node_velocity_new : array, new nodes velocity
