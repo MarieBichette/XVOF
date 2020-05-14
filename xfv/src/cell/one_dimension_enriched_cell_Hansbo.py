@@ -16,6 +16,22 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     """
     A collection of 1d enriched elements. Treatment for Hansbo enrichment
     """
+    @staticmethod
+    def _compute_discontinuity_borders_velocity(epsilon, u1g, u1d, u2g, u2d):
+        """
+        Compute the velocities of points at the discontinuity border
+        :param epsilon: relative position of the discontinuity inside the cell
+        :param u1g : classic velocity on left node (inside node)
+        :param u1d : additional dof velocity on left node
+        :param u2g : additional dof velocity on right node
+        :param u2d : classical velocity on right node (outside)
+        :return ug : velocity of the discontinuity left boundary
+        :return ud : velocity of the discontinuity right boundary
+        """
+        ug = u2g * epsilon + u1g * (1. - epsilon)  # pylint: disable=invalid-name
+        ud = u2d * epsilon + u1d * (1. - epsilon)  # pylint: disable=invalid-name
+        return ug, ud
+
     @classmethod
     def compute_discontinuity_borders_velocity(cls, disc, node_velocity):
         """
@@ -553,11 +569,15 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param node_velocity_new : array, new nodes velocity
         """
         for disc in Discontinuity.discontinuity_list():
+            u_noeuds_new_in = node_velocity_new[disc.mask_in_nodes]
+            u_noeuds_new_out = node_velocity_new[disc.mask_out_nodes]
+            u2g = disc.additional_dof_velocity_new[0]
+            u1d = disc.additional_dof_velocity_new[1]
+            epsilon = disc.position_in_ruptured_element
+            u_discg_new, u_discd_new = self._compute_discontinuity_borders_velocity(epsilon, u_noeuds_new_in, u1d, u2g, u_noeuds_new_out)
+
             mask_nodes = disc.mask_in_nodes + disc.mask_out_nodes
             mask_cells = disc.ruptured_cell_id
-            u_discg_new, u_discd_new = \
-                OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
-                    disc, node_velocity_new)
             u_noeuds_new = node_velocity_new[mask_nodes]  # left / right node velocity at time n+1
             x_noeuds_new = node_coord_new[mask_nodes]  # left / right node coordinates at time n+1
 

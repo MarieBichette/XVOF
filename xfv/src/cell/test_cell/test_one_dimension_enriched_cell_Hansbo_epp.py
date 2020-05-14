@@ -239,7 +239,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         np.testing.assert_allclose(self.my_cells.additional_dof_stress, exact_stress_droite)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_discontinuity_borders_velocity",
+    @mock.patch.object(OneDimensionHansboEnrichedCell, "_compute_discontinuity_borders_velocity",
                        spec=classmethod, new_callable=mock.MagicMock)
     @mock.patch.object(OneDimensionCell, "general_method_deviator_strain_rate",
                        spec=classmethod, new_callable=mock.MagicMock)
@@ -252,6 +252,8 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         node_coord_new = np.array([[0.,], [1.,]])
         node_velocity_new = np.array([[-1, ], [1., ]])
+        u2g = self.mock_disc.additional_dof_velocity_new[0]
+        u1d = self.mock_disc.additional_dof_velocity_new[1]
         u_disc_g = np.array([-0.5])
         u_disc_d = np.array([0.5])
         mock_disc_borders.return_value = u_disc_g, u_disc_d
@@ -260,7 +262,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
 
-        mock_disc_borders.assert_called_with(self.mock_disc, node_velocity_new)
+        mock_disc_borders.assert_called_with(0.5, node_velocity_new[0], u1d, node_velocity_new[1], u2g)
         mock_compute_D.assert_called()
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
