@@ -23,7 +23,8 @@ class SuccessiveRampTest(unittest.TestCase):
         self._end_first_slope_time = 2.
         self._end_creneau = 3.
         self._end_time = 4.
-        fst_ramp = Ramp(self._first_value, self._second_value, self._start_time, self._end_first_slope_time)
+        fst_ramp = Ramp(self._first_value, self._second_value, self._start_time,
+                        self._end_first_slope_time)
         snd_ramp = Ramp(self._second_value, self._third_value, self._end_creneau, self._end_time)
         self._function = SuccessiveRamp(fst_ramp, snd_ramp)
 

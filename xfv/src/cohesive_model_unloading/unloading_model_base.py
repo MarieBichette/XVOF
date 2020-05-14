@@ -5,7 +5,7 @@ Definition of UnloadingModelBase
 from abc import ABCMeta, abstractmethod
 
 
-class UnloadingModelBase(metaclass=ABCMeta):
+class UnloadingModelBase(metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     A model for unloading reloading path in cohesive zone model
     """
@@ -13,7 +13,6 @@ class UnloadingModelBase(metaclass=ABCMeta):
         """
         Constructor
         """
-        pass
 
     @abstractmethod
     def compute_unloading_reloading_condition(self, disc, new_opening):

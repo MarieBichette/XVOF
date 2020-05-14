@@ -13,6 +13,9 @@ from xfv.src.utilities.stress_invariants_calculation import compute_second_invar
 
 
 class OneDimensionCellEPPTest(unittest.TestCase):
+    """
+    A class to test the module OneDimensionCell with elasticity and plasticity
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -25,21 +28,24 @@ class OneDimensionCellEPPTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Actions after all the tests of the class
+        """
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
 
     def setUp(self):
+        """
+        Test set up
+        """
         self.nbr_cells = 4
         self.my_cells = OneDimensionCell(self.nbr_cells)
         self.my_cells.cell_in_target = np.ones(self.nbr_cells, dtype='bool')
         self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
 
-    def tearDown(self):
-        pass
-
     def test_apply_plastic_corrector_on_deviatoric_stress_tensor(self):
         """
-        Test de la mï¿½thode apply_plastic_corrector_on_deviatoric_stress_tensor
+        Test of the method apply_plastic_corrector_on_deviatoric_stress_tensor
         """
         mask = np.array([True, True, False, False])
         deviatoric_stress_new = np.array([[8e+9, -4e+9, -4e+9], [5e+8, -2.5e+8, -2.5e+8],
@@ -56,18 +62,19 @@ class OneDimensionCellEPPTest(unittest.TestCase):
 
     def test_compute_yield_stress(self):
         """
-        Test de la m�thode compute_yield_stress
+        Test of the method compute_yield_stress
         """
+        target_model = self.test_data.material_target
         self.my_cells.compute_yield_stress(
-            self.test_data.material_target.constitutive_model.plasticity_model.build_yield_stress_obj(),
-            np.array([True, True,True, True]))
-        expected_value = self.test_data.material_target.initial_values.yield_stress_init
+            target_model.constitutive_model.plasticity_model.build_yield_stress_obj(),
+            np.array([True, True, True, True]))
+        expected_value = target_model.initial_values.yield_stress_init
         np.testing.assert_allclose(self.my_cells.yield_stress.new_value,
                                    np.ones([self.nbr_cells]) * expected_value)
 
     def test_compute_equivalent_plastic_strain_rate(self):
         """
-        Test de la mï¿½thode compute_equivalent_plastic_strain_rate
+        Test of the method compute_equivalent_plastic_strain_rate
         """
         mask = np.array([True, True, False, False])
         delta_t = 1.

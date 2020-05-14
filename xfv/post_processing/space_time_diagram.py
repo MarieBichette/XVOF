@@ -21,7 +21,7 @@ def create_figure():
     """
     fig = plt.figure(1)
     plt.xlabel("Coordinates [mm]", fontsize=18)
-    plt.ylabel("Time [$\mu s$]", fontsize=18)
+    plt.ylabel("Time [mu s]", fontsize=18)
     if ARGS.gradient:
         the_title = "Space time {:} gradient diagram".format(ARGS.field)
         # Definition of a color map for gradients plot
@@ -68,14 +68,17 @@ def run():
     # Get the final number of created discontinuities
     # ----------------------------------------------------------------
     final_cell_status = my_hd.extract_field_at_time("CellStatus", my_hd.saved_times[-1])
-    final_ruptured_cell_id = np.where(final_cell_status)[0]
-    final_ruptured_cell_id = np.sort(final_ruptured_cell_id)
+    ruptured_cell_id_before_offset = np.where(final_cell_status)[0]
+    ruptured_cell_id_before_offset = np.sort(ruptured_cell_id_before_offset)
     # ----------------------------------------------------------------
     # Get data to plot the diagram
     # ----------------------------------------------------------------
     diagram_tools = SpaceTimeDiagramTools(path_to_db, ARGS.verbose)
-    coord_array, time_array, field_array = \
-        diagram_tools.build_xyz_map_for_contourf_plot(ARGS.field, final_ruptured_cell_id)
+    coord_list, time_list, field_list = \
+        diagram_tools.build_xyz_map_for_contourf_plot(ARGS.field, ruptured_cell_id_before_offset)
+    coord_array = np.array(coord_list)
+    time_array = np.array(time_list)
+    field_array = np.array(field_list)
     min_field = np.min(field_array)
     max_field = np.max(field_array)
 
@@ -95,34 +98,67 @@ def run():
     if ARGS.verbose:
         print("Plot the color map")
 
-    if len(final_ruptured_cell_id) >= 1:
+    # Tracé jusqu'au temps d'appartion des disc :
+    first_time = min([diagram_tools.first_enr_time[k] for k in diagram_tools.first_enr_time])
+    time_index = diagram_tools.get_enrichment_time_index(first_time)
+    print(time_index)
+    diagram_tools.plot_section_of_color_map(coord_array[:time_index + 1, :],
+                                            time_array[:time_index + 1, :],
+                                            field_array[:time_index + 1, :],
+                                            plot_options)
+
+    # Apparition des disc :
+    if len(ruptured_cell_id_before_offset) >= 1:
         # Offset of the cracked cell ids to be conservative with the number of items of final arrays
         ruptured_cell_id_after_offset = \
-            final_ruptured_cell_id + list(range(0, len(final_ruptured_cell_id)))
+            ruptured_cell_id_before_offset + list(range(0, len(ruptured_cell_id_before_offset)))
         if ARGS.verbose:
-            print("List of cracked cells :" + str(final_ruptured_cell_id))
+            print("List of cracked cells :" + str(ruptured_cell_id_before_offset))
             print("=> List of cracked cells after offset:" + str(ruptured_cell_id_after_offset))
+
         # First part from 0 to first discontinuity
-        first_left_index = final_ruptured_cell_id[0]
-        diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
-                                                plot_options, end=first_left_index)
+        end = ruptured_cell_id_after_offset[0]  # left boundary of first discontinuity
+        diagram_tools.plot_section_of_color_map(coord_array[time_index:, :end + 1],
+                                                time_array[time_index:, :end + 1],
+                                                field_array[time_index:, :end + 1],
+                                                plot_options)
+        if ARGS.verbose:
+            print("Plot from the beginning to " + str(end) + "included")
         offset = 1
-        # From one discontinuity to another
-        for i_rupture_index in ruptured_cell_id_after_offset[:-1]:
-            right_current = i_rupture_index + 1
-            left_next = ruptured_cell_id_after_offset[offset]
-            diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
-                                                    plot_options,
-                                                    begin=right_current, end=left_next)
+
+        # From one discontinuity to another (plot from time index where one discontinuity exists)
+        for i in range(0, len(ruptured_cell_id_before_offset) - 1):  # boucle sur les disc
+            i_rupture_index_before_offset = ruptured_cell_id_before_offset[i]
+            i_rupture_index_after_offset = ruptured_cell_id_after_offset[i]
+            begin = i_rupture_index_after_offset + 1  # right boundary of the current disc
+            end = ruptured_cell_id_after_offset[offset]  # left boundary of the next disc
+            diagram_tools.plot_section_of_color_map(coord_array[time_index:, begin:end + 1],
+                                                    time_array[time_index:, begin:end + 1],
+                                                    field_array[time_index:, begin:end + 1],
+                                                    plot_options)
+            if ARGS.verbose:
+                print("Plot from " + str(begin) + " to " + str(end) + "included")
+
+            diagram_tools.plot_disc_boundaries(coord_array, time_array,
+                                               i_rupture_index_before_offset,
+                                               i_rupture_index_after_offset)
             offset += 1
+
         # From the last discontinuity to the end
-        last_right_index = ruptured_cell_id_after_offset[-1] + 1
-        diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array,
-                                                plot_options, begin=last_right_index)
+        begin = ruptured_cell_id_after_offset[-1] + 1  # left boundary of the last disc
+        diagram_tools.plot_section_of_color_map(coord_array[time_index:, begin:],
+                                                time_array[time_index:, begin:],
+                                                field_array[time_index:, begin:],
+                                                plot_options)
+        if ARGS.verbose:
+            print("Plot from " + str(begin) + " to the end")
+
     else:
         # Simple plot with no discontinuities
         diagram_tools.plot_section_of_color_map(coord_array, time_array, field_array, plot_options)
 
+    # Plot the geometry boundaries
+    diagram_tools.plot_geometry_boundaries(coord_array, time_array)
     # Interface target / projectile
     if diagram_tools.data_has_interface():
         diagram_tools.plot_interface(coord_array, time_array)

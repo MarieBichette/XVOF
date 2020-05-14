@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-few-public-methods
 """
 Classe définissant la correction classique appliquée sur la variable d'un Newton Raphson
 """

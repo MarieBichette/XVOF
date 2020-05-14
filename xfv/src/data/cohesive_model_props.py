@@ -2,7 +2,7 @@
 This module defines the classes that stores data read from the datafile and
 needed to create CohesiveModel objects.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 

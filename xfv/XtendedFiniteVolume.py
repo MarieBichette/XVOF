@@ -361,8 +361,6 @@ def main(directory: Path) -> None:
         dt_crit = my_mesh.compute_new_time_step()
         if dt > dt_crit:
             dt = min(dt, dt_crit)  # pylint: disable=invalid-name
-            print("Reduction of the time step to respect CFL. New time step is " + str(dt_crit))
-
         # ---------------------------------------------#
         #                INCREMENTATION                #
         # ---------------------------------------------#

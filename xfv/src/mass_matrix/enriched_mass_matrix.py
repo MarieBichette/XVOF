@@ -60,19 +60,21 @@ class EnrichedMassMatrix:
         Assemble and inverse the mass matrix after enrichment
         """
 
-    @abstractmethod
+    @property
     def inverse_enriched_mass_matrix_classic_dof(self):
         """
         Accessor on the inverse of the mass matrix for classical degrees of freedom
         :return: the extraction of the inverse of the mass matrix for classical dof
         """
+        return
 
-    @abstractmethod
+    @property
     def inverse_enriched_mass_matrix_enriched_dof(self):
         """
         Accessor on the inverse of the mass matrix for enriched degrees of freedom
         :return: extraction of the inverse of the mass matrix for enriched dof
         """
+        return
 
     @abstractmethod
     def compute_enriched_mass_matrix_left_part(self, mass_0: float, mass_1: float, epsilon: float):

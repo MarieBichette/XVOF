@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing field manager class
 
@@ -22,29 +22,23 @@ class FieldManager(OrderedDict):
         :param key: name of the field
         :param value: Field object
         """
-        if key not in list(self.keys()) or isinstance(value, EnrichedField) and not isinstance(self[key], EnrichedField):
+        if key not in list(self.keys()):
             super(FieldManager, self).__setitem__(key, value)
         else:
             raise KeyError("The filed {:s} already exists in the manager!".format(key))
 
     def __str__(self):
         """
-        :return: informations about the contents of the manager
+        :return: information about the contents of the manager
         """
         msg = " "
         # msg = "Initial fields have been created"
         # msg = "FieldManager contents :" + os.linesep
-        # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
+        # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field)
+        #                        for name, field in self.items()))
         return msg
 
-    def moveClassicalToEnrichedFields(self, size):
-        """
-        Turn all classical fields into enriched ones
-        """
-        for name, field in list(self.items()):
-            self[name] = EnrichedField(size, field.current_value, field.new_value)
-
-    def incrementFields(self):
+    def increment_fields(self):
         """
         Increment all the fields registered in the manager
         """

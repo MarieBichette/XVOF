@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=invalid-name
+
 """
 A class to manage the figures and animations
-
-pylint: disable=invalid-name
 
 @todo: incorporate the calculation of the time at which images have to be shown
 (move from Vnr1D...py)
@@ -86,72 +86,76 @@ class FigureManager(metaclass=Singleton):
                                 NodeVelocityField: self.__mesh_instance.velocity_field
                                 }
 
-    def create_figure_for_cell_field(self, field_X, field_Y):
+    def create_figure_for_cell_field(self, field_x, field_y):
         """
         Creation of figures for cell fields
+        :param field_x: abscissa of the figure
+        :param field_y: ordinate of the figure
         Abscissa is thus the cell coordinates
         """
         try:
-            X = self.__champs_mailles[field_X]  # pylint: disable=invalid-name
+            x_value = self.__champs_mailles[field_x]
         except ValueError as ve:
-            print("Field {} is unknown !".format(field_X))
+            print("Field {} is unknown !".format(field_x))
             raise ve
         try:
-            Y = self.__champs_mailles[field_Y]  # pylint: disable=invalid-name
+            y_value = self.__champs_mailles[field_y]
         except ValueError as ve:
-            print("Field {} is unknown !".format(field_Y))
+            print("Field {} is unknown !".format(field_y))
             raise ve
         if self.__dump:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                                  titre=field_Y.titre, interface_id=self.interface,
-                                  save_path=field_Y.results_path)
+            phyfig = PhysicFigure(x_value, y_value, xlabel=field_x.label, ylabel=field_y.label,
+                                  titre=field_y.titre, interface_id=self.interface,
+                                  save_path=field_y.results_path)
         else:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                                  titre=field_Y.titre, interface_id=self.interface)
-        phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
-        phyfig.set_x_limit(field_X.val_min, field_X.val_max)
+            phyfig = PhysicFigure(x_value, y_value, xlabel=field_x.label, ylabel=field_y.label,
+                                  titre=field_y.titre, interface_id=self.interface)
+        phyfig.set_y_limit(field_y.val_min, field_y.val_max)
+        phyfig.set_x_limit(field_x.val_min, field_x.val_max)
         return phyfig
 
-    def create_figure_for_node_field(self, field_X, field_Y):
+    def create_figure_for_node_field(self, field_x, field_y):
         """
         Creation of figures for nodal fields
+        :param field_x: abscissa of the figure
+        :param field_y: ordinate of the figure
         Abscissa is thus the node coordinates
         """
         try:
-            X = np.array(self.__champs_noeuds[field_X])  # pylint: disable=invalid-name
+            x_value = np.array(self.__champs_noeuds[field_x])
         except ValueError as ve:
-            print("Le champ {} est inconnu!".format(field_X))
+            print("Le champ {} est inconnu!".format(field_x))
             raise ve
         try:
-            Y = np.array(self.__champs_noeuds[field_Y])  # pylint: disable=invalid-name
+            y_value = np.array(self.__champs_noeuds[field_y])
         except ValueError as ve:
-            print("Le champ {} est inconnu!".format(field_Y))
+            print("Le champ {} est inconnu!".format(field_y))
             raise ve
         if self.__dump:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                                  titre=field_Y.titre, interface_id=self.interface + 1,
-                                  save_path=field_Y.results_path)
+            phyfig = PhysicFigure(x_value, y_value, xlabel=field_x.label, ylabel=field_y.label,
+                                  titre=field_y.titre, interface_id=self.interface + 1,
+                                  save_path=field_y.results_path)
         else:
-            phyfig = PhysicFigure(X, Y, xlabel=field_X.label, ylabel=field_Y.label,
-                                  titre=field_Y.titre, interface_id=self.interface + 1)
-        phyfig.set_y_limit(field_Y.val_min, field_Y.val_max)
-        phyfig.set_x_limit(field_X.val_min, field_X.val_max)
+            phyfig = PhysicFigure(x_value, y_value, xlabel=field_x.label, ylabel=field_y.label,
+                                  titre=field_y.titre, interface_id=self.interface + 1)
+        phyfig.set_y_limit(field_y.val_min, field_y.val_max)
+        phyfig.set_x_limit(field_x.val_min, field_x.val_max)
         return phyfig
 
     def populate_figs(self):
         """
         Creation of the figures associtated with fields and add to the list of figures
         """
-        champ_X = CellPositionField
-        for champ_Y in list(self.__champs_mailles.keys()):
-            if champ_Y != champ_X:
-                fig = self.create_figure_for_cell_field(champ_X, champ_Y)
-                self.__figures_mailles.append((fig, champ_X, champ_Y))
-        champ_X = NodePositionField
-        for champ_Y in list(self.__champs_noeuds.keys()):
-            if champ_Y != champ_X:
-                fig = self.create_figure_for_node_field(champ_X, champ_Y)
-                self.__figures_noeuds.append((fig, champ_X, champ_Y))
+        champ_x = CellPositionField
+        for champ_y in list(self.__champs_mailles.keys()):
+            if champ_y != champ_x:
+                fig = self.create_figure_for_cell_field(champ_x, champ_y)
+                self.__figures_mailles.append((fig, champ_x, champ_y))
+        champ_x = NodePositionField
+        for champ_y in list(self.__champs_noeuds.keys()):
+            if champ_y != champ_x:
+                fig = self.create_figure_for_node_field(champ_x, champ_y)
+                self.__figures_noeuds.append((fig, champ_x, champ_y))
         plt.show(block=False)
 
         if self.__dump:
@@ -195,7 +199,7 @@ class FigureManager(metaclass=Singleton):
             path = field.results_path
             if os.path.exists(path):
                 msg = "Path {:} already exists !".format(path)
-                msg+= "\n Abandon to avoid to override data"
+                msg += "\n Abandon to avoid to override data"
                 raise SystemExit(msg)
-            else:
-                os.makedirs(path)
+            # else
+            os.makedirs(path)

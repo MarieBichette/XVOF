@@ -8,7 +8,7 @@ import numpy as np
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class ContactBase(metaclass=ABCMeta):
+class ContactBase(metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
     """
     An interface for all cohesive zone model
     """

@@ -74,6 +74,16 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         return self._inv_enriched_mass_matrix[self._matrix_size - 2:self._matrix_size,
                                               self._matrix_size - 2:self._matrix_size]
 
+    @property
+    def inverse_enriched_mass_matrix_coupling_dof(self):
+        """
+        Accessor on the inverse of the mass matrix for coupling between classical and enriched
+        degrees of freedom
+        :return: the coupling part of the inverse of the mass matrix
+        """
+        return self._inv_enriched_mass_matrix[0:self._matrix_size - 2,
+                                              self._matrix_size - 2:self._matrix_size]
+
     def compute_enriched_mass_matrix_left_part(self, mass_0: float, mass_1: float, epsilon: float):
         """
         Compute the Hansbo mass matrix for the left part

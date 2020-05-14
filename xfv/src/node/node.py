@@ -73,7 +73,7 @@ class Node:
         return self._enriched
 
     @property
-    def xt(self):
+    def xt(self):  # pylint: disable=invalid-name
         """
         Positions des noeuds au temps t
 
