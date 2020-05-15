@@ -13,6 +13,8 @@ jobs:
   include:
     - stage: "Doc"
       name: "Documentation"
+      before_script:
+        - sudo apt-get install -y python3-sphinx
       script: python generate_doc.py
     - stage: "Lint"
       name: "pylint"
