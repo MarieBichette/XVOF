@@ -99,7 +99,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         Test of the method compute_additional_dof_new_velocity
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_mass_additional = np.array([[2., ], [2., ]])
+        inv_mass_additional = np.array([2., 2.])
         self.mock_discontinuity.additional_dof_velocity_current = np.array([[1., ], [3., ]])
         self.mock_discontinuity.additional_dof_force = np.array([[1., ], [1., ]])
         self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)

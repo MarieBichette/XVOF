@@ -77,9 +77,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param inv_matrice_masse: inverse of the mass matrix
         """
         for disc in Discontinuity.discontinuity_list():
-            disc._additional_dof_velocity_new = \
-                disc.additional_dof_velocity_current + delta_t * \
-                multiplication_masse(inv_matrice_masse, disc.additional_dof_force)
+            res = (disc.additional_dof_velocity_current +
+                   inv_matrice_masse[np.newaxis].T * disc.additional_dof_force * delta_t)
+            disc._additional_dof_velocity_new = res
 
     def infos(self, index):
         """
