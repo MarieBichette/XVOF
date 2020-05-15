@@ -3,6 +3,8 @@
 Implementing the Element1dEnriched class for Hansbo&Hansbo enrichment
 """
 import os
+from typing import Tuple
+
 import numpy as np
 
 from xfv.src.cell.one_dimension_cell import OneDimensionCell
@@ -17,7 +19,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     A collection of 1d enriched elements. Treatment for Hansbo enrichment
     """
     @staticmethod
-    def _compute_discontinuity_borders_velocity(epsilon, u1g, u1d, u2g, u2d):
+    def _compute_discontinuity_borders_velocity(epsilon: np.array, u1g: np.array,
+                                                u1d: np.array, u2g: np.array, u2d: np.array) -> Tuple[np.array]:
         """
         Compute the velocities of points at the discontinuity border
         :param epsilon: relative position of the discontinuity inside the cell
@@ -559,9 +562,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             (self.additional_dof_pressure.new_value[mask] +
              self.additional_dof_artificial_viscosity.new_value[mask])
 
-    def compute_enriched_deviatoric_strain_rate(self, dt,  # pylint: disable=invalid-name
-                                                node_coord_new,
-                                                node_velocity_new):
+    def compute_enriched_deviatoric_strain_rate(self, dt: float,  # pylint: disable=invalid-name
+                                                node_coord_new: np.array,
+                                                node_velocity_new: np.array) -> None:
         """
         Compute the deviatoric strain rate for enriched cells
 
@@ -581,7 +584,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         mask_nodes_out = np.ndarray((nb_disc,), dtype=int)
         mask_cells_arr = np.ndarray((nb_disc,), dtype=int)
         for ind, disc in enumerate(disc_list):
-            # Only one node is True so np.where returns a tuple with just one array
+            # In a discontinuity mask, only one node is True so np.where returns 
+            # a tuple with just one array.
             # This array has a size of 1 => [0][0]
             mask_nodes_in[ind] = np.where(disc.mask_in_nodes)[0][0]
             mask_nodes_out[ind] = np.where(disc.mask_out_nodes)[0][0]
@@ -605,53 +609,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         ud_new_arr = np.concatenate((u_discd_new_arr[np.newaxis].T, u_noeuds_new_out_arr), axis=1)
         u_new_arr = np.concatenate((ug_new_arr, ud_new_arr))
 
-        Dg, Dd = np.split(OneDimensionCell.general_method_deviator_strain_rate(dt, x_new_arr, u_new_arr), 2)
+        deviator_left, deviator_right = np.split(OneDimensionCell.general_method_deviator_strain_rate(dt, x_new_arr, u_new_arr), 2)
 
-        self._deviatoric_strain_rate[mask_cells_arr] = Dg
-        self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = Dd
-
-        # # Copy because they are modified in place by operator |=
-        # mask_in = np.copy(disc_list[0].mask_in_nodes)
-        # mask_out = np.copy(disc_list[0].mask_out_nodes)
-
-        # u2g_arr_total = np.ndarray(mask_in.shape)
-        # u1d_arr_total = np.ndarray(mask_in.shape)
-        # u2g_arr_total[mask_in] = disc_list[0].additional_dof_velocity_new[0]
-        # u1d_arr_total[mask_out] = disc_list[0].additional_dof_velocity_new[1]
-        # eps = [disc_list[0].position_in_ruptured_element]
-        # mask_cells = [disc_list[0].ruptured_cell_id]
-        # for disc in disc_list[1:]:
-        #     mask_in |= disc.mask_in_nodes
-        #     mask_out |= disc.mask_out_nodes
-        #     u2g_arr_total[disc.mask_in_nodes] = disc.additional_dof_velocity_new[0]
-        #     u1d_arr_total[disc.mask_out_nodes] = disc.additional_dof_velocity_new[1]
-        #     eps.append(disc.position_in_ruptured_element)
-        #     mask_cells.append(disc.ruptured_cell_id)
-        # eps_arr = np.array(eps)
-        # u2g_arr = u2g_arr_total[mask_in]
-        # u1d_arr = u1d_arr_total[mask_out]
-        # u_noeuds_new_in_arr = node_velocity_new[mask_in]
-        # u_noeuds_new_out_arr = node_velocity_new[mask_out]
-        # x_noeuds_new_in_arr = node_coord_new[mask_in]
-        # x_noeuds_new_out_arr = node_coord_new[mask_out]
-        # # Sorted here is important because mask_cells holds cell indices which must correspond
-        # # to the node fields extracted with a mask of booleean
-        # mask_cells_arr = np.array(sorted(mask_cells))
-
-        # xg_new_arr = np.concatenate((x_noeuds_new_in_arr, x_noeuds_new_in_arr + self.left_part_size.new_value[mask_cells_arr][np.newaxis].T), axis=1)
-        # xd_new_arr = np.concatenate((x_noeuds_new_out_arr - self.right_part_size.new_value[mask_cells_arr][np.newaxis].T, x_noeuds_new_out_arr), axis=1)
-        # x_new_arr = np.concatenate((xg_new_arr, xd_new_arr))
-
-        # u_discg_new_arr, u_discd_new_arr = self._compute_discontinuity_borders_velocity(eps_arr, u_noeuds_new_in_arr[:, 0], u1d_arr, u2g_arr, u_noeuds_new_out_arr[:, 0])
-
-        # ug_new_arr = np.concatenate((u_noeuds_new_in_arr, u_discg_new_arr[np.newaxis].T), axis=1)
-        # ud_new_arr = np.concatenate((u_discd_new_arr[np.newaxis].T, u_noeuds_new_out_arr), axis=1)
-        # u_new_arr = np.concatenate((ug_new_arr, ud_new_arr))
-
-        # Dg, Dd = np.split(OneDimensionCell.general_method_deviator_strain_rate(dt, x_new_arr, u_new_arr), 2)
-
-        # self._deviatoric_strain_rate[mask_cells_arr] = Dg
-        # self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = Dd
+        self._deviatoric_strain_rate[mask_cells_arr] = deviator_left
+        self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = deviator_right
 
     def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new,
                                                   dt):  # pylint: disable=invalid-name
