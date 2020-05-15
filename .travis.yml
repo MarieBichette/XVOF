@@ -14,7 +14,8 @@ jobs:
     - stage: "Doc"
       name: "Documentation"
       before_script:
-        - sudo apt-get install -y python3-sphinx
+        - pip install -U sphinx
+        - pip install guzzle_sphinx_theme
       script: python generate_doc.py
     - stage: "Lint"
       name: "pylint"
