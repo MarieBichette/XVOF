@@ -4,7 +4,7 @@ This software is an experimental work trying to model spall fracture using enric
 method in a finite volume code. Hansbo & Hansbo enrichment is used.
 
 ## Code description
-Code documentation is available at doc/index.html
+Code documentation is available at xfv/doc/index.html
 
 #### Available physics
 
