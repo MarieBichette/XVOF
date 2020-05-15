@@ -11,6 +11,9 @@ install:
 # command to run tests
 jobs:
   include:
+    - stage: "Doc"
+      name: "documentation"
+      script: python generate_doc.py
     - stage: "Lint"
       name: "pylint"
       before_script: pip install pylint
@@ -31,4 +34,5 @@ jobs:
 stages:
   - Tests
   - Lint
+  - Doc
 
