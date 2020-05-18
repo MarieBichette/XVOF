@@ -153,7 +153,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             # For each discontinuity, compute the contribution of the cracked cell to the classical
             # node forces and compute the enriched node forces for the enriched nodes of
             # the discontinuity
-            cell = disc.ruptured_cell_id
+            cell = disc.get_ruptured_cell_id()
             epsilon = disc.position_in_ruptured_element
 
             sigma_minus = contrainte_xx[cell]

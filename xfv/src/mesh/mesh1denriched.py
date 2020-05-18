@@ -476,7 +476,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         modified_coord = np.zeros([len(Discontinuity.discontinuity_list()), 3])
         # modified_coord est un array qui contient ruptured_cell_id, left_size, right_size
         for disc in Discontinuity.discontinuity_list():
-            enr_cell = int(disc.ruptured_cell_id)
+            enr_cell = int(disc.get_ruptured_cell_id())
             index = disc.label - 1
             modified_coord[index, 0] = enr_cell
             modified_coord[index, 1] = self.nodes.xt[disc.mask_in_nodes] + \

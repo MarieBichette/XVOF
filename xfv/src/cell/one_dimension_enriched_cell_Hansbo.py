@@ -383,7 +383,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         message = "{}\n".format(self.__class__)
         for disc in Discontinuity.discontinuity_list():
-            cell_i = disc.ruptured_cell_id
+            cell_i = disc.get_ruptured_cell_id()
             message += "---- Discontinuity {:} ----".format(disc.label)
             # Density
             message += "==> masse volumique classique à t = {}\n". \
@@ -492,10 +492,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                 disc, node_velocity)
             u1g = node_velocity[disc.mask_in_nodes]
             u2d = node_velocity[disc.mask_out_nodes]
-            self.left_part_size.new_value[disc.ruptured_cell_id] = \
-                self.left_part_size.current_value[disc.ruptured_cell_id] + (ug - u1g) * time_step
-            self.right_part_size.new_value[disc.ruptured_cell_id] = \
-                self.right_part_size.current_value[disc.ruptured_cell_id] + (u2d - ud) * time_step
+            self.left_part_size.new_value[disc.get_ruptured_cell_id()] = \
+                self.left_part_size.current_value[disc.get_ruptured_cell_id()] + (ug - u1g) * time_step
+            self.right_part_size.new_value[disc.get_ruptured_cell_id()] = \
+                self.right_part_size.current_value[disc.get_ruptured_cell_id()] + (u2d - ud) * time_step
 
     def compute_enriched_elements_new_density(self):
         """
@@ -589,10 +589,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             # This array has a size of 1 => [0][0]
             mask_nodes_in[ind] = np.where(disc.mask_in_nodes)[0][0]
             mask_nodes_out[ind] = np.where(disc.mask_out_nodes)[0][0]
-            u2g_arr[ind] = disc.additional_dof_velocity_new[0]
-            u1d_arr[ind] = disc.additional_dof_velocity_new[1]
-            eps_arr[ind] = disc.position_in_ruptured_element
-            mask_cells_arr[ind] = disc.ruptured_cell_id
+            mask_cells_arr[ind] = disc.get_ruptured_cell_id()
 
         u_noeuds_new_in_arr = node_velocity_new[mask_nodes_in]
         u_noeuds_new_out_arr = node_velocity_new[mask_nodes_out]
