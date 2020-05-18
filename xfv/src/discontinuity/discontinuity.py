@@ -20,6 +20,8 @@ class Discontinuity:
     additional_dof_force = np.zeros([], dtype=float)
     discontinuity_position = np.zeros([], dtype=float)
     ruptured_cell_id = np.zeros([], dtype=int)
+    in_nodes = np.zeros([], dtype=int)
+    out_nodes = np.zeros([], dtype=int)
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -50,6 +52,8 @@ class Discontinuity:
             Discontinuity.additional_dof_force = np.copy(init)
             Discontinuity.discontinuity_position = np.zeros((1, 1))
             Discontinuity.ruptured_cell_id = np.zeros((1, 1), dtype=int)
+            Discontinuity.in_nodes = np.zeros((1, 1), dtype=int)
+            Discontinuity.out_nodes = np.zeros((1, 1), dtype=int)
         else:
             Discontinuity.additional_dof_velocity_current = np.append(
                 Discontinuity.additional_dof_velocity_current, init, axis=0)
@@ -61,14 +65,22 @@ class Discontinuity:
                 Discontinuity.discontinuity_position, np.zeros((1, 1)), axis=0)
             Discontinuity.ruptured_cell_id = np.append(
                 Discontinuity.ruptured_cell_id, np.zeros((1, 1), dtype=int), axis=0)
+            Discontinuity.in_nodes = np.append(
+                Discontinuity.in_nodes, np.zeros((1, 1), dtype=int), axis=0)
+            Discontinuity.out_nodes = np.append(
+                Discontinuity.out_nodes, np.zeros((1, 1), dtype=int), axis=0)
         for ind, disc in enumerate(Discontinuity.discontinuity_list()):
             disc.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[ind]
             disc.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[ind]
             disc.additional_dof_force = Discontinuity.additional_dof_force[ind]
             disc._discontinuity_position = Discontinuity.discontinuity_position[ind]
             disc._ruptured_cell_id = Discontinuity.ruptured_cell_id[ind]
+            disc.in_nodes = Discontinuity.in_nodes[ind]
+            disc.out_nodes = Discontinuity.out_nodes[ind]
         self.__mask_in_nodes = mask_in_nodes
+        self.in_nodes[:] = np.where(self.__mask_in_nodes)[0]
         self.__mask_out_nodes = mask_out_nodes
+        self.out_nodes[:] = np.where(self.__mask_out_nodes)[0]
 
         # Discontinuity cell information
         self._discontinuity_position[:] = discontinuity_position_in_ruptured_element
@@ -229,13 +241,6 @@ class Discontinuity:
         xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
         xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
         self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
-
-    @property
-    def discontinuity_position(self) -> float:
-        """
-        Accessor on the discontinuity position
-        """
-        return self._discontinuity_position
 
     @property
     def additional_dof_coordinates_current(self):
