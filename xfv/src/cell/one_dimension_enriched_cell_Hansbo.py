@@ -575,19 +575,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         disc_list = Discontinuity.discontinuity_list()
         if not disc_list:
             return
-        
-        nb_disc = len(disc_list)
-        mask_nodes_in = np.ndarray((nb_disc,), dtype=int)
-        mask_nodes_out = np.ndarray((nb_disc,), dtype=int)
-        mask_cells_arr = np.ndarray((nb_disc,), dtype=int)
-        for ind, disc in enumerate(disc_list):
-            # In a discontinuity mask, only one node is True so np.where returns 
-            # a tuple with just one array.
-            # This array has a size of 1 => [0][0]
-            mask_nodes_in[ind] = np.where(disc.mask_in_nodes)[0][0]
-            mask_nodes_out[ind] = np.where(disc.mask_out_nodes)[0][0]
-            mask_cells_arr[ind] = disc.get_ruptured_cell_id()
 
+        mask_nodes_in = Discontinuity.in_nodes.flatten()
+        mask_nodes_out = Discontinuity.out_nodes.flatten()
+        mask_cells_arr = Discontinuity.ruptured_cell_id.flatten()
         eps_arr = Discontinuity.discontinuity_position.flatten()
         u2g_arr = Discontinuity.additional_dof_velocity_new[:, 0].flatten()
         u1d_arr = Discontinuity.additional_dof_velocity_new[:, 1].flatten()
