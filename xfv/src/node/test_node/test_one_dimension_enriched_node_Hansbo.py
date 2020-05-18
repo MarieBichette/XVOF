@@ -136,6 +136,7 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         self.mock_discontinuity.position_in_ruptured_element = 0.25
+        self.mock_discontinuity.get_ruptured_cell_id.return_value = np.array([0])
         contrainte_classique = np.array([2.])
         contrainte_enr = np.array([2.])
         self.my_nodes._force = np.array([[4., ], [2., ]])

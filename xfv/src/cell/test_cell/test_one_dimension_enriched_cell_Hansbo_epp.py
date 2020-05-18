@@ -84,7 +84,6 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': 0,
                   'plastic_cells': np.array([False]),
-                  'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                   }
         self.__patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
@@ -158,6 +157,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         OneDimensionEnrichedHansboCell
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
+        self.mock_disc.get_ruptured_cell_id.return_value = np.array([0])
         vecteur_vitesse_noeuds = np.array([[0.1, ], [0.15, ]])
         dt = 1.  # pylint: disable=invalid-name
         mock_disc_border_velocity.return_value = np.array([-0.05]), np.array([0.05])
@@ -253,8 +253,12 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         node_coord_new = np.array([[0.,], [1.,]])
         node_velocity_new = np.array([[-1, ], [1., ]])
-        u2g = self.mock_disc.additional_dof_velocity_new[0]
-        u1d = self.mock_disc.additional_dof_velocity_new[1]
+        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
+        u1d_arr = Discontinuity.additional_dof_velocity_new[:, 1]
+        u2g_arr = Discontinuity.additional_dof_velocity_new[:, 0]
+        Discontinuity.discontinuity_position = np.array([0.5])
+        Discontinuity.in_nodes = np.array([0])
+        Discontinuity.out_nodes = np.array([1])
         u_disc_g = np.array([-0.5])
         u_disc_d = np.array([0.5])
         mock_disc_borders.return_value = u_disc_g, u_disc_d
@@ -263,7 +267,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
 
-        mock_disc_borders.assert_called_with(0.5, node_velocity_new[0], u1d, node_velocity_new[1], u2g)
+        mock_disc_borders.assert_called_with(np.array([0.5]), node_velocity_new[0], u1d_arr, u2g_arr, node_velocity_new[1])
         mock_compute_D.assert_called()
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
@@ -280,6 +284,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         coord_noeud_new = np.array([[-1.], [0, ]])
         vitesse_noeud_new = np.array([[50, ], [-20, ]])
         mock_compute_D.return_value = np.array([[2., -1, -1], [2., -1, -1]])
+        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
 
         self.my_cells.additional_dof_shear_modulus.new_value = np.array([14.])
         self.my_cells._additional_dof_deviatoric_stress_current = np.array([[0., 0., 0.]])
