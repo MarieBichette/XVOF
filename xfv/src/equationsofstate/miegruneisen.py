@@ -77,7 +77,7 @@ class MieGruneisen(EquationOfStateBase):
     @property
     def eos_param(self):
         """
-        Accesseur sur les param�tres de l'�quation d'�tat
+        Accessor on equation of state parameters
         :return:
         """
         return self.__param

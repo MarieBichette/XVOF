@@ -278,7 +278,8 @@ def main(directory: Path) -> None:
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         the_output_mng.update(simulation_time, step,
-                              data.material_target.failure_model.failure_treatment_value)
+                              data.material_target.failure_model.failure_treatment_value,
+                              my_mesh.get_discontinuity_list())
         the_figure_mng.update(simulation_time, step)
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #

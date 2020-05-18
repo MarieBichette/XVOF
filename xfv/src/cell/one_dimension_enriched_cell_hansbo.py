@@ -464,7 +464,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
     def compute_enriched_elements_new_part_size(self, time_step, node_velocity):
         """
-        Computethe new size of each ruptured element part (left size and right size)
+        Compute the new size of each ruptured element part (left size and right size)
         :param time_step: time step
         :param node_velocity: array, node velocities
         """
@@ -636,9 +636,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
     def apply_plasticity_enr(self, mask_mesh, delta_t):
         """
-        Apply plasticity treatment if criterion is activated :
-        - compute yield stress
-        - tests plasticity criterion
+        Apply plasticity treatment if criterion is activated :\
+        - compute yield stress\
+        - tests plasticity criterion\
         - compute plastic strain rate for plastic cells
         """
         mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
