@@ -15,6 +15,9 @@ class Discontinuity:
 
     # A list of discontinuities
     __discontinuity_list = []
+    additional_dof_velocity_current = np.zeros([100, 2, 1], dtype=float)
+    additional_dof_velocity_new = np.zeros([100, 2, 1], dtype=float)
+    additional_dof_force = np.zeros([100, 2, 1], dtype=float)
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -37,9 +40,12 @@ class Discontinuity:
         # Discontinuity registration
         Discontinuity.__discontinuity_list.append(self)
         self.__label = len(Discontinuity.__discontinuity_list)
+        print("Building discontinuity number {:d}".format(self.__label))
+        # Discontinuity.additional_dof_velocity_current = np.resize(Discontinuity.additional_dof_velocity_current, (self.__label, 2, 1))
+        # Discontinuity.additional_dof_velocity_new = np.resize(Discontinuity.additional_dof_velocity_new, (self.__label, 2, 1))
+        # Discontinuity.additional_dof_force = np.resize(Discontinuity.additional_dof_force, (self.__label, 2, 1))
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
-        print("Building discontinuity number {:d}".format(self.__label))
 
         # Discontinuity cell information
         self._discontinuity_position = discontinuity_position_in_ruptured_element
@@ -52,12 +58,11 @@ class Discontinuity:
 
         # Additional dof representing either the enriched Heaviside value or
         # the field value in the right part of enriched element.
-        self._additional_dof_velocity_current = np.zeros([2, 1])
-        self._additional_dof_velocity_new = np.zeros([2, 1])
+        self.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[self.__label - 1]
+        self.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[self.__label - 1]
         self._additional_dof_coordinates_current = np.zeros([2, 1])
         self._additional_dof_coordinates_new = np.zeros([2, 1])
-        self._additional_dof_force = np.zeros([2, 1])
-
+        self.additional_dof_force = Discontinuity.additional_dof_force[self.__label - 1]
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
@@ -215,20 +220,6 @@ class Discontinuity:
         return self._discontinuity_position
 
     @property
-    def additional_dof_velocity_current(self):
-        """
-        Accessor on the additional nodes velocity at time t-dt/2
-        """
-        return self._additional_dof_velocity_current
-
-    @property
-    def additional_dof_velocity_new(self):
-        """
-        Accessor on the additional nodes velocity at time t+dt/2
-        """
-        return self._additional_dof_velocity_new
-
-    @property
     def additional_dof_coordinates_current(self):
         """
         Accessor on the additional nodes coordinates at time t
@@ -246,22 +237,15 @@ class Discontinuity:
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
         """
-        self._additional_dof_velocity_new = np.copy(self._additional_dof_velocity_current)
+        Discontinuity.additional_dof_velocity_new[self.__label - 1] = np.copy(Discontinuity.additional_dof_velocity_current[self.__label - 1])
         self._additional_dof_coordinates_new = np.copy(self._additional_dof_coordinates_current)
-
-    @property
-    def additional_dof_force(self):
-        """
-        Accessor on the additional nodes force at time t
-        """
-        return self._additional_dof_force
 
     def additional_dof_increment(self):
         """
         Increment the variables of discontinuity
         """
         # Kinematics
-        self._additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
+        self.additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
         self._additional_dof_coordinates_current[:] = self.additional_dof_coordinates_new[:]
         # Cohesive model
         self.cohesive_force.increment_values()
