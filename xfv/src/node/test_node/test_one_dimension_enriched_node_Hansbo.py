@@ -44,10 +44,6 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
                   'plastic_cells': np.array([False]),
                   'additional_dof_force': np.array([[1., ], [2., ]]),
                   '_additional_dof_velocity_new': np.zeros([2, 1])
-                  # 'cohesive_force.current_value': 0.,
-                  # 'cohesive_force.new_value': 0.,
-                  # 'discontinuity_opening.current_value': 0.5,
-                  # 'discontinuity_opening.new_value': 0.5
                   }
         patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
@@ -100,10 +96,10 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         inv_mass_additional = np.array([2., 2.])
-        self.mock_discontinuity.additional_dof_velocity_current = np.array([[1., ], [3., ]])
-        self.mock_discontinuity.additional_dof_force = np.array([[1., ], [1., ]])
+        self.mock_discontinuity.__class__.additional_dof_velocity_current = np.array([[[1., ], [3., ]]])
+        self.mock_discontinuity.__class__.additional_dof_force = np.array([[[1., ], [1., ]]])
         self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
-        np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new,
+        np.testing.assert_array_almost_equal(self.mock_discontinuity.__class__.additional_dof_velocity_new[0],
                                              np.array([[3., ], [5., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
