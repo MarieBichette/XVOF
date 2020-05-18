@@ -12,7 +12,6 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact_base import ContactBase
-from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 # noinspection PyArgumentList
@@ -413,7 +412,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         plastic_enr_cells = plastic_criterion.check_criterion_on_right_part_cells(self.cells)
         if plastic_enr_cells is not None:
             self.cells.plastic_enr_cells[mask] = plastic_enr_cells[mask]
-            
 
     def apply_rupture_treatment(self, treatment, time: float):
         """
@@ -459,6 +457,14 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
 
         # 4) Plasticity treatment for enriched plastic cells (right part)
         self.cells.apply_plasticity_enr(mask_mesh, delta_t)
+
+    @staticmethod
+    def get_discontinuity_list():
+        """
+        Returns the list of existing discontinuities
+        :return:
+        """
+        return Discontinuity.discontinuity_list()
 
     @property
     def velocity_field(self) -> np.array:

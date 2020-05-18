@@ -3,7 +3,6 @@
 A module implementing the Discontinuity class
 """
 import numpy as np
-from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.fields.field import Field
 from xfv.src.data.enriched_mass_matrix_props import EnrichedMassMatrixProps
 
@@ -16,11 +15,12 @@ class Discontinuity:
     # A list of discontinuities
     __discontinuity_list = []
 
-    def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
+    def __init__(self, cell_id: int, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
                  enriched_mass_matrix_props: EnrichedMassMatrixProps):
         """
         Initializing a single discontinuity after enrichment.
+        :param cell_id: id of the cracked cell
         :param mask_in_nodes: enriched nodes on the left of the discontinuity
         :param mask_out_nodes: enriched nodes on the right of the discontinuity
         :param discontinuity_position_in_ruptured_element: position of the discontinuity in
@@ -39,16 +39,17 @@ class Discontinuity:
         self.__label = len(Discontinuity.__discontinuity_list)
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
+        self._ruptured_cell_id = cell_id
+
         print("Building discontinuity number {:d}".format(self.__label))
 
         # Discontinuity cell information
         self._discontinuity_position = discontinuity_position_in_ruptured_element
         self.__mask_ruptured_cell = np.zeros(len(self.mask_in_nodes)-1, dtype=bool)
-        self._ruptured_cell_id = 0
+        self.__mask_ruptured_cell[self._ruptured_cell_id] = True
 
         # Indicators of discontinuity state
         self.__mass_matrix_updated = False
-        self.__initialisation = False
 
         # Additional dof representing either the enriched Heaviside value or
         # the field value in the right part of enriched element.
@@ -149,16 +150,6 @@ class Discontinuity:
         return self.__mass_matrix_updated
 
     @property
-    def initialisation(self):
-        """
-        Boolean to follow if the right part values have been correctly initialized for
-        Hansbo enrichment. Indeed, those variables have physical meaning and are not zero
-        Initialization is done with left part field values
-        :return:
-        """
-        return self.__initialisation
-
-    @property
     def ruptured_cell_id(self):
         """
         Returns the id of ruptured cell for the discontinuity
@@ -172,26 +163,11 @@ class Discontinuity:
         """
         return self.__mask_ruptured_cell
 
-    def have_dof_been_initialized(self):
-        """
-        Set the __initialisation boolean to True
-        """
-        self.__initialisation = True
-
     def has_mass_matrix_been_computed(self):
         """
         Set the __mass_matrix_updated boolean to True
         """
         self.__mass_matrix_updated = True
-
-    def find_ruptured_cell_id(self, topology: Topology1D):
-        """
-        Compute the cell id of ruptured element associated with this discontinuity
-        self.ruptured_cell_id is an integer
-        self.mask_ruptured_cell is an array of boolean = True for ruptured cell
-        """
-        self._ruptured_cell_id = topology.cells_in_contact_with_node[self.mask_in_nodes][0][1]
-        self.__mask_ruptured_cell[self._ruptured_cell_id] = True
 
     def compute_discontinuity_new_opening(self, node_position: np.array):
         """
