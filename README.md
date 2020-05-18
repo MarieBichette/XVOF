@@ -57,8 +57,8 @@ Each case is composed of :
 
 To launch a test case :
 - Create a data set "XDATA.json" and a meshfile "mesh.txt"
-- Type : ***OMP_NUM_THREADS=2 python3.7 XtendedFiniteVolume <case-repository>***
+- Type : ***OMP_NUM_THREADS=2 python3.7 XtendedFiniteVolume case-repository***
 By default, the external lib C is used if it has been previously installed. 
 
 To enforce the internal computation of the equation of state (with python module), type
-***python3.7 XtendedFiniteVolume <case-repository> --use-internal-solver***
+***python3.7 XtendedFiniteVolume case-repository --use-internal-solver***
