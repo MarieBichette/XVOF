@@ -86,14 +86,15 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                   'plastic_cells': np.array([False]),
                   'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                   }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+        self.__patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
-        self.mock_disc = patcher.start()
+        self.mock_disc = self.__patcher.start()
 
         self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
 
     def tearDown(self):
-        pass
+        self.__patcher.stop()
+        return super().tearDown()
 
     def test_initialize_additional_dof(self):
         """

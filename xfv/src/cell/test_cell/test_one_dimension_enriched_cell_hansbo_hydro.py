@@ -87,9 +87,13 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
                   'plastic_cells': np.array([False]),
                   'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                  }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+        self.__patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
-        self.mock_discontinuity = patcher.start()
+        self.mock_discontinuity = self.__patcher.start()
+
+    def tearDown(self):
+        self.__patcher.stop()
+        return super().tearDown()
 
     def test_classical(self):
         """
