@@ -76,10 +76,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param delta_t: float, time step
         :param inv_matrice_masse: inverse of the mass matrix
         """
-        nb_disc = len(Discontinuity.discontinuity_list())
-        Discontinuity.additional_dof_velocity_new[0:nb_disc] = (
-            Discontinuity.additional_dof_velocity_current[0:nb_disc] +
-            np.multiply(inv_matrice_masse[np.newaxis].T, Discontinuity.additional_dof_force[0:nb_disc]) * delta_t
+        Discontinuity.additional_dof_velocity_new[:] = (
+            Discontinuity.additional_dof_velocity_current[:] +
+            np.multiply(inv_matrice_masse[np.newaxis].T, Discontinuity.additional_dof_force[:]) * delta_t
         )
 
     def infos(self, index):
