@@ -3,13 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome !
+Welcome to XVOF !
 ================================
-Bienvenue dans la doc du magnifique code !
+Welcome in the documentation page of the XVOF code, a one-dimensional hydro code that uses XFV method to model fracture.
 
-Contact:
+This code is available as a GitHub repository :
+https://github.com/hippo91/XVOF
+
+For any question or remark, please contact :
 G. Peillex
 M. Gorecki
+
+References
+-------------------------
+To be completed
+
+*This documentation has been generated using the Sphinx tool.*
 
 .. toctree::
    :maxdepth: 1
