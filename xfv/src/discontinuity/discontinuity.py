@@ -15,9 +15,9 @@ class Discontinuity:
 
     # A list of discontinuities
     __discontinuity_list = []
-    additional_dof_velocity_current = np.zeros([100, 2, 1], dtype=float)
-    additional_dof_velocity_new = np.zeros([100, 2, 1], dtype=float)
-    additional_dof_force = np.zeros([100, 2, 1], dtype=float)
+    additional_dof_velocity_current = np.zeros([], dtype=float)
+    additional_dof_velocity_new = np.zeros([], dtype=float)
+    additional_dof_force = np.zeros([], dtype=float)
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -41,9 +41,19 @@ class Discontinuity:
         Discontinuity.__discontinuity_list.append(self)
         self.__label = len(Discontinuity.__discontinuity_list)
         print("Building discontinuity number {:d}".format(self.__label))
-        # Discontinuity.additional_dof_velocity_current = np.resize(Discontinuity.additional_dof_velocity_current, (self.__label, 2, 1))
-        # Discontinuity.additional_dof_velocity_new = np.resize(Discontinuity.additional_dof_velocity_new, (self.__label, 2, 1))
-        # Discontinuity.additional_dof_force = np.resize(Discontinuity.additional_dof_force, (self.__label, 2, 1))
+        init = np.zeros((1, 2, 1))
+        if self.__label == 1:
+            Discontinuity.additional_dof_velocity_current = np.copy(init)
+            Discontinuity.additional_dof_velocity_new = np.copy(init)
+            Discontinuity.additional_dof_force = np.copy(init)
+        else:
+            Discontinuity.additional_dof_velocity_current = np.append(Discontinuity.additional_dof_velocity_current, init, axis=0)
+            Discontinuity.additional_dof_velocity_new = np.append(Discontinuity.additional_dof_velocity_new, init, axis=0)
+            Discontinuity.additional_dof_force = np.append(Discontinuity.additional_dof_force, init, axis=0)
+        for ind, disc in enumerate(Discontinuity.discontinuity_list()):
+            disc.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[ind]
+            disc.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[ind]
+            disc.additional_dof_force = Discontinuity.additional_dof_force[ind]
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
 
@@ -58,11 +68,8 @@ class Discontinuity:
 
         # Additional dof representing either the enriched Heaviside value or
         # the field value in the right part of enriched element.
-        self.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[self.__label - 1]
-        self.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[self.__label - 1]
         self._additional_dof_coordinates_current = np.zeros([2, 1])
         self._additional_dof_coordinates_new = np.zeros([2, 1])
-        self.additional_dof_force = Discontinuity.additional_dof_force[self.__label - 1]
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
