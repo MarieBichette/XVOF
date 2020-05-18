@@ -46,8 +46,20 @@ This code is now ported in Python3.7, using type hints for local variables and m
 
 ## Installation
 - Download the GitHub XVOF repository
-- To install the lib C for equation of state computation :
+- Install pyenv with a python version > 3.7 (follow instructions in https://github.com/pyenv/pyenv#installation)
+This will enable to modify the python of pyenv instead of the system python
+- Install cmake and swig :
+
+    apt-get install cmake
+    
+    apt-get install swig
+    
+- To activate python of pyenv :
+from XVOF repository type 
+    pyenv local 3.8.0     (or any version > 3.7.0)
+- To install the XVOF code and dependencies :
 from XVOF repository type : ***pip install -e .***
+This will also install the lib C for equation of state computation.
 
 ## Test case creation
 Each case is composed of :
