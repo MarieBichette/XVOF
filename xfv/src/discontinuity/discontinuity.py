@@ -18,6 +18,8 @@ class Discontinuity:
     additional_dof_velocity_current = np.zeros([], dtype=float)
     additional_dof_velocity_new = np.zeros([], dtype=float)
     additional_dof_force = np.zeros([], dtype=float)
+    discontinuity_position = np.zeros([], dtype=float)
+    ruptured_cell_id = np.zeros([], dtype=int)
 
     def __init__(self, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -46,21 +48,31 @@ class Discontinuity:
             Discontinuity.additional_dof_velocity_current = np.copy(init)
             Discontinuity.additional_dof_velocity_new = np.copy(init)
             Discontinuity.additional_dof_force = np.copy(init)
+            Discontinuity.discontinuity_position = np.zeros((1, 1))
+            Discontinuity.ruptured_cell_id = np.zeros((1, 1), dtype=int)
         else:
-            Discontinuity.additional_dof_velocity_current = np.append(Discontinuity.additional_dof_velocity_current, init, axis=0)
-            Discontinuity.additional_dof_velocity_new = np.append(Discontinuity.additional_dof_velocity_new, init, axis=0)
-            Discontinuity.additional_dof_force = np.append(Discontinuity.additional_dof_force, init, axis=0)
+            Discontinuity.additional_dof_velocity_current = np.append(
+                Discontinuity.additional_dof_velocity_current, init, axis=0)
+            Discontinuity.additional_dof_velocity_new = np.append(
+                Discontinuity.additional_dof_velocity_new, init, axis=0)
+            Discontinuity.additional_dof_force = np.append(
+                Discontinuity.additional_dof_force, init, axis=0)
+            Discontinuity.discontinuity_position = np.append(
+                Discontinuity.discontinuity_position, np.zeros((1, 1)), axis=0)
+            Discontinuity.ruptured_cell_id = np.append(
+                Discontinuity.ruptured_cell_id, np.zeros((1, 1), dtype=int), axis=0)
         for ind, disc in enumerate(Discontinuity.discontinuity_list()):
             disc.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[ind]
             disc.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[ind]
             disc.additional_dof_force = Discontinuity.additional_dof_force[ind]
+            disc._discontinuity_position = Discontinuity.discontinuity_position[ind]
+            disc._ruptured_cell_id = Discontinuity.ruptured_cell_id[ind]
         self.__mask_in_nodes = mask_in_nodes
         self.__mask_out_nodes = mask_out_nodes
 
         # Discontinuity cell information
-        self._discontinuity_position = discontinuity_position_in_ruptured_element
+        self._discontinuity_position[:] = discontinuity_position_in_ruptured_element
         self.__mask_ruptured_cell = np.zeros(len(self.mask_in_nodes)-1, dtype=bool)
-        self._ruptured_cell_id = 0
 
         # Indicators of discontinuity state
         self.__mass_matrix_updated = False
@@ -108,7 +120,7 @@ class Discontinuity:
         try_index = 0
         while try_index < Discontinuity.discontinuity_number():
             disc = Discontinuity.discontinuity_list()[try_index]
-            if disc._ruptured_cell_id == cell_id:
+            if disc.get_ruptured_cell_id() == cell_id:
                 return disc
             try_index += 1
         return None
@@ -118,7 +130,7 @@ class Discontinuity:
         """
         Accessor on the relative position of the discontinuity in ruptured element
         """
-        return self._discontinuity_position
+        return self._discontinuity_position[0]
 
     @property
     def label(self):
@@ -170,12 +182,11 @@ class Discontinuity:
         """
         return self.__initialisation
 
-    @property
-    def ruptured_cell_id(self):
+    def get_ruptured_cell_id(self):
         """
         Returns the id of ruptured cell for the discontinuity
         """
-        return int(self._ruptured_cell_id)
+        return int(self._ruptured_cell_id[0])
 
     @property
     def mask_ruptured_cell(self):
@@ -202,7 +213,7 @@ class Discontinuity:
         self.ruptured_cell_id is an integer
         self.mask_ruptured_cell is an array of boolean = True for ruptured cell
         """
-        self._ruptured_cell_id = topology.cells_in_contact_with_node[self.mask_in_nodes][0][1]
+        self._ruptured_cell_id[:] = topology.cells_in_contact_with_node[self.mask_in_nodes][0][1]
         self.__mask_ruptured_cell[self._ruptured_cell_id] = True
 
     def compute_discontinuity_new_opening(self, node_position: np.array):
