@@ -11,12 +11,6 @@ install:
 # command to run tests
 jobs:
   include:
-    - stage: "Doc"
-      name: "Documentation"
-      before_script:
-        - pip install -U sphinx
-        - pip install guzzle_sphinx_theme
-      script: python generate_doc.py
     - stage: "Lint"
       name: "pylint"
       before_script: pip install pylint
@@ -35,7 +29,6 @@ jobs:
         - sudo apt-get install -y hdf5-tools 
       script: python launch_integration_tests.py
 stages:
-  - Doc
   - Tests
   - Lint
 
