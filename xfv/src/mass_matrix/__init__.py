@@ -1,3 +1,6 @@
+"""
+Package for mass matrix modules
+"""
 from xfv.src.mass_matrix.enriched_mass_matrix import EnrichedMassMatrix
 from xfv.src.mass_matrix.enriched_mass_matrix_consistent import EnrichedMassMatrixConsistent
 from xfv.src.mass_matrix.enriched_mass_matrix_lump import EnrichedMassMatrixLump
