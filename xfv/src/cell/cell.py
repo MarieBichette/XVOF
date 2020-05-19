@@ -54,6 +54,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def __init__(self, nbr_of_cells: int):
         """
         Constructor of the array of cells
+
         :param nbr_of_cells: number of cells
         """
         self.data = DataContainer()  # pylint: disable=no-value-for-parameter
@@ -88,10 +89,15 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
         Initialisation of the cell fields and attributes of cell_in_target and cell_in_projectile
+
         :param mask_node_target: bool array for nodes in the target
         :param mask_node_projectile: bool array for nodes in the target
         :param topology: mesh connectivity object
-        :return:
+
+
+        :type mask_node_target: numpy.array([nbr_of_cells, 1], dtype=bool, order='C')
+        :type mask_node_projectile: numpy.array([nbr_of_cells, 1], dtype=bool, order='C')
+        :type topology: Topology
         """
         # Part : mask_target
         node_indexes = np.where(mask_node_target)[0]
@@ -292,9 +298,12 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
 
     @abstractmethod
-    def compute_size(self, topologie, vecteur_coord_noeuds):
+    def compute_size(self, topology, node_coord):
         """
         Compute the size of the cells
+
+        :type topology: Topology
+        :type
         """
 
     @abstractmethod
