@@ -24,7 +24,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="Welcome to XVOF !" href="index.html" />
+    <link rel="prev" title="Code organisation" href="organisation.html" />
   
    
 
@@ -42,7 +42,7 @@
           <a href="installation.html" title="Installation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to XVOF !"
+          <a href="organisation.html" title="Code organisation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>
@@ -89,8 +89,8 @@
   </div>
 </div>
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to XVOF !</a></p>
+  <p class="topless"><a href="organisation.html"
+                        title="previous chapter">Code organisation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="installation.html"
                         title="next chapter">Installation</a></p>
@@ -135,7 +135,7 @@
 The following documentation specifies the role of all functions and modules in the code.</p>
 <div class="section" id="module-cell">
 <span id="cell"></span><h2>Cell<a class="headerlink" href="#module-cell" title="Permalink to this headline">¶</a></h2>
-<p>A module to implement Cell classes</p>
+<p>Package for cell modules</p>
 <dl class="py class">
 <dt id="cell.Cell">
 <em class="property">class </em><code class="descclassname">cell.</code><code class="descname">Cell</code><span class="sig-paren">(</span><em><span class="n">nbr_of_cells</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cell.Cell" title="Permalink to this definition">¶</a></dt>
@@ -889,6 +889,7 @@ time step for the enriched cells</p>
 </div>
 <div class="section" id="module-cohesive_model">
 <span id="cohesive-zone-model"></span><h2>Cohesive Zone Model<a class="headerlink" href="#module-cohesive_model" title="Permalink to this headline">¶</a></h2>
+<p>Package for cohesive zone model modules</p>
 <dl class="py class">
 <dt id="cohesive_model.CohesiveLaw">
 <em class="property">class </em><code class="descclassname">cohesive_model.</code><code class="descname">CohesiveLaw</code><span class="sig-paren">(</span><em><span class="n">cohesive_law_points</span><span class="p">:</span> <span class="n">numpy.array</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cohesive_model.CohesiveLaw" title="Permalink to this definition">¶</a></dt>
@@ -936,6 +937,7 @@ current discontinuity opening
 </div>
 <div class="section" id="module-cohesive_model_unloading">
 <span id="cohesive-zone-model-unloading-options"></span><h2>Cohesive Zone Model : unloading options<a class="headerlink" href="#module-cohesive_model_unloading" title="Permalink to this headline">¶</a></h2>
+<p>Package for unloading the cohesive zone model modules</p>
 <dl class="py class">
 <dt id="cohesive_model_unloading.UnloadingModelBase">
 <em class="property">class </em><code class="descclassname">cohesive_model_unloading.</code><code class="descname">UnloadingModelBase</code><span class="sig-paren">(</span><em><span class="o">*</span><span class="n">args</span></em>, <em><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cohesive_model_unloading.UnloadingModelBase" title="Permalink to this definition">¶</a></dt>
@@ -987,6 +989,7 @@ current discontinuity opening
 </div>
 <div class="section" id="module-contact">
 <span id="contact"></span><h2>Contact<a class="headerlink" href="#module-contact" title="Permalink to this headline">¶</a></h2>
+<p>Package for contact modules</p>
 <dl class="py class">
 <dt id="contact.ContactBase">
 <em class="property">class </em><code class="descclassname">contact.</code><code class="descname">ContactBase</code><span class="sig-paren">(</span><em><span class="o">*</span><span class="n">args</span></em>, <em><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#contact.ContactBase" title="Permalink to this definition">¶</a></dt>
@@ -1037,6 +1040,7 @@ current discontinuity opening
 </div>
 <div class="section" id="module-custom_functions">
 <span id="customized-boundary-condition-functions"></span><h2>Customized Boundary Condition Functions<a class="headerlink" href="#module-custom_functions" title="Permalink to this headline">¶</a></h2>
+<p>Package for customized boundary condition shape functions modules</p>
 <dl class="py class">
 <dt id="custom_functions.CustomFunction">
 <em class="property">class </em><code class="descclassname">custom_functions.</code><code class="descname">CustomFunction</code><a class="headerlink" href="#custom_functions.CustomFunction" title="Permalink to this definition">¶</a></dt>
@@ -1174,6 +1178,7 @@ more specific custom function class</p>
 </div>
 <div class="section" id="module-data">
 <span id="data"></span><h2>Data<a class="headerlink" href="#module-data" title="Permalink to this headline">¶</a></h2>
+<p>Package for reading the case data modules</p>
 <dl class="py class">
 <dt id="data.DataContainer">
 <em class="property">class </em><code class="descclassname">data.</code><code class="descname">DataContainer</code><span class="sig-paren">(</span><em><span class="n">datafile_path</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>pathlib.Path<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#data.DataContainer" title="Permalink to this definition">¶</a></dt>
@@ -1183,6 +1188,7 @@ more specific custom function class</p>
 </div>
 <div class="section" id="module-discontinuity">
 <span id="discontinuity"></span><h2>Discontinuity<a class="headerlink" href="#module-discontinuity" title="Permalink to this headline">¶</a></h2>
+<p>Package for discontinuity modules</p>
 <dl class="py class">
 <dt id="discontinuity.Discontinuity">
 <em class="property">class </em><code class="descclassname">discontinuity.</code><code class="descname">Discontinuity</code><span class="sig-paren">(</span><em><span class="n">cell_id</span><span class="p">:</span> <span class="n">int</span></em>, <em><span class="n">mask_in_nodes</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em><span class="n">mask_out_nodes</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em><span class="n">discontinuity_position_in_ruptured_element</span><span class="p">:</span> <span class="n">float</span></em>, <em><span class="n">enriched_mass_matrix_props</span><span class="p">:</span> <span class="n">xfv.src.data.enriched_mass_matrix_props.EnrichedMassMatrixProps</span></em><span class="sig-paren">)</span><a class="headerlink" href="#discontinuity.Discontinuity" title="Permalink to this definition">¶</a></dt>
@@ -1326,6 +1332,7 @@ more specific custom function class</p>
 </div>
 <div class="section" id="module-equationsofstate">
 <span id="equation-of-state"></span><h2>Equation Of State<a class="headerlink" href="#module-equationsofstate" title="Permalink to this headline">¶</a></h2>
+<p>Package for equation of state modules</p>
 <dl class="py class">
 <dt id="equationsofstate.EquationOfStateBase">
 <em class="property">class </em><code class="descclassname">equationsofstate.</code><code class="descname">EquationOfStateBase</code><a class="headerlink" href="#equationsofstate.EquationOfStateBase" title="Permalink to this definition">¶</a></dt>
@@ -1371,6 +1378,7 @@ derivative of the pressure with respect to the internal energy</p>
 </div>
 <div class="section" id="module-fields">
 <span id="fields"></span><h2>Fields<a class="headerlink" href="#module-fields" title="Permalink to this headline">¶</a></h2>
+<p>Package for field management modules</p>
 <dl class="py class">
 <dt id="fields.Field">
 <em class="property">class </em><code class="descclassname">fields.</code><code class="descname">Field</code><span class="sig-paren">(</span><em><span class="n">size</span></em>, <em><span class="n">current_value</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em><span class="n">new_value</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#fields.Field" title="Permalink to this definition">¶</a></dt>
@@ -1424,6 +1432,7 @@ derivative of the pressure with respect to the internal energy</p>
 </div>
 <div class="section" id="module-figure_manager">
 <span id="figuremanager-animation"></span><h2>FigureManager (animation)<a class="headerlink" href="#module-figure_manager" title="Permalink to this headline">¶</a></h2>
+<p>Package for figure management modules</p>
 <dl class="py class">
 <dt id="figure_manager.PhysicFigure">
 <em class="property">class </em><code class="descclassname">figure_manager.</code><code class="descname">PhysicFigure</code><span class="sig-paren">(</span><em><span class="n">X</span></em>, <em><span class="n">Y</span></em>, <em><span class="n">xlabel</span><span class="o">=</span><span class="default_value">'X'</span></em>, <em><span class="n">ylabel</span><span class="o">=</span><span class="default_value">'Y'</span></em>, <em><span class="n">titre</span><span class="o">=</span><span class="default_value">'titre'</span></em>, <em><span class="n">interface_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em><span class="n">save_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#figure_manager.PhysicFigure" title="Permalink to this definition">¶</a></dt>
@@ -1529,6 +1538,7 @@ a current iteration above the iteration of next output
 </div>
 <div class="section" id="module-mass_matrix">
 <span id="mass-matrix"></span><h2>Mass Matrix<a class="headerlink" href="#module-mass_matrix" title="Permalink to this headline">¶</a></h2>
+<p>Package for mass matrix modules</p>
 <dl class="py class">
 <dt id="mass_matrix.EnrichedMassMatrix">
 <em class="property">class </em><code class="descclassname">mass_matrix.</code><code class="descname">EnrichedMassMatrix</code><span class="sig-paren">(</span><em><span class="n">size_of_mass_matrix</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mass_matrix.EnrichedMassMatrix" title="Permalink to this definition">¶</a></dt>
@@ -1931,6 +1941,7 @@ Fonction pour faire inverse la matrice masse, qu’elle soit sous forme de vecte
 </div>
 <div class="section" id="module-mesh">
 <span id="mesh"></span><h2>Mesh<a class="headerlink" href="#module-mesh" title="Permalink to this headline">¶</a></h2>
+<p>Package for mesh modules</p>
 <dl class="py class">
 <dt id="mesh.Mesh1dEnriched">
 <em class="property">class </em><code class="descclassname">mesh.</code><code class="descname">Mesh1dEnriched</code><span class="sig-paren">(</span><em><span class="n">initial_coordinates</span></em>, <em><span class="n">initial_velocities</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mesh.Mesh1dEnriched" title="Permalink to this definition">¶</a></dt>
@@ -2625,6 +2636,7 @@ en 1D : correspond aux noeuds enrichis et les premiers voisins.</p>
 </div>
 <div class="section" id="module-output_manager">
 <span id="outputs"></span><h2>Outputs<a class="headerlink" href="#module-output_manager" title="Permalink to this headline">¶</a></h2>
+<p>Package for output management modules</p>
 <dl class="py class">
 <dt id="output_manager.OutputDatabase">
 <em class="property">class </em><code class="descclassname">output_manager.</code><code class="descname">OutputDatabase</code><span class="sig-paren">(</span><em><span class="n">path_to_hdf5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#output_manager.OutputDatabase" title="Permalink to this definition">¶</a></dt>
@@ -2892,6 +2904,7 @@ filter results
 </div>
 <div class="section" id="module-plasticitycriterion">
 <span id="plasticity-criterion"></span><h2>Plasticity criterion<a class="headerlink" href="#module-plasticitycriterion" title="Permalink to this headline">¶</a></h2>
+<p>Package for plasticity criterion modules</p>
 <dl class="py class">
 <dt id="plasticitycriterion.PlasticityCriterion">
 <em class="property">class </em><code class="descclassname">plasticitycriterion.</code><code class="descname">PlasticityCriterion</code><a class="headerlink" href="#plasticitycriterion.PlasticityCriterion" title="Permalink to this definition">¶</a></dt>
@@ -2945,6 +2958,7 @@ filter results
 </div>
 <div class="section" id="module-rheology">
 <span id="rheology"></span><h2>Rheology<a class="headerlink" href="#module-rheology" title="Permalink to this headline">¶</a></h2>
+<p>Package for rheology modules</p>
 <dl class="py class">
 <dt id="rheology.ShearModulus">
 <em class="property">class </em><code class="descclassname">rheology.</code><code class="descname">ShearModulus</code><span class="sig-paren">(</span><em><span class="n">initial_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#rheology.ShearModulus" title="Permalink to this definition">¶</a></dt>
@@ -2997,6 +3011,7 @@ filter results
 </div>
 <div class="section" id="module-rupturecriterion">
 <span id="rupture-criterion"></span><h2>Rupture criterion<a class="headerlink" href="#module-rupturecriterion" title="Permalink to this headline">¶</a></h2>
+<p>Package for rupture criterion modules</p>
 <dl class="py class">
 <dt id="rupturecriterion.RuptureCriterion">
 <em class="property">class </em><code class="descclassname">rupturecriterion.</code><code class="descname">RuptureCriterion</code><a class="headerlink" href="#rupturecriterion.RuptureCriterion" title="Permalink to this definition">¶</a></dt>
@@ -3076,6 +3091,7 @@ results to other results obtained without XFEM on a half rod</p>
 </div>
 <div class="section" id="module-rupturetreatment">
 <span id="rupture-treatments"></span><h2>Rupture treatments<a class="headerlink" href="#module-rupturetreatment" title="Permalink to this headline">¶</a></h2>
+<p>Package for failure treatment modules</p>
 <dl class="py class">
 <dt id="rupturetreatment.RuptureTreatment">
 <em class="property">class </em><code class="descclassname">rupturetreatment.</code><code class="descname">RuptureTreatment</code><a class="headerlink" href="#rupturetreatment.RuptureTreatment" title="Permalink to this definition">¶</a></dt>
@@ -3154,6 +3170,7 @@ results to other results obtained without XFEM on a half rod</p>
 </div>
 <div class="section" id="module-solver">
 <span id="solver"></span><h2>Solver<a class="headerlink" href="#module-solver" title="Permalink to this headline">¶</a></h2>
+<p>Package for solver modules</p>
 <dl class="py class">
 <dt id="solver.NewtonRaphsonBase">
 <em class="property">class </em><code class="descclassname">solver.</code><code class="descname">NewtonRaphsonBase</code><span class="sig-paren">(</span><em><span class="n">function_to_vanish</span></em>, <em><span class="n">nb_iterations_max</span></em>, <em><span class="n">increment_method</span></em><span class="sig-paren">)</span><a class="headerlink" href="#solver.NewtonRaphsonBase" title="Permalink to this definition">¶</a></dt>
@@ -3211,6 +3228,7 @@ results to other results obtained without XFEM on a half rod</p>
 </div>
 <div class="section" id="module-utilities">
 <span id="utilities"></span><h2>Utilities<a class="headerlink" href="#module-utilities" title="Permalink to this headline">¶</a></h2>
+<p>Package for utilities modules</p>
 <dl class="py function">
 <dt id="utilities.timeit_file">
 <code class="descclassname">utilities.</code><code class="descname">timeit_file</code><span class="sig-paren">(</span><em><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#utilities.timeit_file" title="Permalink to this definition">¶</a></dt>
@@ -3272,7 +3290,7 @@ J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
   <div class="footer-relations">
     
       <div class="pull-left">
-        <a class="btn btn-default" href="index.html" title="previous chapter (use the left arrow)">Welcome to XVOF !</a>
+        <a class="btn btn-default" href="organisation.html" title="previous chapter (use the left arrow)">Code organisation</a>
       </div>
     
       <div class="pull-right">
@@ -3297,7 +3315,7 @@ J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
           <a href="installation.html" title="Installation"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to XVOF !"
+          <a href="organisation.html" title="Code organisation"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>
