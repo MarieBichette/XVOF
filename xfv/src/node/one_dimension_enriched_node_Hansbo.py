@@ -175,11 +175,33 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         Compute the cohesive forces for the enriched nodes
         :param cohesive_model : cohesive model
         """
-        for disc in Discontinuity.discontinuity_list():
+        disc_list = Discontinuity.discontinuity_list()
+        if not disc_list:
+            return
+        nb_disc = len(disc_list)
+
+        applied_force_arr = np.ndarray((nb_disc,))
+        for ind, disc in enumerate(disc_list):
             # Compute cohesive stress
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
-            self.apply_force_on_discontinuity_boundaries(disc, cohesive_stress)
+            applied_force_arr[ind] = self.section * cohesive_stress
+
+        epsilon_arr = Discontinuity.discontinuity_position
+        # Apply cohesive stress on enriched nodes
+        f1 = ((1. - epsilon_arr).T * applied_force_arr).T  # F1 # pylint:disable=invalid-name
+        f2 = (epsilon_arr.T * applied_force_arr).T  # F2 # pylint:disable=invalid-name
+        Discontinuity.additional_dof_force[:, 0] += f2  # F2-
+        Discontinuity.additional_dof_force[:, 1] -= f1  # F1+
+        nodes_in = Discontinuity.in_nodes.flatten()
+        nodes_out = Discontinuity.out_nodes.flatten()
+        for ind, disc in enumerate(disc_list):
+            self._force[nodes_in[ind]] += f1[ind]
+            self._force[nodes_out[ind]] -= f2[ind]
+        # For performances reason it could be interesting to do the following
+        # self._force[nodes_in] += f1
+        # self._force[nodes_out] -= f2
+        # but it changes the results due to arithmetic floating point round approximation
 
     def apply_force_on_discontinuity_boundaries(self, disc: Discontinuity, stress: float):
         """
