@@ -20,6 +20,7 @@ M. Gorecki
    :maxdepth: 1
    :caption: Contents:
 
+   organisation.rst
    documentation.rst
    installation.rst
    case_creation.rst
