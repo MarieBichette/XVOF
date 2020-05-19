@@ -14,10 +14,6 @@ For any question or remark, please contact :
 G. Peillex
 M. Gorecki
 
-References
--------------------------
-To be completed
-
 *This documentation has been generated using the Sphinx tool.*
 
 .. toctree::
@@ -25,3 +21,5 @@ To be completed
    :caption: Contents:
 
    documentation.rst
+   installation.rst
+   case_creation.rst

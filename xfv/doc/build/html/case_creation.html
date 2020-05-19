@@ -13,7 +13,7 @@
   <link rel="stylesheet" type="text/css" href="_static/css/bootstrap-theme.min.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-    <title>Welcome to XVOF ! &#8212; XVOF  documentation</title>
+    <title>Case creation &#8212; XVOF  documentation</title>
     <link rel="stylesheet" href="_static/guzzle.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -23,7 +23,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="XVOF Documentation" href="documentation.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
   
    
 
@@ -38,9 +38,9 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="documentation.html" title="XVOF Documentation"
-             accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">XVOF  documentation</a> &#187;</li> 
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="container-wrapper">
@@ -50,13 +50,13 @@
       </div>
   <div id="left-column">
     <div class="sphinxsidebar">
-  <h4>Next topic</h4>
-  <p class="topless"><a href="documentation.html"
-                        title="next chapter">XVOF Documentation</a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
+      <li><a href="_sources/case_creation.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -80,31 +80,33 @@
           
           <div role="navigation" aria-label="breadcrumbs navigation">
             <ol class="breadcrumb">
-              <li><a href="#">Docs</a></li>
+              <li><a href="index.html">Docs</a></li>
               
-              <li>Welcome to XVOF !</li>
+              <li>Case creation</li>
             </ol>
           </div>
           
           <div class="document clearer body">
             
-  <div class="section" id="welcome-to-xvof">
-<h1>Welcome to XVOF !<a class="headerlink" href="#welcome-to-xvof" title="Permalink to this headline">¶</a></h1>
-<p>Welcome in the documentation page of the XVOF code, a one-dimensional hydro code that uses XFV method to model fracture.</p>
-<p>This code is available as a GitHub repository :
-<a class="reference external" href="https://github.com/hippo91/XVOF">https://github.com/hippo91/XVOF</a></p>
-<p>For any question or remark, please contact :
-G. Peillex
-M. Gorecki</p>
-<p><em>This documentation has been generated using the Sphinx tool.</em></p>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html">XVOF Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html#index-and-tables">Index and tables</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="case_creation.html">Case creation</a></li>
+  <div class="section" id="case-creation">
+<h1>Case creation<a class="headerlink" href="#case-creation" title="Permalink to this headline">¶</a></h1>
+<p>Each case is composed of :</p>
+<ol class="arabic simple">
+<li>Input data, stored in the file XDATA.json.</li>
+<li>A mesh file, which is a .txt file containing the coordinates of nodes.</li>
+</ol>
+<p>To launch a test case :</p>
+<ul class="simple">
+<li>Create a data set “XDATA.json” and a meshfile “mesh.txt”</li>
+<li>From the test repository, type :</li>
 </ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OMP_NUM_THREADS</span><span class="o">=</span><span class="mi">2</span> <span class="n">python</span> <span class="n">XtendedFiniteVolume</span> <span class="o">&lt;</span><span class="n">case</span><span class="o">-</span><span class="n">repository</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>By default, the external lib C is used if it has been previously installed.</p>
+<p>To enforce the internal computation of the equation of state (with python module), type</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">XtendedFiniteVolume</span> <span class="o">&lt;</span><span class="n">case</span><span class="o">-</span><span class="n">repository</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">use</span><span class="o">-</span><span class="n">internal</span><span class="o">-</span><span class="n">solver</span>
+</pre></div>
 </div>
 </div>
 
@@ -113,9 +115,10 @@ M. Gorecki</p>
             
   <div class="footer-relations">
     
-      <div class="pull-right">
-        <a class="btn btn-default" href="documentation.html" title="next chapter (use the right arrow)">XVOF Documentation</a>
+      <div class="pull-left">
+        <a class="btn btn-default" href="installation.html" title="previous chapter (use the left arrow)">Installation</a>
       </div>
+    
     </div>
     <div class="clearer"></div>
   
@@ -132,9 +135,9 @@ M. Gorecki</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="documentation.html" title="XVOF Documentation"
-             >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">XVOF  documentation</a> &#187;</li> 
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>
     </div>
 <script type="text/javascript">

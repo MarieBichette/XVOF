@@ -23,7 +23,8 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Welcome !" href="index.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Welcome to XVOF !" href="index.html" />
   
    
 
@@ -38,7 +39,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome !"
+          <a href="installation.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to XVOF !"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>
@@ -86,7 +90,10 @@
 </div>
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome !</a></p>
+                        title="previous chapter">Welcome to XVOF !</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">Installation</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -124,8 +131,11 @@
             
   <div class="section" id="xvof-documentation">
 <h1>XVOF Documentation<a class="headerlink" href="#xvof-documentation" title="Permalink to this headline">¶</a></h1>
+<p>The time loop is executed in XtentedFiniteVolume.py. Mesh objects are responsible of the cells and nodes objects. So in principle, the entry point calls a mesh method which calls a cell or node method to update variables.
+The following documentation specifies the role of all functions and modules in the code.</p>
 <div class="section" id="module-cell">
 <span id="cell"></span><h2>Cell<a class="headerlink" href="#module-cell" title="Permalink to this headline">¶</a></h2>
+<p>A module to implement Cell classes</p>
 <dl class="py class">
 <dt id="cell.Cell">
 <em class="property">class </em><code class="descclassname">cell.</code><code class="descname">Cell</code><span class="sig-paren">(</span><em><span class="n">nbr_of_cells</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cell.Cell" title="Permalink to this definition">¶</a></dt>
@@ -2249,6 +2259,7 @@ avec le noeud d’indice ‘ind_node’</p>
 </div>
 <div class="section" id="module-node">
 <span id="nodes"></span><h2>Nodes<a class="headerlink" href="#module-node" title="Permalink to this headline">¶</a></h2>
+<p>Package for nodes module</p>
 <dl class="py class">
 <dt id="node.Node">
 <em class="property">class </em><code class="descclassname">node.</code><code class="descname">Node</code><span class="sig-paren">(</span><em><span class="n">nbr_of_nodes</span></em>, <em><span class="n">position_initiale</span></em>, <em><span class="n">dim</span><span class="o">=</span><span class="default_value">1</span></em>, <em><span class="n">vitesse_initiale</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#node.Node" title="Permalink to this definition">¶</a></dt>
@@ -3261,9 +3272,12 @@ J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
   <div class="footer-relations">
     
       <div class="pull-left">
-        <a class="btn btn-default" href="index.html" title="previous chapter (use the left arrow)">Welcome !</a>
+        <a class="btn btn-default" href="index.html" title="previous chapter (use the left arrow)">Welcome to XVOF !</a>
       </div>
     
+      <div class="pull-right">
+        <a class="btn btn-default" href="installation.html" title="next chapter (use the right arrow)">Installation</a>
+      </div>
     </div>
     <div class="clearer"></div>
   
@@ -3280,7 +3294,10 @@ J2 = sqrt(3/2 S:S) where S is the deviatoric part of stress tensor
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome !"
+          <a href="installation.html" title="Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to XVOF !"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">XVOF  documentation</a> &#187;</li> 
       </ul>

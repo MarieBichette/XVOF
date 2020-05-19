@@ -5,10 +5,12 @@
 
 XVOF Documentation
 ================================
+The time loop is executed in XtentedFiniteVolume.py. Mesh objects are responsible of the cells and nodes objects. So in principle, the entry point calls a mesh method which calls a cell or node method to update variables.
+The following documentation specifies the role of all functions and modules in the code.
 
 Cell
 --------------------------------
-.. module:: cell
+.. automodule:: cell
 .. autoclass:: Cell
    :members:
 .. autoclass:: OneDimensionCell
@@ -18,7 +20,7 @@ Cell
 
 Cohesive Zone Model
 --------------------------------
-.. module:: cohesive_model
+.. automodule:: cohesive_model
 .. autoclass:: CohesiveLaw
    :members:
 .. autoclass:: CohesiveZoneModel
@@ -26,7 +28,7 @@ Cohesive Zone Model
 
 Cohesive Zone Model : unloading options
 -------------------------------------------
-.. module:: cohesive_model_unloading
+.. automodule:: cohesive_model_unloading
 .. autoclass:: UnloadingModelBase
    :members:
 .. autoclass:: ConstantStiffnessUnloading
@@ -36,7 +38,7 @@ Cohesive Zone Model : unloading options
 
 Contact
 --------------------------------
-.. module:: contact
+.. automodule:: contact
 .. autoclass:: ContactBase
    :members:
 .. autoclass:: LagrangianMultiplierContact
@@ -46,7 +48,7 @@ Contact
 
 Customized Boundary Condition Functions
 -------------------------------------------
-.. module:: custom_functions
+.. automodule:: custom_functions
 .. autoclass:: CustomFunction
    :members:
 .. autoclass:: ConstantValue
@@ -62,20 +64,20 @@ Customized Boundary Condition Functions
 
 Data
 --------------------------------
-.. module:: data
+.. automodule:: data
 .. autoclass:: DataContainer
    :members:
 
 
 Discontinuity
 --------------------------------
-.. module:: discontinuity
+.. automodule:: discontinuity
 .. autoclass:: Discontinuity
    :members:
 
 Equation Of State
 --------------------------------
-.. module:: equationsofstate
+.. automodule:: equationsofstate
 .. autoclass:: EquationOfStateBase
    :members:
 .. autoclass:: MieGruneisen
@@ -83,7 +85,7 @@ Equation Of State
 
 Fields
 --------------------------------
-.. module:: fields
+.. automodule:: fields
 .. autoclass:: Field
    :members:
 .. autoclass:: FieldManager
@@ -91,7 +93,7 @@ Fields
 
 FigureManager (animation)
 --------------------------------
-.. module:: figure_manager
+.. automodule:: figure_manager
 .. autoclass:: PhysicFigure
    :members:
 .. autoclass:: FigureManager
@@ -99,7 +101,7 @@ FigureManager (animation)
 
 Mass Matrix
 --------------------------------
-.. module:: mass_matrix
+.. automodule:: mass_matrix
 .. autoclass:: EnrichedMassMatrix
    :members:
 .. autoclass:: EnrichedMassMatrixConsistent
@@ -121,7 +123,7 @@ Mass Matrix
 
 Mesh
 --------------------------------
-.. module:: mesh
+.. automodule:: mesh
 .. autoclass:: Mesh1dEnriched
    :members:
 .. autoclass:: Topology
@@ -131,7 +133,7 @@ Mesh
 
 Nodes
 --------------------------------
-.. module:: node
+.. automodule:: node
 .. autoclass:: Node
    :members:
 .. autoclass:: OneDimensionNode
@@ -141,7 +143,7 @@ Nodes
 
 Outputs
 --------------------------------
-.. module:: output_manager
+.. automodule:: output_manager
 .. autoclass:: OutputDatabase
    :members:
 .. autoclass:: OutputManager
@@ -155,7 +157,7 @@ Outputs
 
 Plasticity criterion
 --------------------------------
-.. module:: plasticitycriterion
+.. automodule:: plasticitycriterion
 .. autoclass:: PlasticityCriterion
    :members:
 .. autoclass:: VonMisesCriterion
@@ -163,7 +165,7 @@ Plasticity criterion
 
 Rheology
 --------------------------------
-.. module:: rheology
+.. automodule:: rheology
 .. autoclass:: ShearModulus
    :members:
 .. autoclass:: ConstantShearModulus
@@ -175,7 +177,7 @@ Rheology
 
 Rupture criterion
 --------------------------------
-.. module:: rupturecriterion
+.. automodule:: rupturecriterion
 .. autoclass:: RuptureCriterion
    :members:
 .. autoclass:: HalfRodComparisonCriterion
@@ -189,7 +191,7 @@ Rupture criterion
 
 Rupture treatments
 --------------------------------
-.. module:: rupturetreatment
+.. automodule:: rupturetreatment
 .. autoclass:: RuptureTreatment
    :members:
 .. autoclass:: ImposedPressure
@@ -199,7 +201,7 @@ Rupture treatments
 
 Solver
 --------------------------------
-.. module:: solver
+.. automodule:: solver
 .. autoclass:: NewtonRaphsonBase
    :members:
 .. autoclass:: NewtonRaphson
@@ -209,7 +211,7 @@ Solver
 
 Utilities
 --------------------------------
-.. module:: utilities
+.. automodule:: utilities
 .. autofunction:: timeit_file
 .. autofunction:: compute_second_invariant
 .. autofunction:: compute_trace
