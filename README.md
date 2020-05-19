@@ -1,7 +1,7 @@
 # XVOF
 One dimensional hydro code for testing xfem method. 
 This software is an experimental work trying to model spall fracture using enrichment and partition of unity 
-method in a finite volume code. Hansbo & Hansbo enrichment is used.
+method in a finite volume code [1, 2]. Hansbo & Hansbo enrichment is used [3].
 
 ## Code description
 Code documentation is available in the local repository at xfv/doc/index.html
@@ -23,7 +23,7 @@ Two rupture models are available :
 1) *imposed pressure* : once the cell reach rupture criterion, the pressure is imposed at the value specified in data file
 
 2) *enrichment* : once the cell reach rupture criterion, kinematic and thermodynamic fields are enriched according to the Hansbo \& Hansbo idea.
-Mass matrix can be lumped (Menouillard or total lumping) to improve calculation time.
+Mass matrix can be lumped (Menouillard [4] or total lumping) to improve calculation time.
 Penalty method is used to avoid the interpenetration of the discontinuity boundaries.
 
 Damage can be modeled with a cohesive zone model with specific cohesive law. But no bulk damage is implemented
@@ -88,3 +88,12 @@ To enforce the internal computation of the equation of state (with python module
 ```
     python XtendedFiniteVolume <case-repository> --use-internal-solver
 ```
+
+## References
+[1] Gorecki, M. (2019). Amélioration de la description physico-numérique de l’endommagement et de la rupture de la matière sous choc (Doctoral dissertation, École centrale de Nantes).
+
+[2] Gorecki, M., Peillex, G., Pillon, L., & Moës, N. (2020). An enriched finite volume formulation for the simulation of ductile material failure under shock loading. Computational Mechanics, 1-22.
+
+[3] Hansbo, A., & Hansbo, P. (2004). A finite element method for the simulation of strong and weak discontinuities in solid mechanics. Computer methods in applied mechanics and engineering, 193(33-35), 3523-3540.
+
+[4] Menouillard, T., Rethore, J., Moes, N., Combescure, A., & Bung, H. (2008). Mass lumping strategies for X‐FEM explicit dynamics: application to crack propagation. International Journal for Numerical Methods in Engineering, 74(3), 447-474.
