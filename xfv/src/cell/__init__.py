@@ -1,5 +1,5 @@
 """
-A module to implement Cell classes
+Package for cell modules
 """
 from .cell import Cell
 from .one_dimension_cell import OneDimensionCell

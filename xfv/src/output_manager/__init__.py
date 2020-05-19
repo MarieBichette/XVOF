@@ -1,3 +1,6 @@
+"""
+Package for output management modules
+"""
 from xfv.src.output_manager.outputdatabase import OutputDatabase
 from xfv.src.output_manager.outputmanager import OutputManager
 from xfv.src.output_manager.outputtimecontroler import OutputTimeControler

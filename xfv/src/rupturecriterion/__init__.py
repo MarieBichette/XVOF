@@ -1,3 +1,6 @@
+"""
+Package for rupture criterion modules
+"""
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
 from xfv.src.rupturecriterion.damage_criterion import DamageCriterion
