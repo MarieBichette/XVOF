@@ -273,7 +273,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
 
         self.my_cells.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
 
-        mock_disc_borders.assert_called_with(self.mock_disc, node_velocity_new)
+        mock_disc_borders.assert_called_with(np.array([0.5]), node_velocity_new[0], u1d_arr, u2g_arr, node_velocity_new[1])
         mock_compute_d.assert_called()
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
