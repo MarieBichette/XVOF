@@ -488,14 +488,17 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param node_velocity: array, node velocities
         """
         for disc in Discontinuity.discontinuity_list():
-            ug, ud = OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
-                disc, node_velocity)
-            u1g = node_velocity[disc.mask_in_nodes]
-            u2d = node_velocity[disc.mask_out_nodes]
-            self.left_part_size.new_value[disc.get_ruptured_cell_id()] = \
-                self.left_part_size.current_value[disc.get_ruptured_cell_id()] + (ug - u1g) * time_step
-            self.right_part_size.new_value[disc.get_ruptured_cell_id()] = \
-                self.right_part_size.current_value[disc.get_ruptured_cell_id()] + (u2d - ud) * time_step
+            u_left, u_right = (
+                OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
+                    disc, node_velocity))
+            u_node_left = node_velocity[disc.mask_in_nodes]
+            u_node_right = node_velocity[disc.mask_out_nodes]
+            self.left_part_size.new_value[disc.get_ruptured_cell_id()] = (
+                self.left_part_size.current_value[disc.get_ruptured_cell_id()]
+                + (u_left - u_node_left) * time_step)
+            self.right_part_size.new_value[disc.get_ruptured_cell_id()] = (
+                self.right_part_size.current_value[disc.get_ruptured_cell_id()]
+                + (u_node_right - u_right) * time_step)
 
     def compute_enriched_elements_new_density(self):
         """
@@ -602,15 +605,16 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._deviatoric_strain_rate[mask_cells_arr] = deviator_left
         self._additional_dof_deviatoric_strain_rate[mask_cells_arr] = deviator_right
 
+
     def compute_enriched_deviatoric_stress_tensor(self, node_coord_new, node_velocity_new,
-                                                  dt):  # pylint: disable=invalid-name
+                                                  delta_t):
         """
         Compute the deviatoric part of the stress tensor
         :param node_coord_new : array, new nodes coordinates
         :param node_velocity_new : array, new nodes velocity
-        :param dt : float, time step
+        :param delta_t : float, time step
         """
-        self.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
+        self.compute_enriched_deviatoric_strain_rate(delta_t, node_coord_new, node_velocity_new)
         # Compute rotation rate tensor : W = 0 en 1D
 
         # Left part
@@ -618,23 +622,26 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         if not mask.any():
             return
         G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
-        self._deviatoric_stress_new[mask, 0] = self._deviatoric_stress_current[mask, 0] + \
-            2. * G * self._deviatoric_strain_rate[mask, 0] * dt
-        self._deviatoric_stress_new[mask, 1] = self._deviatoric_stress_current[mask, 1] + \
-            2. * G * self._deviatoric_strain_rate[mask, 1] * dt
-        self._deviatoric_stress_new[mask, 2] = self._deviatoric_stress_current[mask, 2] + \
-            2. * G * self._deviatoric_strain_rate[mask, 2] * dt
+        self._deviatoric_stress_new[mask, 0] = (
+            self._deviatoric_stress_current[mask, 0] +
+            2. * G * self._deviatoric_strain_rate[mask, 0] * delta_t)
+        self._deviatoric_stress_new[mask, 1] = (
+            self._deviatoric_stress_current[mask, 1] +
+            2. * G * self._deviatoric_strain_rate[mask, 1] * delta_t)
+        self._deviatoric_stress_new[mask, 2] = (
+            self._deviatoric_stress_current[mask, 2] +
+            2. * G * self._deviatoric_strain_rate[mask, 2] * delta_t)
         # Right part
         Gd = self.additional_dof_shear_modulus.new_value[mask]  # pylint: disable=invalid-name
         self._additional_dof_deviatoric_stress_new[mask, 0] = \
             self.additional_dof_deviatoric_stress_current[mask, 0] + \
-            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 0] * dt
+            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 0] * delta_t
         self._additional_dof_deviatoric_stress_new[mask, 1] = \
             self.additional_dof_deviatoric_stress_current[mask, 1] + \
-            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 1] * dt
+            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 1] * delta_t
         self._additional_dof_deviatoric_stress_new[mask, 2] = \
-            self.additional_dof_deviatoric_stress_current[mask, 2] +\
-            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 2] * dt
+            self.additional_dof_deviatoric_stress_current[mask, 2] + \
+            2. * Gd * self.additional_dof_deviatoric_strain_rate[mask, 2] * delta_t
 
     def compute_enriched_shear_modulus(self, shear_modulus_model):
         """
@@ -663,8 +670,12 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         shear_modulus = self.additional_dof_shear_modulus.new_value[mask]
         radial_return = self._compute_radial_return(invariant_j2_el, yield_stress)
         dev_stress = self.additional_dof_deviatoric_stress_new[mask]
-        self._plastic_strain_rate[mask] = self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus, delta_t, dev_stress)
-        self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
+        self._plastic_strain_rate[mask] = \
+            self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus,
+                                                     delta_t, dev_stress)
+        self._equivalent_plastic_strain_rate[mask] = \
+            self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus,
+                                                         yield_stress, delta_t)
         self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
 
     def compute_enriched_yield_stress(self, yield_stress_model):

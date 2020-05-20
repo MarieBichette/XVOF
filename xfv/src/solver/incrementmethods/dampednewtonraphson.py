@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-few-public-methods
 """
 Class définissant la correction amortie appliquée sur la variable d'un Newton Raphson
 """

@@ -22,11 +22,17 @@ class EnrichElement(RuptureTreatment):
         self.__lump = lump_matrix
 
     @property
-    def position_rupture(self):
+    def position_rupture(self) -> float:
+        """
+        Accessor on the relative position of discontinuity inside the enriched cell
+        """
         return self.__position_rupture
 
     @property
-    def lump_style(self):
+    def lump_style(self) -> EnrichedMassMatrixProps:
+        """
+        Accessor on the mass matrix lumping to be applied
+        """
         return self.__lump
 
     def apply_treatment(self, cells, ruptured_cells, nodes, topology, time):
@@ -47,7 +53,7 @@ class EnrichElement(RuptureTreatment):
             for cell_tb_enr in np.nonzero(cells_to_be_enr)[0]:
                 if not cells.enriched[cell_tb_enr]:
                     print("---------------------------------------------")
-                    print("New ruptured cell detected. " 
+                    print("New ruptured cell detected. "
                           "Starting enrichment process for cell {:}".format(cell_tb_enr))
                     print("Beginning enrichment sequence at time {:}".format(time))
                     print("==> Enrichment of cell : ", cell_tb_enr)

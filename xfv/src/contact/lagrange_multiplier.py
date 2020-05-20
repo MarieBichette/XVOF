@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Definition of Contact management
 """
@@ -7,7 +8,7 @@ from xfv.src.contact.contact_base import ContactBase
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class LagrangianMultiplierContact(ContactBase):
+class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-public-methods
     """
     A class for contact management using Lagrangian multipliers
     """
@@ -28,13 +29,13 @@ class LagrangianMultiplierContact(ContactBase):
         """
         if disc.discontinuity_opening.new_value >= 0.:
             return 0.
-        else:
-            return LagrangianMultiplierContact._compute_lagrangian_multiplier(node_velocity,
-                                                                              disc, delta_t)
+        # else
+        return LagrangianMultiplierContact._compute_lagrangian_multiplier(node_velocity,
+                                                                          disc, delta_t)
 
     @staticmethod
     def _compute_lagrangian_multiplier(node_velocity: np.array, disc: Discontinuity,
-                                      time_step: float) -> float:
+                                       time_step: float) -> float:
         """
         Compute the lagrangian multiplier representing the contact force to apply to ensure the
         non penetration of the discontinuity boundaries
@@ -46,21 +47,21 @@ class LagrangianMultiplierContact(ContactBase):
         """
         epsilon = disc.discontinuity_position
         # Computes fictive node mass for the discontinuity boundaries
-        Mleft = disc.mass_matrix_enriched.get_mass_matrix_left()
-        Mright = disc.mass_matrix_enriched.get_mass_matrix_right()
-        M1 = Mleft[0, 0]
-        M2enr = Mleft[1, 1]
-        M2 = Mright[2, 2]
-        M1enr = Mright[3, 3]
-        node_mass_g = M1 * M2enr / (M2enr * (1-epsilon) + M1 * epsilon)
-        node_mass_d = M1enr * M2 / (M2 * (1-epsilon) + M1enr * epsilon)
+        m_left = disc.mass_matrix_enriched.get_mass_matrix_left()
+        m_right = disc.mass_matrix_enriched.get_mass_matrix_right()
+        m_1 = m_left[0, 0]
+        m_2_enr = m_left[1, 1]
+        m_2 = m_right[2, 2]
+        m_1_enr = m_right[3, 3]
+        node_mass_g = m_1 * m_2_enr / (m_2_enr * (1 - epsilon) + m_1 * epsilon)
+        node_mass_d = m_1_enr * m_2 / (m_2 * (1 - epsilon) + m_1_enr * epsilon)
         # Compute the velocities of the discontinuity boundaries
-        velocity_g = (1 - epsilon) * node_velocity[disc.mask_in_nodes] \
-                     + epsilon * disc.additional_dof_velocity_new[0]
-        velocity_d = (1 - epsilon) * disc.additional_dof_velocity_new[1]\
-                     + epsilon * node_velocity[disc.mask_out_nodes]
+        velocity_g = ((1 - epsilon) * node_velocity[disc.mask_in_nodes]
+                      + epsilon * disc.additional_dof_velocity_new[0])
+        velocity_d = ((1 - epsilon) * disc.additional_dof_velocity_new[1]
+                      + epsilon * node_velocity[disc.mask_out_nodes])
         # Compute the contact force in order to have ug = ud afterward
-        denom = time_step * (node_mass_g + node_mass_d) / (node_mass_g * node_mass_d)
-        lambda_multiplier = (velocity_d - velocity_g).flatten() / denom
+        lambda_multiplier = (velocity_d - velocity_g).flatten() / (
+            time_step * (node_mass_g + node_mass_d) / (node_mass_g * node_mass_d))
         # signe inverse par rapport au papier car les forces ont un sens inverse
         return lambda_multiplier

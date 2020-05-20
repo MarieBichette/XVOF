@@ -15,6 +15,9 @@ from xfv.src.data.data_container import DataContainer
 
 
 class CellTest(unittest.TestCase):
+    """
+    Class to test the module 'Cell'
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -27,6 +30,9 @@ class CellTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """
+        Actions after all tests of this class
+        """
         DataContainer.clear()
         print("\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n")
 
@@ -37,10 +43,7 @@ class CellTest(unittest.TestCase):
         self.nbr_cells = 3
         self.my_cells = Cell(self.nbr_cells)
 
-    def tearDown(self):
-        pass
-
-    def test_get_coordinates(self):
+    def test_get_coordinates(self):  # pylint: disable=no-self-use
         """
         Test of cell.get_coordinates method
         """

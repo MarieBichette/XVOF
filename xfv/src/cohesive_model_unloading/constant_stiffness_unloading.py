@@ -5,7 +5,7 @@ Definition of UnloadingModel with constant stiffness
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
-class ConstantStiffnessUnloading(UnloadingModelBase):
+class ConstantStiffnessUnloading(UnloadingModelBase):  # pylint: disable=too-few-public-methods
     """
     A model for unloading reloading path with constant stiffness
     """
@@ -24,6 +24,6 @@ class ConstantStiffnessUnloading(UnloadingModelBase):
         :param new_opening : opening of the discontinuity
         :return: cohesive stress (float)
         """
-        cohesive_force = disc.history_min_cohesive_force + \
-                         self.slope * (new_opening - disc.history_max_opening)
+        cohesive_force = (disc.history_min_cohesive_force +
+                          self.slope * (new_opening - disc.history_max_opening))
         return cohesive_force

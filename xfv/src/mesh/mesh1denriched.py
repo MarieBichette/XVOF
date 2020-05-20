@@ -4,9 +4,10 @@ Base class for one dimensional enriched mesh
 """
 
 import numpy as np
-from xfv.src.cell.one_dimension_enriched_cell_Hansbo import OneDimensionHansboEnrichedCell
-from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xfv.src.cell.one_dimension_enriched_cell_hansbo import OneDimensionHansboEnrichedCell
+from xfv.src.node.one_dimension_enriched_node_hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
+from xfv.src.data.enriched_mass_matrix_props import ConsistentMassMatrixProps
 from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
@@ -52,8 +53,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # ----------------------------------------------
         # Mass Matrix creation
         # ----------------------------------------------
-        self.mass_matrix = OneDimensionMassMatrix(nbr_nodes, correction_on_last_cells=None)
-        # self.mass_matrix = OneDimensionMassMatrix(nbr_nodes, correction_on_last_cells="hansbo")
+        self.mass_matrix = OneDimensionMassMatrix(
+            nbr_nodes, self.data.numeric.consistent_mass_matrix_on_last_cells)
 
         # ---------------------------------------------
         # Topology creation
@@ -115,9 +116,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         self.mass_matrix.compute_mass_matrix(self.__topology, self.cells.mass,
                                              self.nb_nodes_per_cell)
 
-        if self.mass_matrix.correction_on_cell_500 is not None:
-            print('Matrix correction on last cells compatible with {} analyis'.format(
-                self.mass_matrix.correction_on_cell_500))
+        if self.mass_matrix.consistent_mass_matrix_on_last_cells:
+            print('Matrix correction on last cells compatible with {} analysis'.format(
+                self.mass_matrix.consistent_mass_matrix_on_last_cells))
             # Identify the last elements of the reference bar
             self.mask_last_nodes_of_ref = np.zeros(
                 [self.nodes.number_of_nodes], dtype=bool)
@@ -151,7 +152,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             delta_t, self.nodes.enrichment_not_concerned,
             self.mass_matrix.inverse_mass_matrix[self.nodes.enrichment_not_concerned])
 
-        if self.mass_matrix.correction_on_cell_500 is not None:
+        if self.mass_matrix.consistent_mass_matrix_on_last_cells:
             # Apply some correction to mimic a consistent mass matrix on the last cells of
             # the reference bar
             inv_mass_matrix_correction = self.mass_matrix.inverse_correction_mass_matrix
@@ -173,6 +174,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # Compute enriched ddl velocity of enriched nodes
         self.nodes.compute_additional_dof_new_velocity(
             delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
+
+        if type(self.data.material_target.failure_model.lump_mass_matrix) == \
+                ConsistentMassMatrixProps:
+            # Compute the contribution of classical ddl on enriched ddl and the reverse
+            # (out of the diagonal terms of the mass matrix)
+            self.nodes.coupled_enrichment_terms_compute_new_velocity(
+                delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof)
 
     def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
@@ -204,22 +212,23 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
                     # Divide the contact "force" on the nodal forces
                     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
-                    # Reinitialize the kinematics that lead to contact
-                    self.nodes.reinitialize_kinematics_after_contact(disc)
-                    disc.reinitialize_kinematics_after_contact()
+            # Update the kinematics with contact correction
+            for disc in Discontinuity.discontinuity_list():
+                # Reinitialize the kinematics that lead to contact in order to recompute it
+                self.nodes.reinitialize_kinematics_after_contact(disc)
+                disc.reinitialize_kinematics_after_contact()
 
-                    # Apply correction on the velocity field (only on disc nodes)
-                    self._compute_velocities_for_disc(disc, delta_t)
+                # Apply correction on the velocity field (only on disc nodes)
+                self._compute_velocities_for_disc(disc, delta_t)
 
-                    # Theoretically, we should apply the velocity boundary condition here,
-                    # but it is really not convenient to do this and fracture is not supposed
-                    # to occur on the boundary cells. Thus, no boundary conditions is applied
+                # Theoretically, we should apply the velocity boundary condition here,
+                # but it is really not convenient to do this and fracture is not supposed
+                # to occur on the boundary cells. Thus, no boundary conditions is applied
 
-                    # Apply correction on the node coordinates (only on disc nodes)
-                    self.nodes.compute_new_coodinates(disc.mask_disc_nodes, delta_t)  # classical
-                    self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)  # enriched
-                    # Update discontinuity opening
-                    disc.compute_discontinuity_new_opening(self.nodes.xtpdt)  # opening
+                # Apply correction on the node coordinates (only on disc nodes)
+                self.nodes.compute_new_coodinates(disc.mask_disc_nodes, delta_t)  # classical
+                self.nodes.enriched_nodes_compute_new_coordinates(disc, delta_t)  # enriched
+                disc.compute_discontinuity_new_opening(self.nodes.xtpdt)
 
     def compute_new_nodes_coordinates(self, delta_t: float):
         """

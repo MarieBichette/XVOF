@@ -1,0 +1,60 @@
+{
+  "time-management": {
+    "final-time": 1e-06,
+    "initial-time-step": 1e-10,
+    "constant-time-step": false
+  },
+  "geometry": {
+    "section": 3.141592653589793e-06
+  },
+  "matter": {
+    "initialization": {
+      "initial-velocity": 0.0,
+      "init-thermo": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo.json"
+    },
+    "equation-of-state": {
+      "name": "Mie-Gruneisen",
+      "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
+    },
+    "failure": {
+      "failure-criterion": {
+        "name": "HalfRodComparison",
+        "index": 200
+      },
+      "failure-treatment": {
+        "name": "Enrichment",
+        "value": 0.5,
+        "lump-mass-matrix": "none"
+      }
+    }
+  },
+  "boundary-conditions": {
+    "right-boundary": {
+      "type": "pressure",
+      "bc-law": "Constant",
+      "value": 0.0
+    },
+    "left-boundary": {
+      "type": "pressure",
+      "bc-law": "Constant",
+      "value": -10000000000.0
+    }
+  },
+  "numeric-parameters": {
+    "linear-pseudo": 0.2,
+    "quadratic-pseudo": 1.5,
+    "cfl": 0.5,
+    "cfl-pseudo": 0.0
+  },
+  "output": {
+    "number-of-images": 0,
+    "dump-images": false,
+    "database": [
+      {
+      "identifier": "AllFieldsDb",
+      "path": "all_fields.hdf5",
+      "time-period": 2e-07
+      }
+    ]
+  }
+}

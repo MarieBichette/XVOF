@@ -5,7 +5,7 @@ Definition of UnloadingModel with loss of stiffness
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
 
-class LossOfStiffnessUnloading(UnloadingModelBase):
+class LossOfStiffnessUnloading(UnloadingModelBase):  # pylint: disable=too-few-public-methods
     """
     A model for unloading reloading path with decreasing stiffness
     """
@@ -24,6 +24,6 @@ class LossOfStiffnessUnloading(UnloadingModelBase):
         :return: cohesive stress (float)
         """
         slope = disc.history_min_cohesive_force / disc.history_max_opening
-        cohesive_force = disc.history_min_cohesive_force +\
-                         slope * (new_opening - disc.history_max_opening)
+        cohesive_force = (disc.history_min_cohesive_force +
+                          slope * (new_opening - disc.history_max_opening))
         return cohesive_force

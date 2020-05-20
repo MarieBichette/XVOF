@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=protected-access
 """
 Test of the PenaltyContact
 """
@@ -22,12 +23,6 @@ class PenaltyContactTest(unittest.TestCase):
                                   LumpMenouillardMassMatrixProps())
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_left_part(0., 2., 0.5)
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_right_part(2., 0., 0.5)
-
-    def tearDown(self):
-        """
-        Operations to be done after completing all the tests in the class
-        """
-        pass
 
     def test_compute_penalty_force(self):
         """

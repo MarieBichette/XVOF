@@ -3,8 +3,8 @@
 Implementation of the ConstantYieldStress class
 """
 
-from xfv.src.rheology.yieldstress import YieldStress
 import numpy as np
+from xfv.src.rheology.yieldstress import YieldStress
 
 
 class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-methods

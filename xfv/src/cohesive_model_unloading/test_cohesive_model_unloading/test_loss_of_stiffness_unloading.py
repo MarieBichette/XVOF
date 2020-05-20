@@ -29,12 +29,6 @@ class LossOfStiffnessUnloadingTest(unittest.TestCase):
         # Creation of the tested service
         self.test_unloading_model = LossOfStiffnessUnloading()
 
-    def tearDown(self):
-        """
-        Operations to be done after completing all the tests in the class
-        """
-        pass
-
     def test_compute_unloading_reloading_condition(self):
         """
         Test of the method compute_unloading_reloading_condition du module

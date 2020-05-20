@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=protected-access
+# pylint: disable=protected-access, unused-argument
 """
 Classe de test du module OneDimensionEnrichedNode
 """
 import unittest
-import os
 import unittest.mock as mock
+import os
 import numpy as np
 
 from xfv.src.discontinuity.discontinuity import Discontinuity
-from xfv.src.node.one_dimension_enriched_node_Hansbo import OneDimensionHansboEnrichedNode
+from xfv.src.node.one_dimension_enriched_node_hansbo import OneDimensionHansboEnrichedNode
 from xfv.src.data.data_container import DataContainer
 
 
 class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
     """
-    Test case utilis� pour test les fonctions du module 'OneDimensionHansboEnrichedNode'
+    Test case used for module 'OneDimensionHansboEnrichedNode'
     """
     def setUp(self):
         """
-        Pr�paration des tests unitaires
+        Preparation of the unit tests
         """
         data_file_path = os.path.join(os.path.dirname(__file__),
                                       "../../../tests/0_UNITTEST/XDATA_hydro.json")
@@ -102,6 +102,21 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
         np.testing.assert_array_almost_equal(self.mock_discontinuity.__class__.additional_dof_velocity_new[0],
                                              np.array([[3., ], [5., ]]))
+
+    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
+    def test_coupled_enrichment_terms_compute_new_velocity(self, mock_disc_list):
+        """
+        Test de la m�thode coupled_terms_compute_new_velocity
+        """
+        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
+        inv_masse_couplage = np.array([[1., 2.], [2., 1.]])
+        self.my_nodes._force = np.array([[1., ], [1., ]])
+        self.my_nodes._upundemi = np.array([[1., ], [1., ]])
+        self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
+
+        np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
+        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
+                                      np.array([[3., ], [3., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):

@@ -16,7 +16,10 @@ class PropertyTest(unittest.TestCase):
         """
         Préparation des tests unitaires
         """
-        class MyClass(object):
+        class MyClass:
+            """
+            A fake class with some properties
+            """
             def __init__(self):
                 """
                 Construction d'une classe quelconque contenant 2 proprétés _prop et _prop_enriched

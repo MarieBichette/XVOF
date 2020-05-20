@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Plot time evolution of a field for a given item id
+Plot error evolution in time of a field for a given item id (for a given reference field)
 """
 
 import argparse
 import pathlib
+import numpy as np
 import matplotlib.pyplot as plt
 
 from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolution_in_time_for_item
@@ -23,6 +24,7 @@ def run():
     parser.add_argument("item_id", type=int, help="the id of the item to look at")
     parser.add_argument("-case", action='append', nargs='+',
                         help="the path to the output repository")
+    parser.add_argument("-ref", help="the path to the reference output repository")
     parser.add_argument("--output_filename", default="all_fields.hdf5",
                         help="the name of the output hdf5 band (default = all_fields.hdf5)")
     args = parser.parse_args()
@@ -30,9 +32,14 @@ def run():
     if args.case is None:
         raise ValueError("At least one case is needed. Use -case to specify cases to plot")
 
+    if args.ref is None:
+        raise ValueError("Please provide a reference case using -ref <case>")
+
     if args.verbose:
         print("Field : " + args.field)
         print("Item id : " + str(args.item_id))
+        print("Ref : ")
+        print(args.ref)
         print("Cases : ")
         print(args.case)
         print("~~~~~~~~~~~~~")
@@ -53,8 +60,21 @@ def run():
 
     plt.figure(1)
     plt.xlabel("Time [mus]")
-    plt.ylabel(field + field_unit[field])
-    plt.title("Time evolution of " + str(field) + " in item " + str(item_id), fontweight='bold')
+    plt.ylabel("Diff " + field + " - ref / max(ref)")
+    plt.title("Error time evolution of " + str(field) + " in item " + str(item_id),
+              fontweight='bold')
+
+    # ----------------------------------------------------------
+    # Read reference data
+    # ----------------------------------------------------------
+    ref_case = args.ref
+    path_to_db = pathlib.Path.cwd().joinpath("..", "tests", ref_case, args.output_filename)
+    if args.verbose:
+        print("Path to database : {:}".format(path_to_db))
+        print("Read field " + field + " in database... ")
+    # Read database :
+    ref_item_history = get_field_evolution_in_time_for_item(path_to_db, item_id, field)
+    ref_field = ref_item_history[:, 1]
 
     # ----------------------------------------------------------
     # Plot field evolution for each case
@@ -68,11 +88,12 @@ def run():
             print("Read field " + field + " in database... ")
         # Read database :
         item_history = get_field_evolution_in_time_for_item(path_to_db, item_id, field)
+        diff = np.abs(item_history[:, 1] - ref_field) / np.max(np.abs(ref_field))
         if args.verbose:
             print("Done !")
             print("~~~~~~~~~~~~~")
         # Plot field :
-        plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], '.-', label=case)
+        plt.plot(item_history[:, 0] * 1.e+6, diff, '.-', label=case)
 
 
 if __name__ == "__main__":

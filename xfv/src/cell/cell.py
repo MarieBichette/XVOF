@@ -137,7 +137,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
 
     @property
-    def dt(self):
+    def dt(self):  # pylint: disable=invalid-name
         """
         Critical time step in cells
         """
@@ -282,7 +282,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         Variables incrementation
         """
-        self._fields_manager.incrementFields()
+        self._fields_manager.increment_fields()
         self._size_t[:] = self._size_t_plus_dt[:]
 
     @abstractmethod

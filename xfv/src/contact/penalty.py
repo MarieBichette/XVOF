@@ -7,7 +7,7 @@ from xfv.src.contact.contact_base import ContactBase
 from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
-class PenaltyContact(ContactBase):
+class PenaltyContact(ContactBase):  # pylint: disable=too-few-public-methods
     """
     A class to manage contacts using penalty method
     """

@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Implementing field manager class
 
@@ -29,15 +29,16 @@ class FieldManager(OrderedDict):
 
     def __str__(self):
         """
-        :return: informations about the contents of the manager
+        :return: information about the contents of the manager
         """
         msg = " "
         # msg = "Initial fields have been created"
         # msg = "FieldManager contents :" + os.linesep
-        # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field) for name, field in self.items()))
+        # msg += os.linesep.join(("{:s} <-> {:s}".format(name, field)
+        #                        for name, field in self.items()))
         return msg
 
-    def incrementFields(self):
+    def increment_fields(self):
         """
         Increment all the fields registered in the manager
         """
