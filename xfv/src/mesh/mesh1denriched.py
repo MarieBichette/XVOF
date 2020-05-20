@@ -172,15 +172,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             delta_t, disc.mask_disc_nodes,
             disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
         # Compute enriched ddl velocity of enriched nodes
-        self.nodes.compute_additional_dof_new_velocity(disc,
-            delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
+        self.nodes.compute_additional_dof_new_velocity(disc, delta_t)
 
         if type(self.data.material_target.failure_model.lump_mass_matrix) == \
                 ConsistentMassMatrixProps:
             # Compute the contribution of classical ddl on enriched ddl and the reverse
             # (out of the diagonal terms of the mass matrix)
-            self.nodes.coupled_enrichment_terms_compute_new_velocity(
-                delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof)
+            self.nodes.coupled_enrichment_terms_compute_new_velocity(disc, delta_t)
 
     def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
