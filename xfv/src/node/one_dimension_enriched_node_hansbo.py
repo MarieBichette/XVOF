@@ -76,9 +76,12 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param delta_t: float, time step
         :param inv_matrice_masse: inverse of the mass matrix
         """
+        if inv_matrice_masse.shape != (2, 2):
+            inv_matrice_masse = np.diag(inv_matrice_masse)
+        mat_mul = np.dot(inv_matrice_masse, Discontinuity.additional_dof_force[:])
+        mat_mul = np.moveaxis(mat_mul, 0, 1)
         Discontinuity.additional_dof_velocity_new[:] = (
-            Discontinuity.additional_dof_velocity_current[:] +
-            np.multiply(inv_matrice_masse[np.newaxis].T, Discontinuity.additional_dof_force[:]) * delta_t
+            Discontinuity.additional_dof_velocity_current[:] + mat_mul * delta_t
         )
 
     def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrix):
@@ -93,7 +96,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             node_in = np.where(disc.mask_in_nodes)[0][0]
             node_out = np.where(disc.mask_out_nodes)[0][0]
             mask_disc = [node_in, node_out]
-            disc._additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
+            disc.additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
                                                         self._force[mask_disc]) * delta_t
             self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
 
