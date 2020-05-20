@@ -1,9 +1,9 @@
 {
   "time-management": {
     "final-time": 5e-06,
-    "initial-time-step": 5e-10,
-    "constant-time-step": false,
-    "time-step-reduction-factor-for-failure": 4.0
+    "initial-time-step": 1e-09,
+    "constant-time-step": true,
+    "time-step-reduction-factor-for-failure": 2.0
   },
   "geometry": {
     "section": 3.141592653589793e-06,
@@ -13,14 +13,14 @@
     "projectile": {
       "initialization": {
         "initial-velocity": 654.0,
-        "init-thermo": "../../../data/CONSTITUTIVE_MODEL/Aluminium_InitThermo.json"
+        "init-thermo": "../../../../data/CONSTITUTIVE_MODEL/Aluminium_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Aluminium_MieGruneisen.json"
+        "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Aluminium_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Aluminium_EPP.json",
+        "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Aluminium_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"
@@ -29,14 +29,14 @@
     "target": {
       "initialization": {
         "initial-velocity": 0.0,
-        "init-thermo": "../../../data/CONSTITUTIVE_MODEL/Tantale_InitThermo.json"
+        "init-thermo": "../../../../data/CONSTITUTIVE_MODEL/Tantale_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Tantale_MieGruneisen.json"
+        "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Tantale_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Tantale_EPP.json",
+        "coefficients": "../../../../data/CONSTITUTIVE_MODEL/Tantale_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"
@@ -63,7 +63,7 @@
         },
         "contact-treatment": {
           "name": "Penalty",
-          "penalty-stiffness": 1e+18
+          "penalty-stiffness": 1e+17
         }
       }
     }
@@ -93,7 +93,7 @@
       {
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
-      "time-period": 5e-07
+      "time-period": 1e-06
       }
     ]
   }
