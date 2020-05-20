@@ -93,40 +93,36 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         self.my_nodes.compute_complete_velocity_field()
         np.testing.assert_array_almost_equal(self.my_nodes.velocity_field, np.array([1., 1.]))
 
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_compute_additional_dof_new_velocity(self, mock_disc_list):
+    def test_compute_additional_dof_new_velocity(self):
         """
         Test of the method compute_additional_dof_new_velocity
         """
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_mass_additional = np.array([[2., ], [2., ]])
+        self.mock_discontinuity.mass_matrix_enriched = mock.PropertyMock()
+        self.mock_discontinuity.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof = np.array([[2., ], [2., ]])
         self.mock_discontinuity.additional_dof_velocity_current = np.array([[1., ], [3., ]])
         self.mock_discontinuity.additional_dof_force = np.array([[1., ], [1., ]])
-        self.my_nodes.compute_additional_dof_new_velocity(1., inv_mass_additional)
+        self.my_nodes.compute_additional_dof_new_velocity(self.mock_discontinuity, 1.)
         np.testing.assert_array_almost_equal(self.mock_discontinuity._additional_dof_velocity_new,
                                              np.array([[3., ], [5., ]]))
 
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_coupled_enrichment_terms_compute_new_velocity(self, mock_disc_list):
+    def test_coupled_enrichment_terms_compute_new_velocity(self):
         """
-        Test de la m�thode coupled_terms_compute_new_velocity
+        Test of the method coupled_terms_compute_new_velocity
         """
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
-        inv_masse_couplage = np.array([[1., 2.], [2., 1.]])
+        self.mock_discontinuity.mass_matrix_enriched = mock.PropertyMock()
+        self.mock_discontinuity.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof = np.array([[1., 2.], [2., 1.]])
         self.my_nodes._force = np.array([[1., ], [1., ]])
         self.my_nodes._upundemi = np.array([[1., ], [1., ]])
-        self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
+        self.my_nodes.coupled_enrichment_terms_compute_new_velocity(self.mock_discontinuity, 1.)
 
         np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
         np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
                                       np.array([[3., ], [3., ]]))
 
-    @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    def test_enriched_nodes_compute_new_coordinates(self, mock_disc_list):
+    def test_enriched_nodes_compute_new_coordinates(self):
         """
         Test de la méthode enriched_nodes_compute_new_coordinates de la classe
         """
-        Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
         self.mock_discontinuity.additional_dof_coordinates_current = np.array([[1., ], [3., ]])
         self.mock_discontinuity.additional_dof_coordinates_new = np.array([[-1., ], [-3., ]])
         self.mock_discontinuity.additional_dof_velocity_new = np.array([[-3., ], [4., ]])
