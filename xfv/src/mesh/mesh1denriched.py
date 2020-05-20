@@ -172,7 +172,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             delta_t, disc.mask_disc_nodes,
             disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
         # Compute enriched ddl velocity of enriched nodes
-        self.nodes.compute_additional_dof_new_velocity(
+        self.nodes.compute_additional_dof_new_velocity(disc,
             delta_t, disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof)
 
         if type(self.data.material_target.failure_model.lump_mass_matrix) == \

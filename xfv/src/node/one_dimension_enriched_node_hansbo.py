@@ -70,16 +70,15 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         """
         self._v_field = np.copy(self._upundemi)
 
-    def compute_additional_dof_new_velocity(self, delta_t, inv_matrice_masse):
+    def compute_additional_dof_new_velocity(self, disc, delta_t, inv_matrice_masse):
         """
         Compute the new velocity enriched degree of freedom
         :param delta_t: float, time step
         :param inv_matrice_masse: inverse of the mass matrix
         """
-        for disc in Discontinuity.discontinuity_list():
-            disc._additional_dof_velocity_new = \
-                disc.additional_dof_velocity_current + delta_t * \
-                multiplication_masse(inv_matrice_masse, disc.additional_dof_force)
+        disc._additional_dof_velocity_new = \
+            disc.additional_dof_velocity_current + delta_t * \
+            multiplication_masse(inv_matrice_masse, disc.additional_dof_force)
 
     def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrix):
         """
