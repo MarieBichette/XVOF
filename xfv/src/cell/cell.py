@@ -302,8 +302,11 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         Compute the size of the cells
 
+        :param topology: topology of the mesh
+        :param node_coord: array of nodal coordinates
+
         :type topology: Topology
-        :type
+        :type node_coord: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
 
     @abstractmethod
@@ -322,16 +325,30 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def compute_new_density(self, mask):
         """
         Compute the new density in the cells
+
+        :param mask: boolean array to identify cells to be computed
+
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
 
     @abstractmethod
     def compute_new_pseudo(self, time_step, mask):
         """
         Compute the new value of artificial viscosity in the cells
+
+        :param time_step : time step
+        :param mask: boolean array to identify cells to be computed
+
+        :type time_step: float
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
 
     @abstractmethod
     def compute_new_time_step(self, mask):
         """
         Compute the new value of critical time step in the cells
+
+        :param mask: boolean array to identify cells to be computed
+
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
