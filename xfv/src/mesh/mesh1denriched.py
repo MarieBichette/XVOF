@@ -205,12 +205,18 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             # Theoretically, we should consider a global resolution of contact in all
             # discontinuities. Here they are treated one after another. Better than nothing but
             # may cause instabilities
-            for disc in Discontinuity.discontinuity_list():
-                contact_force = self.contact_model.compute_contact_force(self.nodes.upundemi,
-                                                                         disc, delta_t)
-                if contact_force != 0.:
-                    # Divide the contact "force" on the nodal forces
-                    self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+            disc_list = Discontinuity.discontinuity_list()
+            nb_disc = len(disc_list)
+            contact_force_arr = np.ndarray((nb_disc,))
+            for ind, disc in enumerate(disc_list):
+                contact_force_arr[ind] = self.contact_model.compute_contact_force(
+                    self.nodes.upundemi, disc, delta_t)
+
+            if disc_list:
+                self.nodes.apply_force_on_discontinuity_boundaries_arr(contact_force_arr * self.nodes.section)
+                # if contact_force != 0.:
+                #     # Divide the contact "force" on the nodal forces
+                #     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
             # Update the kinematics with contact correction
             for disc in Discontinuity.discontinuity_list():
