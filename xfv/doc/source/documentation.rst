@@ -17,6 +17,8 @@ Cell
    :members:
 .. autoclass:: OneDimensionHansboEnrichedCell
    :members:
+.. autofunction:: consecutive
+.. autofunction::get_slices
 
 Cohesive Zone Model
 --------------------------------
