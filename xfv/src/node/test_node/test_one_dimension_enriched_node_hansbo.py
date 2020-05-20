@@ -109,13 +109,14 @@ class OneDimensionEnrichedNodeHansboTest(unittest.TestCase):
         Test de la m�thode coupled_terms_compute_new_velocity
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_discontinuity]
+        self.mock_discontinuity.additional_dof_velocity_new = np.array([[0., ], [0., ]])
         inv_masse_couplage = np.array([[1., 2.], [2., 1.]])
         self.my_nodes._force = np.array([[1., ], [1., ]])
         self.my_nodes._upundemi = np.array([[1., ], [1., ]])
         self.my_nodes.coupled_enrichment_terms_compute_new_velocity(1., inv_masse_couplage)
 
         np.testing.assert_array_equal(self.my_nodes._upundemi, np.array([[6., ], [5., ]]))
-        np.testing.assert_array_equal(self.mock_discontinuity._additional_dof_velocity_new,
+        np.testing.assert_array_equal(self.mock_discontinuity.additional_dof_velocity_new,
                                       np.array([[3., ], [3., ]]))
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
