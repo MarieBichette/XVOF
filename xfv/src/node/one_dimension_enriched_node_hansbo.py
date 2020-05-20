@@ -70,31 +70,32 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         """
         self._v_field = np.copy(self._upundemi)
 
-    def compute_additional_dof_new_velocity(self, disc, delta_t, inv_matrice_masse):
+    def compute_additional_dof_new_velocity(self, disc, delta_t):
         """
         Compute the new velocity enriched degree of freedom
+        :param disc: the current discontinuity
         :param delta_t: float, time step
-        :param inv_matrice_masse: inverse of the mass matrix
         """
+        inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof
         disc._additional_dof_velocity_new = \
             disc.additional_dof_velocity_current + delta_t * \
-            multiplication_masse(inv_matrice_masse, disc.additional_dof_force)
+            multiplication_masse(inv_matrix, disc.additional_dof_force)
 
-    def coupled_enrichment_terms_compute_new_velocity(self, delta_t, inv_matrix):
+    def coupled_enrichment_terms_compute_new_velocity(self, disc, delta_t):
         """
         Compute the coupled terms between classical and enriched dof due to non diagonal
         complete mass matrix. Takes into account nodes concerned by enrichment and
         not only the enriched nodes
+        :param disc: the current discontinuity
         :param delta_t: time step
-        :param inv_matrix : inverse of the mass matrix (coupling classic / enr ddl part)
         """
-        for disc in Discontinuity.discontinuity_list():
-            node_in = np.where(disc.mask_in_nodes)[0][0]
-            node_out = np.where(disc.mask_out_nodes)[0][0]
-            mask_disc = [node_in, node_out]
-            disc._additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
-                                                        self._force[mask_disc]) * delta_t
-            self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
+        inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof
+        node_in = np.where(disc.mask_in_nodes)[0][0]
+        node_out = np.where(disc.mask_out_nodes)[0][0]
+        mask_disc = [node_in, node_out]
+        disc._additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
+                                                    self._force[mask_disc]) * delta_t
+        self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
 
     def infos(self, index):
         """
