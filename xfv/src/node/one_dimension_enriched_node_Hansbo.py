@@ -187,15 +187,23 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             disc.cohesive_force.new_value = cohesive_stress
             applied_force_arr[ind] = self.section * cohesive_stress
 
+        self.apply_force_on_discontinuity_boundaries_arr(applied_force_arr)
+
+    def apply_force_on_discontinuity_boundaries_arr(self, force: np.ndarray) -> None:
+        """
+        Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
+        :param force: value of the force to apply
+        :return:
+        """
         epsilon_arr = Discontinuity.discontinuity_position
-        # Apply cohesive stress on enriched nodes
-        f1 = ((1. - epsilon_arr).T * applied_force_arr).T  # F1 # pylint:disable=invalid-name
-        f2 = (epsilon_arr.T * applied_force_arr).T  # F2 # pylint:disable=invalid-name
+        f1 = ((1. - epsilon_arr).T * force).T  # F1 # pylint:disable=invalid-name
+        f2 = (epsilon_arr.T * force).T  # F2 # pylint:disable=invalid-name
         Discontinuity.additional_dof_force[:, 0] += f2  # F2-
         Discontinuity.additional_dof_force[:, 1] -= f1  # F1+
         nodes_in = Discontinuity.in_nodes.flatten()
         nodes_out = Discontinuity.out_nodes.flatten()
-        for ind, disc in enumerate(disc_list):
+        nb_disc = len(Discontinuity.discontinuity_list())
+        for ind in range(nb_disc):
             self._force[nodes_in[ind]] += f1[ind]
             self._force[nodes_out[ind]] -= f2[ind]
         # For performances reason it could be interesting to do the following
