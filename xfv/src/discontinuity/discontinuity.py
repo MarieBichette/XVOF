@@ -14,6 +14,13 @@ class Discontinuity:
 
     # A list of discontinuities
     __discontinuity_list = []
+    additional_dof_velocity_current = np.zeros([], dtype=float)
+    additional_dof_velocity_new = np.zeros([], dtype=float)
+    additional_dof_force = np.zeros([], dtype=float)
+    discontinuity_position = np.zeros([], dtype=float)
+    ruptured_cell_id = np.zeros([], dtype=int)
+    in_nodes = np.zeros([], dtype=int)
+    out_nodes = np.zeros([], dtype=int)
 
     def __init__(self, cell_id: int, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -37,28 +44,59 @@ class Discontinuity:
         # Discontinuity registration
         Discontinuity.__discontinuity_list.append(self)
         self.__label = len(Discontinuity.__discontinuity_list)
-        self.__mask_in_nodes = mask_in_nodes
-        self.__mask_out_nodes = mask_out_nodes
-        self._ruptured_cell_id = cell_id
-
         print("Building discontinuity number {:d}".format(self.__label))
+        init = np.zeros((1, 2, 1))
+        if self.__label == 1:
+            Discontinuity.additional_dof_velocity_current = np.copy(init)
+            Discontinuity.additional_dof_velocity_new = np.copy(init)
+            Discontinuity.additional_dof_force = np.copy(init)
+            Discontinuity.discontinuity_position = np.zeros((1, 1))
+            Discontinuity.ruptured_cell_id = np.zeros((1, 1), dtype=int)
+            Discontinuity.in_nodes = np.zeros((1, 1), dtype=int)
+            Discontinuity.out_nodes = np.zeros((1, 1), dtype=int)
+        else:
+            Discontinuity.additional_dof_velocity_current = np.append(
+                Discontinuity.additional_dof_velocity_current, init, axis=0)
+            Discontinuity.additional_dof_velocity_new = np.append(
+                Discontinuity.additional_dof_velocity_new, init, axis=0)
+            Discontinuity.additional_dof_force = np.append(
+                Discontinuity.additional_dof_force, init, axis=0)
+            Discontinuity.discontinuity_position = np.append(
+                Discontinuity.discontinuity_position, np.zeros((1, 1)), axis=0)
+            Discontinuity.ruptured_cell_id = np.append(
+                Discontinuity.ruptured_cell_id, np.zeros((1, 1), dtype=int), axis=0)
+            Discontinuity.in_nodes = np.append(
+                Discontinuity.in_nodes, np.zeros((1, 1), dtype=int), axis=0)
+            Discontinuity.out_nodes = np.append(
+                Discontinuity.out_nodes, np.zeros((1, 1), dtype=int), axis=0)
+        for ind, disc in enumerate(Discontinuity.discontinuity_list()):
+            disc.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[ind]
+            disc.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[ind]
+            disc.additional_dof_force = Discontinuity.additional_dof_force[ind]
+            disc.discontinuity_position = Discontinuity.discontinuity_position[ind]
+            disc.ruptured_cell_id = Discontinuity.ruptured_cell_id[ind]
+            disc.in_nodes = Discontinuity.in_nodes[ind]
+            disc.out_nodes = Discontinuity.out_nodes[ind]
+
+        self.__mask_in_nodes = mask_in_nodes
+        self.in_nodes[:] = np.where(self.__mask_in_nodes)[0]
+        self.__mask_out_nodes = mask_out_nodes
+        self.out_nodes[:] = np.where(self.__mask_out_nodes)[0]
+
+        # Save the cracked cell id associated to the disc
+        # TODO : pourquoi array ??????
+        self.ruptured_cell_id[:] = cell_id
 
         # Discontinuity cell information
-        self._discontinuity_position = discontinuity_position_in_ruptured_element
-        self.__mask_ruptured_cell = np.zeros(len(self.mask_in_nodes)-1, dtype=bool)
-        self.__mask_ruptured_cell[self._ruptured_cell_id] = True
+        self.discontinuity_position[:] = discontinuity_position_in_ruptured_element
 
         # Indicators of discontinuity state
         self.__mass_matrix_updated = False
 
         # Additional dof representing either the enriched Heaviside value or
         # the field value in the right part of enriched element.
-        self._additional_dof_velocity_current = np.zeros([2, 1])
-        self._additional_dof_velocity_new = np.zeros([2, 1])
         self._additional_dof_coordinates_current = np.zeros([2, 1])
         self._additional_dof_coordinates_new = np.zeros([2, 1])
-        self._additional_dof_force = np.zeros([2, 1])
-
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
@@ -97,7 +135,7 @@ class Discontinuity:
         try_index = 0
         while try_index < Discontinuity.discontinuity_number():
             disc = Discontinuity.discontinuity_list()[try_index]
-            if disc._ruptured_cell_id == cell_id:
+            if disc.get_ruptured_cell_id() == cell_id:
                 return disc
             try_index += 1
         return None
@@ -107,7 +145,7 @@ class Discontinuity:
         """
         Accessor on the relative position of the discontinuity in ruptured element
         """
-        return self._discontinuity_position
+        return self.discontinuity_position[0]
 
     @property
     def label(self):
@@ -150,18 +188,11 @@ class Discontinuity:
         return self.__mass_matrix_updated
 
     @property
-    def ruptured_cell_id(self):
+    def get_ruptured_cell_id(self):
         """
         Returns the id of ruptured cell for the discontinuity
         """
-        return int(self._ruptured_cell_id)
-
-    @property
-    def mask_ruptured_cell(self):
-        """
-        Returns a mask to identify the ruptured cell associated with discontinuity
-        """
-        return self.__mask_ruptured_cell
+        return int(self.ruptured_cell_id[0])
 
     def has_mass_matrix_been_computed(self):
         """
@@ -174,7 +205,7 @@ class Discontinuity:
         Compute the discontinuity opening
         :param node_position: coordinates of the nodes
         """
-        epsilon = self._discontinuity_position
+        epsilon = self.discontinuity_position
         coord_g = node_position[self.mask_in_nodes]
         coord_d = node_position[self.mask_out_nodes]
         enr_coord_g = self._additional_dof_coordinates_new[0]  # x2-
@@ -182,27 +213,6 @@ class Discontinuity:
         xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
         xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
         self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
-
-    @property
-    def discontinuity_position(self) -> float:
-        """
-        Accessor on the discontinuity position
-        """
-        return self._discontinuity_position
-
-    @property
-    def additional_dof_velocity_current(self):
-        """
-        Accessor on the additional nodes velocity at time t-dt/2
-        """
-        return self._additional_dof_velocity_current
-
-    @property
-    def additional_dof_velocity_new(self):
-        """
-        Accessor on the additional nodes velocity at time t+dt/2
-        """
-        return self._additional_dof_velocity_new
 
     @property
     def additional_dof_coordinates_current(self):
@@ -222,22 +232,15 @@ class Discontinuity:
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
         """
-        self._additional_dof_velocity_new = np.copy(self._additional_dof_velocity_current)
+        Discontinuity.additional_dof_velocity_new[self.__label - 1] = np.copy(Discontinuity.additional_dof_velocity_current[self.__label - 1])
         self._additional_dof_coordinates_new = np.copy(self._additional_dof_coordinates_current)
-
-    @property
-    def additional_dof_force(self):
-        """
-        Accessor on the additional nodes force at time t
-        """
-        return self._additional_dof_force
 
     def additional_dof_increment(self):
         """
         Increment the variables of discontinuity
         """
         # Kinematics
-        self._additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
+        self.additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
         self._additional_dof_coordinates_current[:] = self.additional_dof_coordinates_new[:]
         # Cohesive model
         self.cohesive_force.increment_values()

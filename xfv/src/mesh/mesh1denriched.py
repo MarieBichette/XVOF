@@ -202,12 +202,18 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             # Theoretically, we should consider a global resolution of contact in all
             # discontinuities. Here they are treated one after another. Better than nothing but
             # may cause instabilities
-            for disc in Discontinuity.discontinuity_list():
-                contact_force = self.contact_model.compute_contact_force(self.nodes.upundemi,
-                                                                         disc, delta_t)
-                if contact_force != 0.:
-                    # Divide the contact "force" on the nodal forces
-                    self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+            disc_list = Discontinuity.discontinuity_list()
+            nb_disc = len(disc_list)
+            contact_force_arr = np.ndarray((nb_disc,))
+            for ind, disc in enumerate(disc_list):
+                contact_force_arr[ind] = self.contact_model.compute_contact_force(
+                    self.nodes.upundemi, disc, delta_t)
+
+            if disc_list:
+                self.nodes.apply_force_on_discontinuity_boundaries_arr(contact_force_arr * self.nodes.section)
+                # if contact_force != 0.:
+                #     # Divide the contact "force" on the nodal forces
+                #     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
             # Update the kinematics with contact correction
             for disc in Discontinuity.discontinuity_list():
@@ -489,7 +495,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         modified_coord = np.zeros([len(Discontinuity.discontinuity_list()), 3])
         # modified_coord est un array qui contient ruptured_cell_id, left_size, right_size
         for disc in Discontinuity.discontinuity_list():
-            enr_cell = int(disc.ruptured_cell_id)
+            enr_cell = int(disc.get_ruptured_cell_id)
             index = disc.label - 1
             modified_coord[index, 0] = enr_cell
             modified_coord[index, 1] = self.nodes.xt[disc.mask_in_nodes] + \

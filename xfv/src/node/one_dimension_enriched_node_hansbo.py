@@ -76,8 +76,15 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param disc: the current discontinuity
         :param delta_t: float, time step
         """
+        # if inv_matrice_masse.shape != (2, 2):
+        #     inv_matrice_masse = np.diag(inv_matrice_masse)
+        # mat_mul = np.dot(inv_matrice_masse, Discontinuity.additional_dof_force[:])
+        # mat_mul = np.moveaxis(mat_mul, 0, 1)
+        # Discontinuity.additional_dof_velocity_new[:] = (
+        #     Discontinuity.additional_dof_velocity_current[:] + mat_mul * delta_t
+        # )
         inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof
-        disc._additional_dof_velocity_new = \
+        disc.additional_dof_velocity_new[:] = \
             disc.additional_dof_velocity_current + delta_t * \
             multiplication_masse(inv_matrix, disc.additional_dof_force)
 
@@ -93,8 +100,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         node_in = np.where(disc.mask_in_nodes)[0][0]
         node_out = np.where(disc.mask_out_nodes)[0][0]
         mask_disc = [node_in, node_out]
-        disc._additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
-                                                    self._force[mask_disc]) * delta_t
+        disc.additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
+                                                   self._force[mask_disc]) * delta_t
         self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
 
     def infos(self, index):
@@ -169,7 +176,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             # For each discontinuity, compute the contribution of the cracked cell to the classical
             # node forces and compute the enriched node forces for the enriched nodes of
             # the discontinuity
-            cell = disc.ruptured_cell_id
+            cell = disc.get_ruptured_cell_id
             epsilon = disc.position_in_ruptured_element
 
             sigma_minus = contrainte_xx[cell]
@@ -191,11 +198,41 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         Compute the cohesive forces for the enriched nodes
         :param cohesive_model : cohesive model
         """
-        for disc in Discontinuity.discontinuity_list():
+        disc_list = Discontinuity.discontinuity_list()
+        if not disc_list:
+            return
+        nb_disc = len(disc_list)
+
+        applied_force_arr = np.ndarray((nb_disc,))
+        for ind, disc in enumerate(disc_list):
             # Compute cohesive stress
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
-            self.apply_force_on_discontinuity_boundaries(disc, cohesive_stress)
+            applied_force_arr[ind] = self.section * cohesive_stress
+
+        self.apply_force_on_discontinuity_boundaries_arr(applied_force_arr)
+
+    def apply_force_on_discontinuity_boundaries_arr(self, force: np.ndarray) -> None:
+        """
+        Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
+        :param force: value of the force to apply
+        :return:
+        """
+        epsilon_arr = Discontinuity.discontinuity_position
+        f1 = ((1. - epsilon_arr).T * force).T  # F1 # pylint:disable=invalid-name
+        f2 = (epsilon_arr.T * force).T  # F2 # pylint:disable=invalid-name
+        Discontinuity.additional_dof_force[:, 0] += f2  # F2-
+        Discontinuity.additional_dof_force[:, 1] -= f1  # F1+
+        nodes_in = Discontinuity.in_nodes.flatten()
+        nodes_out = Discontinuity.out_nodes.flatten()
+        nb_disc = len(Discontinuity.discontinuity_list())
+        for ind in range(nb_disc):
+            self._force[nodes_in[ind]] += f1[ind]
+            self._force[nodes_out[ind]] -= f2[ind]
+        # For performances reason it could be interesting to do the following
+        # self._force[nodes_in] += f1
+        # self._force[nodes_out] -= f2
+        # but it changes the results due to arithmetic floating point round approximation
 
     def apply_force_on_discontinuity_boundaries(self, disc: Discontinuity, stress: float):
         """

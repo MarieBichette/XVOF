@@ -198,7 +198,7 @@ class OutputManager(metaclass=Singleton):
                         # a un support disc
                         disc_field_collec = []
                         for disc in discontinuity_list:
-                            cell_id = np.where(disc.mask_ruptured_cell)[0][0]
+                            cell_id = disc.get_ruptured_cell_id
                             value = self.get_value_of_field(field, disc)
 
                             if value.shape == (1, ):
