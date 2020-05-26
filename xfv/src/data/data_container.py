@@ -119,14 +119,6 @@ class BoundaryConditionsProps(TypeCheckedDataClass):
     right_BC: BoundaryType  # pylint: disable=invalid-name
 
 
-@dataclass  # pylint: disable=missing-class-docstring
-class DamageModelProps(TypeCheckedDataClass):
-    cohesive_model: CohesiveZoneModelProps
-    name: str
-    # Do not check if name is among authorized values because
-    # it is done in one of the DataContainer's method and
-    # moving the test here, implies to allow the cohesive_model to be None
-
 
 @dataclass  # pylint: disable=missing-class-docstring
 class ContactModelProps(TypeCheckedDataClass):
@@ -183,7 +175,7 @@ class MaterialProps(TypeCheckedDataClass):
     initial_values: InitialValues
     constitutive_model: ConstitutiveModelProps
     failure_model: FailureModelProps
-    damage_model: Optional[DamageModelProps]
+    cohesive_model: Optional[CohesiveZoneModelProps]
     contact_model: Optional[ContactModelProps]
 
 
@@ -342,7 +334,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                          "Please use one of [constant, twostep, ramp, marchtable, creneauramp]")
 
     @staticmethod
-    def __get_damage_props(matter) -> Optional[Tuple[CohesiveZoneModelProps, str]]:
+    def __get_cohesive_model_props(matter) -> Optional[CohesiveZoneModelProps]:
         """
         Returns the values needed to fill the damage model properties:
             - the cohesive model
@@ -390,7 +382,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
                              "Please choose among (linear, bilinear, trilinear)")
 
-        return cohesive_model_props, cohesive_model_name
+        return cohesive_model_props
 
     @staticmethod
     def __get_contact_props(matter) -> Optional[Tuple[ContactProps, str]]:
@@ -417,7 +409,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
     def __fill_in_material_props(self, material) -> Tuple[InitialValues,
                                                           ConstitutiveModelProps,
                                                           FailureModelProps,
-                                                          Optional[DamageModelProps],
+                                                          Optional[CohesiveZoneModelProps],
                                                           Optional[ContactModelProps]]:
         """
         Returns the values needed to fill the material properties:
@@ -443,15 +435,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                                     lump_mass_matrix, failure_criterion, failure_criterion_value,
                                     failure_index)
 
-        # Damage behavior
-        dmg_props = self.__get_damage_props(material)
-        if dmg_props:
-            damage: Optional[DamageModelProps] = DamageModelProps(*dmg_props)
-        else:
-            damage = None
-
-        if failure.failure_treatment is not None and damage and damage.cohesive_model is not None:
-            if (failure_criterion_value != damage.cohesive_model.cohesive_strength and
+        # Surface degradation behavior
+        cohesive_model: Optional[CohesiveZoneModelProps] = self.__get_cohesive_model_props(material)
+        if failure.failure_treatment is not None and cohesive_model is not None:
+            if (failure_criterion_value != cohesive_model.cohesive_strength and
                     isinstance(failure_criterion, MaximalStressCriterionProps)):
                 print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
@@ -463,7 +450,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         else:
             contact = None
 
-        return init, behavior, failure, damage, contact
+        return init, behavior, failure, cohesive_model, contact
 
     def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
                                                     float, float, float]:
