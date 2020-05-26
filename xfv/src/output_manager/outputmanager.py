@@ -6,7 +6,6 @@ import os
 import numpy as np
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
-from xfv.src.discontinuity.discontinuity import Discontinuity
 
 
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields",
@@ -142,7 +141,7 @@ class OutputManager(metaclass=Singleton):
                                 ("discontinuity_opening", "current_value"),
                                 database_names=[database_id])
 
-    def update(self, time, iteration, eps):
+    def update(self, time, iteration, eps, discontinuity_list):
         """
         If the current time given in argument is above the time of next output then
         the manager asks each of its database to save fields. It's the same for
@@ -198,8 +197,8 @@ class OutputManager(metaclass=Singleton):
                         # Permet d'identifier les champs enrichis qui doivent se rapporter
                         # a un support disc
                         disc_field_collec = []
-                        for disc in Discontinuity.discontinuity_list():
-                            cell_id = np.where(disc.mask_ruptured_cell)[0][0]
+                        for disc in discontinuity_list:
+                            cell_id = disc.get_ruptured_cell_id
                             value = self.get_value_of_field(field, disc)
 
                             if value.shape == (1, ):
@@ -217,7 +216,7 @@ class OutputManager(metaclass=Singleton):
                             else:
                                 raise ValueError("Unknown shape to register in database")
 
-                        if len(Discontinuity.discontinuity_list()) > 0:
+                        if len(discontinuity_list) > 0:
                             # sortir le build info de la boucle for des discontinuites permet
                             # d'enregistrer plusieurs discontinuites a la fois. Le seul "probleme"
                             # est que ces disc. ont toutes le meme support de type "Discontinuity"

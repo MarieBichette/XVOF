@@ -90,16 +90,16 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                   'mask_ruptured_cell': np.array([True]),
                   'ruptured_cell_id': np.array([0]),
                   'plastic_cells': np.array([False]),
-                  'additional_dof_velocity_new': np.array([[1., ], [3., ]])
                   }
-        patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
+        self.__patcher = mock.patch('xfv.src.discontinuity.discontinuity.Discontinuity',
                              spec=Discontinuity, **config)
-        self.mock_disc = patcher.start()
+        self.mock_disc = self.__patcher.start()
 
         self.test_data = DataContainer()  # pylint: disable=no-value-for-parameter
 
     def tearDown(self):
-        pass
+        self.__patcher.stop()
+        return super().tearDown()
 
     def test_initialize_additional_dof(self):
         """
@@ -163,6 +163,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         OneDimensionEnrichedHansboCell
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
+        self.mock_disc.get_ruptured_cell_id = 0
         vecteur_vitesse_noeuds = np.array([[0.1, ], [0.15, ]])
         dt = 1.  # pylint: disable=invalid-name
         mock_disc_border_velocity.return_value = np.array([-0.05]), np.array([0.05])
@@ -245,7 +246,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         np.testing.assert_allclose(self.my_cells.additional_dof_stress, exact_stress_droite)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
-    @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_discontinuity_borders_velocity",
+    @mock.patch.object(OneDimensionHansboEnrichedCell, "_compute_discontinuity_borders_velocity",
                        spec=classmethod, new_callable=mock.MagicMock)
     @mock.patch.object(OneDimensionCell, "general_method_deviator_strain_rate",
                        spec=classmethod, new_callable=mock.MagicMock)
@@ -258,15 +259,21 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         node_coord_new = np.array([[0.,], [1.,]])
         node_velocity_new = np.array([[-1, ], [1., ]])
+        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
+        u1d_arr = Discontinuity.additional_dof_velocity_new[:, 1]
+        u2g_arr = Discontinuity.additional_dof_velocity_new[:, 0]
+        Discontinuity.discontinuity_position = np.array([0.5])
+        Discontinuity.in_nodes = np.array([0])
+        Discontinuity.out_nodes = np.array([1])
         u_disc_g = np.array([-0.5])
         u_disc_d = np.array([0.5])
         mock_disc_borders.return_value = u_disc_g, u_disc_d
-        mock_compute_d.return_value = np.array([[1., 1., 1.], ])
+        mock_compute_d.return_value = np.array([[1., 1., 1.], [1., 1., 1.]])
         self.my_cells.plastic_enr_cells = np.array([True])
 
         self.my_cells.compute_enriched_deviatoric_strain_rate(dt, node_coord_new, node_velocity_new)
 
-        mock_disc_borders.assert_called_with(self.mock_disc, node_velocity_new)
+        mock_disc_borders.assert_called_with(np.array([0.5]), node_velocity_new[0], u1d_arr, u2g_arr, node_velocity_new[1])
         mock_compute_d.assert_called()
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
@@ -282,7 +289,8 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         coord_noeud_new = np.array([[-1.], [0, ]])
         vitesse_noeud_new = np.array([[50, ], [-20, ]])
-        mock_compute_d.return_value = np.array([[2., -1, -1]])
+        mock_compute_d.return_value = np.array([[2., -1, -1], [2., -1, -1]])
+        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
 
         self.my_cells.additional_dof_shear_modulus.new_value = np.array([14.])
         self.my_cells._additional_dof_deviatoric_stress_current = np.array([[0., 0., 0.]])

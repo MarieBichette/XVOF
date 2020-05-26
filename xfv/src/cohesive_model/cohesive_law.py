@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Definition of CohesiveZoneLaw class
+Definition of CohesiveLaw class
 """
 import numpy as np
 

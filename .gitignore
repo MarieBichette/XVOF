@@ -81,3 +81,6 @@ tags
 
 # Ignore the .TXT files
 *.TXT
+
+# Ignore perfs measurement files
+*.prof
