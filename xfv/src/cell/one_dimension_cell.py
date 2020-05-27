@@ -22,6 +22,7 @@ except ImportError:
 def consecutive(data: np.ndarray, stepsize=1):
     """
     Return an array in which each item is an array of contiguous values of the original data array
+
     Taken from https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-consecutive-elements-in-a-numpy-array
 
     :param data: the array to be splitted in continuous arrays
@@ -135,12 +136,16 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         Compute the deviator of strain rate tensor (defined at the center of the cell)
         from the coordinates and velocities interpolated at the center of the cell
 
-        :param dt : time step (float)
-        :param x_new : coordinates array at time n+1 of the left and right nodes of each cell
-        Shape is array([coord_node_left, coord_node_right] * nbr_cells in the mask)
-        :param u_new : velocity array at time n+1/2 of the left and right nodes of each cell
-        Shape is array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
-        x_new, u_new shape is (size(mask), 2)
+        :param dt: time step (float)
+        :param x_new: coordinates array at time n+1 of the left and right nodes of each cell.
+        :param u_new: velocity array at time n+1/2 of the left and right nodes of each cell
+
+        .. note::
+            x_new, u_new shape is (size(mask), 2)
+
+            - x_new is an array : array([coord_node_left, coord_node_right] * nbr_cells in the mask)
+            - u_new is an array : array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
+
         """
         # Strain rate tensor
         x_demi = x_new - dt * 0.5 * u_new
@@ -185,14 +190,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of the time step
 
-        :param cfl : nombre cfl
-        :param cfl_pseudo : cfl linked to the shock treatment stability condition
-        :param rho_old : density at time t
-        :param rho_new : density at time t+dt
-        :param size_new : size of element
-        :param sound_speed_new : sound velocity at time t+dt
-        :param pseudo_old : artificial viscosity at time t
-        :param pseudo_new : artificial viscosity at timet+dt
+        :param cfl: nombre cfl
+        :param cfl_pseudo: cfl linked to the shock treatment stability condition
+        :param rho_old: density at time t
+        :param rho_new: density at time t+dt
+        :param size_new: size of element
+        :param sound_speed_new: sound velocity at time t+dt
+        :param pseudo_old: artificial viscosity at time t
+        :param pseudo_new: artificial viscosity at timet+dt
         """
         # pylint: disable=too-many-arguments
         local_cson = np.copy(sound_speed_new) ** 2
@@ -378,8 +383,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of the cells initial length
 
-        :param topology : table to link nodes and cells index
-        :param node_coord : array with nodes coordinates
+        :param topology: table to link nodes and cells index
+        :param node_coord: array with nodes coordinates
 
         :type topology: Topology1D
         :type node_coord: np.array([nbr_nodes, 1], dtype=np.float64)
@@ -396,9 +401,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of the cells length at time t+dt
 
-        :param topology : table to link nodes and cells index
-        :param node_coord : array with the nodes coordinates at time t+dt
-        :param mask : boolean array to identify classical cells
+        :param topology: table to link nodes and cells index
+        :param node_coord: array with the nodes coordinates at time t+dt
+        :param mask: boolean array to identify classical cells
 
         :type topology: Topology1D
         :type node_coord: np.array([nbr_nodes, 1], dtype=np.float64)
@@ -416,7 +421,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of the density of the cells at time t+dt using mass conservation principle
 
-        :param mask : array of boolean to identify classical cells
+        :param mask: array of boolean to identify classical cells
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
@@ -427,8 +432,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of cells artificial viscosity at time t+dt
 
-        :param delta_t : time step
-        :param mask : boolean array to identify classical cells
+        :param delta_t: time step
+        :param mask: boolean array to identify classical cells
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
@@ -441,7 +446,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Computation of the time step in the cells at time t+dt
 
-        :param mask : boolean array to identify classical cells
+        :param mask: boolean array to identify classical cells
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
@@ -460,8 +465,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
 
-        :param shear_modulus_model : model to compute the shear modulus
-        :param mask : mask to identify the cells to be computed
+        :param shear_modulus_model: model to compute the shear modulus
+        :param mask: mask to identify the cells to be computed
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
@@ -471,8 +476,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Compute the yield stress according to plasticity constitutive model in XDATA
 
-        :param yield_stress_model : model to compute the yield stress
-        :param mask : mask to identify the cells to be computed
+        :param yield_stress_model: model to compute the yield stress
+        :param mask: mask to identify the cells to be computed
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
@@ -611,8 +616,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Pressure imposition
 
-        :param ind_cell : index of the cells
-        :param pressure : pressure value to be imposed
+        :param ind_cell: index of the cells
+        :param pressure: pressure value to be imposed
         """
         self.pressure.new_value[ind_cell] = pressure
         self._deviatoric_stress_new[ind_cell, :] = np.ones([3]) * pressure

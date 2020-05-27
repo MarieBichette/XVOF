@@ -23,13 +23,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                                                 u1d: np.array, u2g: np.array, u2d: np.array) -> Tuple[np.array]:
         """
         Compute the velocities of points at the discontinuity border
+
         :param epsilon: relative position of the discontinuity inside the cell
-        :param u1g : classic velocity on left node (inside node)
-        :param u1d : additional dof velocity on left node
-        :param u2g : additional dof velocity on right node
-        :param u2d : classical velocity on right node (outside)
-        :return ug : velocity of the discontinuity left boundary
-        :return ud : velocity of the discontinuity right boundary
+        :param u1g: classic velocity on left node (inside node)
+        :param u1d: additional dof velocity on left node
+        :param u2g: additional dof velocity on right node
+        :param u2d: classical velocity on right node (outside)
+        :return ug: velocity of the discontinuity left boundary
+        :return ud: velocity of the discontinuity right boundary
         """
         ug = u2g * epsilon + u1g * (1. - epsilon)  # pylint: disable=invalid-name
         ud = u2d * epsilon + u1d * (1. - epsilon)  # pylint: disable=invalid-name
@@ -39,10 +40,11 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def compute_discontinuity_borders_velocity(cls, disc, node_velocity):
         """
         Compute the velocities of points at the discontinuity border
+
         :param disc: Discontinuity to be considered
-        :param node_velocity : array with nodes velocity
-        :return ug : velocity of the discontinuity left boundary
-        :return ud : velocity of the discontinuity right boundary
+        :param node_velocity: array with nodes velocity
+        :return ug: velocity of the discontinuity left boundary
+        :return ud: velocity of the discontinuity right boundary
         """
         epsilon = disc.position_in_ruptured_element
         u1g = node_velocity[disc.mask_in_nodes]
@@ -56,6 +58,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def __init__(self, number_of_elements: int):
         """
         Build the class OneDimensionHansboEnrichedCell
+
         :param number_of_elements: total number of cells
         """
         super(OneDimensionHansboEnrichedCell, self).__init__(number_of_elements)
@@ -107,7 +110,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def initialize_additional_cell_dof(self, disc: Discontinuity):
         """
         Values to initialize the right part fields when discontinuity disc is created
-        :param disc : the current discontinuity
+
+        :param disc: the current discontinuity
         """
         enr_cell = disc.get_ruptured_cell_id
         # Initialization of the current field value
@@ -154,10 +158,11 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def reconstruct_enriched_hydro_field(self, classical_field: Field, enriched_field_name: str):
         """
         True field reconstruction from the classical and enriched fields
+
         :param classical_field: classical field
         :param enriched_field_name: name of the enriched field
         :return: complete field
-        :rtype np.array
+        :rtype: np.array
         """
         # To build the coordinates of cell field, the cracked cells of discontinuities must be
         # sorted by cell_id in order to manage shifts
@@ -176,10 +181,11 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                                           enriched_field_name: str):
         """
         True field reconstruction from the classical and enriched fields
+
         :param classical_field: classical field
         :param enriched_field_name: name of the enriched field
         :return: complete field
-        :rtype np.array
+        :rtype: np.array
         """
         # To build the coordinates of cell field, the cracked cells of discontinuities must be
         # sorted by cell_id in order to manage shifts
@@ -443,7 +449,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         Compute pressure, internal energy and sound velocity in left and right parts of
         the enriched elements
-        :param delta_t : time step
+
+        :param delta_t: time step
         """
         target_model = self.data.material_target.constitutive_model
         # Fracture cannot occur on the projectile => check only the  target model to know if
@@ -486,6 +493,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def compute_enriched_elements_new_part_size(self, time_step, node_velocity):
         """
         Compute the new size of each ruptured element part (left size and right size)
+
         :param time_step: time step
         :param node_velocity: array, node velocities
         """
@@ -522,6 +530,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def compute_enriched_elements_new_pseudo(self, delta_t):
         """
         Compute the new artificial viscosity of the enriched_cells
+
         :param delta_t: time_step
         """
         mask = self.enriched
@@ -573,9 +582,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         Compute the deviatoric strain rate for enriched cells
 
-        :param dt : time step
-        :param node_coord_new : array, new nodes coordinates
-        :param node_velocity_new : array, new nodes velocity
+        :param dt: time step
+        :param node_coord_new: array, new nodes coordinates
+        :param node_velocity_new: array, new nodes velocity
         """
         disc_list = Discontinuity.discontinuity_list()
         if not disc_list:
@@ -612,9 +621,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                                                   delta_t):
         """
         Compute the deviatoric part of the stress tensor
-        :param node_coord_new : array, new nodes coordinates
-        :param node_velocity_new : array, new nodes velocity
-        :param delta_t : float, time step
+
+        :param node_coord_new: array, new nodes coordinates
+        :param node_velocity_new: array, new nodes velocity
+        :param delta_t: float, time step
         """
         self.compute_enriched_deviatoric_strain_rate(delta_t, node_coord_new, node_velocity_new)
         # Compute rotation rate tensor : W = 0 en 1D
@@ -648,7 +658,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def compute_enriched_shear_modulus(self, shear_modulus_model):
         """
         Compute the shear modulus for ruptured cell
-        :param shear_modulus_model : model to compute the shear modulus
+
+        :param shear_modulus_model: model to compute the shear modulus
         """
         mask = self.enriched
         if not mask.any():
@@ -658,9 +669,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
     def apply_plasticity_enr(self, mask_mesh, delta_t):
         """
-        Apply plasticity treatment if criterion is activated :\
-        - compute yield stress\
-        - tests plasticity criterion\
+        Apply plasticity treatment if criterion is activated :
+
+        - compute yield stress
+        - tests plasticity criterion
         - compute plastic strain rate for plastic cells
         """
         mask = np.logical_and(self.plastic_enr_cells, mask_mesh)
@@ -683,7 +695,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
     def compute_enriched_yield_stress(self, yield_stress_model):
         """
         Compute the yield stress for ruptured cells
-        :param yield_stress_model : model to compute the yield stress
+
+        :param yield_stress_model: model to compute the yield stress
         """
         mask = self.enriched
         self.additional_dof_yield_stress.new_value[mask] = \

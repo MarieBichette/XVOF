@@ -18,6 +18,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
                  initial_velocities: np.array, section=1.):
         """
         Build the class OneDimensionHansboEnrichedNode
+
         :param nbr_of_nodes: number of nodes
         :param initial_positions: initial coordinates of nodes
         :param initial_velocities: initial velocities of nodes
@@ -30,9 +31,10 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     @property
     def enrichment_concerned(self):
         """
+        By definition, the nodes concerned by enrichment have non null enriched shape function on
+        their support
+
         :return: boolean mask indicating which nodes are concerned by enrichment
-        (fonctions de formes enrichies N* non nulles sur leur support)
-        en 1D : correspond aux noeuds enrichis et les premiers voisins.
         """
         return ~ self.classical
 
@@ -73,16 +75,10 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def compute_additional_dof_new_velocity(self, disc, delta_t):
         """
         Compute the new velocity enriched degree of freedom
+
         :param disc: the current discontinuity
         :param delta_t: float, time step
         """
-        # if inv_matrice_masse.shape != (2, 2):
-        #     inv_matrice_masse = np.diag(inv_matrice_masse)
-        # mat_mul = np.dot(inv_matrice_masse, Discontinuity.additional_dof_force[:])
-        # mat_mul = np.moveaxis(mat_mul, 0, 1)
-        # Discontinuity.additional_dof_velocity_new[:] = (
-        #     Discontinuity.additional_dof_velocity_current[:] + mat_mul * delta_t
-        # )
         inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof
         disc.additional_dof_velocity_new[:] = \
             disc.additional_dof_velocity_current + delta_t * \
@@ -93,6 +89,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         Compute the coupled terms between classical and enriched dof due to non diagonal
         complete mass matrix. Takes into account nodes concerned by enrichment and
         not only the enriched nodes
+
         :param disc: the current discontinuity
         :param delta_t: time step
         """
@@ -130,6 +127,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def initialize_additional_node_dof(self, disc: Discontinuity):
         """
         Initialialise les ddl enrichis aux noeuds
+
         :param disc: Discontinuity
         """
         # Warning : enr_node_2 (2-) has the same velocity / coordinates as node 2 (node out)
@@ -150,7 +148,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
-        :param disc : discontinuity to be considered
+
+        :param disc: discontinuity to be considered
         """
         self._upundemi[disc.mask_disc_nodes] = np.copy(self._umundemi[disc.mask_disc_nodes])
         self._xtpdt[disc.mask_disc_nodes] = np.copy(self._xt[disc.mask_disc_nodes])
@@ -159,6 +158,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def enriched_nodes_compute_new_coordinates(disc: Discontinuity, delta_t: float):
         """
         Compute the new nodes coordinates after enrichment
+
         :param disc: current discontinuity
         :param delta_t: time step
         """
@@ -169,8 +169,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         """
         Compute the enriched force on enriched nodes and apply correction for classical
         force on enriched nodes (classical ddl)
-        :param contrainte_xx : vecteur contrainte xx, array de taille (nb_cell, 1)
-        :param enr_contrainte_xx : vecteur contrainte xx enrichie, array de taille (nb_cell, 1)
+
+        :param contrainte_xx: vecteur contrainte xx, array de taille (nb_cell, 1)
+        :param enr_contrainte_xx: vecteur contrainte xx enrichie, array de taille (nb_cell, 1)
         """
         for disc in Discontinuity.discontinuity_list():
             # For each discontinuity, compute the contribution of the cracked cell to the classical
@@ -196,7 +197,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def compute_enriched_nodes_cohesive_forces(self, cohesive_model):
         """
         Compute the cohesive forces for the enriched nodes
-        :param cohesive_model : cohesive model
+
+        :param cohesive_model: cohesive model
         """
         disc_list = Discontinuity.discontinuity_list()
         if not disc_list:
@@ -215,8 +217,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def apply_force_on_discontinuity_boundaries_arr(self, force: np.ndarray) -> None:
         """
         Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
+
         :param force: value of the force to apply
-        :return:
         """
         epsilon_arr = Discontinuity.discontinuity_position
         f1 = ((1. - epsilon_arr).T * force).T  # F1 # pylint:disable=invalid-name
@@ -237,9 +239,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
     def apply_force_on_discontinuity_boundaries(self, disc: Discontinuity, stress: float):
         """
         Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
+
         :param disc: current discontinuity
         :param stress: value of the force to apply
-        :return:
         """
         applied_force = self.section * stress
         epsilon = disc.position_in_ruptured_element

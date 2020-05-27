@@ -38,6 +38,7 @@ class EnrichElement(RuptureTreatment):
     def apply_treatment(self, cells, ruptured_cells, nodes, topology, time):
         """
         Apply the rupture treatment by enriching one of the cells that is marked as ruptured cells
+
         :param cells: array of all cells
         :param ruptured_cells: boolean array marking the ruptured cells
         :param nodes: array of all nodes
@@ -90,6 +91,7 @@ class EnrichElement(RuptureTreatment):
     def initialize_cracked_cell_size(self, cells, cell_tb_enr):
         """
         Compute the size of the each part of the newly enriched cell
+
         :param cells: cell collection
         :param cell_tb_enr: id if the cell to be enriched
         :return:

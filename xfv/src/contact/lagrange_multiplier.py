@@ -23,9 +23,10 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
                               delta_t: float) -> float:
         """
         Checks if contact and apply correction
+
         :param node_velocity: node velocity array
         :param disc: discontinuity to examine
-        :param delta_t : time step
+        :param delta_t: time step
         """
         if disc.discontinuity_opening.new_value >= 0.:
             return 0.
@@ -40,6 +41,7 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
         Compute the lagrangian multiplier representing the contact force to apply to ensure the
         non penetration of the discontinuity boundaries
         Computed from Non Linear Finite Element for Continua And Structure, T. Belytschko, p.610
+
         :param node_velocity: array of the predicted velocities
         :param disc: current discontinuity
         :param time_step: time step

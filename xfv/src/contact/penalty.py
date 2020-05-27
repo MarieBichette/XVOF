@@ -14,6 +14,7 @@ class PenaltyContact(ContactBase):  # pylint: disable=too-few-public-methods
     def __init__(self, penalty_stiffness):
         """
         Constructor
+
         :param penalty_stiffness: stiffness of the penalty method
         """
         super(PenaltyContact, self).__init__()
@@ -23,9 +24,10 @@ class PenaltyContact(ContactBase):  # pylint: disable=too-few-public-methods
                               delta_t: float) -> float:
         """
         Checks if contact and apply correction
+
         :param node_velocity: node velocity array
         :param disc: discontinuity to examine
-        :param delta_t : time step
+        :param delta_t: time step
         """
         opening = disc.discontinuity_opening.new_value
         contact_force = self._compute_penalty_force(opening)
@@ -34,6 +36,7 @@ class PenaltyContact(ContactBase):  # pylint: disable=too-few-public-methods
     def _compute_penalty_force(self, opening) -> float:
         """
         Compute the penalty force to apply in order to penalize contact
+
         :param opening: discontinuity opening
         :return force = float
         """

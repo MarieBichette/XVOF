@@ -336,7 +336,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         Compute the new value of artificial viscosity in the cells
 
-        :param time_step : time step
+        :param time_step: time step
         :param mask: boolean array to identify cells to be computed
 
         :type time_step: float

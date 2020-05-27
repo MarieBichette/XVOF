@@ -27,6 +27,7 @@ class Discontinuity:
                  enriched_mass_matrix_props: EnrichedMassMatrixProps):
         """
         Initializing a single discontinuity after enrichment.
+
         :param cell_id: id of the cracked cell
         :param mask_in_nodes: enriched nodes on the left of the discontinuity
         :param mask_out_nodes: enriched nodes on the right of the discontinuity
@@ -126,6 +127,7 @@ class Discontinuity:
     def get_discontinuity_associated_with_cell(cls, cell_id: int):
         """
         Loop on the discontinuities collection to find the one that contain the cell cell_id
+
         :param cell_id: cell id to find
         :return: Discontinuity or None if no disc is found
         """
@@ -151,6 +153,7 @@ class Discontinuity:
     def label(self):
         """
         Accessor on label variable
+
         :return: label
         """
         return self.__label
@@ -159,6 +162,7 @@ class Discontinuity:
     def mask_in_nodes(self):
         """
         Accessor on the mask on the nodes "in" the discontinuity
+
         :return: the mask on the nodes "in" the discontinuity
         """
         return self.__mask_in_nodes
@@ -167,6 +171,7 @@ class Discontinuity:
     def mask_out_nodes(self):
         """
         Accessor on the mask on the nodes "out" the discontinuity
+
         :return: the mask on the nodes "out" the discontinuity
         """
         return self.__mask_out_nodes
@@ -175,6 +180,7 @@ class Discontinuity:
     def mask_disc_nodes(self):
         """
         Accessor on the mask on the nodes of the discontinuity
+
         :return: the mask on the nodes "concerned" by the discontinuity
         """
         return np.logical_or(self.__mask_in_nodes, self.__mask_out_nodes)
@@ -183,6 +189,7 @@ class Discontinuity:
     def mass_matrix_updated(self):
         """
         Accessor on the boolean that indicates if the mass matrix has been computed
+
         :return: the boolean that indicates if the mass matrix has been computed
         """
         return self.__mass_matrix_updated
@@ -203,6 +210,7 @@ class Discontinuity:
     def compute_discontinuity_new_opening(self, node_position: np.array):
         """
         Compute the discontinuity opening
+
         :param node_position: coordinates of the nodes
         """
         epsilon = self.discontinuity_position

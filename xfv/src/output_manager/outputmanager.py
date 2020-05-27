@@ -57,7 +57,8 @@ class OutputManager(metaclass=Singleton):
                             database_id):
         """
         Add all fields to the manager.
-        :param enrichment_registration : bool to control if the enriched fields should be registered
+
+        :param enrichment_registration: bool to control if the enriched fields should be registered
         :param cells: cells from which fields must be printed
         :param nodes: nodes from which fields must be printed
         :param database_id: identifier of the database
@@ -235,6 +236,9 @@ class OutputManager(metaclass=Singleton):
     def get_value_of_field(self, field: Field, owner) -> np.array:
         """
         Get the np.array associated to the field following all the attribute names list
+
+        :param field: field to be extracted
+        :param owner: object who supports the fields
         """
         value = getattr(owner, field.attr_name[0])
         for attr_name in field.attr_name[1:]:
