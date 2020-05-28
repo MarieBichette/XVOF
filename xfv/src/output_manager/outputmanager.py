@@ -134,6 +134,9 @@ class OutputManager(metaclass=Singleton):
             self.register_field("AdditionalNodeVelocity", None,
                                 ("enr_velocity_current",),
                                 database_names=[database_id])
+            self.register_field("AdditionalNodeCoordinates", None,
+                                ("enr_coordinates_current",),
+                                database_names=[database_id])
             # Cohesive fields -> disc support
             self.register_field("AdditionalCohesiveForce", None,
                                 ("cohesive_force", "current_value"),
