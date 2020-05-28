@@ -101,38 +101,38 @@ class OutputManager(metaclass=Singleton):
         if enrichment_registration:
             # Enriched cell field -> cell support
             self.register_field("AdditionalPressure", cells,
-                                ("additional_dof_pressure", "current_value"),
+                                ("enr_pressure", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalDensity", cells,
-                                ("additional_dof_density", "current_value"),
+                                ("enr_density", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalInternalEnergy", cells,
-                                ("additional_dof_energy", "current_value"),
+                                ("enr_energy", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalArtificialViscosity", cells,
-                                ("additional_dof_artificial_viscosity", "current_value"),
+                                ("enr_artificial_viscosity", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalSoundVelocity", cells,
-                                ("additional_dof_sound_velocity", "current_value"),
+                                ("enr_sound_velocity", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalLeftSize", cells, ("left_part_size", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalRightSize", cells, ("right_part_size", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalStress", cells, ("additional_dof_stress",),
+            self.register_field("AdditionalStress", cells, ("enr_stress",),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalDeviatoricStress", cells,
-                                ("additional_dof_deviatoric_stress_current",),
+                                ("enr_deviatoric_stress_current",),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalEquivalentPlasticStrainRate", cells,
-                                ("additional_dof_equivalent_plastic_strain_rate",),
+                                ("enr_equivalent_plastic_strain_rate",),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalPlasticStrainRate", cells,
-                                ("additional_dof_plastic_strain_rate",),
+                                ("enr_plastic_strain_rate",),
                                 database_names=[database_id], indexes=enriched_cells)
             # Enriched node fields -> disc support
             self.register_field("AdditionalNodeVelocity", None,
-                                ("additional_dof_velocity_current",),
+                                ("enr_velocity_current",),
                                 database_names=[database_id])
             # Cohesive fields -> disc support
             self.register_field("AdditionalCohesiveForce", None,

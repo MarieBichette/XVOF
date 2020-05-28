@@ -14,9 +14,15 @@ class Discontinuity:
 
     # A list of discontinuities
     __discontinuity_list = []
-    additional_dof_velocity_current = np.zeros([], dtype=float)
-    additional_dof_velocity_new = np.zeros([], dtype=float)
-    additional_dof_force = np.zeros([], dtype=float)
+
+    # Enriched variables
+    enr_velocity_current = np.zeros([], dtype=float)
+    enr_velocity_new = np.zeros([], dtype=float)
+    enr_coordinates_current = np.zeros([], dtype=float)
+    enr_coordinates_new = np.zeros([], dtype=float)
+    enr_force = np.zeros([], dtype=float)
+
+    # Information about the discontinuities
     discontinuity_position = np.zeros([], dtype=float)
     ruptured_cell_id = np.zeros([], dtype=int)
     in_nodes = np.zeros([], dtype=int)
@@ -48,20 +54,25 @@ class Discontinuity:
         print("Building discontinuity number {:d}".format(self.__label))
         init = np.zeros((1, 2, 1))
         if self.__label == 1:
-            Discontinuity.additional_dof_velocity_current = np.copy(init)
-            Discontinuity.additional_dof_velocity_new = np.copy(init)
-            Discontinuity.additional_dof_force = np.copy(init)
+            Discontinuity.enr_velocity_current = np.copy(init)
+            Discontinuity.enr_velocity_new = np.copy(init)
+            Discontinuity.enr_coordinates_current = np.copy(init)
+            Discontinuity.enr_coordinates_new = np.copy(init)
+            Discontinuity.enr_force = np.copy(init)
             Discontinuity.discontinuity_position = np.zeros((1, 1))
             Discontinuity.ruptured_cell_id = np.zeros((1, 1), dtype=int)
             Discontinuity.in_nodes = np.zeros((1, 1), dtype=int)
             Discontinuity.out_nodes = np.zeros((1, 1), dtype=int)
         else:
-            Discontinuity.additional_dof_velocity_current = np.append(
-                Discontinuity.additional_dof_velocity_current, init, axis=0)
-            Discontinuity.additional_dof_velocity_new = np.append(
-                Discontinuity.additional_dof_velocity_new, init, axis=0)
-            Discontinuity.additional_dof_force = np.append(
-                Discontinuity.additional_dof_force, init, axis=0)
+            Discontinuity.enr_velocity_current = np.append(
+                Discontinuity.enr_velocity_current, init, axis=0)
+            Discontinuity.enr_velocity_new = np.append(
+                Discontinuity.enr_velocity_new, init, axis=0)
+            Discontinuity.enr_coordinates_current = np.append(
+                Discontinuity.enr_coordinates_current, init, axis=0)
+            Discontinuity.enr_coordinates_new = np.append(
+                Discontinuity.enr_coordinates_new, init, axis=0)
+            Discontinuity.enr_force = np.append(Discontinuity.enr_force, init, axis=0)
             Discontinuity.discontinuity_position = np.append(
                 Discontinuity.discontinuity_position, np.zeros((1, 1)), axis=0)
             Discontinuity.ruptured_cell_id = np.append(
@@ -71,9 +82,11 @@ class Discontinuity:
             Discontinuity.out_nodes = np.append(
                 Discontinuity.out_nodes, np.zeros((1, 1), dtype=int), axis=0)
         for ind, disc in enumerate(Discontinuity.discontinuity_list()):
-            disc.additional_dof_velocity_current = Discontinuity.additional_dof_velocity_current[ind]
-            disc.additional_dof_velocity_new = Discontinuity.additional_dof_velocity_new[ind]
-            disc.additional_dof_force = Discontinuity.additional_dof_force[ind]
+            disc.enr_velocity_current = Discontinuity.enr_velocity_current[ind]
+            disc.enr_velocity_new = Discontinuity.enr_velocity_new[ind]
+            disc.enr_coordinates_current = Discontinuity.enr_coordinates_current[ind]
+            disc.enr_coordinates_new = Discontinuity.enr_coordinates_new[ind]
+            disc.enr_force = Discontinuity.enr_force[ind]
             disc.discontinuity_position = Discontinuity.discontinuity_position[ind]
             disc.ruptured_cell_id = Discontinuity.ruptured_cell_id[ind]
             disc.in_nodes = Discontinuity.in_nodes[ind]
@@ -94,10 +107,6 @@ class Discontinuity:
         # Indicators of discontinuity state
         self.__mass_matrix_updated = False
 
-        # Additional dof representing either the enriched Heaviside value or
-        # the field value in the right part of enriched element.
-        self._additional_dof_coordinates_current = np.zeros([2, 1])
-        self._additional_dof_coordinates_new = np.zeros([2, 1])
         # Damage indicators with cohesive zone model
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
@@ -216,40 +225,34 @@ class Discontinuity:
         epsilon = self.discontinuity_position
         coord_g = node_position[self.mask_in_nodes]
         coord_d = node_position[self.mask_out_nodes]
-        enr_coord_g = self._additional_dof_coordinates_new[0]  # x2-
-        enr_coord_d = self._additional_dof_coordinates_new[1]  # x1+
+        enr_coord_g = self.enr_coordinates_new[0]  # x2-
+        enr_coord_d = self.enr_coordinates_new[1]  # x1+
         xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
         xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
         self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
-
-    @property
-    def additional_dof_coordinates_current(self):
-        """
-        Accessor on the additional nodes coordinates at time t
-        """
-        return self._additional_dof_coordinates_current
-
-    @property
-    def additional_dof_coordinates_new(self):
-        """
-        Accessor on the additional nodes coordinates at time t+dt
-        """
-        return self._additional_dof_coordinates_new
 
     def reinitialize_kinematics_after_contact(self):
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
         """
-        Discontinuity.additional_dof_velocity_new[self.__label - 1] = np.copy(Discontinuity.additional_dof_velocity_current[self.__label - 1])
-        self._additional_dof_coordinates_new = np.copy(self._additional_dof_coordinates_current)
+        # Discontinuity.enr_velocity_new[self.__label - 1] = np.copy(
+        #     Discontinuity.enr_velocity_current[self.__label - 1])
+        # Discontinuity.enr_coordinates_new[self.__label - 1] = np.copy(
+        #    Discontinuity.enr_coordinates_current[self.__label - 1])
+        # self.enr_velocity_new = np.copy(self.enr_velocity_current)
+        # self.enr_coordinates_new = np.copy(self.enr_coordinates_current)
+        # self.enr_velocity_new[:] = np.copy(self.enr_velocity_current)
+        # self.enr_coordinates_new[:] = np.copy(self.enr_coordinates_current)
+        self.enr_velocity_new[:] = self.enr_velocity_current[:]
+        self.enr_coordinates_new[:] = self.enr_coordinates_current[:]
 
     def additional_dof_increment(self):
         """
         Increment the variables of discontinuity
         """
         # Kinematics
-        self.additional_dof_velocity_current[:] = self.additional_dof_velocity_new[:]
-        self._additional_dof_coordinates_current[:] = self.additional_dof_coordinates_new[:]
+        self.enr_velocity_current[:] = self.enr_velocity_new[:]
+        self.enr_coordinates_current[:] = self.enr_coordinates_new[:]
         # Cohesive model
         self.cohesive_force.increment_values()
         self.damage_variable.increment_values()

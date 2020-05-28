@@ -216,10 +216,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
                     self.nodes.upundemi, disc, delta_t)
 
             if disc_list:
-                self.nodes.apply_force_on_discontinuity_boundaries_arr(contact_force_arr * self.nodes.section)
-                # if contact_force != 0.:
-                #     # Divide the contact "force" on the nodal forces
-                #     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
+                self.nodes.apply_force_on_discontinuity_boundaries_arr(
+                    contact_force_arr * self.nodes.section)
 
             # Update the kinematics with contact correction
             for disc in Discontinuity.discontinuity_list():
@@ -300,7 +298,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         """
         self.nodes.compute_new_force(self.__topology, self.cells.stress_xx, self.cells.classical)
         self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx,
-                                                    self.cells.additional_dof_stress_xx)
+                                                    self.cells.enr_stress_xx)
 
     def compute_new_cohesive_forces(self):
         """

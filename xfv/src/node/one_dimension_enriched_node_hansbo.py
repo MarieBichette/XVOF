@@ -80,9 +80,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param delta_t: float, time step
         """
         inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof
-        disc.additional_dof_velocity_new[:] = \
-            disc.additional_dof_velocity_current + delta_t * \
-            multiplication_masse(inv_matrix, disc.additional_dof_force)
+        disc.enr_velocity_new[:] = \
+            disc.enr_velocity_current + delta_t * \
+            multiplication_masse(inv_matrix, disc.enr_force)
 
     def coupled_enrichment_terms_compute_new_velocity(self, disc, delta_t):
         """
@@ -97,9 +97,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         node_in = np.where(disc.mask_in_nodes)[0][0]
         node_out = np.where(disc.mask_out_nodes)[0][0]
         mask_disc = [node_in, node_out]
-        disc.additional_dof_velocity_new += np.dot(inv_matrix.transpose(),
-                                                   self._force[mask_disc]) * delta_t
-        self._upundemi[mask_disc] += np.dot(inv_matrix, disc.additional_dof_force) * delta_t
+        disc.enr_velocity_new += np.dot(inv_matrix.transpose(),
+                                        self._force[mask_disc]) * delta_t
+        self._upundemi[mask_disc] += np.dot(inv_matrix, disc.enr_force) * delta_t
 
     def infos(self, index):
         """
@@ -117,11 +117,11 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
                      if index in [d.mask_in_nodes, d.mask_out_nodes]]:
             recal_ind = (disc.mask_out_nodes == index)
             message += "==> additional degree of freedom for velocity at t-1/2 = {}\n". \
-                format(disc.additional_dof_velocity_current[recal_ind])
+                format(disc.enr_velocity_current[recal_ind])
             message += "==> additional degree of freedom for velocity at t+1/2 = {}\n". \
-                format(disc.additional_dof_velocity_current[recal_ind])
+                format(disc.enr_velocity_current[recal_ind])
             message += "==> additional degree of freedom for force = {}\n". \
-                format(disc.additional_dof_force.current_value[recal_ind])
+                format(disc.enr_force.current_value[recal_ind])
         print(message)
 
     def initialize_additional_node_dof(self, disc: Discontinuity):
@@ -135,15 +135,15 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         # Consequence => initialization with array is impossible => node by node initialization
 
         # Velocity
-        disc.additional_dof_velocity_current[0] = np.copy(self.umundemi[disc.mask_out_nodes])  # 2-
-        disc.additional_dof_velocity_current[1] = np.copy(self.umundemi[disc.mask_in_nodes])  # 1+
-        disc.additional_dof_velocity_new[0] = np.copy(self.upundemi[disc.mask_out_nodes])  # 2-
-        disc.additional_dof_velocity_new[1] = np.copy(self.upundemi[disc.mask_in_nodes])  # 1+
+        disc.enr_velocity_current[0] = np.copy(self.umundemi[disc.mask_out_nodes])  # 2-
+        disc.enr_velocity_current[1] = np.copy(self.umundemi[disc.mask_in_nodes])  # 1+
+        disc.enr_velocity_new[0] = np.copy(self.upundemi[disc.mask_out_nodes])  # 2-
+        disc.enr_velocity_new[1] = np.copy(self.upundemi[disc.mask_in_nodes])  # 1+
         # Coordinates
-        disc.additional_dof_coordinates_current[0] = np.copy(self.xt[disc.mask_out_nodes])  # 2-
-        disc.additional_dof_coordinates_current[1] = np.copy(self.xt[disc.mask_in_nodes])  # 1+
-        disc.additional_dof_coordinates_new[0] = np.copy(self.xtpdt[disc.mask_out_nodes])  # 2-
-        disc.additional_dof_coordinates_new[1] = np.copy(self.xtpdt[disc.mask_in_nodes])  # 1+
+        disc.enr_coordinates_current[0] = np.copy(self.xt[disc.mask_out_nodes])  # 2-
+        disc.enr_coordinates_current[1] = np.copy(self.xt[disc.mask_in_nodes])  # 1+
+        disc.enr_coordinates_new[0] = np.copy(self.xtpdt[disc.mask_out_nodes])  # 2-
+        disc.enr_coordinates_new[1] = np.copy(self.xtpdt[disc.mask_in_nodes])  # 1+
 
     def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
         """
@@ -162,8 +162,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param disc: current discontinuity
         :param delta_t: time step
         """
-        disc._additional_dof_coordinates_new = (disc.additional_dof_coordinates_current +
-                                                delta_t * disc.additional_dof_velocity_new)
+        disc.enr_coordinates_new[:] = (disc.enr_coordinates_current + delta_t * disc.enr_velocity_new)
 
     def compute_enriched_nodes_new_force(self, contrainte_xx: np.array, enr_contrainte_xx):
         """
@@ -189,8 +188,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             f_node_right_minus = - sigma_minus * epsilon
             f_node_left_plus = sigma_plus * (1 - epsilon)
 
-            disc.additional_dof_force[0] = f_node_right_minus * self.section  # F2-
-            disc.additional_dof_force[1] = f_node_left_plus * self.section  # F1+
+            disc.enr_force[0] = f_node_right_minus * self.section  # F2-
+            disc.enr_force[1] = f_node_left_plus * self.section  # F1+
             self._force[disc.mask_in_nodes] += f_node_left_minus * self.section  # F1-
             self._force[disc.mask_out_nodes] += f_node_right_plus * self.section  # F2+
 
@@ -223,31 +222,12 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         epsilon_arr = Discontinuity.discontinuity_position
         f1 = ((1. - epsilon_arr).T * force).T  # F1 # pylint:disable=invalid-name
         f2 = (epsilon_arr.T * force).T  # F2 # pylint:disable=invalid-name
-        Discontinuity.additional_dof_force[:, 0] += f2  # F2-
-        Discontinuity.additional_dof_force[:, 1] -= f1  # F1+
+        Discontinuity.enr_force[:, 0] += f2  # F2-
+        Discontinuity.enr_force[:, 1] -= f1  # F1+
+
         nodes_in = Discontinuity.in_nodes.flatten()
         nodes_out = Discontinuity.out_nodes.flatten()
         nb_disc = len(Discontinuity.discontinuity_list())
         for ind in range(nb_disc):
-            self._force[nodes_in[ind]] += f1[ind]
-            self._force[nodes_out[ind]] -= f2[ind]
-        # For performances reason it could be interesting to do the following
-        # self._force[nodes_in] += f1
-        # self._force[nodes_out] -= f2
-        # but it changes the results due to arithmetic floating point round approximation
-
-    def apply_force_on_discontinuity_boundaries(self, disc: Discontinuity, stress: float):
-        """
-        Transport the force to apply on discontinuity boundaries on the classical and enriched nodes
-
-        :param disc: current discontinuity
-        :param stress: value of the force to apply
-        """
-        applied_force = self.section * stress
-        epsilon = disc.position_in_ruptured_element
-
-        # Apply cohesive stress on enriched nodes
-        self._force[disc.mask_in_nodes] += (1. - epsilon) * applied_force  # F1-
-        disc.additional_dof_force[np.array([True, False])] += epsilon * applied_force  # F2-
-        self._force[disc.mask_out_nodes] -= epsilon * applied_force  # F2+
-        disc.additional_dof_force[np.array([False, True])] -= (1. - epsilon) * applied_force  # F1+
+            self._force[nodes_in[ind]] += f1[ind]  # F1-
+            self._force[nodes_out[ind]] -= f2[ind]  # F2+

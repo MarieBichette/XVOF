@@ -59,8 +59,8 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
         node_mass_d = m_1_enr * m_2 / (m_2 * (1 - epsilon) + m_1_enr * epsilon)
         # Compute the velocities of the discontinuity boundaries
         velocity_g = ((1 - epsilon) * node_velocity[disc.mask_in_nodes]
-                      + epsilon * disc.additional_dof_velocity_new[0])
-        velocity_d = ((1 - epsilon) * disc.additional_dof_velocity_new[1]
+                      + epsilon * disc.enr_velocity_new[0])
+        velocity_d = ((1 - epsilon) * disc.enr_velocity_new[1]
                       + epsilon * node_velocity[disc.mask_out_nodes])
         # Compute the contact force in order to have ug = ud afterward
         lambda_multiplier = (velocity_d - velocity_g).flatten() / (
