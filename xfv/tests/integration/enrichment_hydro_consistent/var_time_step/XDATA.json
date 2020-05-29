@@ -55,6 +55,9 @@
       "path": "all_fields.hdf5",
       "time-period": 2e-07
       }
+    ],
+    "variables": [
+      "All"
     ]
   }
 }
