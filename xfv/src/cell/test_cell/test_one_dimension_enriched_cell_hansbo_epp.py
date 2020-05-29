@@ -60,23 +60,23 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.my_cells._deviatoric_stress_new = np.array([[4., 5., 6.]])
         self.my_cells._deviatoric_strain_rate = np.array([[1., 1., 1.]])
 
-        self.my_cells.additional_dof_density.current_value = np.array([4000.])
-        self.my_cells.additional_dof_density.new_value = np.array([4020.])
-        self.my_cells.additional_dof_pressure.current_value = np.array([1.1e+09])
-        self.my_cells.additional_dof_pressure.new_value = np.array([1.3e+09])
-        self.my_cells.additional_dof_energy.current_value = np.array([1.e+06])
-        self.my_cells.additional_dof_energy.new_value = np.array([0.8e+06])
-        self.my_cells.additional_dof_artificial_viscosity.current_value = np.array([1.e+08])
-        self.my_cells.additional_dof_artificial_viscosity.new_value = np.array([1.e+08])
-        self.my_cells.additional_dof_sound_velocity.current_value = np.array([300.])
-        self.my_cells.additional_dof_sound_velocity.new_value = np.array([302.])
-        self.my_cells._additional_dof_deviatoric_stress_current = np.array([[3., 2., 1.],])
-        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.],])
-        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.], ])
-        self.my_cells._additional_dof_deviatoric_strain_rate = np.array([[4., 3., 8.],])
-        self.my_cells.additional_dof_yield_stress.current_value = np.array([10.])
-        self.my_cells._additional_dof_equivalent_plastic_strain_rate = np.array([0.])
-        self.my_cells._additional_dof_stress = np.array([[0., 0., 0.]])
+        self.my_cells.enr_density.current_value = np.array([4000.])
+        self.my_cells.enr_density.new_value = np.array([4020.])
+        self.my_cells.enr_pressure.current_value = np.array([1.1e+09])
+        self.my_cells.enr_pressure.new_value = np.array([1.3e+09])
+        self.my_cells.enr_energy.current_value = np.array([1.e+06])
+        self.my_cells.enr_energy.new_value = np.array([0.8e+06])
+        self.my_cells.enr_artificial_viscosity.current_value = np.array([1.e+08])
+        self.my_cells.enr_artificial_viscosity.new_value = np.array([1.e+08])
+        self.my_cells.enr_sound_velocity.current_value = np.array([300.])
+        self.my_cells.enr_sound_velocity.new_value = np.array([302.])
+        self.my_cells._enr_deviatoric_stress_current = np.array([[3., 2., 1.], ])
+        self.my_cells._enr_deviatoric_stress_new = np.array([[5., 12., 7.], ])
+        self.my_cells._enr_deviatoric_stress_new = np.array([[5., 12., 7.], ])
+        self.my_cells._enr_deviatoric_strain_rate = np.array([[4., 3., 8.], ])
+        self.my_cells.enr_yield_stress.current_value = np.array([10.])
+        self.my_cells._enr_equivalent_plastic_strain_rate = np.array([0.])
+        self.my_cells._enr_stress = np.array([[0., 0., 0.]])
         self.my_cells.left_part_size.current_value = np.array([0.2])
         self.my_cells.right_part_size.current_value = np.array([0.3])
         self.my_cells.left_part_size.new_value = np.array([0.4])
@@ -114,7 +114,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         (with the example of pressure field)
         """
         Discontinuity.discontinuity_list.return_value = [self.mock_disc]
-        self.my_cells.additional_dof_pressure.current_value = np.array([1.e+09])
+        self.my_cells.enr_pressure.current_value = np.array([1.e+09])
         self.my_cells.pressure._Field__current = np.array([1.])
         # le champ de pression est compos� de :
         # - valeur champ de pression � gauche pour cell 0
@@ -132,9 +132,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         Test of the method compute_enriched_elements_new_pressure pour Hansbo
         """
         # Configuration des mocks
-        mock_apply_eos.return_value = self.my_cells.additional_dof_energy.new_value, \
-                                      self.my_cells.additional_dof_pressure.new_value,\
-                                      self.my_cells.additional_dof_sound_velocity.new_value
+        mock_apply_eos.return_value = self.my_cells.enr_energy.new_value, \
+                                      self.my_cells.enr_pressure.new_value,\
+                                      self.my_cells.enr_sound_velocity.new_value
         mock_add_elasticity.return_value = self.my_cells.energy.new_value
         dt = 1  # pylint: disable=invalid-name
 
@@ -144,14 +144,14 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         mock_add_elasticity.assert_called()
         mock_apply_eos.assert_any_call(
             self.my_cells, self.my_cells._target_eos,
-            self.my_cells.additional_dof_density.current_value,
-            self.my_cells.additional_dof_density.new_value,
-            self.my_cells.additional_dof_pressure.current_value,
-            self.my_cells.additional_dof_pressure.new_value,
-            self.my_cells.additional_dof_energy.current_value,
-            self.my_cells.additional_dof_energy.new_value,
-            self.my_cells.additional_dof_artificial_viscosity.current_value,
-            self.my_cells.additional_dof_sound_velocity.new_value)
+            self.my_cells.enr_density.current_value,
+            self.my_cells.enr_density.new_value,
+            self.my_cells.enr_pressure.current_value,
+            self.my_cells.enr_pressure.new_value,
+            self.my_cells.enr_energy.current_value,
+            self.my_cells.enr_energy.new_value,
+            self.my_cells.enr_artificial_viscosity.current_value,
+            self.my_cells.enr_sound_velocity.new_value)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionHansboEnrichedCell, "compute_discontinuity_borders_velocity",
@@ -178,7 +178,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         """
         self.my_cells.compute_enriched_elements_new_density()
         np.testing.assert_allclose(self.my_cells.density.new_value, np.array([4000.]))
-        np.testing.assert_allclose(self.my_cells.additional_dof_density.new_value,
+        np.testing.assert_allclose(self.my_cells.enr_density.new_value,
                                    np.array([2000.]))
 
     @mock.patch.object(OneDimensionCell, "compute_pseudo", spec=classmethod,
@@ -198,10 +198,10 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
             self.test_data.numeric.a_pseudo, self.test_data.numeric.b_pseudo)
 
         mock_compute_pseudo.assert_any_call(
-            dt, self.my_cells.additional_dof_density.current_value,
-            self.my_cells.additional_dof_density.new_value,
+            dt, self.my_cells.enr_density.current_value,
+            self.my_cells.enr_density.new_value,
             self.my_cells.right_part_size.new_value,
-            self.my_cells.additional_dof_sound_velocity.current_value,
+            self.my_cells.enr_sound_velocity.current_value,
             self.test_data.numeric.a_pseudo, self.test_data.numeric.b_pseudo)
 
     @mock.patch.object(OneDimensionCell, "compute_time_step", spec=classmethod,
@@ -224,12 +224,12 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
                                         self.my_cells.pseudo.new_value)
         mock_compute_dt.assert_called_with(
             self.test_data.numeric.cfl, self.test_data.numeric.cfl_pseudo,
-            self.my_cells.additional_dof_density.current_value,
-            self.my_cells.additional_dof_density.new_value,
+            self.my_cells.enr_density.current_value,
+            self.my_cells.enr_density.new_value,
             self.my_cells.right_part_size.new_value,
-            self.my_cells.additional_dof_sound_velocity.new_value,
-            self.my_cells.additional_dof_artificial_viscosity.current_value,
-            self.my_cells.additional_dof_artificial_viscosity.new_value)
+            self.my_cells.enr_sound_velocity.new_value,
+            self.my_cells.enr_artificial_viscosity.current_value,
+            self.my_cells.enr_artificial_viscosity.new_value)
 
     def test_compute_enriched_stress_tensor(self):
         """
@@ -239,11 +239,11 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         # Left part : computed in the classical method
 
         # Test for the left part of enriched cells
-        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[2., 0., 3.]])
-        self.my_cells.additional_dof_pressure.new_value = np.array([1.])
-        self.my_cells.additional_dof_artificial_viscosity.new_value = np.array([0.])
+        self.my_cells._enr_deviatoric_stress_new = np.array([[2., 0., 3.]])
+        self.my_cells.enr_pressure.new_value = np.array([1.])
+        self.my_cells.enr_artificial_viscosity.new_value = np.array([0.])
         self.my_cells.compute_enriched_stress_tensor()
-        np.testing.assert_allclose(self.my_cells.additional_dof_stress, exact_stress_droite)
+        np.testing.assert_allclose(self.my_cells.enr_stress, exact_stress_droite)
 
     @mock.patch.object(Discontinuity, "discontinuity_list", new_callable=mock.PropertyMock)
     @mock.patch.object(OneDimensionHansboEnrichedCell, "_compute_discontinuity_borders_velocity",
@@ -259,9 +259,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         dt = 1.  # pylint: disable=invalid-name
         node_coord_new = np.array([[0.,], [1.,]])
         node_velocity_new = np.array([[-1, ], [1., ]])
-        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
-        u1d_arr = Discontinuity.additional_dof_velocity_new[:, 1]
-        u2g_arr = Discontinuity.additional_dof_velocity_new[:, 0]
+        Discontinuity.enr_velocity_new = np.array([[[1., ], [3., ]]])
+        u1d_arr = Discontinuity.enr_velocity_new[:, 1]
+        u2g_arr = Discontinuity.enr_velocity_new[:, 0]
         Discontinuity.discontinuity_position = np.array([0.5])
         Discontinuity.in_nodes = np.array([0])
         Discontinuity.out_nodes = np.array([1])
@@ -290,17 +290,17 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         coord_noeud_new = np.array([[-1.], [0, ]])
         vitesse_noeud_new = np.array([[50, ], [-20, ]])
         mock_compute_d.return_value = np.array([[2., -1, -1], [2., -1, -1]])
-        Discontinuity.additional_dof_velocity_new = np.array([[[1., ], [3., ]]])
+        Discontinuity.enr_velocity_new = np.array([[[1., ], [3., ]]])
 
-        self.my_cells.additional_dof_shear_modulus.new_value = np.array([14.])
-        self.my_cells._additional_dof_deviatoric_stress_current = np.array([[0., 0., 0.]])
-        self.my_cells._additional_dof_deviatoric_strain_rate = np.array([[2., -1, -1]])
+        self.my_cells.enr_shear_modulus.new_value = np.array([14.])
+        self.my_cells._enr_deviatoric_stress_current = np.array([[0., 0., 0.]])
+        self.my_cells._enr_deviatoric_strain_rate = np.array([[2., -1, -1]])
         exact_new_s_right = np.array([[56., -28, -28]])
 
         self.my_cells.compute_enriched_deviatoric_stress_tensor(coord_noeud_new,
                                                                 vitesse_noeud_new, dt)
         mock_compute_d.assert_called()
-        np.testing.assert_allclose(self.my_cells._additional_dof_deviatoric_stress_new,
+        np.testing.assert_allclose(self.my_cells._enr_deviatoric_stress_new,
                                    exact_new_s_right)
 
     def test_compute_enriched_shear_modulus(self):
@@ -311,7 +311,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.my_cells.compute_enriched_shear_modulus(
             target_model.constitutive_model.elasticity_model.build_shear_modulus_obj())
 
-        np.testing.assert_allclose(self.my_cells.additional_dof_shear_modulus.new_value,
+        np.testing.assert_allclose(self.my_cells.enr_shear_modulus.new_value,
                                    target_model.initial_values.shear_modulus_init)
 
     def test_compute_enriched_equivalent_plastic_strain_rate(self):
@@ -349,7 +349,7 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.my_cells.compute_enriched_yield_stress(
             target_model.constitutive_model.plasticity_model.build_yield_stress_obj())
 
-        np.testing.assert_allclose(self.my_cells.additional_dof_yield_stress.new_value,
+        np.testing.assert_allclose(self.my_cells.enr_yield_stress.new_value,
                                    target_model.initial_values.yield_stress_init)
 
 

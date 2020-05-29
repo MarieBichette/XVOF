@@ -94,15 +94,23 @@ class DatabaseProps(TypeCheckedDataClass):
                              "but not both!")
 
 
+ALL_VARIABLES = ["NodeVelocity", "NodeCoordinates", "CellSize", "Pressure", "Density",
+                 "InternalEnergy", "SoundVelocity", "ArtificialViscosity", "Stress",
+                 "DeviatoricStress", "EquivalentPlasticStrainRate", "PlasticStrainRate",
+                 "CohesiveForce", "DiscontinuityOpening"]
+
+
 @dataclass  # pylint: disable=missing-class-docstring
 class OutputProps(TypeCheckedDataClass):
     number_of_images: int
     dump: bool
     databases: List[DatabaseProps]
+    variables: List[str]
 
     def __post_init__(self):
         super().__post_init__()
         self._ensure_positivity('number_of_images')
+        self._ensure_list_value_in("variables", ALL_VARIABLES)
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -276,7 +284,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         time_step_reduction: Optional[float] = params.get('time-step-reduction-factor-for-failure')
         return initial_time_step, final_time, cst_dt, time_step_reduction
 
-    def __fill_in_output_props(self) -> Tuple[int, bool, List[DatabaseProps]]:
+    def __fill_in_output_props(self) -> Tuple[int, bool, List[DatabaseProps], List[str]]:
         """
         Returns the quantities needed to fill output properties
             - number of images
@@ -298,7 +306,15 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             db_props = DatabaseProps(identi, database_path, time_period,
                                      iteration_period)
             db_prop_l.append(db_props)
-        return number_of_images, dump, db_prop_l
+
+        variables_l = []
+        if params['variables'][0] == "All":
+            variables_l = ALL_VARIABLES
+        else:
+            for var in params['variables']:
+                variables_l.append(var)
+
+        return number_of_images, dump, db_prop_l, variables_l
 
     def __fill_in_bc_props(self) -> Tuple[BoundaryType, BoundaryType]:
         """

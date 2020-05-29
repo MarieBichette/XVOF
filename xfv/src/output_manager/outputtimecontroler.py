@@ -30,10 +30,13 @@ class OutputTimeControler:
                 + " of the database {:s} with iteration period : {} or time period {}"
                 .format(self.__id, self.__iteration_period, self.__time_period))
 
-    def db_has_to_be_updated(self, time, iteration):
+    def db_has_to_be_updated(self, time: float, iteration: int) -> bool:
         """
         Return True if the iteration or time requires to write fields in the database
-        and update the next output time or iteration
+        and update the next output time or iteration.
+
+        :param time: current time
+        :param iteration: current iteration
         """
         answer = False
         if self.__next_output_time is not None and time >= self.__next_output_time:
