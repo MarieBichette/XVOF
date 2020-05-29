@@ -85,6 +85,9 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self._nbr_of_cells, material_data.shear_modulus_init, material_data.shear_modulus_init)
         self._fields_manager["YieldStress"] = Field(
             self._nbr_of_cells, material_data.yield_stress_init, material_data.yield_stress_init)
+        # Porosity
+        self._fields_manager["Porosity"] = Field(
+            self._nbr_of_cells, material_data.porosity_init, material_data.porosity_init)
 
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
@@ -141,6 +144,8 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self.yield_stress.current_value[self.cell_in_projectile] = \
                 material_data.yield_stress_init
             self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
+            self.porosity.current_value[self.cell_in_projectile] = material_data.porosity_init
+            self.porosity.new_value[self.cell_in_projectile] = material_data.porosity_init
 
     @property
     def dt(self):  # pylint: disable=invalid-name
@@ -248,6 +253,13 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._stress[:, 2]
 
     @property
+    def porosity(self):
+        """
+        Porosity
+        """
+        return self._fields_manager["Porosity"]
+
+    @property
     def fields_manager(self):
         """
         Return a copy of the field manager
@@ -282,6 +294,8 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         message += "==> sound velocity at t = {}".format(
             self.sound_velocity.current_value) + os.linesep
         message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
+        message += "==> porosity at t = {}".format(self.porosity.current_value) + os.linesep
+        message += "==> porosity at t+dt = {}".format(self.porosity.new_value) + os.linesep
         print(message)
 
     def increment_variables(self):

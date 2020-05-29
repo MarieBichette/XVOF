@@ -34,6 +34,8 @@ from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   HalfRodComparisonCriterionProps,
                                                   MaximalStressCriterionProps,
                                                   MinimumPressureCriterionProps)
+from xfv.src.data.porosity_model_props import (PorosityModelProps,
+                                               JohnsonModelProps)
 from xfv.src.data.enriched_mass_matrix_props import (EnrichedMassMatrixProps,
                                                      ConsistentMassMatrixProps,
                                                      LumpMenouillardMassMatrixProps,
@@ -59,7 +61,7 @@ class GeometricalProps(TypeCheckedDataClass):
     initial_interface_position: float
 
     def __post_init__(self):
-        super().__post_init__()  # type checking first
+        super().__post_init__()  # type checking first
         self._ensure_strict_positivity('section')
         self._ensure_positivity('initial_interface_position')
 
@@ -119,12 +121,20 @@ class BoundaryConditionsProps(TypeCheckedDataClass):
     right_BC: BoundaryType  # pylint: disable=invalid-name
 
 
+@dataclass  # pylint: disable=missing-class-docstring
+class PorosityModProps(TypeCheckedDataClass):
+    porosity_model: PorosityModelProps
+    name: str
+    # Do not check if name is among authorized values because
+    # it is done in one of the DataContainer's method and
+    # moving the test here, implies to allow the contact_model to be None
+
 
 @dataclass  # pylint: disable=missing-class-docstring
 class ContactModelProps(TypeCheckedDataClass):
     contact_model: ContactProps
     name: str
-    # Do not check if name is among authorized values because
+    # Do not check if name is among authorized values because
     # it is done in one of the DataContainer's method and
     # moving the test here, implies to allow the contact_model to be None
 
@@ -138,11 +148,16 @@ class InitialValues(TypeCheckedDataClass):
     energie_init: float
     yield_stress_init: float
     shear_modulus_init: float
+    porosity_init: float
 
     def __post_init__(self):
-        super().__post_init__()  # typecheck first
-        self._ensure_strict_positivity('rho_init', 'temp_init')
+        super().__post_init__()  # typecheck first
+        self._ensure_strict_positivity('rho_init', 'temp_init','porosity_init')
         self._ensure_positivity('yield_stress_init', 'shear_modulus_init')
+
+        if self.porosity_init < 1.0:
+            raise ValueError(f"{self.porosity_init} < 1.0\n"
+                             "is not a possible value for initial porosity.")
         # TODO: one the initialization via eos will be done, check that only two fields
         # are not null (v and e or v and T)
 
@@ -176,6 +191,7 @@ class MaterialProps(TypeCheckedDataClass):
     constitutive_model: ConstitutiveModelProps
     failure_model: FailureModelProps
     cohesive_model: Optional[CohesiveZoneModelProps]
+    porosity_model: Optional[PorosityModProps]
     contact_model: Optional[ContactModelProps]
 
 
@@ -336,8 +352,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
     @staticmethod
     def __get_cohesive_model_props(matter) -> Optional[CohesiveZoneModelProps]:
         """
-        Returns the values needed to fill the damage model properties:
-            - the cohesive model
+        Returns the values needed to fill the cohesive zone model properties:
+            - the cohesive model        self._ensure_positivity('porosity_init_moins_un')
             - the cohesive model name
         """
         try:
@@ -385,6 +401,29 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         return cohesive_model_props
 
     @staticmethod
+    def __get_porosity_model_props(matter) -> Optional[Tuple[PorosityModelProps, str]]:
+        """
+        Returns the values needed to fill the damage model properties:
+            - the porosity model
+            - the porosity model name
+        """
+        try:
+            params = matter['failure']['porosity-model']
+        except KeyError:
+            return None
+        porosity_model_name = params['name'].lower()
+        if porosity_model_name == "johnsonmodel":
+            initial_porosity_for_johnson = params['coefficients']['initial-porosity']
+            effective_strength_for_johnson = params['coefficients']['effective-strength']
+            viscosity_for_johnson = params['coefficients']['viscosity']
+            porosity_model_props: PorosityModelProps= JohnsonModelProps(
+                initial_porosity_for_johnson, effective_strength_for_johnson, viscosity_for_johnson)
+        else:
+            raise ValueError(f"Unknwown porosity model name: {porosity_model_name} "
+                             "Please choose among (JohnsonModel)")
+        return porosity_model_props, porosity_model_name
+
+    @staticmethod
     def __get_contact_props(matter) -> Optional[Tuple[ContactProps, str]]:
         """
         Returns the values needed to fill the contact model properties:
@@ -410,6 +449,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                                                           ConstitutiveModelProps,
                                                           FailureModelProps,
                                                           Optional[CohesiveZoneModelProps],
+                                                          Optional[PorosityModProps],
                                                           Optional[ContactModelProps]]:
         """
         Returns the values needed to fill the material properties:
@@ -443,6 +483,13 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
 
+        # Porosity model
+        porosity_model_props = self.__get_porosity_model_props(material)
+        if porosity_model_props:
+            porosity_model: Optional[PorosityModProps]=PorosityModProps(*porosity_model_props)
+        else:
+            porosity_model = None
+
         # Contact between discontinuity boundaries treatment
         contact_props = self.__get_contact_props(material)
         if contact_props:
@@ -450,10 +497,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         else:
             contact = None
 
-        return init, behavior, failure, cohesive_model, contact
+        return init, behavior, failure, cohesive_model, porosity_model, contact
 
     def __get_initial_values(self, matter) -> Tuple[float, float, float, float,
-                                                    float, float, float]:
+                                                    float, float, float, float]:
         """
         Reads the XDATA file and find the initialization quantities for the material matter
 
@@ -473,8 +520,11 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             internal_energy = float(coef["initial_internal_energy"])
 
         yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+
+        porosity = self.__get_initial_porosity(matter)
+
         return (velocity, pressure, temperature, density, internal_energy,
-                yield_stress, shear_modulus)
+                yield_stress, shear_modulus, porosity)
 
     def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float]:
         """
@@ -494,6 +544,27 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             yield_stress = float(coef['EPP']["yield_stress"])
             shear_modulus = float(coef['EPP']["shear_modulus"])
         return yield_stress, shear_modulus
+
+    def __get_initial_porosity(self, matter)->float:
+        """
+        Returns the initial porosity defined in the porosity model if 
+        it is specified in the json model. 
+        If no porosity model is specified, the porosity is assigned to 1.0
+        """
+        params = matter.get('failure')
+        if not params:
+            return 1.
+
+        porosity_model = params['porosity-model']
+        if not porosity_model:
+            return 1.
+
+        porosity_model_name = porosity_model['name'].lower()
+        if porosity_model_name == "johnsonmodel":
+            porosity = porosity_model['coefficients']['initial-porosity']
+        else:
+            return 1.
+        return porosity
 
     def __get_equation_of_state_props(self, matter) -> EquationOfStateProps:
         """
