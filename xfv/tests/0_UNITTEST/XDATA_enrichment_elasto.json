@@ -70,10 +70,13 @@
   "output": {
     "number-of-images": 500,
     "dump-images": false,
-    "data": {
+    "data": [{
       "identifier": "AllFieldsDb",
       "path": "all_fields.hdf5",
       "iteration-period": 20
-    }
+    }],
+    "variables": [
+      "Pressure"
+    ]
   }
 }
