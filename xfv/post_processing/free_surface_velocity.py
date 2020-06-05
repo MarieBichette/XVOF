@@ -21,7 +21,7 @@ def run():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase program verbosity")
     parser.add_argument("-case", action='append', nargs='+',
-                        help="the path to the output repository")
+                        help="the path to the output repository from /xfv/tests/")
     parser.add_argument("-experimental_data", help="the path to experimental data to plot")
     parser.add_argument("--output_filename", default="all_fields.hdf5",
                         help="the name of the output hdf5 band (default = all_fields.hdf5)")
@@ -62,7 +62,9 @@ def run():
             print("Read VelocityField in database... ")
         # Read database :
         # Free surface is the last node => index -1 in Numpy array
-        item_history = get_field_evolution_in_time_for_item(path_to_db, -1, "NodeVelocity")
+        item_history = get_field_evolution_in_time_for_item(path_to_db, -1, "ClassicalNodeVelocity")
+        # NodeVelocity => calls the true_field_extraction with NodeCoordinates reading
+        # ClassicalNodeVelocity => calls field_extraction to get the field without NodeCoordinates extraction
         if args.verbose:
             print("Done !")
             print("~~~~~~~~~~~~~")
