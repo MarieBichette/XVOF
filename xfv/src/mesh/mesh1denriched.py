@@ -283,6 +283,15 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             # test if any enriched cell in order to avoid error in the Newton initialization
             self.cells.compute_enriched_elements_new_pressure(delta_t)
 
+    def compute_new_cells_porosity(self, delta_t: float, porosity_model):
+        """
+        Computation of porosity model for each cell at t+dt
+
+        :param delta_t: time step
+        :param porosity_model: model to compute the porosity model
+        """
+        self.cells.compute_new_porosity(delta_t, porosity_model,self.cells.classical)
+
     def compute_new_cells_pseudo_viscosity(self, delta_t: float):
         """
         Computation of cells artificial viscosity at t+dt
@@ -574,3 +583,24 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         First component of the Cauchy stress tensor
         """
         return self.cells.stress_xx_field
+
+    @property
+    def porosity_field(self) -> np.array:
+        """
+        Porosity field
+        """
+        return self.cells.porosity_field
+
+    @property
+    def shear_modulus_field(self) -> np.array:
+        """
+        Shear Modulus
+        """
+        return self.cells.shear_modulus_field
+
+    @property
+    def yield_stress_field(self) -> np.array:
+        """
+        Yield Stress
+        """
+        return self.cells.yield_stress_field

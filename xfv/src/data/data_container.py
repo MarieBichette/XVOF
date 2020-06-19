@@ -31,6 +31,7 @@ from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
                                                      VonMisesCriterionProps)
 from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   DamageCriterionProps,
+                                                  PorosityCriterionProps,
                                                   HalfRodComparisonCriterionProps,
                                                   MaximalStressCriterionProps,
                                                   MinimumPressureCriterionProps)
@@ -97,7 +98,7 @@ class DatabaseProps(TypeCheckedDataClass):
 ALL_VARIABLES = ["NodeVelocity", "NodeCoordinates", "CellSize", "Pressure", "Density",
                  "InternalEnergy", "SoundVelocity", "ArtificialViscosity", "Stress",
                  "DeviatoricStress", "EquivalentPlasticStrainRate", "PlasticStrainRate",
-                 "CohesiveForce", "DiscontinuityOpening"]
+                 "Porosity","CohesiveForce", "DiscontinuityOpening","ShearModulus","YieldStress"]
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -369,7 +370,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
     def __get_cohesive_model_props(matter) -> Optional[CohesiveZoneModelProps]:
         """
         Returns the values needed to fill the cohesive zone model properties:
-            - the cohesive model        self._ensure_positivity('porosity_init_moins_un')
+            - the cohesive model
             - the cohesive model name
         """
         try:
@@ -563,24 +564,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
     def __get_initial_porosity(self, matter)->float:
         """
-        Returns the initial porosity defined in the porosity model if 
-        it is specified in the json model. 
-        If no porosity model is specified, the porosity is assigned to 1.0
+        Returns the initial porosity. We choose to initiate porosity to 1.0 (no porosity). 
+        The value defined in the porosity model is assigned to the porosity variable in the porosity_model.
         """
-        params = matter.get('failure')
-        if not params:
-            return 1.
-
-        porosity_model = params['porosity-model']
-        if not porosity_model:
-            return 1.
-
-        porosity_model_name = porosity_model['name'].lower()
-        if porosity_model_name == "johnsonmodel":
-            porosity = porosity_model['coefficients']['initial-porosity']
-        else:
-            return 1.
-        return porosity
+        return 1.0
 
     def __get_equation_of_state_props(self, matter) -> EquationOfStateProps:
         """
@@ -709,6 +696,9 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             failure_criterion = MinimumPressureCriterionProps(fail_crit_value)
         elif fail_crit_name == "Damage":
             failure_criterion = DamageCriterionProps(fail_crit_value)
+        elif fail_crit_name == "Porosity":
+            failure_criterion = PorosityCriterionProps(fail_crit_value)
+            print(str(failure_criterion))
         elif fail_crit_name == "HalfRodComparison":
             failure_criterion = HalfRodComparisonCriterionProps(failure_cell_index)
         elif fail_crit_name == "MaximalStress":

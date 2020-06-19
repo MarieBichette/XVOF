@@ -366,3 +366,12 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
         :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
+
+    @abstractmethod
+    def compute_new_porosity(self, time_step, porosity_model, mask):
+        """
+        Compute the new porosity according to the porosity model in XDATA
+        :param time_step: float
+        :param porosity_model: porosity model to compute 
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
+        """

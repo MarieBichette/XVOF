@@ -1,0 +1,52 @@
+{
+  "time-management": {
+    "final-time": 3.0e-6,
+    "initial-time-step": 5e-10,
+    "constant-time-step": true
+  },
+  "geometry": {
+    "section": 3.141592653589793e-06
+  },
+  "matter": {
+    "target": {
+      "initialization": {
+        "initial-velocity": 0.0,
+        "init-thermo": "../../../data/CONSTITUTIVE_MODEL/Cuivre_InitThermo_GaiaLong.json"
+      },
+      "equation-of-state": {
+        "name": "Mie-Gruneisen",
+        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Cuivre_MieGruneisen.json"
+      }
+    }
+  },
+  "boundary-conditions": {
+    "right-boundary": {
+      "type": "Pressure",
+      "bc-law":"Constant",
+      "value": 0.0
+    },
+    "left-boundary": {
+      "type": "pressure",
+      "bc-law": "marchtable",
+      "value": "loading.txt"
+    }
+  },
+  "numeric-parameters": {
+    "linear-pseudo": 0.2,
+    "quadratic-pseudo": 1.5,
+    "cfl": 0.34,
+    "cfl-pseudo": 0.0
+  },
+  "output": {
+    "number-of-images": 500,
+    "dump-images": false,
+    "database": [{
+      "identifier": "AllFieldsDb",
+      "path": "all_fields.hdf5",
+      "iteration-period": 20
+    }],
+    "variables": [
+      "Pressure"
+    ]
+  }
+}

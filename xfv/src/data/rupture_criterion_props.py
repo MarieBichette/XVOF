@@ -8,6 +8,7 @@ from typing import Type, Optional
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 from xfv.src.rupturecriterion.damage_criterion import DamageCriterion
+from xfv.src.rupturecriterion.porosity_criterion import PorosityCriterion
 from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterion
 from xfv.src.rupturecriterion.maximalstress import MaximalStressCriterion
 from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
@@ -41,7 +42,7 @@ class MaximalStressCriterionProps(RuptureCriterionProps):
     _rupture_criterion_class = MaximalStressCriterion
 
     def __post_init__(self):
-        super().__post_init__()  #  typecheck first
+        super().__post_init__()  #  typecheck first
         self._ensure_defined('sigma_max', 'MaximalStressCriterionProps',
                              'failure/failure-criterion/value')  # ensures that exists
 
@@ -52,8 +53,19 @@ class DamageCriterionProps(RuptureCriterionProps):
     _rupture_criterion_class = DamageCriterion
 
     def __post_init__(self):
-        super().__post_init__()  # typecheck first
+        super().__post_init__()  # typecheck first
         self._ensure_defined('d_limite', 'DamageCriterionProps',
+                             'failure/failure-criterion/value')
+
+
+@dataclass  # pylint: disable=missing-class-docstring
+class PorosityCriterionProps(RuptureCriterionProps):
+    p_limit: Optional[float]  # optional to personalize the error message
+    _rupture_criterion_class = PorosityCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first
+        self._ensure_defined('p_limit', 'PorosityCriterionProps',
                              'failure/failure-criterion/value')
 
 
@@ -63,7 +75,7 @@ class HalfRodComparisonCriterionProps(RuptureCriterionProps):
     _rupture_criterion_class = HalfRodComparisonCriterion
 
     def __post_init__(self):
-        super().__post_init__()  # typecheck first
+        super().__post_init__()  # typecheck first
         self._ensure_defined('ruptured_cell_index', 'HalfRodComparisonCriterionProps',
                              'failure/failure-criterion/index')  # ensures that exists
 
@@ -74,6 +86,6 @@ class MinimumPressureCriterionProps(RuptureCriterionProps):
     _rupture_criterion_class = MinimumPressureCriterion
 
     def __post_init__(self):
-        super().__post_init__()  # typecheck first
+        super().__post_init__()  # typecheck first
         self._ensure_defined('pmin', 'MinimumPressureCriterionProps',
                              'failure/failure-criterion/value')  # ensures that exists

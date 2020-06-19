@@ -28,6 +28,8 @@ def run():
     parser.add_argument("--shift_t0", action="store_true",
                         help="Shift time origin to put t0 when the velocity signal arrives on "
                              "the free surface velocity")
+    parser.add_argument("--write_data", default="free_surface_velocity.dat",
+                        help="Name of the output file")
     args = parser.parse_args()
 
     if args.case is None:
@@ -75,6 +77,12 @@ def run():
             if args.verbose:
                 print("New t0 is : " + str(time_0))
         plt.plot((time - time_0) * 1.e+6, velocity, label=case)
+        if(args.write_data):
+            data_path=case+args.write_data
+            with open(data_path, "w") as file_object:
+                for x_data, y_data in zip(time, velocity):
+                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data,y_data))
+            print("Data written in {:s}".format(data_path))
 
     # ----------------------------------------------------------
     # Plot experimental data

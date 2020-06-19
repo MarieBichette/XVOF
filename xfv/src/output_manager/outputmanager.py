@@ -36,6 +36,12 @@ field_list["EquivalentPlasticStrainRate"] = FieldConstruction(
     "ClassicalEquivalentPlasticStrainRate", "cells", ("equivalent_plastic_strain_rate", ))
 field_list["PlasticStrainRate"] = FieldConstruction("ClassicalPlasticStrainRate",
                                                     "cells", ("plastic_strain_rate", ))
+field_list["Porosity"] = FieldConstruction("ClassicalPorosity",
+                                                    "cells", ("porosity","current_value"))
+field_list["ShearModulus"] = FieldConstruction("ClassicalShearModulus",
+                                                    "cells", ("shear_modulus","current_value"))
+field_list["YieldStress"] = FieldConstruction("ClassicalYieldStress",
+                                                    "cells", ("yield_stress","current_value"))
 
 enr_field_list = dict()
 enr_field_list["NodeVelocity"] = FieldConstruction("AdditionalNodeVelocity", None,

@@ -325,6 +325,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         return self._plastic_strain_rate
 
+    @property
+    def porosity_field(self):
+        """
+        Porosity field
+        """
+        return self.porosity.current_value
+
     def compute_new_pressure(self, mask, dt):  # pylint: disable=invalid-name
         """
         Computation of the set (internal energy, pressure, sound velocity) for v-e formulation
@@ -370,6 +377,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         if self.data.data_contains_a_target and mask_t.any():
             # Not sure there is cells in the intersection mask_classic / target
             # => test it before starting Newton
+            if (self.data.material_target.porosity_model is not None):
+                self.density.current_value[mask_t], self.density.new_value[mask_t],\
+                self.pressure.current_value[mask_t]= self._compute_macro_to_micro_hydro(
+                                                        self.density.current_value[mask_t],
+                                                        self.density.new_value[mask_t],
+                                                        self.pressure.current_value[mask_t],
+                                                        self.porosity.new_value[mask_t])
+
             self.energy.new_value[mask_t], self.pressure.new_value[mask_t],\
             self.sound_velocity.new_value[mask_t] = OneDimensionCell.apply_equation_of_state(
                 self, self._target_eos,
@@ -378,6 +393,47 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                 self.energy.current_value[mask_t], self.energy.new_value[mask_t],
                 self.pseudo.current_value[mask_t],
                 self.sound_velocity.new_value[mask_t])
+
+            if (self.data.material_target.porosity_model is not None):
+                self.density.current_value[mask_t], self.density.new_value[mask_t],\
+                self.pressure.current_value[mask_t], self.pressure.new_value[mask_t] = self._compute_micro_to_macro_hydro(
+                                                        self.density.current_value[mask_t],
+                                                        self.density.new_value[mask_t],
+                                                        self.pressure.current_value[mask_t],
+                                                        self.pressure.new_value[mask_t],
+                                                        self.porosity.new_value[mask_t])
+
+    @staticmethod
+    def _compute_macro_to_micro_hydro(density_current,density_new,pressure_current,porosity):
+        """
+        Compute the macro to micro homogeneization for the hydrodynamics variable in order to compute the eos
+        :param density_current: current density
+        :param density_new: new density
+        :param pressure_current: current pressure
+        :param porosity:
+        """
+        density_current = density_current*porosity
+        density_new = density_new*porosity
+        pressure_current = pressure_current*porosity
+
+        return density_current,density_new,pressure_current
+
+    @staticmethod
+    def _compute_micro_to_macro_hydro(density_current,density_new,pressure_current,pressure_new,porosity):
+        """
+        Compute the micro to macro homogeneization for the hydrodynamics variables after the eos computation
+        :param density_current: current density
+        :param density_new: new density
+        :param pressure_current: current pressure
+        :param pressure_new: new pressure
+        :param porosity:
+        """
+        density_current = density_current/porosity
+        density_new = density_new/porosity
+        pressure_current = pressure_current/porosity
+        pressure_new = pressure_new/porosity
+
+        return density_current,density_new,pressure_current,pressure_new
 
     def compute_size(self, topology, node_coord):
         """
@@ -461,6 +517,20 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                                      self.pseudo.new_value[mask])
         self._dt[mask] = delta_t
 
+    def compute_new_porosity(self, delta_t: float, porosity_model, mask):
+        """
+        Compute the new porosity according to the porosity model in XDATA
+
+        :param delta_t: model to compute the shear modulus
+        :param porosity_model: porosity model to compute 
+        :param mask: mask to identify the cells to be computed
+
+        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        """
+        self.porosity.new_value[mask] = porosity_model.compute_porosity(delta_t,
+                                                                self.porosity.current_value[mask],
+                                                                self.pressure.current_value[mask])
+
     def compute_shear_modulus(self, shear_modulus_model, mask):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
@@ -472,6 +542,28 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         self.shear_modulus.new_value[mask] = shear_modulus_model.compute(self.density.new_value[mask])
 
+        if (self.data.material_target.porosity_model is not None):
+            self.shear_modulus.new_value[mask] = self._compute_micro_to_macro_shear_modulus(self.shear_modulus.new_value[mask],
+                                                                                       self.density.new_value[mask],
+                                                                                       self.sound_velocity.current_value[mask],
+                                                                                       self.porosity.new_value[mask])
+
+    @staticmethod
+    def _compute_micro_to_macro_shear_modulus(shear_modulus,density,sound_velocity,porosity):
+        """
+        Compute the micro to macro homogeneization for the shear modulus (MacKenzie formulation)
+        :param shear_modulus: shear modulus
+        :param density: density
+        :param sound_velocity: sound velocity
+        :param porosity: porosity
+        """
+        G0 = shear_modulus
+        K = porosity*density*sound_velocity*sound_velocity
+        G = G0/porosity*( 1.0-6.0 * (porosity - 1.0) / porosity *
+                        (K + 2.0 * G0) / (9.0 * K + 8.0 * G0))
+
+        return G
+
     def compute_yield_stress(self, yield_stress_model, mask):
         """
         Compute the yield stress according to plasticity constitutive model in XDATA
@@ -482,6 +574,21 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
         self.yield_stress.new_value[mask] = yield_stress_model.compute(self.density.new_value[mask])
+
+        if (self.data.material_target.porosity_model is not None):
+            self.yield_stress.new_value[mask] =  self._compute_micro_to_macro_yield_stress(self.yield_stress.new_value[mask],
+                                                                                           self.porosity.new_value[mask])
+
+    @staticmethod
+    def _compute_micro_to_macro_yield_stress(yield_stress,porosity):
+        """
+        Compute the micro to macro homogeneization for the yield stress
+        :param yield_stress: yield stress
+        :param porosity: porosity
+        """
+        yield_stress = yield_stress / porosity
+        return yield_stress
+
 
     def compute_complete_stress_tensor(self):
         """
@@ -619,6 +726,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param ind_cell: index of the cells
         :param pressure: pressure value to be imposed
         """
+        self.porosity.new_value[ind_cell] = self.porosity.current_value[ind_cell]
         self.pressure.new_value[ind_cell] = pressure
         self._deviatoric_stress_new[ind_cell, :] = np.ones([3]) * pressure
 

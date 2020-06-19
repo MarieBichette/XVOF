@@ -19,6 +19,7 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
         :param init_value: initial yield stress
         """
         super(ConstantYieldStress, self).__init__(init_value)
+        self.init_value = init_value
 
     def compute(self, density: np.array) -> np.array:
         """
@@ -27,4 +28,4 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
         :param density: the current density
         :return: the computed yield stress
         """
-        return np.ones_like(density) * self.yield_stress
+        return np.ones_like(density) * self.init_value

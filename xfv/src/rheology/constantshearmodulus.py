@@ -19,6 +19,7 @@ class ConstantShearModulus(ShearModulus):  # pylint: disable=too-few-public-meth
         :param init_value: Value of the shear modulus
         """
         super(ConstantShearModulus, self).__init__(init_value)
+        self.init_value = init_value
 
     def compute(self, density: np.array) -> np.array:
         """
@@ -27,4 +28,4 @@ class ConstantShearModulus(ShearModulus):  # pylint: disable=too-few-public-meth
         :param density: the current density
         :return: the computed shear modulus
         """
-        return np.ones_like(density) * self.shear_modulus
+        return np.ones_like(density) * self.init_value

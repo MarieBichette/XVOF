@@ -1,7 +1,7 @@
 {
   "time-management": {
     "final-time": 5e-06,
-    "initial-time-step": 1e-08,
+    "initial-time-step": 1e-8,
     "constant-time-step": true
   },
   "geometry": {
@@ -50,7 +50,20 @@
       }
     ],
     "variables": [
-      "All"
+      "ArtificialViscosity",
+      "CohesiveForce",
+      "Density",
+      "DeviatoricStress",
+      "DiscontinuityOpening",
+      "EquivalentPlasticStrainRate",
+      "InternalEnergy",
+      "NodeCoordinates",
+      "NodeVelocity",
+      "PlasticStrainRate",
+      "Pressure",
+      "SoundVelocity",
+      "Stress",
+      "CellSize"
     ]
   }
 }

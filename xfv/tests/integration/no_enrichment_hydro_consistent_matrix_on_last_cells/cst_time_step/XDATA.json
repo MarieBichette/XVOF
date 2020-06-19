@@ -47,7 +47,20 @@
       }
     ],
     "variables": [
-      "All"
+      "ArtificialViscosity",
+      "CohesiveForce",
+      "Density",
+      "DeviatoricStress",
+      "DiscontinuityOpening",
+      "EquivalentPlasticStrainRate",
+      "InternalEnergy",
+      "NodeCoordinates",
+      "NodeVelocity",
+      "PlasticStrainRate",
+      "Pressure",
+      "SoundVelocity",
+      "Stress",
+      "CellSize"
     ]
   }
 }
