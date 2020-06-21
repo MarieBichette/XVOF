@@ -19,7 +19,7 @@ class PenaltyContactTest(unittest.TestCase):
         Tests initialisation
         """
         self.test_penalty_contact = PenaltyContact(10.)
-        self.disc = Discontinuity(np.array([True, False]), np.array([False, True]), 0.5,
+        self.disc = Discontinuity(0, np.array([True, False]), np.array([False, True]), 0.5,
                                   LumpMenouillardMassMatrixProps())
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_left_part(0., 2., 0.5)
         self.disc.mass_matrix_enriched.compute_enriched_mass_matrix_right_part(2., 0., 0.5)

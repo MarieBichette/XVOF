@@ -23,9 +23,10 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
                               delta_t: float) -> float:
         """
         Checks if contact and apply correction
+
         :param node_velocity: node velocity array
         :param disc: discontinuity to examine
-        :param delta_t : time step
+        :param delta_t: time step
         """
         if disc.discontinuity_opening.new_value >= 0.:
             return 0.
@@ -40,6 +41,7 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
         Compute the lagrangian multiplier representing the contact force to apply to ensure the
         non penetration of the discontinuity boundaries
         Computed from Non Linear Finite Element for Continua And Structure, T. Belytschko, p.610
+
         :param node_velocity: array of the predicted velocities
         :param disc: current discontinuity
         :param time_step: time step
@@ -57,8 +59,8 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
         node_mass_d = m_1_enr * m_2 / (m_2 * (1 - epsilon) + m_1_enr * epsilon)
         # Compute the velocities of the discontinuity boundaries
         velocity_g = ((1 - epsilon) * node_velocity[disc.mask_in_nodes]
-                      + epsilon * disc.additional_dof_velocity_new[0])
-        velocity_d = ((1 - epsilon) * disc.additional_dof_velocity_new[1]
+                      + epsilon * disc.enr_velocity_new[0])
+        velocity_d = ((1 - epsilon) * disc.enr_velocity_new[1]
                       + epsilon * node_velocity[disc.mask_out_nodes])
         # Compute the contact force in order to have ug = ud afterward
         lambda_multiplier = (velocity_d - velocity_g).flatten() / (

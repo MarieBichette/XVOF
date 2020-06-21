@@ -1,21 +1,20 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
-Classe g�rant la topologie du maillage
+Module to manage mesh topology and objects connectivity
 """
 import numpy as np
 
 
 class Topology:
     """
-    Une classe g�rant la topologie et les connectivit�s d'un maillage
+    A class to manage mesh topology and objects connectivity
     """
     def __init__(self, nbr_of_nodes, nbr_of_cells, dim=1):
         #
         self._dim = dim
         self._nbr_of_nodes = nbr_of_nodes
         self._nbr_of_cells = nbr_of_cells
-        # Array dont chaque item est un array des indices des noeuds appartenant � la maille
+        # Array dont chaque item est un array des indices des noeuds appartenant ï¿½ la maille
         self._nodes_belonging_to_cell = np.ones(shape=(nbr_of_cells, 2 ** self._dim),
                                                 dtype=np.int64, order='C') * (-1)
         # Array dont chaque item est un array des indices des mailles en contact avec le noeud
@@ -45,42 +44,37 @@ class Topology:
 
     def set_nodes_belonging_to_cell(self, ind_cell, ind_node_list):
         """
-        Attribue la liste des indices des noeuds, 'nodes_list'
-        appartenant � la maille d'indice 'ind_cell'
-        :param ind_cell: indice de la maille � laquelle attribuer les indices de noeuds
-        : ind_node_list: indices des noeuds appartenant � la cellule d'indice ind_cell
+        Register a node list as belonging to the cell 'ind_cell'
+
+        :param ind_cell: cell index
+        :param ind_node_list: list of the node index connected to ind_cell
         :type ind_cell: int
         :type ind_node_list: list
         """
         self._nodes_belonging_to_cell[ind_cell] = np.array(ind_node_list)
 
-    def add_cell_in_contact_with_node(self, ind_node, ind_cell):
+    def add_cell_in_contact_with_node(self, ind_node: int, ind_cell: int):
         """
-        Ajoute l'indice, 'ind_cell', de la maille à la liste des mailles en contact
-        avec le noeud d'indice 'ind_node'
+        Register a cell ind_cell as belonging to the node ind_node
+
+        :param ind_cell: cell index connected to ind_node
+        :param ind_node: node index connected to ind_cell
         """
         conn = self._cells_in_contact_with_node[ind_node]
         first_emplace = np.argwhere(conn == -1)[0]
         conn[first_emplace[0]] = ind_cell
 
-    def get_nodes_belonging_to_cell(self, ind_cell):
+    def get_nodes_belonging_to_cell(self, ind_cell: int):
         """
-        Renvoie un tableau des noeuds appartenant � la maille
-        :param ind_cell: indice de la maille dont on veut connaitre les noeuds
-        :return: un tableau des noeuds appartenant � la maille
-        :type ind_cell: int
-        :rtype: numpy.array
+        Returns the node indexes connected to the cell ind_cell
+        :param ind_cell: cell_index
         """
         return self._nodes_belonging_to_cell[ind_cell]
 
-    def get_cells_in_contact_with_node(self, ind_node):
+    def get_cells_in_contact_with_node(self, ind_node: int):
         """
-        Renvoie un tableau des mailles en contact avec le noeud
+        Returns the cell indexes connected to the node ind_node
 
-        :param ind_node: indice du noeud dont on veut connaitre les mailles connexes
-        :return: un tableau des mailles en contact avec le noeud
-
-        :type ind_node: int
-        :rtype: numpy.array
+        :param ind_node: node index
         """
         return self._cells_in_contact_with_node[ind_node]

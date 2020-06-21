@@ -21,4 +21,7 @@ class YieldStress:  # pylint: disable=too-few-public-methods
     def compute(self, density: np.array) -> np.array:
         """
         Compute the new value of shear modulus
+
+        :param density: the current density
+        :return: the computed yield stress
         """

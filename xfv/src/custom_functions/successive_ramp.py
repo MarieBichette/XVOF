@@ -24,6 +24,12 @@ class SuccessiveRamp(CustomFunction):
         assert self.__ramp_1.second_value == self.__ramp_2.first_value
 
     def evaluate(self, time, *args, **kwargs):
+        """
+        Returns the value of the function evaluated at time
+
+        :param time: the required time
+        :return: the value
+        """
         if time <= self.__ramp_2.start_time:
             return self.__ramp_1.evaluate(time)
         return self.__ramp_2.evaluate(time)
