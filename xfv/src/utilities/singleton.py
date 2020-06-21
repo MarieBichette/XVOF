@@ -26,6 +26,8 @@ class Singleton(type):
     def __init__(self, *args, **kwargs):
         """
         Construction of singleton
+        :param args:
+        :param kwargs:
         """
         self.__instance = None
         super(Singleton, self).__init__(*args, **kwargs)
@@ -33,6 +35,9 @@ class Singleton(type):
     def __call__(self, *args, **kwargs):
         """
         Call of the singleton
+        :param args:
+        :param kwargs:
+        :return:
         """
         if self.__instance is None:
             self.__instance = super(Singleton, self).__call__(*args, **kwargs)
@@ -41,6 +46,7 @@ class Singleton(type):
     def clear(self):
         """
         Delete the singleton
+        :return:
         """
         del self.__instance
         self.__instance = None

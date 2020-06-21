@@ -18,6 +18,5 @@ class RuptureCriterion(metaclass=ABCMeta):  # pylint: disable=too-few-public-met
     def check_criterion(self, cells, *args, **kwargs):
         """
         Check of the rupture criterion on the cells in arguments
-
         :param cells: cells on which to check the criterion
         """

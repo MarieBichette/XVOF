@@ -95,13 +95,6 @@
       "path": "all_fields.hdf5",
       "time-period": 5e-07
       }
-    ],
-    "variables": [
-      "NodeCoordinates",
-      "NodeVelocity",
-      "Pressure",
-      "CellSize",
-      "Density"
     ]
   }
 }

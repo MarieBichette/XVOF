@@ -31,7 +31,7 @@ def build_cell_true_field(classical_field, enriched_field, enrichment_type):
     :param classical_field: field of classical values
     :param enriched_field: field of enriched values
     :param enrichment_type: type of enrichment. Moes ou Hansbo (utile pour reconstruction)
-    :return: the cell true field
+    :return the cell true field
 
     >>> import numpy as np
     >>> a = np.array([1., 2., 1.])

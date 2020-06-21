@@ -30,5 +30,5 @@ class VonMisesCriterion(PlasticityCriterion):
         """
         if not cells.enriched.any():
             return
-        return (compute_second_invariant(cells.enr_deviatoric_stress_new) >
-                cells.enr_yield_stress.new_value ** 2)
+        return (compute_second_invariant(cells.additional_dof_deviatoric_stress_new) >
+                cells.additional_dof_yield_stress.new_value**2)

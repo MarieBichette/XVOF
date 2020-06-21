@@ -23,8 +23,9 @@ class ContactBase(metaclass=ABCMeta):  # pylint: disable=too-few-public-methods
                               delta_t: float) -> float:
         """
         Checks if contact and apply correction
-
+        :param node_coord: node coordinates array
         :param node_velocity: node velocity array
+        :param node_force : node force array
         :param disc: discontinuity to examine
-        :param delta_t: time step
+        :param delta_t : time step
         """

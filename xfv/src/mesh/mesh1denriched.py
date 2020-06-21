@@ -12,6 +12,7 @@ from xfv.src.mesh.topology1d import Topology1D
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.mass_matrix.one_dimension_mass_matrix import OneDimensionMassMatrix
 from xfv.src.contact.contact_base import ContactBase
+from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 
 
 # noinspection PyArgumentList
@@ -23,9 +24,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def __init__(self, initial_coordinates, initial_velocities):
         """
         Construction of the mesh
-
-        :param initial_coordinates: array for the node coordinates at initial time
-        :param initial_velocities: array for the node velocities at initial time
+        :param initial_coordinates:
+        :param initial_velocities:
         """
         self.data = DataContainer()  # pylint: disable=no-value-for-parameter
         if np.shape(initial_coordinates) != np.shape(initial_velocities):
@@ -79,9 +79,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # Cohesive zone model initialisation
         # ---------------------------------------------
         self.cohesive_zone_model = None
-        target_dmg_model = self.data.material_target.cohesive_model
+        target_dmg_model = self.data.material_target.damage_model
         if target_dmg_model is not None:
-            self.cohesive_zone_model = target_dmg_model.build_cohesive_model_obj()
+            self.cohesive_zone_model = target_dmg_model.cohesive_model.build_cohesive_model_obj()
         if (self.data.material_target.failure_model.failure_treatment != "Enrichment") and \
                 (self.cohesive_zone_model is not None):
             print("No cohesive model is allowed if failure treatment is not Enrichment")
@@ -99,7 +99,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     @property
     def topology(self):
         """
-        Returns the topology object (in order to get it accessible for unittests)
+        Retourne l'objet de topologie (pour qu'il soit accesible pour les tests unitaires)
         """
         return self.__topology
 
@@ -130,8 +130,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def compute_new_nodes_velocities(self, delta_t: float):
         """
         Computation of nodes velocities at t+dt
-
-        :param delta_t: time step
+        :var delta_t: time step
         """
         self._compute_velocities_for_enrichment_not_concerned_nodes(delta_t)
         # Compute velocity for enriched nodes
@@ -146,7 +145,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def _compute_velocities_for_enrichment_not_concerned_nodes(self, delta_t: float):
         """
         Compute classical ddl (far from enrichment = enrichment not concerned)
-
         :param delta_t: time step
         """
         # Compute classical ddl (far from enrichment = enrichment not concerned)
@@ -166,7 +164,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def _compute_velocities_for_disc(self, disc: Discontinuity, delta_t: float):
         """
         Compute the new node velocities for the nodes belonging to a given discontinuity
-
         :param disc :current discontinuity
         :param delta_t: time step
         """
@@ -186,7 +183,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def _compute_discontinuity_mass_matrix(self, disc: Discontinuity):
         """
         Compute the mass matrix of a newly created discontinuity
-
         :param disc: Discontinuity
         """
         disc.mass_matrix_enriched.compute_enriched_mass_matrix(disc, self.__topology,
@@ -201,8 +197,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         """
         Compute the contact force to be applied to ensure non penetration of the
         discontinuities boundaries
-
-        :param delta_t: time step
+        :param delta_t : time step
         """
         if self.contact_model is not None:
             # Theoretically, we should consider a global resolution of contact in all
@@ -216,8 +211,10 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
                     self.nodes.upundemi, disc, delta_t)
 
             if disc_list:
-                self.nodes.apply_force_on_discontinuity_boundaries_arr(
-                    contact_force_arr * self.nodes.section)
+                self.nodes.apply_force_on_discontinuity_boundaries_arr(contact_force_arr * self.nodes.section)
+                # if contact_force != 0.:
+                #     # Divide the contact "force" on the nodal forces
+                #     self.nodes.apply_force_on_discontinuity_boundaries(disc, contact_force)
 
             # Update the kinematics with contact correction
             for disc in Discontinuity.discontinuity_list():
@@ -240,7 +237,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def compute_new_nodes_coordinates(self, delta_t: float):
         """
         Computation of nodes coordinates at t+dt
-
         :param delta_t: time step
         """
         mask_all_nodes = np.ones([self.nodes.number_of_nodes], dtype=bool)
@@ -273,8 +269,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def compute_new_cells_pressures(self, delta_t: float):
         """
         Computation of cells pressure at t+dt
-
-        :param delta_t: time step
+        :var delta_t: time step
         """
         # all classical cells + left part of enriched cells :
         self.cells.compute_new_pressure(~self.__ruptured_cells, dt=delta_t)
@@ -283,11 +278,11 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             # test if any enriched cell in order to avoid error in the Newton initialization
             self.cells.compute_enriched_elements_new_pressure(delta_t)
 
-    def compute_new_cells_pseudo_viscosity(self, delta_t: float):
+    def compute_new_cells_pseudo_viscosity(self, delta_t):
         """
         Computation of cells artificial viscosity at t+dt
-
-        :param delta_t: time step
+        :var delta_t: time step
+        :type delta_t: float
         """
         self.cells.compute_new_pseudo(delta_t, self.cells.classical)
         self.cells.compute_enriched_elements_new_pseudo(delta_t)
@@ -298,7 +293,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         """
         self.nodes.compute_new_force(self.__topology, self.cells.stress_xx, self.cells.classical)
         self.nodes.compute_enriched_nodes_new_force(self.cells.stress_xx,
-                                                    self.cells.enr_stress_xx)
+                                                    self.cells.additional_dof_stress_xx)
 
     def compute_new_cohesive_forces(self):
         """
@@ -320,8 +315,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def apply_elasticity(self, delta_t, shear_modulus_model, mask_material):
         """
         Compute the deviatoric part of stress tensor
-
-        :param delta_t: float, time step staggered
+        :param delta_t : float, time step staggered
         :param shear_modulus_model: model to compute the shear modulus
         :param mask_material: array of bool to select cells of interest
         """
@@ -374,9 +368,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def apply_pressure(self, surface, pressure):
         """
         Apply a given pressure on left or right boundary
-
-        :param surface: name of the surface where pressure has to be imposed
-        :param pressure: value of the pressure to impose
+        :var surface: name of the surface where pressure has to be imposed
+        :var pressure: value of the pressure to impose
         :type surface: str ('left' | 'right')
         :type pressure: float
         """
@@ -403,8 +396,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def get_ruptured_cells(self, rupture_criterion):
         """
         Find the cells where the rupture criterion is checked and store them
-
-        :param rupture_criterion: rupture criterion
+        :var rupture_criterion: rupture criterion
         :type rupture_criterion: RuptureCriterion
         """
         new_cracked_cells_in_target = rupture_criterion.check_criterion(self.cells)
@@ -417,8 +409,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     def _get_plastic_cells(self, plastic_criterion, mask):
         """
         Find the cells where the plasticity criterion is checked and store them
-
-        :param plastic_criterion: plastic criterion
+        :var plastic_criterion: plastic criterion
         :type plastic_criterion: PlasticityCriterion
         :param mask: array of bool to select cells of interest
         """
@@ -426,14 +417,14 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         plastic_enr_cells = plastic_criterion.check_criterion_on_right_part_cells(self.cells)
         if plastic_enr_cells is not None:
             self.cells.plastic_enr_cells[mask] = plastic_enr_cells[mask]
+            
 
     def apply_rupture_treatment(self, treatment, time: float):
         """
         Apply the rupture treatment on the cells enforcing the rupture criterion
-
-        :param treatment: rupture treatment
-        :param time: simulation time
+        :var treatment: rupture treatment
         :type treatment: RuptureTreatment
+        :param time : simulation time
         """
         treatment.apply_treatment(self.cells, self.__ruptured_cells,
                                   self.nodes, self.__topology, time)
@@ -442,15 +433,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
                          mask_mesh: np.array):
         """
         Apply plasticity treatment if criterion is activated :
-
         - compute yield stress
         - tests plasticity criterion
         - compute plastic strain rate for plastic cells
-
-        :param delta_t: time step
+        :param delta_t : time step
         :param yield_stress_model: model to compute the yield stress
         :param plasticity_criterion: model for the plasticity criterion
-        :param mask_mesh: mask cells in projectile or target
+        :param mask_mesh : mask cells in projectile or target
         """
         # La méthode apply_plastic_corrector_on_deviatoric_stress_tensor modifie
         # la variable dev_stress_new et doit donc être appelée à la fin de
@@ -474,13 +463,6 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
 
         # 4) Plasticity treatment for enriched plastic cells (right part)
         self.cells.apply_plasticity_enr(mask_mesh, delta_t)
-
-    @staticmethod
-    def get_discontinuity_list():
-        """
-        Returns the list of existing discontinuities
-        """
-        return Discontinuity.discontinuity_list()
 
     @property
     def velocity_field(self) -> np.array:
@@ -507,7 +489,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         modified_coord = np.zeros([len(Discontinuity.discontinuity_list()), 3])
         # modified_coord est un array qui contient ruptured_cell_id, left_size, right_size
         for disc in Discontinuity.discontinuity_list():
-            enr_cell = int(disc.get_ruptured_cell_id)
+            enr_cell = int(disc.get_ruptured_cell_id())
             index = disc.label - 1
             modified_coord[index, 0] = enr_cell
             modified_coord[index, 1] = self.nodes.xt[disc.mask_in_nodes] + \

@@ -15,7 +15,6 @@ class CohesiveZoneModel:
     def __init__(self, cohesive_law_points: np.array, unloading_model: UnloadingModelBase):
         """
         Construction d'un modèle cohésif
-
         :param cohesive_law_points: array describing the stress - opening curve of the
         cohesive model
         :param unloading_model:
@@ -28,8 +27,7 @@ class CohesiveZoneModel:
         """
         Compute the cohesive force for the current opening of discontinuity according to the
         current discontinuity opening
-
-        :param disc: discontinuity
+        :param disc :discontinuity
         """
         cohesive_force = 0.
         new_opening = disc.discontinuity_opening.new_value[0]
