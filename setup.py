@@ -20,7 +20,5 @@ setup(python_requires='>3.6',
                         'matplotlib',
                         'numpy>=1.16.0',
                         'PyQt5',
-                        'sphinx',
-                        'guzzle_sphinx_theme',
                         'vnr-internal-energy @ git+https://github.com/hippo91/nonlinear_solver.git@master#egg=vnr-internal-energy-1.0'],
-    )
+     )

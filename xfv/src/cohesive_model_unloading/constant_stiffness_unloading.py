@@ -20,9 +20,8 @@ class ConstantStiffnessUnloading(UnloadingModelBase):  # pylint: disable=too-few
         """
         Compute the cohesive stress in case of unloading or reloading condition
         (new_opening is less than the discontinuity maximal opening
-
-        :param disc: discontinuity
-        :param new_opening: opening of the discontinuity
+        :param disc : discontinuity
+        :param new_opening : opening of the discontinuity
         :return: cohesive stress (float)
         """
         cohesive_force = (disc.history_min_cohesive_force +

@@ -18,18 +18,15 @@ try:
 except ImportError:
     USE_INTERNAL_SOLVER = True
 
-
 def consecutive(data: np.ndarray, stepsize=1):
     """
     Return an array in which each item is an array of contiguous values of the original data array
-
     Taken from https://stackoverflow.com/questions/7352684/how-to-find-the-groups-of-consecutive-elements-in-a-numpy-array
 
     :param data: the array to be splitted in continuous arrays
     :param stepsize: the difference between tow values that are considered contiguous
     """
     return np.split(data, np.where(np.diff(data) != stepsize)[0]+1)
-
 
 def get_slices(mask: np.ndarray) -> Tuple[slice]:
     """
@@ -50,13 +47,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     """
 
     @classmethod
-    def apply_equation_of_state(cls, cell: Cell, eos, density: np.array, density_new: np.array,
-                                pressure: np.array, pressure_new: np.array,
-                                energy: np.array, energy_new: np.array,
-                                pseudo: np.array, cson_new: np.array):
+    def apply_equation_of_state(cls, cell: Cell, eos, density, density_new, pressure, pressure_new,
+                                energy, energy_new, pseudo, cson_new):
         """
         Apply the equation of state to get the new internal energy, pressure and sound speed
-
         :param cell: cell collection [in]
         :param eos: equation of state object [in]
         :param density: array of current density [in]
@@ -111,13 +105,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                   stress_dev_current, stress_dev_new, strain_rate_dev):
         """
         Take into account the additional term in internal energy due to elasticity
-
-        :param dt: time step
-        :param density_current: density at time t
-        :param density_new: density at time t+dt
-        :param stress_dev_current: stress deviator at time t
-        :param stress_dev_new: stress deviator at time t+dt
-        :param strain_rate_dev: deviator of the strain rate tensor at time t+dt/2
         """
         # The factor 1/2 from the mean between density_current et density_new simplifies with
         # the 1/2 coming from the mean between stress_dev_current et stress_dev_new
@@ -135,17 +122,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Compute the deviator of strain rate tensor (defined at the center of the cell)
         from the coordinates and velocities interpolated at the center of the cell
-
-        :param dt: time step (float)
-        :param x_new: coordinates array at time n+1 of the left and right nodes of each cell.
-        :param u_new: velocity array at time n+1/2 of the left and right nodes of each cell
-
-        .. note::
-            x_new, u_new shape is (size(mask), 2)
-
-            - x_new is an array : array([coord_node_left, coord_node_right] * nbr_cells in the mask)
-            - u_new is an array : array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
-
+        :param mask : bool array to identify cells to be computed
+        :param dt : time step (float)
+        :param x_new : coordinates array at time n+1 of the left and right nodes of each cell
+        Shape is array([coord_node_left, coord_node_right] * nbr_cells in the mask)
+        :param u_new : velocity array at time n+1/2 of the left and right nodes of each cell
+        Shape is array([velocity_node_left, velocity_node_right] * nbr_cells in the mask)
+        x_new, u_new shape is (size(mask), 2)
         """
         # Strain rate tensor
         x_demi = x_new - dt * 0.5 * u_new
@@ -161,7 +144,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                        size_new: np.array, cel_son: np.array, a_pseudo: float, b_pseudo: float):
         """
         Computation of artificial viscosity
-
         :param delta_t: time step
         :param rho_old: density at time t
         :param rho_new: density at time t+dt
@@ -189,15 +171,14 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                           pseudo_old, pseudo_new):
         """
         Computation of the time step
-
-        :param cfl: nombre cfl
-        :param cfl_pseudo: cfl linked to the shock treatment stability condition
-        :param rho_old: density at time t
-        :param rho_new: density at time t+dt
-        :param size_new: size of element
-        :param sound_speed_new: sound velocity at time t+dt
-        :param pseudo_old: artificial viscosity at time t
-        :param pseudo_new: artificial viscosity at timet+dt
+        :param cfl : nombre cfl
+        :param cfl_pseudo : cfl linked to the shock treatment stability condition
+        :param rho_old : density at time t
+        :param rho_new : density at time t+dt
+        :param size_new : size of element
+        :param sound_speed_new : sound velocity at time t+dt
+        :param pseudo_old : artificial viscosity at time t
+        :param pseudo_new : artificial viscosity at timet+dt
         """
         # pylint: disable=too-many-arguments
         local_cson = np.copy(sound_speed_new) ** 2
@@ -216,7 +197,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def __init__(self, number_of_elements: int):
         """
         Build the array of cells (1D)
-
         :param number_of_elements: number of cells
         """
         super(OneDimensionCell, self).__init__(number_of_elements)
@@ -382,12 +362,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_size(self, topology, node_coord):
         """
         Computation of the cells initial length
-
-        :param topology: table to link nodes and cells index
-        :param node_coord: array with nodes coordinates
-
-        :type topology: Topology1D
-        :type node_coord: np.array([nbr_nodes, 1], dtype=np.float64)
+        :param topology : table to link nodes and cells index
+        :param node_coord : array with nodes coordinates
         """
         connectivity = topology.nodes_belonging_to_cell
         size = node_coord[connectivity[:, 1]] - node_coord[connectivity[:, 0]]
@@ -400,14 +376,9 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_new_size(self, topology, node_coord, mask):
         """
         Computation of the cells length at time t+dt
-
-        :param topology: table to link nodes and cells index
-        :param node_coord: array with the nodes coordinates at time t+dt
-        :param mask: boolean array to identify classical cells
-
-        :type topology: Topology1D
-        :type node_coord: np.array([nbr_nodes, 1], dtype=np.float64)
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param topology : table to link nodes and cells index
+        :param node_coord : array with the new nodes coordinates
+        :param mask : array of boolean to identify classical cells
         """
         connectivity = topology.nodes_belonging_to_cell
         size = node_coord[connectivity[:, 1]] - node_coord[connectivity[:, 0]]
@@ -420,22 +391,16 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_new_density(self, mask):
         """
         Computation of the density of the cells at time t+dt using mass conservation principle
-
-        :param mask: array of boolean to identify classical cells
-
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param mask : array of boolean to identify classical cells
         """
         self.density.new_value[mask] = self.density.current_value[mask] * \
                                        self.size_t[mask] / self.size_t_plus_dt[mask]
 
-    def compute_new_pseudo(self, delta_t: float, mask):
+    def compute_new_pseudo(self, delta_t, mask):
         """
         Computation of cells artificial viscosity at time t+dt
-
-        :param delta_t: time step
-        :param mask: boolean array to identify classical cells
-
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param delta_t : time step
+        :param mask : array of boolean to identify classical cells
         """
         self.pseudo.new_value[mask] = OneDimensionCell.compute_pseudo(
             delta_t, self.density.current_value[mask], self.density.new_value[mask],
@@ -445,10 +410,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_new_time_step(self, mask):
         """
         Computation of the time step in the cells at time t+dt
-
-        :param mask: boolean array to identify classical cells
-
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param mask : array of boolean to identify classical cells
         """
         cfl = self.data.numeric.cfl
         cfl_pseudo = self.data.numeric.cfl_pseudo
@@ -464,29 +426,22 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_shear_modulus(self, shear_modulus_model, mask):
         """
         Compute the shear modulus G according to the constitutive elasticity model in XDATA
-
-        :param shear_modulus_model: model to compute the shear modulus
-        :param mask: mask to identify the cells to be computed
-
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param shear_modulus_model : model to compute the shear modulus
+        :param mask : mask to identify the cells to be computed
         """
         self.shear_modulus.new_value[mask] = shear_modulus_model.compute(self.density.new_value[mask])
 
     def compute_yield_stress(self, yield_stress_model, mask):
         """
         Compute the yield stress according to plasticity constitutive model in XDATA
-
-        :param yield_stress_model: model to compute the yield stress
-        :param mask: mask to identify the cells to be computed
-
-        :type mask: np.array([nbr_cells, 1], dtype=bool)
+        :param yield_stress_model : model to compute the yield stress
+        :param mask : mask to identify the cells to be computed
         """
         self.yield_stress.new_value[mask] = yield_stress_model.compute(self.density.new_value[mask])
 
     def compute_complete_stress_tensor(self):
         """
-        Compute the Cauchy stress tensor (sum of pressure, artificial viscosity and
-        deviatoric stress)
+        Compute the Cauchy stress tensor (assemble pression et dï¿½viateur)
         """
         for i in range(0, 3):
             self._stress[:, i] = - (self.pressure.new_value + self.pseudo.new_value)
@@ -499,20 +454,19 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         Compute the deviatoric stress tensor
 
         :param shear_modulus: shear modulus
-        :type shear_modulus: numpy.ndarray([nb_cells,])
-        :param strain_rate_tensor: tensor of the strain rate
+        :type shear_modulus : numpy.ndarray([nb_cells,])
+        :param strain_rate_tensor : tensor of the strain rate
         :type strain_rate_tensor: numpy.ndarray([nb_cells, 3])  ( [[eps_xx, eps_yy, eps_zz], ...] )
-        :param current_deviatoric_stress_tensor: deviatoric stress tensor at the current time step
-        :type current_deviatoric_stress_tensor: numpy.ndarray([nb_cells, 3])
-        :param time_step: time step
-        :type time_step: float
+        :param current_deviatoric_stress_tensor : deviatoric stress tensor at the current time step
+        :type current_deviatoric_stress_tensor : numpy.ndarray([nb_cells, 3])
+        :param time_step : time step
+        :type time_step : float
         """
         G = shear_modulus[np.newaxis].T  # Get a 'vertical' vector 
         # Reminder : S / dt * (-W * S + S * W) + 2. * G * deviator_strain_rate * dt
-        _dev_stress_new = (current_deviatoric_stress_tensor +
-                           2. * np.multiply(G, strain_rate_tensor) * time_step)
+        _dev_stress_new = current_deviatoric_stress_tensor + 2. * np.multiply(G, strain_rate_tensor) * time_step
         # Ensure the trace to be null
-        trace = (_dev_stress_new[:, 0] + _dev_stress_new[:, 1] + _dev_stress_new[:, 2]) / 3.
+        trace = (_dev_stress_new[:, 0] + _dev_stress_new[:, 1] + _dev_stress_new[:, 2])/ 3.
         full_trace = np.array([trace, trace, trace]).transpose()
         return _dev_stress_new - full_trace
 
@@ -520,12 +474,11 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                          node_velocity_new, delta_t):
         """
         Compute the deviatoric part of the stress tensor
-
-        :param mask: mask to select classical cells
-        :param topology: table of connectivity : link between cells and nodes id
-        :param node_coord_new: array with new nodes coordinates (time n+1)
-        :param node_velocity_new: array with new nodes velocities (time n+1/2)
-        :param delta_t: time step (staggered tn+1/2)
+        :param mask : mask to select classical cells
+        :param topology : table of connectivity : link between cells and nodes id
+        :param node_coord_new : array with new nodes coordinates (time n+1)
+        :param node_velocity_new : array with new nodes velocities (time n+1/2)
+        :param delta_t : time step (staggered tn+1/2)
         """
         # Compute rotation rate tensor and strain rate tensor: W = 0 en 1D
         D = self.compute_deviator_strain_rate(delta_t, topology, node_coord_new, node_velocity_new)
@@ -540,12 +493,11 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
     def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
         """
         Compute strain rate deviator
-
-        :param mask: mask to select classical cells
-        :param dt: time step
-        :param topology: table of connectivity : link between cells and nodes id
-        :param node_coord_new: array with new nodes coordinates
-        :param node_velocity_new: array with new nodes velocities
+        :param mask : mask to select classical cells
+        :param dt : time step
+        :param topology : table of connectivity : link between cells and nodes id
+        :param node_coord_new : array with new nodes coordinates
+        :param node_velocity_new : array with new nodes velocities
         """
         connectivity = topology.nodes_belonging_to_cell
         u_new = node_velocity_new[connectivity][:, :, 0]
@@ -558,24 +510,10 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def _compute_radial_return(j2, yield_stress):
-        """
-        Computes the radial return to be applied in order to recover the yield surface
-
-        :param j2: second invariant of the stress tensor
-        :param yield_stress: yield stress
-        """
         return yield_stress / j2
 
     @staticmethod
     def _compute_plastic_strain_rate_tensor(radial_return, shear_modulus, dt, dev_stress):
-        """
-        Computes the plastic part of the strain rate tensor
-
-        :param radial_return: radial return to be applied in order to recover the yield surface
-        :param shear_modulus: shear modulus
-        :param dt: time step
-        :param dev_stress: deviaotoric stress tensor
-        """
         nume = np.multiply((1. - radial_return)[np.newaxis].T, dev_stress) 
         denom = radial_return * 3 * shear_modulus * dt
         denom = denom[np.newaxis].T
@@ -583,14 +521,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def _compute_equivalent_plastic_strain_rate(j2, shear_modulus, yield_stress, dt):
-        """
-        Computes the equivalent plastic strain rate
-
-        :param j2: radial return to be applied in order to recover the yield surface
-        :param shear_modulus: shear modulus array
-        :param yield_stress: yield stress array
-        :param dt: time step
-        """
         return  (j2 - yield_stress) / (3. * shear_modulus * dt)
 
     def apply_plasticity(self, mask, delta_t):
@@ -599,9 +529,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         - compute yield stress
         - tests plasticity criterion
         - compute plastic strain rate for plastic cells
-
-        :param mask: boolean array to identify cells to be computed
-        :param dt: time step
         """
         invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         yield_stress = self.yield_stress.new_value[mask]
@@ -612,12 +539,11 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus, yield_stress, delta_t)
         self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
 
-    def impose_pressure(self, ind_cell: int, pressure: float):
+    def impose_pressure(self, ind_cell, pressure):
         """
         Pressure imposition
-
-        :param ind_cell: index of the cells
-        :param pressure: pressure value to be imposed
+        :param ind_cell : index of the cells
+        :param pressure : pressure value to be imposed
         """
         self.pressure.new_value[ind_cell] = pressure
         self._deviatoric_stress_new[ind_cell, :] = np.ones([3]) * pressure

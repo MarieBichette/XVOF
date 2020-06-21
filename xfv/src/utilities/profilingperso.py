@@ -18,7 +18,8 @@ def timeit_file(filename=None):
     A decorator allowing to write in the file, the real and cpu execution
     times of the decorated function
 
-    :param filename: name of the output file
+    @param
+    filename : name of the output file
     """
     def timeit(func):
         """
@@ -63,7 +64,7 @@ def logit(func):
     A decorator allowing to trace the call of decorated function by printing
     their arguments
 
-    :param func: function which call should be traced
+    @param func : function which call should be traced
     """
     def wrapper(*args, **kwargs):
         """
@@ -82,10 +83,7 @@ if __name__ == "__main__":
     @logit
     def countdown(nbr_iter):
         """
-        Test function to try the wrapper
         Countdown on nbr_iter iterations
-
-        :param nbr_iter: number of iteration
         """
         for i in range(nbr_iter, 0, -1):
             if i % 1000 == 0:

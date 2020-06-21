@@ -43,7 +43,6 @@ class FigureManager(metaclass=Singleton):
     def __init__(self, mesh_instance, dump=False):
         """
         Creation of the instance
-
         :param mesh_instance:
         :param dump:
         """
@@ -89,10 +88,10 @@ class FigureManager(metaclass=Singleton):
 
     def create_figure_for_cell_field(self, field_x, field_y):
         """
-        Creation of figures for cell fields. Abscissa is thus the cell coordinates
-
+        Creation of figures for cell fields
         :param field_x: abscissa of the figure
         :param field_y: ordinate of the figure
+        Abscissa is thus the cell coordinates
         """
         try:
             x_value = self.__champs_mailles[field_x]
@@ -117,10 +116,10 @@ class FigureManager(metaclass=Singleton):
 
     def create_figure_for_node_field(self, field_x, field_y):
         """
-        Creation of figures for nodal fields. Abscissa is thus the node coordinates
-
+        Creation of figures for nodal fields
         :param field_x: abscissa of the figure
         :param field_y: ordinate of the figure
+        Abscissa is thus the node coordinates
         """
         try:
             x_value = np.array(self.__champs_noeuds[field_x])
@@ -165,7 +164,6 @@ class FigureManager(metaclass=Singleton):
     def update_figs(self, title_compl=None):
         """
         Update the fields and the associated figures
-
         :param title_compl: title of the figure
         """
         self.update_fields()
@@ -186,9 +184,8 @@ class FigureManager(metaclass=Singleton):
         If the current time given in argument is above the time of next output then
         the manager asks each of its database to save fields. It's the same for
         a current iteration above the iteration of next output
-
-        :param time: simulation time
-        :param iteration: id of the current iteration
+        :param time : simulation time
+        :param iteration : id of the current iteration
         """
         if self.__time_ctrl is not None:
             if self.__time_ctrl.db_has_to_be_updated(time, iteration):

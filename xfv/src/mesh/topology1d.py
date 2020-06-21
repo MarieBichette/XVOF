@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python2.7
+# -*- coding: iso-8859-1 -*-
 """
-Module to manage mesh topology and objects connectivity in 1d cases
+Classe g�rant la topologie 1D du maillage
 """
 from xfv.src.mesh.topology import Topology
 
 
 class Topology1D(Topology):
     """
-    1D specialization of the Topology class
+    Sp�cialisation 1D de topology
 
     >>> my_topo = Topology1D(11, 10)
     >>> my_topo.get_cells_in_contact_with_node(0)
@@ -35,7 +36,6 @@ class Topology1D(Topology):
     def __init__(self, nbr_of_nodes, nbr_of_cells):
         """
         Build a Class Topology1D for 1D meshes
-
         :param nbr_of_nodes: Number of nodes in the mesh
         :param nbr_of_cells: Number of cells in the mesh
         """
@@ -44,23 +44,19 @@ class Topology1D(Topology):
 
     def add_cell_in_contact_with_node(self, ind_node, ind_cell):
         """
-        Register a cell ind_cell as belonging to the node ind_node
-
-        :param ind_cell: cell index connected to ind_node
-        :param ind_node: node index connected to ind_cell
+        Ajoute l'indice, 'ind_cell', de la maille � la liste des mailles en contact
+        avec le noeud d'indice 'ind_node'
         """
         Topology.add_cell_in_contact_with_node(self, ind_node, ind_cell)
         # Note: certainly no need for this check as the variable self._cells_in_contact_with_node
-        #Â is by construct of shape (nbr_of_nodes, 2)
+        # is by construct of shape (nbr_of_nodes, 2)
         if self._cells_in_contact_with_node.shape[1] != 2:  # pylint:disable=unsubscriptable-object
             raise RuntimeError("One of the node is connected to more than two cells.\n"
                                "It is not correct in 1D!")
 
-    def _generate_mesh(self, nbr_of_cells: int):
+    def _generate_mesh(self, nbr_of_cells):
         """
         Generation du maillage (connectivity cells <-> nodes)
-
-        :param nbr_of_cells: number of cells
         """
         for ind_cell in range(nbr_of_cells):
             ind_node_left = ind_cell
@@ -69,8 +65,8 @@ class Topology1D(Topology):
             self.add_cell_in_contact_with_node(ind_node_right, ind_cell)
             self.set_nodes_belonging_to_cell(ind_cell, [ind_node_left, ind_node_right])
 
-        # Avec cette construction, le premier noeud est connecté aux mailles [0, -1]
-        # Or on voudrait que ça soit l'inverse pour le calcul des forces
+        # Avec cette construction, le premier noeud est connect� aux mailles [0, -1]
+        # Or on voudrait que �a soit l'inverse pour le calcul des forces
         # => Swap :
         assert self._cells_in_contact_with_node[0, 1] == -1
         self._cells_in_contact_with_node[0, 1] = self._cells_in_contact_with_node[0, 0]
