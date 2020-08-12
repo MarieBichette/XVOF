@@ -28,7 +28,7 @@ field_list["InternalEnergy"] = FieldConstruction("ClassicalInternalEnergy",
 field_list["SoundVelocity"] = FieldConstruction("ClassicalSoundVelocity",
                                                 "cells", ("sound_velocity", "current_value"))
 field_list["ArtificialViscosity"] = FieldConstruction("ClassicalArtificialViscosity",
-                                                     "cells", ("pseudo", "current_value"))
+                                                      "cells", ("pseudo", "current_value"))
 field_list["Stress"] = FieldConstruction("ClassicalStress", "cells", ("stress", ))
 field_list["DeviatoricStress"] = FieldConstruction("ClassicalDeviatoricStress",
                                                    "cells", ("deviatoric_stress_current", ))
@@ -37,11 +37,11 @@ field_list["EquivalentPlasticStrainRate"] = FieldConstruction(
 field_list["PlasticStrainRate"] = FieldConstruction("ClassicalPlasticStrainRate",
                                                     "cells", ("plastic_strain_rate", ))
 field_list["Porosity"] = FieldConstruction("ClassicalPorosity",
-                                                    "cells", ("porosity","current_value"))
+                                           "cells", ("porosity", "current_value"))
 field_list["ShearModulus"] = FieldConstruction("ClassicalShearModulus",
-                                                    "cells", ("shear_modulus","current_value"))
+                                               "cells", ("shear_modulus", "current_value"))
 field_list["YieldStress"] = FieldConstruction("ClassicalYieldStress",
-                                                    "cells", ("yield_stress","current_value"))
+                                              "cells", ("yield_stress", "current_value"))
 
 enr_field_list = dict()
 enr_field_list["NodeVelocity"] = FieldConstruction("AdditionalNodeVelocity", None,

@@ -290,7 +290,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :param delta_t: time step
         :param porosity_model: model to compute the porosity model
         """
-        self.cells.compute_new_porosity(delta_t, porosity_model,self.cells.classical)
+        self.cells.compute_new_porosity(delta_t, porosity_model, self.cells.classical)
 
     def compute_new_cells_pseudo_viscosity(self, delta_t: float):
         """

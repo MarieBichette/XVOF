@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Interface for the shear modulus calculation
+Interface for the porosity evolution calculation
 """
 from abc import abstractmethod
 import numpy as np

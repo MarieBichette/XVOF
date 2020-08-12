@@ -161,21 +161,15 @@ def _build_material_porosity_model(
     """
     Build the porosity model objects from the XDATA
     """
+    has_porosity_model : bool = False
+    val_porosity_model = None
+
     if material_data is not None:
-        bool_porosity_model: bool = material_data.porosity_model is not None
+        has_porosity_model = material_data.porosity_model is not None
+    if has_porosity_model:
+        val_porosity_model = material_data.porosity_model.porosity_model.build_porosity_model_obj()
 
-        # Set projectile porosity model
-        if bool_porosity_model:
-            val_porosity_model = material_data.porosity_model.porosity_model.build_porosity_model_obj()
-        else:
-            val_porosity_model = None
-
-    # Default : no model defined => hydro
-    else:
-        bool_porosity_model = False
-        val_porosity_model = None
-
-    return (bool_porosity_model, val_porosity_model)
+    return (has_porosity_model, val_porosity_model)
 
 def main(directory: Path) -> None:
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
@@ -279,13 +273,11 @@ def main(directory: Path) -> None:
     #       READ POROSITY MODEL SHORTCUTS          #
     # ---------------------------------------------#
 
+    target_porosity_model_bool = False
+    target_porosity_model = None
     if data.material_target is not None:
         target_model = data.material_target
-        (target_porosity_model_bool,target_porosity_model) = \
-            _build_material_porosity_model(target_model)
-    else:
-        target_porosity_model_bool = False
-        target_porosity_model = None
+        target_porosity_model_bool,target_porosity_model = _build_material_porosity_model(target_model)
 
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
@@ -347,7 +339,6 @@ def main(directory: Path) -> None:
         #          POROSITY MODEL COMPUTATION          #
         # ---------------------------------------------#
         if target_porosity_model_bool:
-            #print("target_porosity_model_bool") OK
             my_mesh.compute_new_cells_porosity(dt, target_porosity_model)
         # ---------------------------------------------#
         #    CELLS DEVIATOR STRESSES COMPUTATION       #

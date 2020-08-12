@@ -34,7 +34,7 @@ class PorosityModelProps(TypeCheckedDataClass):
 
     @abstractmethod
     def compute_porosity(self, delta_t: float, porosity: np.array,
-                                               pressure: np.array) -> np.array:
+                         pressure: np.array) -> np.array:
         """
         Compute the new value of porosity
         """
@@ -49,4 +49,3 @@ class JohnsonModelProps(PorosityModelProps):
     def __post_init__(self):
         super().__post_init__()  # typecheck first
         self._ensure_strict_positivity('effective_strength_for_johnson', 'viscosity_for_johnson')
-

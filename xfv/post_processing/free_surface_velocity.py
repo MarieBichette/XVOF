@@ -77,11 +77,11 @@ def run():
             if args.verbose:
                 print("New t0 is : " + str(time_0))
         plt.plot((time - time_0) * 1.e+6, velocity, label=case)
-        if(args.write_data):
-            data_path=case+args.write_data
+        if (args.write_data):
+            data_path=case + args.write_data
             with open(data_path, "w") as file_object:
                 for x_data, y_data in zip(time, velocity):
-                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data,y_data))
+                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
             print("Data written in {:s}".format(data_path))
 
     # ----------------------------------------------------------

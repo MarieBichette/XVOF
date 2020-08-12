@@ -293,7 +293,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         message += "==> internal energy at t+dt = {}".format(self.energy.new_value) + os.linesep
         message += "==> sound velocity at t = {}".format(
             self.sound_velocity.current_value) + os.linesep
-        message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
+        message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value) + os.linesep
         message += "==> porosity at t = {}".format(self.porosity.current_value) + os.linesep
         message += "==> porosity at t+dt = {}".format(self.porosity.new_value) + os.linesep
         print(message)

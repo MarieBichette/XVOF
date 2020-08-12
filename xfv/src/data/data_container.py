@@ -98,7 +98,7 @@ class DatabaseProps(TypeCheckedDataClass):
 ALL_VARIABLES = ["NodeVelocity", "NodeCoordinates", "CellSize", "Pressure", "Density",
                  "InternalEnergy", "SoundVelocity", "ArtificialViscosity", "Stress",
                  "DeviatoricStress", "EquivalentPlasticStrainRate", "PlasticStrainRate",
-                 "Porosity","CohesiveForce", "DiscontinuityOpening","ShearModulus","YieldStress"]
+                 "Porosity", "CohesiveForce", "DiscontinuityOpening", "ShearModulus", "YieldStress"]
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -134,9 +134,6 @@ class BoundaryConditionsProps(TypeCheckedDataClass):
 class PorosityModProps(TypeCheckedDataClass):
     porosity_model: PorosityModelProps
     name: str
-    # Do not check if name is among authorized values because
-    # it is done in one of the DataContainer's method and
-    # moving the test here, implies to allow the contact_model to be None
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -161,7 +158,7 @@ class InitialValues(TypeCheckedDataClass):
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
-        self._ensure_strict_positivity('rho_init', 'temp_init','porosity_init')
+        self._ensure_strict_positivity('rho_init', 'temp_init', 'porosity_init')
         self._ensure_positivity('yield_stress_init', 'shear_modulus_init')
 
         if self.porosity_init < 1.0:
@@ -428,16 +425,22 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             params = matter['failure']['porosity-model']
         except KeyError:
             return None
-        porosity_model_name = params['name'].lower()
-        if porosity_model_name == "johnsonmodel":
-            initial_porosity_for_johnson = params['coefficients']['initial-porosity']
-            effective_strength_for_johnson = params['coefficients']['effective-strength']
-            viscosity_for_johnson = params['coefficients']['viscosity']
-            porosity_model_props: PorosityModelProps= JohnsonModelProps(
-                initial_porosity_for_johnson, effective_strength_for_johnson, viscosity_for_johnson)
-        else:
-            raise ValueError(f"Unknwown porosity model name: {porosity_model_name} "
-                             "Please choose among (JohnsonModel)")
+
+        try:
+            porosity_model_name = params['name'].lower()
+            if porosity_model_name == "johnsonmodel":
+                initial_porosity_for_johnson = params['coefficients']['initial-porosity']
+                effective_strength_for_johnson = params['coefficients']['effective-strength']
+                viscosity_for_johnson = params['coefficients']['viscosity']
+                porosity_model_props: PorosityModelProps = JohnsonModelProps(
+                    initial_porosity_for_johnson,
+                    effective_strength_for_johnson,
+                    viscosity_for_johnson)
+        except:
+            raise ValueError(f"No keyword 'name' for porosity model name: {porosity_model_name}."
+                             "Please choose among (JohnsonModel)."
+                             "For JohnsonModel, Keyword 'coefficients' must be defined. ")
+
         return porosity_model_props, porosity_model_name
 
     @staticmethod
@@ -502,10 +505,9 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         # Porosity model
         porosity_model_props = self.__get_porosity_model_props(material)
+        porosity_model: Optional[PorosityModProps] = None
         if porosity_model_props:
-            porosity_model: Optional[PorosityModProps]=PorosityModProps(*porosity_model_props)
-        else:
-            porosity_model = None
+            porosity_model = PorosityModProps(*porosity_model_props)
 
         # Contact between discontinuity boundaries treatment
         contact_props = self.__get_contact_props(material)
@@ -698,7 +700,6 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             failure_criterion = DamageCriterionProps(fail_crit_value)
         elif fail_crit_name == "Porosity":
             failure_criterion = PorosityCriterionProps(fail_crit_value)
-            print(str(failure_criterion))
         elif fail_crit_name == "HalfRodComparison":
             failure_criterion = HalfRodComparisonCriterionProps(failure_cell_index)
         elif fail_crit_name == "MaximalStress":

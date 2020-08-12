@@ -77,11 +77,11 @@ def run():
             print("~~~~~~~~~~~~~")
         # Plot field :
         plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], '.-', label=case)
-        if(args.write_data):
-            data_path="{:s}Field_evolution_{:s}_{:d}.dat".format(case,field,item_id)
+        if (args.write_data):
+            data_path = f"{case}Field_evolution_{field}_{item_id}.dat"
             with open(data_path, "w") as file_object:
                 for x_data, y_data in zip(item_history[:, 0], item_history[:, 1]):
-                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data,y_data))
+                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
             print("Data written in {:s}".format(data_path))
 
 
