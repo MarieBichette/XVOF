@@ -65,7 +65,6 @@
       }
     ],
     "variables": [
-      
       "ArtificialViscosity",
       "CohesiveForce",
       "Density",

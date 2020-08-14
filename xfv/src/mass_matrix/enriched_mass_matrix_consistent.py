@@ -61,7 +61,6 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
     def inverse_enriched_mass_matrix_classic_dof(self):
         """
         Accessor on the inverse of the mass matrix for classical degrees of freedom
-
         :return: the extraction of the inverse of the mass matrix for classical dof
         """
         return self._inv_enriched_mass_matrix[0:self._matrix_size - 2, 0:self._matrix_size - 2]
@@ -70,7 +69,6 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
     def inverse_enriched_mass_matrix_enriched_dof(self):
         """
         Accessor on the inverse of the mass matrix for enriched degrees of freedom
-
         :return: extraction of the inverse of the mass matrix for enriched dof
         """
         return self._inv_enriched_mass_matrix[self._matrix_size - 2:self._matrix_size,
@@ -81,7 +79,6 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         """
         Accessor on the inverse of the mass matrix for coupling between classical and enriched
         degrees of freedom
-
         :return: the coupling part of the inverse of the mass matrix
         """
         return self._inv_enriched_mass_matrix[0:self._matrix_size - 2,
@@ -91,9 +88,8 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         """
         Compute the Hansbo mass matrix for the left part
         DDL are organized : 0 : N1g and 1 : N2g
-
         :param mass_0: mass of the element right on the left of the cracked cell
-        :param mass_1: mass of the cracked cell
+        :param mass_1 : mass of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
         self._enriched_mass_matrix_left_part[0, 0] = \
@@ -106,8 +102,7 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         """
         Compute the Hansbo mass matrix for the right part
         DDL are organized : 2 : N2d and 3: N1d
-
-        :param mass_1: mass of the cracked cell
+        :param mass_1 : mass of the cracked cell
         :param mass_2: mass of the element right on the right of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
@@ -135,6 +130,7 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
     def print_enriched_mass_matrix(self):
         """
         Print the mass matrix * (with aligned members)
+        :return:
         """
         m = self._enriched_mass_matrix  # pylint: disable=invalid-name
         print("Enriched mass matrix :")

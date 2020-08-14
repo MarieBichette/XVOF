@@ -68,9 +68,6 @@
       "path": "all_fields.hdf5",
       "iteration-period": 20
       }
-    ],
-    "variables": [
-      "Pressure"
     ]
   }
 }

@@ -15,7 +15,7 @@ class HalfRodComparisonCriterion(RuptureCriterion):   # pylint: disable=too-few-
         super(HalfRodComparisonCriterion, self).__init__()
         self.__ruptured_cell_index = int(ruptured_cell_index)
 
-    def check_criterion(self, cells, *args, **kwargs):
+    def check_criterion(self, cells):
         """
         Return the mask of the cells where only the ruptured_cell_index is set to True
 

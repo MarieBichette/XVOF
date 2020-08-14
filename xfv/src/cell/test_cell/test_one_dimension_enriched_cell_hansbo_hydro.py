@@ -55,23 +55,23 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         self.my_cells._deviatoric_stress_new = np.array([[4., 5., 6.]])
         self.my_cells._deviatoric_strain_rate = np.array([[1., 1., 1.]])
 
-        self.my_cells.enr_density.current_value = np.array([4000.])
-        self.my_cells.enr_density.new_value = np.array([4020.])
-        self.my_cells.enr_pressure.current_value = np.array([1.1e+09])
-        self.my_cells.enr_pressure.new_value = np.array([1.3e+09])
-        self.my_cells.enr_energy.current_value = np.array([1.e+06])
-        self.my_cells.enr_energy.new_value = np.array([0.8e+06])
-        self.my_cells.enr_artificial_viscosity.current_value = np.array([1.e+08])
-        self.my_cells.enr_artificial_viscosity.new_value = np.array([1.e+08])
-        self.my_cells.enr_sound_velocity.current_value = np.array([300.])
-        self.my_cells.enr_sound_velocity.new_value = np.array([302.])
-        self.my_cells._enr_deviatoric_stress_current = np.array([[3., 2., 1.], ])
-        self.my_cells._enr_deviatoric_stress_new = np.array([[5., 12., 7.], ])
-        self.my_cells._enr_deviatoric_stress_new = np.array([[5., 12., 7.], ])
-        self.my_cells._enr_deviatoric_strain_rate = np.array([[4., 3., 8.], ])
-        self.my_cells.enr_yield_stress.current_value = np.array([10.])
-        self.my_cells._enr_equivalent_plastic_strain_rate = np.array([0.])
-        self.my_cells._enr_stress = np.array([[0., 0., 0.]])
+        self.my_cells.additional_dof_density.current_value = np.array([4000.])
+        self.my_cells.additional_dof_density.new_value = np.array([4020.])
+        self.my_cells.additional_dof_pressure.current_value = np.array([1.1e+09])
+        self.my_cells.additional_dof_pressure.new_value = np.array([1.3e+09])
+        self.my_cells.additional_dof_energy.current_value = np.array([1.e+06])
+        self.my_cells.additional_dof_energy.new_value = np.array([0.8e+06])
+        self.my_cells.additional_dof_artificial_viscosity.current_value = np.array([1.e+08])
+        self.my_cells.additional_dof_artificial_viscosity.new_value = np.array([1.e+08])
+        self.my_cells.additional_dof_sound_velocity.current_value = np.array([300.])
+        self.my_cells.additional_dof_sound_velocity.new_value = np.array([302.])
+        self.my_cells._additional_dof_deviatoric_stress_current = np.array([[3., 2., 1.],])
+        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.],])
+        self.my_cells._additional_dof_deviatoric_stress_new = np.array([[5., 12., 7.], ])
+        self.my_cells._additional_dof_deviatoric_strain_rate = np.array([[4., 3., 8.],])
+        self.my_cells.additional_dof_yield_stress.current_value = np.array([10.])
+        self.my_cells._additional_dof_equivalent_plastic_strain_rate = np.array([0.])
+        self.my_cells._additional_dof_stress = np.array([[0., 0., 0.]])
         self.my_cells.left_part_size.current_value = np.array([0.2])
         self.my_cells.right_part_size.current_value = np.array([0.3])
         self.my_cells.left_part_size.new_value = np.array([0.4])
@@ -117,22 +117,22 @@ class OneDimensionEnrichedHansboCellHydroTest(unittest.TestCase):
         Test of the compute_enriched_elements_new_pressure method (Hansbo case)
         """
         # Configuration des mocks
-        mock_eos.side_effect = [[self.my_cells.enr_energy.new_value,
-                                 self.my_cells.enr_pressure.new_value,
-                                 self.my_cells.enr_sound_velocity.new_value]]
+        mock_eos.side_effect = [[self.my_cells.additional_dof_energy.new_value,
+                                 self.my_cells.additional_dof_pressure.new_value,
+                                 self.my_cells.additional_dof_sound_velocity.new_value]]
 
         self.my_cells.compute_enriched_elements_new_pressure(1.)
 
         mock_eos.assert_any_call(
             self.my_cells, self.my_cells._target_eos,
-            self.my_cells.enr_density.current_value,
-            self.my_cells.enr_density.new_value,
-            self.my_cells.enr_pressure.current_value,
-            self.my_cells.enr_pressure.new_value,
-            self.my_cells.enr_energy.current_value,
-            self.my_cells.enr_energy.new_value,
-            self.my_cells.enr_artificial_viscosity.current_value,
-            self.my_cells.enr_sound_velocity.new_value)
+            self.my_cells.additional_dof_density.current_value,
+            self.my_cells.additional_dof_density.new_value,
+            self.my_cells.additional_dof_pressure.current_value,
+            self.my_cells.additional_dof_pressure.new_value,
+            self.my_cells.additional_dof_energy.current_value,
+            self.my_cells.additional_dof_energy.new_value,
+            self.my_cells.additional_dof_artificial_viscosity.current_value,
+            self.my_cells.additional_dof_sound_velocity.new_value)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python2.7
+# -*- coding: iso-8859-1 -*-
 """
-Module defining the OneDimensionNode class
+Module d�finissant la classe Node1d
 """
 import numpy as np
 from xfv.src.mass_matrix.mass_matrix_utilities import multiplication_masse
@@ -10,7 +11,7 @@ from xfv.src.node import Node
 
 class OneDimensionNode(Node):
     """
-    A class to manage all the nodes in a 1d mesh
+    Un objet Node1d repr�sente l'ensemble des noeuds 1d du maillage
     """
     def __init__(self, nbr_of_nodes, poz_init, vit_init,
                  section=1.):
@@ -42,23 +43,23 @@ class OneDimensionNode(Node):
     @property
     def enrichment_not_concerned(self):
         """
-        By definition, a node is concerned by enrichment if one of his connected cell is enriched,
-        ie if its evolution is modified by enrichment
         :return: boolean mask indicating which nodes are concerned by enrichment
+        (a node is concerned by enrichment if one of his connected cell is enriched,
+        ie if its evolution is modified by enrichment)
         """
         return self._enrichment_not_concerned
 
     @property
     def velocity_field(self):
         """
-        True field of the node velocities
+        Champ de vitesse vraie
         """
         return self._upundemi
 
     @property
     def section(self):
         """
-        Surface associated with a node
+        Surface associ�e au noeud
         """
         return self._section
 
@@ -66,7 +67,7 @@ class OneDimensionNode(Node):
         """
         Affichage des informations concernant le noeud d'indice index
 
-        :param index: node index to print
+        :param index: indice du noeud � afficher
         :type index: int
         """
         Node.infos(self, index)
@@ -76,9 +77,8 @@ class OneDimensionNode(Node):
     def compute_new_force(self, topologie, contrainte, classical_cell_mask: np.array):
         """
         Calcul des forces agissant sur les noeuds
-
         :param topologie: topologie du calcul
-        :param contrainte: tenseur des contriante de cauchy sigma xx
+        :param contrainte : tenseur des contriante de cauchy sigma xx
         :param classical_cell_mask: masks of the classical cells
         :type topologie: Topology
         :type contrainte: numpy.array([nbr_of_node-1, 1], dtype=np.float64, order='C')
@@ -101,23 +101,24 @@ class OneDimensionNode(Node):
 
     def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
-        Computes the node velocities at time t+dt/2
-
+        Calcul de la vitesse au demi pas de temps sup�rieur
         :param delta_t: pas de temps
-        :param mask: boolean array to select non enriched nodes
-        :param matrice_masse: inverse de la matrice de masse
         :type delta_t: float
-        :type mask: boolean array
-
+        :param mask : noeuds s�lectionn�s pour calculer avec cette m�thode
+            (typiquement : OneDimensionEnrichedNode.classical / .enriched )
+            s'applique sur les degr�s de libert� classiques des noeuds classiques ou enrichis
+            ne prend pas en compte le couplage entre degr�s de libert� enrichis/classiques
+        :type mask : tableau de bool�ens
+        :param matrice_masse : inverse de la matrice de masse
         """
         # ddl classique de noeud classique (sauf 0 1 2 3 quand enrichissement)
-        # = noeuds classiques non concernï¿½s par l'enrichissement
+        # = noeuds classiques non concern�s par l'enrichissement
         self._upundemi[mask] = self._umundemi[mask] + \
                                multiplication_masse(matrice_masse, self.force[mask]) * delta_t
 
     def compute_complete_velocity_field(self):
         """
-        Compute the true field of nodal velocity
+        Calcul du champ de vitesse vraie
         """
         self._v_field = np.copy(self._upundemi)
 
@@ -134,10 +135,9 @@ class OneDimensionNode(Node):
 
     def apply_pressure(self, ind_node, pressure):
         """
-        Apply pressure on a given node
-
-        :param ind_node: node index to apply the pressure at
-        :param pressure: pressure to be applied
+        Appliquer une pressure sur le noeud d'indice "ind_node"
+        :param ind_node: indice du noeud sur lequel appliquer la pressure
+        :param pressure: pressure � appliquer
         :type ind_node: int
         :type pressure: float
         """
@@ -146,7 +146,6 @@ class OneDimensionNode(Node):
     def apply_velocity_boundary_coundition(self, ind_node, velocity):
         """
         Appliquer une CL en vitesse sur le noeud ind_node
-
         :param ind_node:
         :param velocity:
         :return:

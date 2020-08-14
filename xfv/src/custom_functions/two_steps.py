@@ -9,9 +9,13 @@ class TwoSteps(CustomFunction):
     """
     This class defines a 2 constant steps function
 
-    .. image:: two_steps.png
-        :scale: 75 %
-        :align: center
+                ^
+    second value|    ...........
+                |    |
+                |    |
+    first value |....|
+                |_________________>
+                 critical time
     """
     def __init__(self, first_value, second_value, critical_time):
         self.__first_value = first_value
@@ -19,12 +23,6 @@ class TwoSteps(CustomFunction):
         self.__critical_time = critical_time
 
     def evaluate(self, time, *args, **kwargs):
-        """
-        Returns the value of the function evaluated at time
-
-        :param time: the required time
-        :return: the value
-        """
         if time <= self.__critical_time:
             return self.__first_value
         return self.__second_value

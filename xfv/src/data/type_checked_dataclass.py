@@ -67,14 +67,6 @@ class TypeCheckedDataClass:
                              f"Please provide a value in {authorized_values} for "
                              f"the coefficient {field_name}")
 
-    def _ensure_list_value_in(self, field_name, authorized_values):
-        field_name_list = getattr(self, field_name)
-        for elem in field_name_list:
-            if elem not in authorized_values:
-                raise ValueError(f"{elem} not in {authorized_values}!"
-                                 f"Please provide a value in {authorized_values} for "
-                                 f"the coefficient {field_name}")
-
     def _ensure_defined(self, field_name, class_name, json_path):
         val = getattr(self, field_name)
         if val is None:
