@@ -12,14 +12,14 @@
     "projectile": {
       "initialization": {
         "initial-velocity": 600.0,
-        "init-thermo": "../../../data/CONSTITUTIVE_MODEL/Aluminium_InitThermo.json"
+        "init-thermo": "../../data/CONSTITUTIVE_MODEL/Aluminium_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Aluminium_MieGruneisen.json"
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Aluminium_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Aluminium_EPP.json",
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Aluminium_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"
@@ -28,14 +28,14 @@
     "target": {
       "initialization": {
         "initial-velocity": 0.0,
-        "init-thermo": "../../../data/CONSTITUTIVE_MODEL/Tantale_InitThermo.json"
+        "init-thermo": "../../data/CONSTITUTIVE_MODEL/Tantale_InitThermo.json"
       },
       "equation-of-state": {
         "name": "Mie-Gruneisen",
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Tantale_MieGruneisen.json"
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Tantale_MieGruneisen.json"
       },
       "rheology": {
-        "coefficients": "../../../data/CONSTITUTIVE_MODEL/Tantale_EPP.json",
+        "coefficients": "../../data/CONSTITUTIVE_MODEL/Tantale_EPP.json",
         "elasticity-model": "Linear",
         "plasticity-criterion": "VonMises",
         "plasticity-model": "EPP"

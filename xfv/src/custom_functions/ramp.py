@@ -9,13 +9,9 @@ class Ramp(CustomFunction):
     """
     A class that defines a ramp between 2 constants steps
 
-                ^
-    second value|       ...........
-                |      /
-                |     /
-    first value |..../
-                |_________________>
-                   start end
+    .. image:: ramp.png
+        :scale: 75 %
+        :align: center
     """
     def __init__(self, first_value, second_value, start_time, end_time):
         """
@@ -34,6 +30,12 @@ class Ramp(CustomFunction):
         assert self.__end_time > self.__start_time
 
     def evaluate(self, time, *args, **kwargs):
+        """
+        Returns the value of the function evaluated at time
+
+        :param time: the required time
+        :return: the value
+        """
         if time <= self.__start_time:
             return self.__first_value
         if time > self.__end_time:

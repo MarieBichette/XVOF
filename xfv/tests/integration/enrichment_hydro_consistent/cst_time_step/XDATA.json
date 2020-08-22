@@ -55,10 +55,8 @@
       "path": "all_fields.hdf5",
       "time-period": 2e-07
       }
-<<<<<<< HEAD
     ],
     "variables": [
-     
       "ArtificialViscosity",
       "CohesiveForce",
       "Density",
@@ -73,8 +71,6 @@
       "SoundVelocity",
       "Stress",
       "CellSize"
-=======
->>>>>>> c66c9fff0a3b940f12affbcfb9589a235b9dbf76
     ]
   }
 }
