@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Definition of CohesiveZoneLaw class
+Definition of CohesiveLaw class
 """
 import numpy as np
 
@@ -53,10 +53,10 @@ class CohesiveLaw:
         Interpolate the value of cohesive stress between points 1 and 2
 
         :param opening: discontinuity opening
-        :param separation_1 : separation at point 1
-        :param separation_2 : separation at point 2
-        :param stress_1 : stress at point 1
-        :param stress_2 : stress at point 2
+        :param separation_1: separation at point 1
+        :param separation_2: separation at point 2
+        :param stress_1: stress at point 1
+        :param stress_2: stress at point 2
         :return: cohesive stress
         """
         slope = (stress_2 - stress_1) / (separation_2 - separation_1)

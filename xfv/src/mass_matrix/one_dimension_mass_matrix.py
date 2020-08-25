@@ -36,9 +36,10 @@ class OneDimensionMassMatrix:
     def compute_correction_mass_matrix_for_cell_500(self, cell_mass_vector, mask_node, topologie):
         """
         Compute the exact form of mass matrix (classical) , no lumping
+
         :param cell_mass_vector: vector of cells mass
         :param mask_node: id of cell to be considered
-        :param topologie : topology
+        :param topologie: topology
         """
         connect = topologie.cells_in_contact_with_node[mask_node]
         mask_cell = np.unique(connect)[1:]

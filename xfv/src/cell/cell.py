@@ -54,6 +54,7 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def __init__(self, nbr_of_cells: int):
         """
         Constructor of the array of cells
+
         :param nbr_of_cells: number of cells
         """
         self.data = DataContainer()  # pylint: disable=no-value-for-parameter
@@ -84,14 +85,22 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self._nbr_of_cells, material_data.shear_modulus_init, material_data.shear_modulus_init)
         self._fields_manager["YieldStress"] = Field(
             self._nbr_of_cells, material_data.yield_stress_init, material_data.yield_stress_init)
+        # Porosity
+        self._fields_manager["Porosity"] = Field(
+            self._nbr_of_cells, material_data.porosity_init, material_data.porosity_init)
 
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
         Initialisation of the cell fields and attributes of cell_in_target and cell_in_projectile
+
         :param mask_node_target: bool array for nodes in the target
         :param mask_node_projectile: bool array for nodes in the target
         :param topology: mesh connectivity object
-        :return:
+
+
+        :type mask_node_target: numpy.array([nbr_of_cells, 1], dtype=bool, order='C')
+        :type mask_node_projectile: numpy.array([nbr_of_cells, 1], dtype=bool, order='C')
+        :type topology: Topology
         """
         # Part : mask_target
         node_indexes = np.where(mask_node_target)[0]
@@ -135,6 +144,8 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self.yield_stress.current_value[self.cell_in_projectile] = \
                 material_data.yield_stress_init
             self.yield_stress.new_value[self.cell_in_projectile] = material_data.yield_stress_init
+            self.porosity.current_value[self.cell_in_projectile] = material_data.porosity_init
+            self.porosity.new_value[self.cell_in_projectile] = material_data.porosity_init
 
     @property
     def dt(self):  # pylint: disable=invalid-name
@@ -242,6 +253,13 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._stress[:, 2]
 
     @property
+    def porosity(self):
+        """
+        Porosity
+        """
+        return self._fields_manager["Porosity"]
+
+    @property
     def fields_manager(self):
         """
         Return a copy of the field manager
@@ -275,7 +293,9 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         message += "==> internal energy at t+dt = {}".format(self.energy.new_value) + os.linesep
         message += "==> sound velocity at t = {}".format(
             self.sound_velocity.current_value) + os.linesep
-        message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value)
+        message += "==> sound velocity at t+dt = {}".format(self.sound_velocity.new_value) + os.linesep
+        message += "==> porosity at t = {}".format(self.porosity.current_value) + os.linesep
+        message += "==> porosity at t+dt = {}".format(self.porosity.new_value) + os.linesep
         print(message)
 
     def increment_variables(self):
@@ -292,9 +312,15 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
 
     @abstractmethod
-    def compute_size(self, topologie, vecteur_coord_noeuds):
+    def compute_size(self, topology, node_coord):
         """
         Compute the size of the cells
+
+        :param topology: topology of the mesh
+        :param node_coord: array of nodal coordinates
+
+        :type topology: Topology
+        :type node_coord: numpy.array([nbr_of_nodes, 1], dtype=np.float64, order='C')
         """
 
     @abstractmethod
@@ -313,16 +339,39 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def compute_new_density(self, mask):
         """
         Compute the new density in the cells
+
+        :param mask: boolean array to identify cells to be computed
+
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
 
     @abstractmethod
     def compute_new_pseudo(self, time_step, mask):
         """
         Compute the new value of artificial viscosity in the cells
+
+        :param time_step: time step
+        :param mask: boolean array to identify cells to be computed
+
+        :type time_step: float
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """
 
     @abstractmethod
     def compute_new_time_step(self, mask):
         """
         Compute the new value of critical time step in the cells
+
+        :param mask: boolean array to identify cells to be computed
+
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
+        """
+
+    @abstractmethod
+    def compute_new_porosity(self, time_step, porosity_model, mask):
+        """
+        Compute the new porosity according to the porosity model in XDATA
+        :param time_step: float
+        :param porosity_model: porosity model to compute 
+        :type mask: np.array([nbr_of_cells, 1], dtype=bool)
         """

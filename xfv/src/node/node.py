@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 Module defining Node class
 """
@@ -10,21 +9,21 @@ import numpy as np
 
 class Node:
     """
-    Un objet Node représente l'ensemble des noeuds du maillages. Ses différents membres sont
-    essentiellement des vecteurs de nbr_of_nodes lignes. Plusieurs colonnes peuvent être
-    présentes selon la dimension du problème à traiter.
+    Un objet Node reprÃ©sente l'ensemble des noeuds du maillages. Ses diffÃ©rents membres sont
+    essentiellement des vecteurs de nbr_of_nodes lignes. Plusieurs colonnes peuvent Ãªtre
+    prÃ©sentes selon la dimension du problÃ¨me Ã  traiter.
 
-    L'organisation en mémoire est comme en C/C++ c'est à dire 'row wise'. C'est pour cette raison
-    que les lignes de chacun des vecteurs représentent les noeuds. Ce faisant on a par exemple
-    tous les X des noeuds contigus en mêmoire. (vectorisation, localisation spatiale)
+    L'organisation en mÃ©moire est comme en C/C++ c'est Ã  dire 'row wise'. C'est pour cette raison
+    que les lignes de chacun des vecteurs reprÃ©sentent les noeuds. Ce faisant on a par exemple
+    tous les X des noeuds contigus en mÃªmoire. (vectorisation, localisation spatiale)
     """
 
     # pylint: disable-msg=R0902
     # 10 attributs : cela semble raisonnable pour ce cas
     def __init__(self, nbr_of_nodes, position_initiale, dim=1, vitesse_initiale=None):
         """
-        :param dim: dimension du problème à traiter (par défaut 1)
-        :param nbr_of_nodes: nombre de noeuds du problème
+        :param dim: dimension du problÃ¨me Ã  traiter (par dÃ©faut 1)
+        :param nbr_of_nodes: nombre de noeuds du problÃ¨me
         :param position_initiale: vecteur des positions initiales
         :param vitesse_initiale: vecteur des vitesses initiales
         :type dim: int
@@ -33,7 +32,7 @@ class Node:
         :type vitesse_initiale: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         # Le vecteur est un vecteur dont les lignes sont les noeuds et les colonnes
-        # les coordonées selon les différentes dimensions
+        # les coordonÃ©es selon les diffÃ©rentes dimensions
         self.__shape = (nbr_of_nodes, dim)
         # Les autres attributs ne sont pas publics mais restent accessibles et
         # modifiables par les classes filles
@@ -68,6 +67,7 @@ class Node:
         Returns an array of the status of all nodes
         False = classical node
         True = enriched node
+
         :return:  numpy.array([nbr_of_nodes], dtype=bool)
         """
         return self._enriched
@@ -95,9 +95,9 @@ class Node:
     @property
     def umundemi(self):
         """
-        Vitesses au demi pas de temps précédent
+        Vitesses au demi pas de temps prÃ©cÃ©dent
 
-        :return: vitesses des noeuds au demi pas de temps précédent
+        :return: vitesses des noeuds au demi pas de temps prÃ©cÃ©dent
         :rtype: numpy.array([nbr_of_nodes, dim], dtype=np.float64, order='C')
         """
         return self._umundemi
@@ -135,9 +135,9 @@ class Node:
     @property
     def dimension(self):
         """
-        Dimension du problème
+        Dimension du problÃ¨me
 
-        :return: dimension du problème
+        :return: dimension du problÃ¨me
         :rtype: int
         """
         return self.__shape[1]
@@ -145,46 +145,46 @@ class Node:
     @property
     def number_of_nodes(self):
         """
-        Nombre de noeuds du problème
+        Nombre de noeuds du problÃ¨me
 
-        :return: dimension du problème
+        :return: dimension du problÃ¨me
         :rtype: int
         """
         return self.__shape[0]
 
     def __str__(self):
         message = "Nombre de noeuds {:8d} ".format(self.__shape[0])
-        message += "Dimension du problème : {:1d})".format(self.__shape[1])
+        message += "Dimension du problÃ¨me : {:1d})".format(self.__shape[1])
         return message
 
     def infos(self, index):
         """
         Affichage des informations concernant le noeud d'indice index
 
-        :param index: indice du noeud à afficher
+        :param index: indice du noeud Ã  afficher
         :type index: int
         """
         message = "{} {:4d}\n".format(self.__class__, index)
-        message += "==> coordonnées à t = {}\n".format(self.xt[index])
-        message += "==> coordonnées à t+dt = {}\n".format(self.xtpdt[index])
-        message += "==> vitesse à t-1/2 = {}\n".format(self.umundemi[index])
-        message += "==> vitesse à t+1/2 = {}\n".format(self.upundemi[index])
+        message += "==> coordonnÃ©es Ã  t = {}\n".format(self.xt[index])
+        message += "==> coordonnÃ©es Ã  t+dt = {}\n".format(self.xtpdt[index])
+        message += "==> vitesse Ã  t-1/2 = {}\n".format(self.umundemi[index])
+        message += "==> vitesse Ã  t+1/2 = {}\n".format(self.upundemi[index])
         message += "==> masse = {:5.4g}\n".format(self.masse[index])
         message += "==> force = {}".format(self.force[index])
         print(message)
 
     def compute_new_coodinates(self, mask: np.array, delta_t: float):
         """
-        Calcul de la coordonnée au temps t+dt
-        :param mask : mask to select some specific nodes
+        Calcul de la coordonnÃ©e au temps t+dt
+
+        :param mask: mask to select some specific nodes
         :param delta_t: time step
         """
         self._xtpdt[mask] = self.xt[mask] + self.upundemi[mask] * delta_t
 
     def increment(self):
         """
-        Mise à jour de la vitesse et de la coordonnée des noeuds
-        pour passer au pas de temps suivant.
+        Update the node velocities and coordinates
         """
         self._umundemi[:] = self.upundemi[:]
         self._xt[:] = self.xtpdt[:]
@@ -192,13 +192,16 @@ class Node:
     @abstractmethod
     def compute_new_force(self, *args, **kwargs):
         """
-        Calcul de la force agissant sur le noeud
+        Compute the nodal forces
         """
 
     @abstractmethod
     def compute_new_velocity(self, delta_t, mask, matrice_masse):
         """
-        Calcul de la vitesse au demi pas de temps supérieur
+        Compute the velocity at time t+dt/2
+
+        :param delta_t: staggered timestep
+        :param mask: boolean array to identify nodes to be computes
         """
 
 

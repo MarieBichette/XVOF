@@ -45,6 +45,22 @@
       "path": "all_fields.hdf5",
       "time-period": 2e-07
       }
+    ],
+    "variables": [
+      "ArtificialViscosity",
+      "CohesiveForce",
+      "Density",
+      "DeviatoricStress",
+      "DiscontinuityOpening",
+      "EquivalentPlasticStrainRate",
+      "InternalEnergy",
+      "NodeCoordinates",
+      "NodeVelocity",
+      "PlasticStrainRate",
+      "Pressure",
+      "SoundVelocity",
+      "Stress",
+      "CellSize"
     ]
   }
 }

@@ -99,6 +99,8 @@ class CellTest(unittest.TestCase):
         self.my_cells.energy.new_value = np.array([-1.0e+06, 0.5e+05, 1.5e+05])
         self.my_cells._size_t = np.zeros(self.nbr_cells)
         self.my_cells._size_t_plus_dt = np.array([0.015, 0.01, 0.05])
+        self.my_cells.porosity.current_value = np.ones(self.nbr_cells) * 1.
+        self.my_cells.porosity.new_value = np.array([1.0003, 1.0003, 1.0003])
         with captured_output() as (out, err):
             self.my_cells.print_infos()
             output = out.getvalue().strip()
@@ -113,7 +115,9 @@ class CellTest(unittest.TestCase):
                   "==> internal energy at t = [7.689 7.689 7.689]" + os.linesep +
                   "==> internal energy at t+dt = [-1000000.    50000.   150000.]" + os.linesep +
                   "==> sound velocity at t = [0. 0. 0.]" + os.linesep +
-                  "==> sound velocity at t+dt = [ 440.  210. -110.]")
+                  "==> sound velocity at t+dt = [ 440.  210. -110.]" + os.linesep +
+                  "==> porosity at t = [1. 1. 1.]" + os.linesep +
+                  "==> porosity at t+dt = [1.0003 1.0003 1.0003]")
         self.assertEqual(output.split('\n'), answer.split('\n'))
 
 
