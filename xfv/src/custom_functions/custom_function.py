@@ -16,14 +16,6 @@ class CustomFunction(metaclass=ABCMeta):
 
     @abstractmethod
     def evaluate(self, time, *args, **kwargs):  #pylint: disable=missing-docstring
-        """
-        Returns the value of the function evaluated at time
-
-        :param time: the required time
-        :param args: other arguments
-        :param kwargs: other keywords arguments
-        :return: the value
-        """
         pass
 
     def register_pressure(self):

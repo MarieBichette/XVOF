@@ -11,8 +11,7 @@ import os
 import numpy as np
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.data.data_container import DataContainer
-from xfv.src.data.enriched_mass_matrix_props import (LumpMenouillardMassMatrixProps,
-                                                     LumpSumMassMatrixProps)
+from xfv.src.data.enriched_mass_matrix_props import LumpMenouillardMassMatrixProps
 
 
 class DiscontinuityTest(unittest.TestCase):
@@ -30,7 +29,7 @@ class DiscontinuityTest(unittest.TestCase):
 
         self.mask_in = np.array([True, False, False, False])
         self.mask_out = np.array([False, True, False, False])
-        self.my_disc = Discontinuity(0, self.mask_in, self.mask_out, 0.2,
+        self.my_disc = Discontinuity(self.mask_in, self.mask_out, 0.2,
                                      LumpMenouillardMassMatrixProps())
 
     def tearDown(self):
@@ -49,21 +48,22 @@ class DiscontinuityTest(unittest.TestCase):
         """
         np.testing.assert_equal(self.my_disc.mask_out_nodes, np.array([False, True, False, False]))
 
+
     def test_detect_hill_disc_position(self):
         """
         Checks that the position of disc is between 0 and 1
         """
         with self.assertRaises(ValueError):
-            Discontinuity(0, self.mask_in, self.mask_out, 2., LumpSumMassMatrixProps())
+            Discontinuity(self.mask_in, self.mask_out, 2., "somme")
 
     def test_detect_hill_disc_node_masks(self):
         """
         Test that a node cannot belong to mask_in and mask_out at the same time
         """
         with self.assertRaises(ValueError):
-            Discontinuity(0, np.array([True, False, False, False]),
+            Discontinuity(np.array([True, False, False, False]),
                           np.array([True, True, False, False]),
-                          0.2, LumpSumMassMatrixProps())
+                          0.2, "somme")
 
     def test_has_mass_matrix_been_computed(self):
         """

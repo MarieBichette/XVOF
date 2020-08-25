@@ -11,7 +11,6 @@ def multiplication_masse(matrix, vector):
     """
     Fonction pour faire le produit matriciel matrice * vecteur adapté pour la matrice masse sous
     forme de vecteur
-
     :param matrix : matrix (array multiD)
     :param vector: vector (array 1D)
 
@@ -39,7 +38,6 @@ def inverse_masse(matrix):
     """
     MassMatrix de type MassMatrix
     Fonction pour faire inverse la matrice masse, qu'elle soit sous forme de vecteur ou de matrice
-
     :param matrix: matrix to inverse
     """
     if len(matrix.shape) == 1 or (matrix.ndim == 2 and 1 in matrix.shape):
@@ -55,7 +53,6 @@ def lump_matrix(matrix):
     """
     Condense la matrice de masse avec la méthode de Menouillard
     (on somme sur toute la ligne pour obtenir une matrice diagonale)
-
     :param matrix: matrix to lump
     """
     lumped_matrix = np.zeros((matrix.shape[0], matrix.shape[1]))

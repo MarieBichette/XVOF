@@ -38,7 +38,6 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
     def inverse_enriched_mass_matrix_classic_dof(self) -> np.array:
         """
         Accessor on the inverse of the mass matrix for classical degrees of freedom
-
         :return: the extraction of the inverse of the mass matrix for classical dof
         """
         return self._inv_enriched_mass_matrix[0:self._matrix_size - 2]
@@ -47,7 +46,6 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
     def inverse_enriched_mass_matrix_enriched_dof(self) -> np.array:
         """
         Accessor on the inverse of the mass matrix for enriched degrees of freedom
-
         :return: extraction of the inverse of the mass matrix for enriched dof
         """
         return self._inv_enriched_mass_matrix[self._matrix_size - 2:self._matrix_size]
@@ -96,9 +94,8 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
         """
         Compute the Hansbo mass matrix for the left part
         DDL are organized : 0 : N1g and 1 : N2g
-
         :param mass_0: mass of the element right on the left of the cracked cell
-        :param mass_1: mass of the cracked cell
+        :param mass_1 : mass of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
 
@@ -107,8 +104,7 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
         """
         Compute the Hansbo mass matrix for the right part
         DDL are organized : 2 : N2d and 3: N1d
-
-        :param mass_1: mass of the cracked cell
+        :param mass_1 : mass of the cracked cell
         :param mass_2: mass of the element right on the right of the cracked cell
         :param epsilon: relative position of the disc inside the cracked cell
         """
