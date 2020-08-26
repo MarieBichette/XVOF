@@ -175,7 +175,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             delta_t, disc.mask_disc_nodes,
             disc.mass_matrix_enriched.inverse_enriched_mass_matrix_classic_dof)
         # Compute enriched ddl velocity of enriched nodes
-        self.nodes.compute_additional_dof_new_velocity(disc, delta_t)
+        self.nodes.compute_enr_new_velocity(disc, delta_t)
 
         if type(self.data.material_target.failure_model.lump_mass_matrix) == \
                 ConsistentMassMatrixProps:
@@ -322,9 +322,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         """
         self.nodes.increment()
         self.cells.increment_variables()
-        self.cells.cell_additional_dof_increment()  # enriched cell variables
+        self.cells.cell_enr_increment()  # enriched cell variables
         for disc in Discontinuity.discontinuity_list():
-            disc.additional_dof_increment()  # enriched node variables
+            disc.enr_increment()  # enriched node variables
 
     def apply_elasticity(self, delta_t, shear_modulus_model, mask_material):
         """

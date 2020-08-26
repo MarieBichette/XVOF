@@ -246,7 +246,7 @@ class Discontinuity:
         self.enr_velocity_new[:] = self.enr_velocity_current[:]
         self.enr_coordinates_new[:] = self.enr_coordinates_current[:]
 
-    def additional_dof_increment(self):
+    def enr_increment(self):
         """
         Increment the variables of discontinuity
         """

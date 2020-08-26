@@ -174,7 +174,7 @@ class OutputManager(metaclass=Singleton):
 
         Additional_dof_fields are created when a new discontinuity is created.
         Need to treat them in a different way from classical fields.
-        Based on this remark, additional_dof_fields have standard name "Additional..."
+        Based on this remark, enr_fields have standard name "Additional..."
         Differentiation is made with test startswith(Additional)
         """
         for build_infos in list(self.__db_build_infos.values()):

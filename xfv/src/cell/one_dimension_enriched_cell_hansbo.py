@@ -728,7 +728,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         if mask.any():
             self._dt[mask] = np.min(np.array([dt_g, dt_d]), axis=0)
 
-    def cell_additional_dof_increment(self):
+    def cell_enr_increment(self):
         """
         Increment the enriched cell variables
         """

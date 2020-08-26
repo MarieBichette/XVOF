@@ -72,7 +72,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         """
         self._v_field = np.copy(self._upundemi)
 
-    def compute_additional_dof_new_velocity(self, disc, delta_t):
+    def compute_enr_new_velocity(self, disc, delta_t):
         """
         Compute the new velocity enriched degree of freedom
 

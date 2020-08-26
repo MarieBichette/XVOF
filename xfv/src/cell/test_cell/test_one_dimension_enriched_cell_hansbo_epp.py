@@ -101,9 +101,9 @@ class OneDimensionEnrichedHansboCellEPPTest(unittest.TestCase):
         self.__patcher.stop()
         return super().tearDown()
 
-    def test_initialize_additional_dof(self):
+    def test_initialize_enr(self):
         """
-        Test of the method initialize_additional_dof
+        Test of the method initialize_enr
         """
         # todo : coder
 
