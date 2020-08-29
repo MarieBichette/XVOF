@@ -26,10 +26,10 @@ class MarchTable(CustomFunction):
         if time > self.time_data[-1]:
             pressure = 0
         else:
-            indice_limite_inf = np.where(self.time_data <= time)[-1][0]
+            indice_limite_inf = np.where(self.time_data <= time)[0][-1]
             indice_limite_sup = np.where(self.time_data >= time)[0][0]
             if indice_limite_inf == indice_limite_sup:
-                # current time is inside the table
+                # current time is inside the table
                 pressure = self.pressure_data[indice_limite_inf]
             else:
                 # linear interpolation between the two nearest times present in the table

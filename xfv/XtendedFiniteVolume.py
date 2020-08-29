@@ -12,7 +12,7 @@ import numpy as np
 
 from xfv.src.figure_manager.figure_manager      import FigureManager
 from xfv.src.data.data_container                import DataContainer, BoundaryType, \
-                                                       ConstitutiveModelProps
+                                                       ConstitutiveModelProps, MaterialProps
 from xfv.src.mesh.mesh1denriched                import Mesh1dEnriched
 from xfv.src.output_manager.outputmanager       import OutputManager
 from xfv.src.output_manager.outputdatabase      import OutputDatabase
@@ -22,7 +22,7 @@ from xfv.src.custom_functions.custom_function   import CustomFunction
 from xfv.src.rheology.shearmodulus              import ShearModulus
 from xfv.src.rheology.yieldstress               import YieldStress
 from xfv.src.plasticitycriterion.plasticitycriterion import PlasticityCriterion
-
+from xfv.src.porosity_model.porositymodel_base import PorosityModelBase
 
 def __create_mesh(meshfile: Path) -> Mesh1dEnriched:
     """
@@ -156,6 +156,21 @@ def _build_material_constitutive_model(
             shear_modulus_model, yield_stress_model, plasticity_criterion)
 
 
+def _build_material_porosity_model(
+        material_data: MaterialProps)-> Tuple[bool, Optional[PorosityModelBase]]:
+    """
+    Build the porosity model objects from the XDATA
+    """
+    has_porosity_model : bool = False
+    val_porosity_model = None
+
+    if material_data is not None:
+        has_porosity_model = material_data.porosity_model is not None
+    if has_porosity_model:
+        val_porosity_model = material_data.porosity_model.porosity_model.build_porosity_model_obj()
+
+    return (has_porosity_model, val_porosity_model)
+
 def main(directory: Path) -> None:
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
@@ -254,6 +269,16 @@ def main(directory: Path) -> None:
         target_shear_modulus = None
         target_yield_stress, target_plasticity_criterion = None, None
 
+    # ---------------------------------------------#
+    #       READ POROSITY MODEL SHORTCUTS          #
+    # ---------------------------------------------#
+
+    target_porosity_model_bool = False
+    target_porosity_model = None
+    if data.material_target is not None:
+        target_model = data.material_target
+        target_porosity_model_bool,target_porosity_model = _build_material_porosity_model(target_model)
+
     # ************************************************* #
     #         DEBUT DE LA BOUCLE EN TEMPS               #
     # ************************************************* #
@@ -278,7 +303,8 @@ def main(directory: Path) -> None:
         #                OUTPUT MANAGEMENT             #
         # ---------------------------------------------#
         the_output_mng.update(simulation_time, step,
-                              data.material_target.failure_model.failure_treatment_value)
+                              data.material_target.failure_model.failure_treatment_value,
+                              my_mesh.get_discontinuity_list())
         the_figure_mng.update(simulation_time, step)
         # ---------------------------------------------#
         #         NODES VELOCITIES COMPUTATION         #
@@ -309,6 +335,11 @@ def main(directory: Path) -> None:
         #         CELLS DENSITIES COMPUTATION          #
         # ---------------------------------------------#
         my_mesh.compute_new_cells_densities()
+        # ---------------------------------------------#
+        #          POROSITY MODEL COMPUTATION          #
+        # ---------------------------------------------#
+        if target_porosity_model_bool:
+            my_mesh.compute_new_cells_porosity(dt, target_porosity_model)
         # ---------------------------------------------#
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#

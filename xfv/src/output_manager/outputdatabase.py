@@ -18,6 +18,8 @@ class OutputDatabase:
     def add_time(self, time):
         """
         Create an hdf5 group containing all fields for the current time
+
+        :param time: time to be added
         """
         self.__db.flush()  # Flushing to print preceding time steps
         self.__current_group = self.__db.create_group("{:g}".format(time))
@@ -27,6 +29,8 @@ class OutputDatabase:
         """
         Create a dataset corresponding to field_name and storing the values.
         All extra keywords arguments are stored as attributes of the dataset
+
+        :param f_name: name of the field to be added
         """
         data_set = self.__current_group.create_dataset(f_name, data=values)
         for key, value in list(kwargs.items()):

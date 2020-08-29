@@ -6,12 +6,71 @@ import os
 import numpy as np
 from xfv.src.utilities.singleton import Singleton
 from xfv.src.output_manager.outputtimecontroler import OutputTimeControler
-from xfv.src.discontinuity.discontinuity import Discontinuity
+from xfv.src.data.data_container import DataContainer
 
 
 DatabaseBuildInfos = namedtuple("DatabaseBuildInfos", ["database_object", "fields",
                                                        "time_controler"])
 Field = namedtuple("Field", ["name", "owner", "attr_name", "indexes"])
+
+FieldConstruction = namedtuple("FieldConstruction", ["name", "support", "attr_name"])
+
+field_list = dict()
+field_list["NodeVelocity"] = FieldConstruction("ClassicalNodeVelocity", "nodes", ("umundemi",))
+field_list["NodeCoordinates"] = FieldConstruction("NodeCoordinates", "nodes", ("xt",))
+field_list["CellSize"] = FieldConstruction("CellSize", "cells", ("size_t_plus_dt",))
+# TODO corriger ça en size t
+field_list["Pressure"] = FieldConstruction("ClassicalPressure",
+                                           "cells", ("pressure", "current_value"))
+field_list["Density"] = FieldConstruction("ClassicalDensity", "cells", ("density", "current_value"))
+field_list["InternalEnergy"] = FieldConstruction("ClassicalInternalEnergy",
+                                                 "cells", ("energy", "current_value"))
+field_list["SoundVelocity"] = FieldConstruction("ClassicalSoundVelocity",
+                                                "cells", ("sound_velocity", "current_value"))
+field_list["ArtificialViscosity"] = FieldConstruction("ClassicalArtificialViscosity",
+                                                      "cells", ("pseudo", "current_value"))
+field_list["Stress"] = FieldConstruction("ClassicalStress", "cells", ("stress", ))
+field_list["DeviatoricStress"] = FieldConstruction("ClassicalDeviatoricStress",
+                                                   "cells", ("deviatoric_stress_current", ))
+field_list["EquivalentPlasticStrainRate"] = FieldConstruction(
+    "ClassicalEquivalentPlasticStrainRate", "cells", ("equivalent_plastic_strain_rate", ))
+field_list["PlasticStrainRate"] = FieldConstruction("ClassicalPlasticStrainRate",
+                                                    "cells", ("plastic_strain_rate", ))
+field_list["Porosity"] = FieldConstruction("ClassicalPorosity",
+                                           "cells", ("porosity", "current_value"))
+field_list["ShearModulus"] = FieldConstruction("ClassicalShearModulus",
+                                               "cells", ("shear_modulus", "current_value"))
+field_list["YieldStress"] = FieldConstruction("ClassicalYieldStress",
+                                              "cells", ("yield_stress", "current_value"))
+
+enr_field_list = dict()
+enr_field_list["NodeVelocity"] = FieldConstruction("AdditionalNodeVelocity", None,
+                                                   ("enr_velocity_current", ))
+enr_field_list["NodeCoordinates"] = FieldConstruction("AdditionalNodeCoordinates", None,
+                                                      ("enr_coordinates_current", ))
+enr_field_list["CohesiveForce"] = FieldConstruction("AdditionalCohesiveForce", None,
+                                                    ("cohesive_force", "current_value"))
+enr_field_list["DiscontinuityOpening"] = FieldConstruction("AdditionalDiscontinuityOpening",
+                                                           None, ("discontinuity_opening",
+                                                                  "current_value"))
+enr_field_list["Pressure"] = FieldConstruction("AdditionalPressure", "cells",
+                                               ("enr_pressure", "current_value"))
+enr_field_list["Density"] = FieldConstruction("AdditionalDensity", "cells",
+                                              ("enr_density", "current_value"))
+enr_field_list["InternalEnergy"] = FieldConstruction("AdditionalInternalEnergy", "cells",
+                                                     ("enr_energy", "current_value"))
+enr_field_list["ArtificialViscosity"] = FieldConstruction("AdditionalArtificialViscosity", "cells",
+                                                          ("enr_artificial_viscosity",
+                                                           "current_value"))
+enr_field_list["SoundVelocity"] = FieldConstruction("AdditionalSoundVelocity", "cells",
+                                                    ("enr_sound_velocity", "current_value"))
+enr_field_list["Stress"] = FieldConstruction("AdditionalStress", "cells", ("enr_stress", ))
+enr_field_list["DeviatoricStress"] = FieldConstruction("AdditionalDeviatoricStress", "cells",
+                                                       ("enr_deviatoric_stress_current", ))
+enr_field_list["EquivalentPlasticStrainRate"] = FieldConstruction(
+    "AdditionalEquivalentPlasticStrainRate", "cells", ("enr_equivalent_plastic_strain_rate", ))
+enr_field_list["PlasticStrainRate"] = FieldConstruction(
+    "AdditionalPlasticStrainRate", "cells", ("enr_plastic_strain_rate", ))
 
 
 class OutputManager(metaclass=Singleton):
@@ -58,7 +117,8 @@ class OutputManager(metaclass=Singleton):
                             database_id):
         """
         Add all fields to the manager.
-        :param enrichment_registration : bool to control if the enriched fields should be registered
+
+        :param enrichment_registration: bool to control if the enriched fields should be registered
         :param cells: cells from which fields must be printed
         :param nodes: nodes from which fields must be printed
         :param database_id: identifier of the database
@@ -66,83 +126,47 @@ class OutputManager(metaclass=Singleton):
         node_indexes = slice(0, nodes.number_of_nodes)
         cell_indexes = slice(0, cells.number_of_cells)
         enriched_cells = np.where(cells.enriched)[0]
-        # Node field
-        self.register_field("NodeStatus", nodes, ("enriched",),
+
+        # Node and cell status should always been registered
+        self.register_field("NodeStatus", nodes, ("enriched",),  # should always be registered
                             database_names=[database_id], indexes=node_indexes)
-        self.register_field("NodeCoordinates", nodes, ("xt",),
-                            database_names=[database_id], indexes=node_indexes)
-        self.register_field("ClassicalNodeVelocity", nodes, ("umundemi",),
-                            database_names=[database_id], indexes=node_indexes)
-        # Cell field
-        self.register_field("CellStatus", cells, ("enriched",),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("CellSize", cells, ("size_t_plus_dt",),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalPressure", cells, ("pressure", "current_value"),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalDensity", cells, ("density", "current_value"),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalInternalEnergy", cells, ("energy", "current_value"),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalSoundVelocity", cells, ("sound_velocity", "current_value"),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalArtificialViscosity", cells, ("pseudo", "current_value"),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalStress", cells, ("stress", ),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalDeviatoricStress", cells, ("deviatoric_stress_current",),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalEquivalentPlasticStrainRate", cells,
-                            ("equivalent_plastic_strain_rate",),
-                            database_names=[database_id], indexes=cell_indexes)
-        self.register_field("ClassicalPlasticStrainRate", cells, ("plastic_strain_rate",),
+        self.register_field("CellStatus", cells, ("enriched",),  # should always be registered
                             database_names=[database_id], indexes=cell_indexes)
 
+        # Classical field registration
+        for key in field_list:
+            if key in DataContainer().output.variables:  # registration if field is in the dataset
+                field_infos = field_list[key]
+                # Node field
+                if field_infos.support == "nodes":
+                    self.register_field(field_infos.name, nodes, field_infos.attr_name,
+                                        database_names=[database_id], indexes=node_indexes)
+                # Cell field
+                if field_infos.support == "cells":
+                    self.register_field(field_infos.name, cells, field_infos.attr_name,
+                                        database_names=[database_id], indexes=cell_indexes)
+
         if enrichment_registration:
-            # Enriched cell field -> cell support
-            self.register_field("AdditionalPressure", cells,
-                                ("additional_dof_pressure", "current_value"),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalDensity", cells,
-                                ("additional_dof_density", "current_value"),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalInternalEnergy", cells,
-                                ("additional_dof_energy", "current_value"),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalArtificialViscosity", cells,
-                                ("additional_dof_artificial_viscosity", "current_value"),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalSoundVelocity", cells,
-                                ("additional_dof_sound_velocity", "current_value"),
-                                database_names=[database_id], indexes=enriched_cells)
+            # => Register the enriched field also
+            # Left and right size should always been registered
             self.register_field("AdditionalLeftSize", cells, ("left_part_size", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
             self.register_field("AdditionalRightSize", cells, ("right_part_size", "current_value"),
                                 database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalStress", cells, ("additional_dof_stress",),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalDeviatoricStress", cells,
-                                ("additional_dof_deviatoric_stress_current",),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalEquivalentPlasticStrainRate", cells,
-                                ("additional_dof_equivalent_plastic_strain_rate",),
-                                database_names=[database_id], indexes=enriched_cells)
-            self.register_field("AdditionalPlasticStrainRate", cells,
-                                ("additional_dof_plastic_strain_rate",),
-                                database_names=[database_id], indexes=enriched_cells)
-            # Enriched node fields -> disc support
-            self.register_field("AdditionalNodeVelocity", None,
-                                ("additional_dof_velocity_current",),
-                                database_names=[database_id])
-            # Cohesive fields -> disc support
-            self.register_field("AdditionalCohesiveForce", None,
-                                ("cohesive_force", "current_value"),
-                                database_names=[database_id])
-            self.register_field("AdditionalDiscontinuityOpening", None,
-                                ("discontinuity_opening", "current_value"),
-                                database_names=[database_id])
 
-    def update(self, time, iteration, eps):
+            for key in enr_field_list:  # registration if field is in the dataset
+                if key in DataContainer().output.variables:
+                    field_infos = enr_field_list[key]
+                    # Enr Node field
+                    if field_infos.support is None:
+                        self.register_field(field_infos.name, None, field_infos.attr_name,
+                                            database_names=[database_id])
+                    # Enr Cell field
+                    if field_infos.support == "cells":
+                        self.register_field(field_infos.name, cells, field_infos.attr_name,
+                                            database_names=[database_id], indexes=cell_indexes)
+
+    def update(self, time, iteration, eps, discontinuity_list):
         """
         If the current time given in argument is above the time of next output then
         the manager asks each of its database to save fields. It's the same for
@@ -150,7 +174,7 @@ class OutputManager(metaclass=Singleton):
 
         Additional_dof_fields are created when a new discontinuity is created.
         Need to treat them in a different way from classical fields.
-        Based on this remark, additional_dof_fields have standard name "Additional..."
+        Based on this remark, enr_fields have standard name "Additional..."
         Differentiation is made with test startswith(Additional)
         """
         for build_infos in list(self.__db_build_infos.values()):
@@ -198,8 +222,8 @@ class OutputManager(metaclass=Singleton):
                         # Permet d'identifier les champs enrichis qui doivent se rapporter
                         # a un support disc
                         disc_field_collec = []
-                        for disc in Discontinuity.discontinuity_list():
-                            cell_id = np.where(disc.mask_ruptured_cell)[0][0]
+                        for disc in discontinuity_list:
+                            cell_id = disc.get_ruptured_cell_id
                             value = self.get_value_of_field(field, disc)
 
                             if value.shape == (1, ):
@@ -217,7 +241,7 @@ class OutputManager(metaclass=Singleton):
                             else:
                                 raise ValueError("Unknown shape to register in database")
 
-                        if len(Discontinuity.discontinuity_list()) > 0:
+                        if len(discontinuity_list) > 0:
                             # sortir le build info de la boucle for des discontinuites permet
                             # d'enregistrer plusieurs discontinuites a la fois. Le seul "probleme"
                             # est que ces disc. ont toutes le meme support de type "Discontinuity"
@@ -236,6 +260,9 @@ class OutputManager(metaclass=Singleton):
     def get_value_of_field(self, field: Field, owner) -> np.array:
         """
         Get the np.array associated to the field following all the attribute names list
+
+        :param field: field to be extracted
+        :param owner: object who supports the fields
         """
         value = getattr(owner, field.attr_name[0])
         for attr_name in field.attr_name[1:]:
