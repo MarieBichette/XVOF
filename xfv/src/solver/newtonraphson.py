@@ -17,8 +17,7 @@ class NewtonRaphson(NewtonRaphsonBase):
     This class implements a Newton Raphson type non linear solver
     """
     def __init__(self, function_to_vanish):
-        super(NewtonRaphson, self).__init__(
-            function_to_vanish, 100, ClassicalNewtonRaphsonIncrement())
+        super().__init__(function_to_vanish, 100, ClassicalNewtonRaphsonIncrement())
 
     def set_increment_method(self, increment_method_obj):
         """

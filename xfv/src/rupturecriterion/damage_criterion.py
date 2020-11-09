@@ -11,7 +11,7 @@ class DamageCriterion(RuptureCriterion):   # pylint: disable=too-few-public-meth
     A rupture criterion based on damage value
     """
     def __init__(self, d_limite):
-        super(DamageCriterion, self).__init__()
+        super().__init__()
         self.__limit_damage = d_limite
 
     def check_criterion(self, cells, *args, **kwargs):

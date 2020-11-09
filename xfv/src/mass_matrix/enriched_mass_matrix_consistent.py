@@ -17,7 +17,7 @@ class EnrichedMassMatrixConsistent(EnrichedMassMatrix):
         Build the class
         """
         matrix_size = 4
-        super(EnrichedMassMatrixConsistent, self).__init__(matrix_size)
+        super().__init__(matrix_size)
         # Matrix for the enriched cell
         self._enriched_mass_matrix = \
             SymNDArray((self._matrix_size, self._matrix_size), dtype=np.float64, order='C')

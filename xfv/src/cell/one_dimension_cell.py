@@ -2,9 +2,8 @@
 """
 Implementation of the OneDimensionCell class
 """
-import ctypes
-import numpy as np
 from typing import Tuple
+import numpy as np
 
 from xfv.src.cell import Cell
 from xfv.src.solver.functionstosolve.vnrenergyevolutionforveformulation import (
@@ -219,7 +218,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
 
         :param number_of_elements: number of cells
         """
-        super(OneDimensionCell, self).__init__(number_of_elements)
+        super().__init__(number_of_elements)
 
         # By default :all cells are classical (non enriched)
         self._classical = np.ones([number_of_elements, ], dtype=np.bool, order='C')
@@ -594,7 +593,6 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param yield_stress: yield stress
         :param porosity: porosity
         """
-        #yield_stress = yield_stress / porosity
         return yield_stress / porosity
 
 
@@ -652,7 +650,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             self._deviatoric_stress_new[_sl] = sigma_ss[_sl]
 
     @staticmethod
-    def compute_deviator_strain_rate(dt, topology, node_coord_new, node_velocity_new):  # pylint: disable=invalid-name
+    def compute_deviator_strain_rate(dt, topology, node_coord_new,
+                                     node_velocity_new):  # pylint: disable=invalid-name
         """
         Compute strain rate deviator
 
@@ -744,5 +743,5 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         Increment cells variables from one iteration to another
         """
-        super(OneDimensionCell, self).increment_variables()
+        super().increment_variables()
         self._deviatoric_stress_current[:, :] = self._deviatoric_stress_new[:, :]

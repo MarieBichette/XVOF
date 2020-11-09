@@ -11,7 +11,7 @@ class ClassicalNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
     Classe définissant un incrément classique de l'algorithme de Newton-Raphson
     """
     def __init__(self):
-        super(ClassicalNewtonRaphsonIncrement, self).__init__()
+        super().__init__()
 
     def computeIncrement(self, function_value, derivative_function_value):
         """

@@ -18,7 +18,7 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
 
         :param init_value: initial yield stress
         """
-        super(ConstantYieldStress, self).__init__(init_value)
+        super().__init__(init_value)
         self.init_value = init_value
 
     def compute(self, density: np.array) -> np.array:

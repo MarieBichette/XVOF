@@ -35,7 +35,7 @@ class DiscontinuityTest(unittest.TestCase):
 
     def tearDown(self):
         DataContainer.clear()
-        return super(DiscontinuityTest, self).tearDown()
+        return super().tearDown()
 
     def test_mask_in_nodes(self):
         """

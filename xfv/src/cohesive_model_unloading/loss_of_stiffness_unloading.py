@@ -13,7 +13,7 @@ class LossOfStiffnessUnloading(UnloadingModelBase):  # pylint: disable=too-few-p
         """
         Constructor
         """
-        super(LossOfStiffnessUnloading, self).__init__()
+        super().__init__()
 
     def compute_unloading_reloading_condition(self, disc, new_opening):
         """

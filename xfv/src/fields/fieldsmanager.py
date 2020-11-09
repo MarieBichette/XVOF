@@ -13,7 +13,7 @@ class FieldManager(OrderedDict):
     """
 
     def __init__(self):
-        super(FieldManager, self).__init__()
+        super().__init__()
 
     def __setitem__(self, key, value):
         """
@@ -23,7 +23,7 @@ class FieldManager(OrderedDict):
         :param value: Field object
         """
         if key not in list(self.keys()):
-            super(FieldManager, self).__setitem__(key, value)
+            super().__setitem__(key, value)
         else:
             raise KeyError("The filed {:s} already exists in the manager!".format(key))
 

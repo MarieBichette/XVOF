@@ -11,7 +11,7 @@ class MaximalStressCriterion(RuptureCriterion):   # pylint: disable=too-few-publ
     A rupture criterion based on minimal pressure
     """
     def __init__(self, sigma_max):
-        super(MaximalStressCriterion, self).__init__()
+        super().__init__()
         self.__max_stress = sigma_max
 
     def check_criterion(self, cells, *args, **kwargs):

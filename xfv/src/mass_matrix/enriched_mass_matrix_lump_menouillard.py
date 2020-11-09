@@ -14,7 +14,7 @@ class EnrichedMassMatrixLumpMenouillard(EnrichedMassMatrixLump):
         """
         Build the class EnrichedMassMatrixLumpMenouillard
         """
-        super(EnrichedMassMatrixLumpMenouillard, self).__init__()
+        super().__init__()
 
     def compute_enriched_mass_matrix_left_part(self, mass_0: float, mass_1: float, epsilon: float):
         """

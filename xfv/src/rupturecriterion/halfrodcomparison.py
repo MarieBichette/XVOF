@@ -12,7 +12,7 @@ class HalfRodComparisonCriterion(RuptureCriterion):   # pylint: disable=too-few-
     results to other results obtained without XFEM on a half rod
     """
     def __init__(self, ruptured_cell_index=500):
-        super(HalfRodComparisonCriterion, self).__init__()
+        super().__init__()
         self.__ruptured_cell_index = int(ruptured_cell_index)
 
     def check_criterion(self, cells, *args, **kwargs):

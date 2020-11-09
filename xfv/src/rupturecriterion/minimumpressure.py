@@ -11,7 +11,7 @@ class MinimumPressureCriterion(RuptureCriterion):  # pylint: disable=too-few-pub
     A rupture criterion based on minimal pressure
     """
     def __init__(self, pmin):
-        super(MinimumPressureCriterion, self).__init__()
+        super().__init__()
         self.__minimum_pressure = pmin
 
     def check_criterion(self, cells, *args, **kwargs):

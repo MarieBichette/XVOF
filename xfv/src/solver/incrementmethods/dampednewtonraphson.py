@@ -11,7 +11,7 @@ class DampedNewtonRaphsonIncrement(NewtonRaphsonIncrementBase):
     Class définissant un incrément amorti de l'algorithme de Newton-Raphson
     """
     def __init__(self, damping_coefficient=0.9):
-        super(DampedNewtonRaphsonIncrement, self).__init__()
+        super().__init__()
         self._damping_coefficient = damping_coefficient
 
     def computeIncrement(self, function_value, derivative_function_value):

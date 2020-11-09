@@ -14,7 +14,7 @@ class EnrichedMassMatrixLumpSum(EnrichedMassMatrixLump):
         """
         Build the class EnrichedMassMatrixLumpSum
         """
-        super(EnrichedMassMatrixLumpSum, self).__init__()
+        super().__init__()
 
     def compute_enriched_mass_matrix_left_part(self, mass_0: float, mass_1: float, epsilon: float):
         """

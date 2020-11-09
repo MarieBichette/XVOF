@@ -13,7 +13,7 @@ class ConstantStiffnessUnloading(UnloadingModelBase):  # pylint: disable=too-few
         """
         Constructor
         """
-        super(ConstantStiffnessUnloading, self).__init__()
+        super().__init__()
         self.slope = slope
 
     def compute_unloading_reloading_condition(self, disc, new_opening):

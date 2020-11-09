@@ -24,8 +24,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param initial_velocities: initial velocities of nodes
         :param section: section of the bar
         """
-        super(OneDimensionHansboEnrichedNode, self).__init__(nbr_of_nodes, initial_positions,
-                                                             initial_velocities, section=section)
+        super().__init__(nbr_of_nodes, initial_positions, initial_velocities, section=section)
         self._v_field = np.copy(self._upundemi)
 
     @property

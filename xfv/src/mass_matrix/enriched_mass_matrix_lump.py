@@ -18,7 +18,7 @@ class EnrichedMassMatrixLump(EnrichedMassMatrix):
         Build the class
         """
         matrix_size = 4
-        super(EnrichedMassMatrixLump, self).__init__(matrix_size)
+        super().__init__(matrix_size)
         self._enriched_mass_matrix = np.zeros([matrix_size], dtype=np.float64, order='C')
         self._inv_enriched_mass_matrix = np.zeros([matrix_size], dtype=np.float64, order='C')
         self._enriched_mass_matrix_left_part = np.zeros([matrix_size], dtype=np.float64, order='C')

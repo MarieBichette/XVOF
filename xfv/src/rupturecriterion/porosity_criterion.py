@@ -10,7 +10,7 @@ class PorosityCriterion(RuptureCriterion):   # pylint: disable=too-few-public-me
     A rupture criterion based on porosity value
     """
     def __init__(self, p_limit):
-        super(PorosityCriterion, self).__init__()
+        super().__init__()
         self.__limit_porosity = p_limit
 
     def check_criterion(self, cells, *args, **kwargs):

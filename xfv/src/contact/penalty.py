@@ -17,7 +17,7 @@ class PenaltyContact(ContactBase):  # pylint: disable=too-few-public-methods
 
         :param penalty_stiffness: stiffness of the penalty method
         """
-        super(PenaltyContact, self).__init__()
+        super().__init__()
         self.penalty_stiffness = penalty_stiffness
 
     def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity,

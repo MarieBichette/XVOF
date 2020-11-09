@@ -65,7 +65,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
 
         :param n_cells: total number of cells
         """
-        super(OneDimensionHansboEnrichedCell, self).__init__(n_cells)
+        super().__init__(n_cells)
         #
         print(self._fields_manager)
         self._classical = np.ones(n_cells, dtype=np.bool, order='C')

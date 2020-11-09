@@ -16,7 +16,7 @@ class LagrangianMultiplierContact(ContactBase):  # pylint: disable=too-few-publi
         """
         Constructor
         """
-        super(LagrangianMultiplierContact, self).__init__()
+        super().__init__()
         self._lambda_multiplier = 0
 
     def compute_contact_force(self, node_velocity: np.array, disc: Discontinuity,

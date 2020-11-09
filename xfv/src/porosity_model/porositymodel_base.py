@@ -14,7 +14,6 @@ class PorosityModelBase:  # pylint: disable=too-few-public-methods
         """
         Build the porosity model
         """
-        pass
 
     @abstractmethod
     def compute_porosity(self, delta_t: float, porosity: np.array,
