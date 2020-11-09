@@ -101,7 +101,6 @@ def run():
     # Tracé jusqu'au temps d'appartion des disc :
     first_time = min([diagram_tools.first_enr_time[k] for k in diagram_tools.first_enr_time])
     time_index = diagram_tools.get_enrichment_time_index(first_time)
-    print(time_index)
     diagram_tools.plot_section_of_color_map(coord_array[:time_index + 1, :],
                                             time_array[:time_index + 1, :],
                                             field_array[:time_index + 1, :],
