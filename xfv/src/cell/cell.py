@@ -89,6 +89,9 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._fields_manager["Porosity"] = Field(
             self._nbr_of_cells, material_data.porosity_init, material_data.porosity_init)
 
+        # Coordonnées des mailles selon l'axe x
+        self._coordinates_x = np.zeros(self.number_of_cells, dtype=float)
+
     def initialize_cell_fields(self, mask_node_target, mask_node_projectile, topology):
         """
         Initialisation of the cell fields and attributes of cell_in_target and cell_in_projectile
@@ -273,6 +276,13 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         return self._nbr_of_cells
 
+    @property
+    def coordinates_x(self):
+        """
+        Returns the coordinates of the center of the cell
+        """
+        return self._coordinates_x
+
     def __str__(self):
         message = "Number of cells: {:d}".format(self.number_of_cells)
         return message
@@ -374,4 +384,14 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :param time_step: float
         :param porosity_model: porosity model to compute 
         :type mask: np.array([nbr_of_cells, 1], dtype=bool)
+        """
+
+    @abstractmethod
+    def compute_new_coordinates(self, topology, x_coord):
+        """
+        Compute the coordinates of the cell center
+        :param topology: mesh nodal connectivity
+        :param x_coord: coordinates of the nodes
+        :param cell_size: size of the cells
+        :return:
         """

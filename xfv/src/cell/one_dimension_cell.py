@@ -745,3 +745,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         super().increment_variables()
         self._deviatoric_stress_current[:, :] = self._deviatoric_stress_new[:, :]
+
+    def compute_new_coordinates(self, topology, x_coord):
+        """
+        Compute the coordinates of the cell center
+        :param topology: mesh nodal connectivity
+        :param x_coord: coordinates of the nodes
+        :param cell_size: size of the cells
+        :return:
+        """
+        self._coordinates_x = Cell.get_coordinates(self._nbr_of_cells, topology, x_coord)

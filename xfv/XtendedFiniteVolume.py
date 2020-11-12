@@ -332,6 +332,10 @@ def main(directory: Path) -> None:
         # ---------------------------------------------#
         my_mesh.compute_new_cells_sizes(dt)
         # ---------------------------------------------#
+        #         CELLS COORDS COMPUTATION             #
+        # ---------------------------------------------#
+        my_mesh.compute_new_cell_coordinates()
+        # ---------------------------------------------#
         #         CELLS DENSITIES COMPUTATION          #
         # ---------------------------------------------#
         my_mesh.compute_new_cells_densities()

@@ -7,7 +7,7 @@ from typing import Tuple
 
 import numpy as np
 
-from xfv.src.cell.one_dimension_cell import OneDimensionCell
+from xfv.src.cell.one_dimension_cell import OneDimensionCell, Cell
 from xfv.src.discontinuity.discontinuity import Discontinuity
 from xfv.src.utilities.stress_invariants_calculation import compute_second_invariant
 from xfv.src.fields.field import Field
@@ -73,6 +73,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         # Cell parts geometry
         self._left_part_size = Field(n_cells, np.zeros([n_cells]), np.zeros([n_cells]))
         self._right_part_size = Field(n_cells, np.zeros([n_cells]), np.zeros([n_cells]))
+        self._enr_coordinates_x = np.zeros([n_cells], dtype=float)
 
         # Additional dof: thermodynamics
         self._enr_pressure = Field(n_cells, np.zeros([n_cells]), np.zeros([n_cells]))
@@ -118,6 +119,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             np.copy(self.shear_modulus.current_value[enr_cell])
         self.enr_yield_stress.current_value[enr_cell] = \
             np.copy(self.yield_stress.current_value[enr_cell])
+        self._enr_coordinates_x = np.copy(self._coordinates_x[enr_cell])
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
@@ -331,6 +333,20 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         return self.reconstruct_enriched_hydro_field(self.pseudo,
                                                      "enr_artificial_viscosity")
+
+    @property
+    def coordinates_field(self):
+        """
+        Returns the coordinates of cells, including left and right parts
+        :return:
+        """
+        insertion_field = self._enr_coordinates_x[self.enriched]  # filtre(taille nb_disc)
+        res = np.copy(self._coordinates_x[:, 0])
+        offset = 0
+        for enr_index in np.where(self.enriched)[0]:
+            res = np.insert(res, enr_index + offset + 1, insertion_field[offset, 1])
+            offset += 1
+        return res
 
     @property
     def stress_xx_field(self):
@@ -743,3 +759,20 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._right_part_size.increment_values()
         # Elasticity
         self._enr_deviatoric_stress_current[:] = self._enr_deviatoric_stress_new[:]
+
+    def compute_new_coordinates(self, topology, node_coord):
+        """
+        Compute the coordinates of the cell center
+        :param topology : mesh connectivity
+        :param node_coord: coordinates of the nodes
+        :return:
+        """
+        self._coordinates_x = node_coord[:-1] + self.size_t_plus_dt / 2.
+        cell_coord_from_right = node_coord[1:] - self.size_t_plus_dt / 2.
+        for i in np.where(self.enriched)[0]:
+            # modif left coord
+            self._coordinates_x[i] += (- self.size_t_plus_dt[i]
+                                       + self._left_part_size.new_value[i]) / 2.
+            # compute right coord
+            self._enr_coordinates_x[i] = cell_coord_from_right[i] + (self.size_t_plus_dt[i]
+                                         - self._right_part_size.new_value[i]) / 2.

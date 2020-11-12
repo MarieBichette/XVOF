@@ -263,6 +263,12 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         self.cells.compute_new_size(self.__topology, self.nodes.xtpdt, self.cells.classical)
         self.cells.compute_enriched_elements_new_part_size(delta_t, self.nodes.upundemi)
 
+    def compute_new_cell_coordinates(self):
+        """
+        Computation of the new coordinates of the center of cells
+        """
+        self.cells.compute_new_coordinates(self.__topology, self.nodes.xtpdt)
+
     def compute_new_cells_densities(self):
         """
         Computation of cells densities at t+dt
