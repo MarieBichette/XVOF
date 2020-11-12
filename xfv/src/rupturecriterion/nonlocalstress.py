@@ -21,12 +21,12 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         Check of the rupture criterion on the cells in arguments
         :param cells: cells on which to check the criterion
         """
-        mean_stress = np.zeros(cells.number_of_cells)  # taille nb_mailles
+        mean_stress = np.zeros(cells.number_of_cells)
         # note : pas de verification du critere de rupture sur les mailles au bord de la geometrie
         for i in range(1, cells.number_of_cells - 1):  # 1 à nb_mailles - 1
             # import ipdb ; ipdb.set_trace()
             if cells.enriched[i]:
-                stress_g = cells.enr_stress_xx[i]
+                stress_g = cells.enr_stress_xx[i - 1]
             else:
                 stress_g = cells.stress_xx[i - 1]
             stress = cells.stress_xx[i]
