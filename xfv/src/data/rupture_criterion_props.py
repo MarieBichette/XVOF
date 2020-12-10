@@ -95,6 +95,7 @@ class MinimumPressureCriterionProps(RuptureCriterionProps):
 @dataclass  # pylint: disable=missing-class-docstring
 class NonLocalStressCriterionProps(RuptureCriterionProps):
     value: Optional[float]  # optional to personalize the error message
+    radius: Optional[float]
     _rupture_criterion_class = NonLocalStressCriterion
 
     def __post_init__(self):

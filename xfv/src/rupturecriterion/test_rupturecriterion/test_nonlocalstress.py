@@ -24,21 +24,33 @@ class MinimumPressureTest(unittest.TestCase):
                                       "../../../tests/0_UNITTEST/XDATA_enrichment_epp.json")
         DataContainer(data_file_path)
 
-        self.value = 10.
-        self.criterion = NonLocalStressCriterion(self.value)
-
         self.cells = OneDimensionHansboEnrichedCell(10)
 
 
-    def test_check_criterion_rupture_simple(self):
+    def test_check_criterion_rupture_1(self):
         """
         Test of the method check_criterion of MinimumPressureCriterion
         """
-        self.cells._stress = np.array([[1, ], [4, ], [25, ], [7, ], [-2, ],
-                                       [10, ], [26, ], [1, ], [0, ], [15, ]])
+        self.cells._coordinates_x = np.array([[0., ], [1., ], [2., ], [3., ], [4., ],
+                                              [5., ], [6., ], [7., ], [8.,], [9., ]])
+        self.cells._stress = np.array([[1, 0, 0], [4, 0, 0], [25, 0, 0], [7, 0, 0], [-2, 0, 0],
+                                       [10, 0, 0], [26, 0, 0], [1, 0, 0], [0, 0, 0], [15, 0, 0]])
+        self.criterion = NonLocalStressCriterion(10., 1.)
         result = self.criterion.check_criterion(self.cells)
-        exact = np.array([False, False, True, False, False,
-                          True, True, False, False, False])
+        exact = np.array([False, False, True, False, False, True, True, False, False, True])
+        np.testing.assert_allclose(exact, result)
+
+    def test_check_criterion_rupture_2(self):
+        """
+        Test of the method check_criterion of MinimumPressureCriterion
+        """
+        self.cells._coordinates_x = np.array([[0., ], [1., ], [2., ], [3., ], [4., ],
+                                              [5., ], [6., ], [7., ], [8.,], [9., ]])
+        self.cells._stress = np.array([[1, 0, 0], [4, 0, 0], [25, 0, 0], [7, 0, 0], [-2, 0, 0],
+                                       [10, 0, 0], [26, 0, 0], [1, 0, 0], [0, 0, 0], [15, 0, 0]])
+        self.criterion = NonLocalStressCriterion(10., 2.)
+        result = self.criterion.check_criterion(self.cells)
+        exact = np.array([False, True, True, True, False, True, True, False, False, False])
         np.testing.assert_allclose(exact, result)
 
 

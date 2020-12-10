@@ -694,7 +694,6 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         fail_crit_name: str = failure_criterion_data['name']
         fail_crit_value: Optional[float] = failure_criterion_data.get('value')
         failure_cell_index: Optional[int] = failure_criterion_data.get('index')
-
         if fail_crit_name == "MinimumPressure":
             failure_criterion = MinimumPressureCriterionProps(fail_crit_value)
         elif fail_crit_name == "Damage":
@@ -706,7 +705,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         elif fail_crit_name == "MaximalStress":
             failure_criterion = MaximalStressCriterionProps(fail_crit_value)
         elif fail_crit_name == "NonLocalStress":
-            failure_criterion = NonLocalStressCriterionProps(fail_crit_value)
+            radius: Optional[int] = failure_criterion_data.get('radius')
+            failure_criterion = NonLocalStressCriterionProps(fail_crit_value, radius)
         else:
             raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "

@@ -119,7 +119,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             np.copy(self.shear_modulus.current_value[enr_cell])
         self.enr_yield_stress.current_value[enr_cell] = \
             np.copy(self.yield_stress.current_value[enr_cell])
-        self._enr_coordinates_x = np.copy(self._coordinates_x[enr_cell])
+        self._enr_coordinates_x[enr_cell] = np.copy(self._coordinates_x[enr_cell])
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
@@ -767,12 +767,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :param node_coord: coordinates of the nodes
         :return:
         """
-        self._coordinates_x = node_coord[:-1] + self.size_t_plus_dt / 2.
-        cell_coord_from_right = node_coord[1:] - self.size_t_plus_dt / 2.
-        for i in np.where(self.enriched)[0]:
-            # modif left coord
-            self._coordinates_x[i] += (- self.size_t_plus_dt[i]
-                                       + self._left_part_size.new_value[i]) / 2.
-            # compute right coord
-            self._enr_coordinates_x[i] = cell_coord_from_right[i] + (self.size_t_plus_dt[i]
-                                         - self._right_part_size.new_value[i]) / 2.
+        mask = self.enriched
+        self._coordinates_x = node_coord[:-1, 0] + self.size_t_plus_dt / 2.
+        cell_coord_from_right = node_coord[1:, 0] - self.size_t_plus_dt / 2.
+        self._coordinates_x[mask] += (- self.size_t_plus_dt[mask]
+                                      + self._left_part_size.new_value[mask]) / 2.
+        self._enr_coordinates_x[mask] = cell_coord_from_right[mask] + \
+            (self.size_t_plus_dt[mask] - self._right_part_size.new_value[mask]) / 2.

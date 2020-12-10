@@ -44,7 +44,8 @@
       "failure": {
         "failure-criterion": {
           "name": "NonLocalStress",
-          "value": 8e+9
+          "value": 8e+9,
+          "radius": 0.5e-5
         },
         "failure-treatment": {
           "name": "Enrichment",
@@ -55,7 +56,7 @@
           "name": "linear",
           "coefficients": {
             "cohesive-strength": 8e+9,
-            "critical-separation": 1e-4
+            "critical-separation": 1e-5
           },
           "unloading-model": {
             "name": "lossofstiffnessunloading"
