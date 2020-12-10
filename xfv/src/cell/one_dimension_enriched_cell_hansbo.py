@@ -349,6 +349,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         return res
 
     @property
+    def enr_coordinates_x(self):
+        """
+        Accesseur sur le tableau des cooordonnées enrichies
+        """
+        return self._enr_coordinates_x
+
+    @property
     def stress_xx_field(self):
         """
         :return: sigma_xx field
