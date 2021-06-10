@@ -98,16 +98,16 @@ def run():
     if ARGS.verbose:
         print("Plot the color map")
 
-    # Tracé jusqu'au temps d'appartion des disc :
-    first_time = min([diagram_tools.first_enr_time[k] for k in diagram_tools.first_enr_time])
-    time_index = diagram_tools.get_enrichment_time_index(first_time)
-    diagram_tools.plot_section_of_color_map(coord_array[:time_index + 1, :],
-                                            time_array[:time_index + 1, :],
-                                            field_array[:time_index + 1, :],
-                                            plot_options)
-
     # Apparition des disc :
     if len(ruptured_cell_id_before_offset) >= 1:
+        # Tracé jusqu'au temps d'appartion des disc :
+        first_time = min([diagram_tools.first_enr_time[k] for k in diagram_tools.first_enr_time])
+        time_index = diagram_tools.get_enrichment_time_index(first_time)
+        diagram_tools.plot_section_of_color_map(coord_array[:time_index + 1, :],
+			    		        time_array[:time_index + 1, :],
+					        field_array[:time_index + 1, :],
+					        plot_options)
+
         # Offset of the cracked cell ids to be conservative with the number of items of final arrays
         ruptured_cell_id_after_offset = \
             ruptured_cell_id_before_offset + list(range(0, len(ruptured_cell_id_before_offset)))
