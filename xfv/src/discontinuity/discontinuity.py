@@ -235,14 +235,6 @@ class Discontinuity:
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
         """
-        # Discontinuity.enr_velocity_new[self.__label - 1] = np.copy(
-        #     Discontinuity.enr_velocity_current[self.__label - 1])
-        # Discontinuity.enr_coordinates_new[self.__label - 1] = np.copy(
-        #    Discontinuity.enr_coordinates_current[self.__label - 1])
-        # self.enr_velocity_new = np.copy(self.enr_velocity_current)
-        # self.enr_coordinates_new = np.copy(self.enr_coordinates_current)
-        # self.enr_velocity_new[:] = np.copy(self.enr_velocity_current)
-        # self.enr_coordinates_new[:] = np.copy(self.enr_coordinates_current)
         self.enr_velocity_new[:] = self.enr_velocity_current[:]
         self.enr_coordinates_new[:] = self.enr_coordinates_current[:]
 
