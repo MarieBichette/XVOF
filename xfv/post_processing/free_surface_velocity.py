@@ -21,15 +21,17 @@ def run():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase program verbosity")
     parser.add_argument("-case", action='append', nargs='+',
-                        help="the path to the output repository from /xfv/tests/")
+                        help="the path to the output repository")
     parser.add_argument("-experimental_data", help="the path to experimental data to plot")
     parser.add_argument("--output_filename", default="all_fields.hdf5",
                         help="the name of the output hdf5 band (default = all_fields.hdf5)")
     parser.add_argument("--shift_t0", action="store_true",
                         help="Shift time origin to put t0 when the velocity signal arrives on "
                              "the free surface velocity")
-    parser.add_argument("--write_data", default="free_surface_velocity.dat",
-                        help="Name of the output file")
+    parser.add_argument("--write_data", action="store_true",
+                        help="Write a file with time and velocity")
+    parser.add_argument("--file_write_data", default="free_surface_velocity.dat",
+                        help="Name of the output file to write time and velocity")
     args = parser.parse_args()
 
     if args.case is None:
@@ -58,7 +60,7 @@ def run():
     for case in args.case[0]:
         if args.verbose:
             print("Case is : " + case)
-        path_to_db = pathlib.Path.cwd().joinpath("..", "tests", case, args.output_filename)
+        path_to_db = pathlib.Path.cwd().joinpath(case, args.output_filename)
         if args.verbose:
             print("Path to database : {:}".format(path_to_db))
             print("Read VelocityField in database... ")
@@ -79,8 +81,8 @@ def run():
             if args.verbose:
                 print("New t0 is : " + str(time_0))
         plt.plot((time - time_0) * 1.e+6, velocity, label=case)
-        if (args.write_data):
-            data_path=case + args.write_data
+        if args.write_data:
+            data_path = pathlib.Path.cwd().joinpath(case, args.file_write_data)
             with open(data_path, "w") as file_object:
                 for x_data, y_data in zip(time, velocity):
                     file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
