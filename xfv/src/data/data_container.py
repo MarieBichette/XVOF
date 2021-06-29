@@ -331,7 +331,14 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         """
         Returns the BoundaryType object corresponding to the info datas.
         """
-        type_bc: str = info['type'].lower()
+        type_bc: str = ""
+        try:
+          type_bc = info['type'].lower()
+        except KeyError:
+          type_bc = info['bc-type'].lower()
+        except:
+          raise ValueError("""Le type de condition limite doit être renseigné dans le champ type ou bc-type""")
+        
         func_name: str = info['bc-law'].lower()
         if func_name == 'constant':
             cvf = ConstantValueFunctionProps(info['value'])

@@ -8,7 +8,7 @@ Welcome to XVOF !
 Welcome in the documentation page of the XVOF code, a one-dimensional hydro code that uses XFV method to model fracture.
 
 This code is available as a GitHub repository :
-https://github.com/hippo91/XVOF
+https://github.com/MarieBichette/XVOF
 
 For any question or remark, please contact :
 G. Peillex

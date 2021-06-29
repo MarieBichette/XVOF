@@ -4,7 +4,7 @@ This module implements the TypeCheckedDataClass
 from dataclasses import dataclass, fields
 from functools import partial
 from operator import le, lt
-from typing import Union
+from typing import Union, List
 
 
 @dataclass
@@ -29,10 +29,11 @@ class TypeCheckedDataClass:
             value = getattr(self, _field.name)
             try:
                 # try to take into account typing generics
+                # import ipdb; ipdb.set_trace()
                 if _field.type.__origin__ == Union:  # case of Union or Optional types
                     if not any(isinstance(value, _type) for _type in _field.type.__args__):
                         self._raise_type_error(_field.name, _field.type, value)
-                elif _field.type.__origin__ == list:  # case of List types
+                elif _field.type.__origin__ in (list, List):  # case of List types
                     if not all(isinstance(_val, _field.type.__args__[0]) for _val in value):
                         self._raise_type_error(_field.name, _field.type, value)
                 else:
