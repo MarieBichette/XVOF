@@ -24,11 +24,14 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         mean_stress = np.zeros(cells.number_of_cells)
         nbr_div = np.zeros(cells.number_of_cells)
 
-        for i in range(0, cells.number_of_cells):
+        for i in range(cells.number_of_cells):
             distance_cell_to_i = np.abs(cells.coordinates_x - cells.coordinates_x[i])
             enr_distance_cell_to_i = np.abs(cells.coordinates_x - cells.enr_coordinates_x[i])
             cells_in_radius = (distance_cell_to_i < self.radius).flatten()
             enr_cells_in_radius = (enr_distance_cell_to_i < self.radius).flatten()
+            # Only enriched cells count in the computation of the "enriched" stress mean
+            enr_cells_in_radius = enr_cells_in_radius * cells.enriched
+
             mean_stress[i] += np.sum(cells.stress_xx[cells_in_radius])  \
                             + np.sum(cells.enr_stress_xx[enr_cells_in_radius])
             nbr_div[i] = len(np.where(cells_in_radius)[0]) + len(np.where(enr_cells_in_radius)[0])
