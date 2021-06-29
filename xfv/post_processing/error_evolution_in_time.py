@@ -82,7 +82,7 @@ def run():
     for case in args.case[0]:
         if args.verbose:
             print("Case is : " + case)
-        path_to_db = pathlib.Path.cwd().joinpath("..", "tests", case, args.output_filename)
+        path_to_db = pathlib.Path.cwd().joinpath(case, args.output_filename)
         if args.verbose:
             print("Path to database : {:}".format(path_to_db))
             print("Read field " + field + " in database... ")

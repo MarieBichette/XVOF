@@ -26,7 +26,7 @@ def run():
     Plot field profile for each case
     """
     for case in ARGS.case[0]:
-        path_to_db = pathlib.Path.cwd().joinpath("..", "tests", case, ARGS.output_filename)
+        path_to_db = pathlib.Path.cwd().joinpath(case, ARGS.output_filename)
         if ARGS.verbose:
             print("Path to database : {:}".format(path_to_db))
             print("Read field " + ARGS.field + " in database... ")

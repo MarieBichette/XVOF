@@ -61,7 +61,7 @@ def run():
     """
     Run post processing
     """
-    path_to_db = pathlib.Path.cwd().joinpath("..", "tests", ARGS.case, ARGS.output_filename)
+    path_to_db = pathlib.Path.cwd().joinpath(ARGS.case, ARGS.output_filename)
     my_hd = OutputDatabaseExploit(path_to_db)
 
     # ----------------------------------------------------------------
