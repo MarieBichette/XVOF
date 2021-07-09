@@ -36,4 +36,4 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
                             + np.sum(cells.enr_stress_xx[enr_cells_in_radius])
             nbr_div[i] = len(np.where(cells_in_radius)[0]) + len(np.where(enr_cells_in_radius)[0])
         mean_stress = mean_stress / nbr_div
-        return mean_stress >= self.critical_value
+        return (mean_stress >= self.critical_value) * (cells.stress[:, 0] >= self.critical_value)
