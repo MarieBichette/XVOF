@@ -699,14 +699,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         yield_stress = self.enr_yield_stress.new_value[mask]
         shear_modulus = self.enr_shear_modulus.new_value[mask]
         radial_return = self._compute_radial_return(invariant_j2_el, yield_stress)
-        dev_stress = self.enr_deviatoric_stress_new[mask]
-        self._plastic_strain_rate[mask] = \
+        dev_stress = self._enr_deviatoric_stress_new[mask]
+        self._enr_plastic_strain_rate[mask] = \
             self._compute_plastic_strain_rate_tensor(radial_return, shear_modulus,
                                                      delta_t, dev_stress)
-        self._equivalent_plastic_strain_rate[mask] = \
+        self._enr_equivalent_plastic_strain_rate[mask] = \
             self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus,
                                                          yield_stress, delta_t)
-        self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+        self._enr_deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
 
     def compute_enriched_yield_stress(self, yield_stress_model):
         """
