@@ -80,7 +80,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         """
         inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_enriched_dof
         disc.enr_velocity_new[:] = \
-            disc.enr_velocity_current + delta_t * \
+            disc.enr_velocity_current[:] + delta_t * \
             multiplication_masse(inv_matrix, disc.enr_force)
 
     def coupled_enrichment_terms_compute_new_velocity(self, disc, delta_t):
@@ -161,7 +161,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param disc: current discontinuity
         :param delta_t: time step
         """
-        disc.enr_coordinates_new[:] = (disc.enr_coordinates_current + delta_t * disc.enr_velocity_new)
+        disc.enr_coordinates_new[:] = disc.enr_coordinates_current[:] + delta_t * disc.enr_velocity_new[:]
 
     def compute_enriched_nodes_new_force(self, contrainte_xx: np.array, enr_contrainte_xx):
         """
