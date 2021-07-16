@@ -102,7 +102,7 @@
       "NodeVelocity",
       "Pressure",
       "CellSize",
-      "Density"
+      "DiscontinuityOpening"
     ]
   }
 }
