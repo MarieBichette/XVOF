@@ -417,7 +417,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 params['coefficients']['separation-at-point-2'],
                 params['coefficients']['stress-at-point-2'])
         else:
-            raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
+            raise ValueError(f"Unknown cohesive model: {cohesive_model_name} ."
                              "Please choose among (linear, bilinear, trilinear)")
 
         return cohesive_model_props
