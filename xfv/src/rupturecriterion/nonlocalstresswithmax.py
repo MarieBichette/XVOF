@@ -1,13 +1,13 @@
 #!/usr/bin/env python3.7
 # -*- coding: iso-8859-1 -*-
 """
-Implementing a non local criterion for failure
+Implementing a non local criterion for failure + the cell is cracked if it verifies the failure criterion itself
 """
 import numpy as np
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
 
 
-class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-public-methods
+class NonLocalStressCriterionWithMax(RuptureCriterion):  # pylint: disable=too-few-public-methods
     """
     An class for non local failure criterion
     """
@@ -36,4 +36,4 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
                             + np.sum(cells.enr_stress_xx[enr_cells_in_radius])
             nbr_div[i] = len(np.where(cells_in_radius)[0]) + len(np.where(enr_cells_in_radius)[0])
         mean_stress = mean_stress / nbr_div
-        return mean_stress >= self.critical_value
+        return (mean_stress >= self.critical_value) * (cells.stress[:, 0] >= self.critical_value)

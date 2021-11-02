@@ -35,7 +35,8 @@ from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   HalfRodComparisonCriterionProps,
                                                   MaximalStressCriterionProps,
                                                   MinimumPressureCriterionProps,
-                                                  NonLocalStressCriterionProps)
+                                                  NonLocalStressCriterionProps,
+                                                  NonLocalStressCriterionWithMaxProps)
 from xfv.src.data.porosity_model_props import (PorosityModelProps,
                                                JohnsonModelProps)
 from xfv.src.data.enriched_mass_matrix_props import (EnrichedMassMatrixProps,
@@ -714,6 +715,9 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         elif fail_crit_name == "NonLocalStress":
             radius: Optional[int] = failure_criterion_data.get('radius')
             failure_criterion = NonLocalStressCriterionProps(fail_crit_value, radius)
+        elif fail_crit_name == "NonLocalStressWithMax":
+            radius: Optional[int] = failure_criterion_data.get('radius')
+            failure_criterion = NonLocalStressCriterionWithMaxProps(fail_crit_value, radius)
         else:
             raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "
