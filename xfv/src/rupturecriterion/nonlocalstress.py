@@ -47,9 +47,13 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         nbr_div = np.zeros(cells.number_of_cells)
 
         for i in range(cells.number_of_cells):
-            cells_in_radius, enr_cells_in_radius = compute_neighbour(cells, i, self.radius)
-            mean_stress[i] += np.sum(cells.stress_xx[cells_in_radius])  \
-                            + np.sum(cells.enr_stress_xx[enr_cells_in_radius])
+            distance_to_cell_i, enr_distance_to_cell_i = compute_distance(cells, i)
+            weight_i = self.average_strategy.compute_weight(self.radius, distance_to_cell_i)
+            enr_weight_i = self.average_strategy.compute_weight(self.radius, enr_distance_to_cell_i)
+            # weight_i et #enr_weight_i are 0 for cells outside the neighbourhood
+            mean_stress[i] = np.sum(cells.stress_xx * weight_i + cells.enr_stress_xx * enr_weight_i)
+            cells_in_radius = weight_i != 0.
+            enr_cells_in_radius = enr_weight_i != 0.
             nbr_div[i] = len(np.where(cells_in_radius)[0]) + len(np.where(enr_cells_in_radius)[0])
         mean_stress = mean_stress / nbr_div
         return mean_stress >= self.critical_value
