@@ -4,10 +4,10 @@
 Implementing a computation of the weight associated to each neighbour cell
 """
 import numpy as np
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
-class IWeight:
+class IWeight(metaclass=ABCMeta):
     def __init__(self):
         pass
 
