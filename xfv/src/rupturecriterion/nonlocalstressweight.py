@@ -22,7 +22,7 @@ class NoWeight(IWeight):
         A class for no weight (weight = 1 for each neighbour)
         """
         super(NoWeight, self).__init__()
-    
+
     def compute_weight(self, radius, length):
         """
         Weight = 1

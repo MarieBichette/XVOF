@@ -5,6 +5,7 @@ Implementing a non local criterion for failure + the cell is cracked if it verif
 """
 import numpy as np
 from xfv.src.rupturecriterion.rupturecriterion import RuptureCriterion
+from xfv.src.rupturecriterion.nonlocalstress import compute_neighbour
 
 
 class NonLocalStressCriterionWithMax(RuptureCriterion):  # pylint: disable=too-few-public-methods
@@ -25,12 +26,7 @@ class NonLocalStressCriterionWithMax(RuptureCriterion):  # pylint: disable=too-f
         nbr_div = np.zeros(cells.number_of_cells)
 
         for i in range(cells.number_of_cells):
-            distance_cell_to_i = np.abs(cells.coordinates_x - cells.coordinates_x[i])
-            enr_distance_cell_to_i = np.abs(cells.coordinates_x - cells.enr_coordinates_x[i])
-            cells_in_radius = (distance_cell_to_i < self.radius).flatten()
-            enr_cells_in_radius = (enr_distance_cell_to_i < self.radius).flatten()
-            # Only enriched cells count in the computation of the "enriched" stress mean
-            enr_cells_in_radius = enr_cells_in_radius * cells.enriched
+            cells_in_radius, enr_cells_in_radius = compute_neighbour(cells, i, self.radius)
 
             mean_stress[i] += np.sum(cells.stress_xx[cells_in_radius])  \
                             + np.sum(cells.enr_stress_xx[enr_cells_in_radius])
