@@ -81,6 +81,7 @@ class Discontinuity:
                 Discontinuity.in_nodes, np.zeros((1, 1), dtype=int), axis=0)
             Discontinuity.out_nodes = np.append(
                 Discontinuity.out_nodes, np.zeros((1, 1), dtype=int), axis=0)
+                
         for ind, disc in enumerate(Discontinuity.discontinuity_list()):
             disc.enr_velocity_current = Discontinuity.enr_velocity_current[ind]
             disc.enr_velocity_new = Discontinuity.enr_velocity_new[ind]
