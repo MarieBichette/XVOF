@@ -17,6 +17,7 @@ from xfv.src.data.user_defined_functions_props import (UserDefinedFunctionPropsT
                                                        SuccessiveRampFunctionProps)
 from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
                                                LinearCohesiveZoneModelProps,
+                                               LinearMixedCohesiveZoneModelProps,
                                                BilinearCohesiveZoneModelProps,
                                                TrilinearCohesiveZoneModelProps)
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
@@ -99,7 +100,7 @@ class DatabaseProps(TypeCheckedDataClass):
 ALL_VARIABLES = ["NodeVelocity", "NodeCoordinates", "CellSize", "Pressure", "Density",
                  "InternalEnergy", "SoundVelocity", "ArtificialViscosity", "Stress",
                  "DeviatoricStress", "EquivalentPlasticStrainRate", "PlasticStrainRate",
-                 "Porosity", "CohesiveForce", "DiscontinuityOpening", "ShearModulus", "YieldStress"]
+                 "Porosity", "CohesiveForce", "DissipatedEnergy","DiscontinuityOpening", "ShearModulus", "YieldStress"]
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -400,25 +401,45 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             raise ValueError(f"Unknwown unloading model name: {unloading_model_name} "
                              "Please choose among (progressiveunloading, "
                              " lossofstiffnessunloading)")
-
+        print('cohesive model is', cohesive_model_name)
+         
         if cohesive_model_name == "linear":
-            cohesive_model_props: CohesiveZoneModelProps = LinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props)
+            purcentage_internal_energy = 0.
+            dissipated_energy = 0.
+            cohesive_model_props = LinearCohesiveZoneModelProps(cohesive_strength,critical_separation,
+                                                                cohesive_model_name,unloading_model_props,dissipated_energy,purcentage_internal_energy)
+        elif cohesive_model_name == "linear_mixed_purcentage":
+            dissipated_energy = 0.
+            purcentage_internal_energy = params['coefficients']['purcentage-internal-energy']
+            cohesive_model_props = LinearMixedCohesiveZoneModelProps(0.,0.,
+                                                                cohesive_model_name,unloading_model_props,
+                                                                     dissipated_energy, purcentage_internal_energy)
+        elif cohesive_model_name == "linear_mixed_fixed":
+            dissipated_energy = params['coefficients']['dissipated-energy']
+            purcentage_internal_energy = 0.
+            cohesive_model_props = LinearMixedCohesiveZoneModelProps(0.,0.,
+                                                                cohesive_model_name,unloading_model_props,
+                                                                     dissipated_energy, purcentage_internal_energy)
         elif cohesive_model_name == "bilinear":
+            purcentage_internal_energy = 0.
+            dissipated_energy = 0.
             cohesive_model_props = BilinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props,
+                cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
+                dissipated_energy, purcentage_internal_energy,purcentage_internal_energy,purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'])
+            
         elif cohesive_model_name == "trilinear":
             cohesive_model_props = TrilinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props,
+                cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
+                dissipated_energy, purcentage_internal_energy,purcentage_internal_energy,purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'],
                 params['coefficients']['separation-at-point-2'],
                 params['coefficients']['stress-at-point-2'])
         else:
             raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
-                             "Please choose among (linear, bilinear, trilinear)")
+                             "Please choose among (linear, linear_mixed_purcentage, linear_mixed_fixed, bilinear, trilinear)")
 
         return cohesive_model_props
 

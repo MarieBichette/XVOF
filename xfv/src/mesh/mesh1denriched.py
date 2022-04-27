@@ -322,7 +322,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         Computation of cohesive forces at t+dt
         """
         if self.cohesive_zone_model is not None:
-            self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model)
+            self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model,
+                                                              self.cells.stress[:,0],
+                                                self.cells.energy.new_value)
 
     def increment(self):
         """
@@ -473,7 +475,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # la variable dev_stress_new et doit donc être appelée à la fin de
         # l'étape du calcul de plasticité pour conserver la prédiction élastique dans
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
-
+        
         # 1) Compute yield stress
         self.cells.compute_yield_stress(yield_stress_model, mask_mesh)
         if mask_mesh.any() and self.cells.enriched.any():
