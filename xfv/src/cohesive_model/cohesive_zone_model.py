@@ -27,7 +27,42 @@ class CohesiveZoneModel:
         self._cohesive_zone_model_name = cohesive_zone_model_name
         self._dissipated_energy = dissipated_energy
         self._purcentage = purcentage
-        
+
+    @property
+    def cohesive_zone_model_name(self):  # pylint: disable=invalid-name
+        """
+        Cohesive zone model name
+        """
+        return self._cohesive_zone_model_name
+
+    @property
+    def critical_separation(self):  # pylint: disable=invalid-name
+        """
+        critical separation
+        """
+        return self._critical_separation
+
+    @property
+    def critical_strength(self):  # pylint: disable=invalid-name
+        """
+        critical strength
+        """
+        return self._critical_strength
+
+    @property
+    def dissipated_energy(self):  # pylint: disable=invalid-name
+        """
+        dissipated energy
+        """
+        return self._dissipated_energy
+
+    @property
+    def purcentage(self):  # pylint: disable=invalid-name
+        """
+        percentage of internal energy to be dissipated
+        """
+        return self._purcentage
+
     def compute_cohesive_stress(self, disc):
         """
         Compute the cohesive force for the current opening of discontinuity according to the
@@ -35,7 +70,7 @@ class CohesiveZoneModel:
 
         :param disc: discontinuity
 
-	attention : formule de la dissipiation d'energie du modèle cohesif seulement dans le cas de la décharge à zéro
+	    Attention : formule de la dissipation d'energie du modèle cohesif seulement dans le cas de la décharge à zéro
         """
         cohesive_force = 0.
         new_opening = disc.discontinuity_opening.new_value[0]

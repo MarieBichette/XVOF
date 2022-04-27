@@ -20,7 +20,7 @@ class CohesiveZoneModelProps(TypeCheckedDataClass):
     dissipated_energy: float
     purcentage_internal_energy: float
     _cohesive_zone_model_class = CohesiveZoneModel
-    
+
     def _build_cohesive_law(self):
         """
         Build the cohesive law that is needed by the CohesiveModel
