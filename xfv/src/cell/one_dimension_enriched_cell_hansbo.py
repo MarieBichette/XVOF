@@ -90,6 +90,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._enr_deviatoric_stress_new = np.zeros([n_cells, 3])
         self._enr_deviatoric_strain_rate = np.zeros([n_cells, 3])
         self._enr_equivalent_plastic_strain_rate = np.zeros([n_cells])
+        self._enr_equivalent_plastic_strain = Field(n_cells, 0, 0)
         self._enr_plastic_strain_rate = np.zeros([n_cells, 3])
 
         # Indicator right part of enr cell is plastic
@@ -143,6 +144,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._enr_stress[enr_cell] = np.copy(self._stress[enr_cell])
         self._enr_equivalent_plastic_strain_rate[enr_cell] = \
             np.copy(self._equivalent_plastic_strain_rate[enr_cell])
+        self._enr_equivalent_plastic_strain.current_value[enr_cell] = \
+            np.copy(self.equivalent_plastic_strain.current_value[enr_cell])
 
     def reconstruct_enriched_hydro_field(self, classical_field: Field, enriched_field_name: str):
         """
@@ -293,6 +296,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         Accessor on the right part of cracked cell equivalent plastic strain rate at time t
         """
         return self._enr_equivalent_plastic_strain_rate
+
+    @property
+    def enr_equivalent_plastic_strain(self):
+        """
+        Accessor on the right part of cracked cell equivalent plastic strain at time t
+        """
+        return self._enr_equivalent_plastic_strain
 
     @property
     def enr_plastic_strain_rate(self):
@@ -681,7 +691,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         if not mask.any():
             return
         self.enr_shear_modulus.new_value[mask] = \
-            shear_modulus_model.compute(self.enr_density.new_value[mask])
+            shear_modulus_model.compute(self.enr_density.new_value[mask],self.enr_pressure.current_value[mask])
 
     def apply_plasticity_enr(self, mask_mesh, delta_t):
         """
@@ -707,6 +717,16 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus,
                                                          yield_stress, delta_t)
         self._enr_deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+        self._enr_equivalent_plastic_strain.new_value[:] = \
+            self._compute_enr_equivalent_plastic_strain(mask,delta_t)
+
+    def _compute_enr_equivalent_plastic_strain(self,mask,delta_t):
+        """
+        Compute the equivalent plastic strain
+        param t_time : temps t
+        """
+        enr_equivalent_plastic_strain = delta_t* self._enr_equivalent_plastic_strain_rate[:] + self._enr_equivalent_plastic_strain.current_value[:]
+        return enr_equivalent_plastic_strain
 
     def compute_enriched_yield_stress(self, yield_stress_model):
         """
@@ -716,7 +736,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         mask = self.enriched
         self.enr_yield_stress.new_value[mask] = \
-            yield_stress_model.compute(self.enr_density.new_value[mask])
+            yield_stress_model.compute(self.enr_density.new_value[mask],
+                                       self._enr_equivalent_plastic_strain.current_value[mask],self.enr_shear_modulus.new_value[mask])
 
     def compute_enriched_elements_new_time_step(self):
         """
@@ -766,6 +787,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._right_part_size.increment_values()
         # Elasticity
         self._enr_deviatoric_stress_current[:] = self._enr_deviatoric_stress_new[:]
+        #plasticity
+        self._enr_equivalent_plastic_strain.increment_values()
 
     def compute_new_coordinates(self, topology, node_coord):
         """

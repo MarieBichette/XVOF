@@ -8,6 +8,7 @@ from typing import Type
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rheology.shearmodulus import ShearModulus
 from xfv.src.rheology.constantshearmodulus import ConstantShearModulus
+from xfv.src.rheology.scgshearmodulus import SCGShearModulus
 
 @dataclass  # pylint: disable=missing-class-docstring
 class ShearModulusProps(TypeCheckedDataClass):
@@ -34,9 +35,14 @@ class ShearModulusProps(TypeCheckedDataClass):
 @dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
 class ConstantShearModulusProps(ShearModulusProps):
     init_value: float
+    init_density: float
+    Gp_prime: float
     _shear_modulus_class = ConstantShearModulus
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
         self._ensure_positivity('init_value')
 
+
+class SCGShearModulusProps(ConstantShearModulusProps):
+    _shear_modulus_class = SCGShearModulus

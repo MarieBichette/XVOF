@@ -7,7 +7,7 @@ import numpy as np
 from xfv.src.rheology.yieldstress import YieldStress
 
 
-class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-methods
+class SCGYieldStress(YieldStress):  # pylint: disable=too-few-public-methods
     """
     A class for constant yield stress calculation
     """
@@ -32,4 +32,12 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
         :param density: the current density
         :return: the computed yield stress
         """
-        return np.ones_like(density) * self.init_value
+        #print('max epsilon_eq=',max(strain_plastic_eq))
+        part_Y = np.ones_like(density) * self.init_value*(1.+self.beta*np.power(strain_plastic_eq,self.m))
+        is_Ymax_below_partY = self.Y_max < part_Y
+        #is_Y_ok = np.logical(is_Ymax_below_partY)
+        part_Y[is_Ymax_below_partY] = self.Y_max
+        Y = part_Y*G/self.init_shear_modulus
+        #print('Y_max',max(Y))
+        #print('Y_min',min(Y))
+        return Y

@@ -593,6 +593,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         return self.cells.stress_xx_field
 
     @property
+    def equivalent_plastic_strain_field(self) -> np.array:
+        """
+        Porosity field
+        """
+        return self.cells.equivalent_plastic_strain_field
+
+    @property
     def porosity_field(self) -> np.array:
         """
         Porosity field

@@ -25,8 +25,8 @@ from xfv.src.data.unloading_model_props import (UnloadingModelProps,
 from xfv.src.data.contact_props import (ContactProps, PenaltyContactProps,
                                         LagrangianMultiplierProps)
 from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
-from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
-from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
+from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps, SCGYieldStressProps)
+from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps, SCGShearModulusProps)
 from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
                                                      VonMisesCriterionProps)
 from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
@@ -553,7 +553,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         return (velocity, pressure, temperature, density, internal_energy,
                 yield_stress, shear_modulus, porosity)
 
-    def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float]:
+    def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float,Optional[float],Optional[float],Optional[float],Optional[float]]:
         """
         Returns the yield stress and shear modulus read from the json file specified
         under the coefficients key
@@ -568,8 +568,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
             coef = json.load(json_fid)
-            yield_stress = float(coef['EPP']["yield_stress"])
-            shear_modulus = float(coef['EPP']["shear_modulus"])
+            yield_stress = float(coef[params.get('plasticity-model')]["yield_stress"])
+            shear_modulus = float(coef[params.get('plasticity-model')]["shear_modulus"])
         return yield_stress, shear_modulus
 
     def __get_initial_porosity(self, matter)->float:
@@ -612,23 +612,45 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                  plasticity_model : plasticity model
                  plasticity_criterion : plasticity criterion
         """
-        params = matter.get('rheology')
-        if not params:
-            return None, None, None
-
         yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+        params = matter['initialization']
+        json_path = params['init-thermo']
+        
+        with open(self._datafile_dir / json_path, 'r') as json_fid:
+            coef = json.load(json_fid)
+            coef = coef["InitThermo"]
+            rho_0 = float(coef["initial_density"])
+        params = matter.get('rheology')
+        coefficients_file = params.get('coefficients')
+        with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
+            coef = json.load(json_fid)
+
         elasticity_model_name = params['elasticity-model']
-        if elasticity_model_name != "Linear":
-            raise ValueError(f"Model {elasticity_model_name} not implemented. Choose Linear")
-        elasticity_model = ConstantShearModulusProps(shear_modulus)
+        if elasticity_model_name == "Linear":
+            Gp_prime = 0.
+            elasticity_model = ConstantShearModulusProps(shear_modulus, rho_0, Gp_prime)
+        elif elasticity_model_name == "SCG":
+            Gp_prime = float(coef[params.get('elasticity-model')]["Gp_prime"])
+            elasticity_model = SCGShearModulusProps(shear_modulus, rho_0, Gp_prime)
+        else:
+            raise ValueError(f"Model {elasticity_model_name} not implemented. Choose Linear or SCG")
 
         plasticity_model_name = params.get('plasticity-model')
         if not plasticity_model_name:
             return elasticity_model, None, None
 
-        if plasticity_model_name != "EPP":
-            raise ValueError(f"Model {plasticity_model_name} not implemented. Choose EPP")
-        plasticity_model = ConstantYieldStressProps(yield_stress)
+        if plasticity_model_name == "EPP" :
+            beta = 0.
+            m = 0.
+            Y_max = 0.
+            plasticity_model = ConstantYieldStressProps(yield_stress, shear_modulus, Y_max, beta, m)
+        elif plasticity_model_name == "SCG":
+            beta = float(coef[params.get('plasticity-model')]["beta_ecrouissage"])
+            m = float(coef[params.get('plasticity-model')]["m_ecrouissage"])
+            Y_max = float(coef[params.get('plasticity-model')]["yield_stress_max"])
+            plasticity_model = SCGYieldStressProps(yield_stress, shear_modulus, Y_max, beta, m)
+        else:
+            raise ValueError(f"Model {plasticity_model_name} not implemented. Choose EPP or SCG")
 
         plasticity_criterion_name = params['plasticity-criterion']
         if plasticity_criterion_name == "VonMises":
