@@ -246,6 +246,7 @@ class Discontinuity:
         # Kinematics
         self.enr_velocity_current[:] = self.enr_velocity_new[:]
         self.enr_coordinates_current[:] = self.enr_coordinates_new[:]
+        
         # Cohesive model
         self.cohesive_force.increment_values()
         self.damage_variable.increment_values()
