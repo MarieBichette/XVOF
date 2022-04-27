@@ -187,7 +187,7 @@ def main(directory: Path) -> None:
     # ---- # TIME MANAGEMENT
     final_time = data.time.final_time
     initial_time_step = data.time.initial_time_step
-# data.material_target.initial_values.rho_init
+
     # ---- # LOADING
     left_bc = data.boundary_condition.left_BC
     left_boundary_condition = _build_boundary_function(left_bc)
@@ -348,7 +348,7 @@ def main(directory: Path) -> None:
         #    CELLS DEVIATOR STRESSES COMPUTATION       #
         # ---------------------------------------------#
         if projectile_elasticity:
-            my_mesh.apply_elasticity(dt, projectile_shear_modulus, my_mesh.cells.cell_in_projectile,)
+            my_mesh.apply_elasticity(dt, projectile_shear_modulus, my_mesh.cells.cell_in_projectile)
         if target_elasticity:
             my_mesh.apply_elasticity(dt, target_shear_modulus, my_mesh.cells.cell_in_target)
         # ---------------------------------------------#
@@ -382,7 +382,6 @@ def main(directory: Path) -> None:
         #         NODES FORCES COMPUTATION             #
         # ---------------------------------------------#
         my_mesh.compute_new_nodes_forces()
-        #my_mesh.compute_new_cohesive_forces(data.material_target.cohesive_model.cohesive_zone_model_name)
         my_mesh.compute_new_cohesive_forces()
         # ---------------------------------------------#
         #         LOADING                              #
