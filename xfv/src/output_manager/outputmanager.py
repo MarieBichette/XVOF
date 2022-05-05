@@ -53,6 +53,9 @@ enr_field_list["CohesiveForce"] = FieldConstruction("AdditionalCohesiveForce", N
 enr_field_list["DiscontinuityOpening"] = FieldConstruction("AdditionalDiscontinuityOpening",
                                                            None, ("discontinuity_opening",
                                                                   "current_value"))
+enr_field_list["DissipatedEnergy"] = FieldConstruction("AdditionalDissipatedEnergy",
+                                                           None, ("dissipated_energy",
+                                                                  "current_value"))
 enr_field_list["Pressure"] = FieldConstruction("AdditionalPressure", "cells",
                                                ("enr_pressure", "current_value"))
 enr_field_list["Density"] = FieldConstruction("AdditionalDensity", "cells",
