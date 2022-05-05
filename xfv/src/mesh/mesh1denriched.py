@@ -455,7 +455,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :type treatment: RuptureTreatment
         """
         treatment.apply_treatment(self.cells, self.__ruptured_cells,
-                                  self.nodes, self.__topology, time)
+                                  self.nodes, self.__topology, time,
+                                   self.cohesive_zone_model, self.nodes.section)
 
     def apply_plasticity(self, delta_t: float, yield_stress_model, plasticity_criterion,
                          mask_mesh: np.array):

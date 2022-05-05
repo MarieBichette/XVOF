@@ -16,8 +16,9 @@ from xfv.src.data.user_defined_functions_props import (UserDefinedFunctionPropsT
                                                        MarchTableFunctionProps,
                                                        SuccessiveRampFunctionProps)
 from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
-                                               LinearCohesiveZoneModelProps,
-                                               LinearMixedCohesiveZoneModelProps,
+                                               LinearDataCohesiveZoneModelProps,
+                                               LinearPercentCohesiveZoneModelProps,
+                                               LinearEnergyCohesiveZoneModelProps,
                                                BilinearCohesiveZoneModelProps,
                                                TrilinearCohesiveZoneModelProps)
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
@@ -386,8 +387,6 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         cohesive_model_name = params['name'].lower()
 
-        cohesive_strength = params['coefficients']['cohesive-strength']
-        critical_separation = params['coefficients']['critical-separation']
 
         unloading_model_name = params['unloading-model']['name'].lower()
         unloading_model_slope: Optional[float] = params['unloading-model'].get('slope')
@@ -403,43 +402,59 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                              " lossofstiffnessunloading)")
         print('cohesive model is', cohesive_model_name)
          
-        if cohesive_model_name == "linear":
+        if cohesive_model_name == "lineardata":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
             purcentage_internal_energy = 0.
             dissipated_energy = 0.
-            cohesive_model_props = LinearCohesiveZoneModelProps(cohesive_strength,critical_separation,
-                                                                cohesive_model_name,unloading_model_props,dissipated_energy,purcentage_internal_energy)
-        elif cohesive_model_name == "linear_mixed_purcentage":
-            dissipated_energy = 0.
-            purcentage_internal_energy = params['coefficients']['purcentage-internal-energy']
-            cohesive_model_props = LinearMixedCohesiveZoneModelProps(0.,0.,
-                                                                cohesive_model_name,unloading_model_props,
-                                                                     dissipated_energy, purcentage_internal_energy)
-        elif cohesive_model_name == "linear_mixed_fixed":
+            cohesive_model_props = LinearDataCohesiveZoneModelProps(cohesive_strength, critical_separation,
+                                                                cohesive_model_name, unloading_model_props, dissipated_energy, purcentage_internal_energy)
+        elif cohesive_model_name == "linearenergy":
+            cohesive_strength = 0.
+            critical_separation = 0.
             dissipated_energy = params['coefficients']['dissipated-energy']
             purcentage_internal_energy = 0.
-            cohesive_model_props = LinearMixedCohesiveZoneModelProps(0.,0.,
-                                                                cohesive_model_name,unloading_model_props,
+
+            # permet d'affecter la contrainte cohesive lorsque le critère de rupture est 'maximalstress'
+            failure_data = matter.get('failure')
+            failure_criterion_data = failure_data['failure-criterion']
+            fail_crit_name: str = failure_criterion_data['name']
+            fail_crit_value: Optional[float] = failure_criterion_data.get('value')
+            if fail_crit_name =='MaximalStress':
+                cohesive_strength = fail_crit_value
+            cohesive_model_props = LinearEnergyCohesiveZoneModelProps(cohesive_strength, critical_separation,
+                                                                cohesive_model_name, unloading_model_props,
+                                                                     dissipated_energy, purcentage_internal_energy)
+        elif cohesive_model_name == "linearpercent":
+            dissipated_energy = 0.
+            purcentage_internal_energy = params['coefficients']['purcentage-internal-energy']
+            cohesive_model_props = LinearPercentCohesiveZoneModelProps(0., 0.,
+                                                                cohesive_model_name, unloading_model_props,
                                                                      dissipated_energy, purcentage_internal_energy)
         elif cohesive_model_name == "bilinear":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
             purcentage_internal_energy = 0.
             dissipated_energy = 0.
             cohesive_model_props = BilinearCohesiveZoneModelProps(
                 cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
-                dissipated_energy, purcentage_internal_energy,purcentage_internal_energy,purcentage_internal_energy,
+                dissipated_energy, purcentage_internal_energy, purcentage_internal_energy, purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'])
             
         elif cohesive_model_name == "trilinear":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
             cohesive_model_props = TrilinearCohesiveZoneModelProps(
                 cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
-                dissipated_energy, purcentage_internal_energy,purcentage_internal_energy,purcentage_internal_energy,
+                dissipated_energy, purcentage_internal_energy, purcentage_internal_energy, purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'],
                 params['coefficients']['separation-at-point-2'],
                 params['coefficients']['stress-at-point-2'])
         else:
             raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
-                             "Please choose among (linear, linear_mixed_purcentage, linear_mixed_fixed, bilinear, trilinear)")
+                             "Please choose among (LinearData, LinearPercent, LinearEnergy, bilinear, trilinear)")
 
         return cohesive_model_props
 
@@ -531,6 +546,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                     isinstance(failure_criterion, MaximalStressCriterionProps)):
                 print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
+                print('failure criterion =', failure_criterion)
+                print('cohesive strength =', cohesive_model.cohesive_strength)
 
         # Porosity model
         porosity_model_props = self.__get_porosity_model_props(material)

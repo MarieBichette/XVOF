@@ -204,18 +204,6 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         nb_disc = len(disc_list)
 
         applied_force_arr = np.ndarray((nb_disc,))
-        if cohesive_model.cohesive_zone_model_name == "linear_mixed_purcentage" :
-            Discontinuity.compute_critical_value(stress, cohesive_model.purcentage*energy/self.section)
-        elif cohesive_model.cohesive_zone_model_name == "linear_mixed_fixed" :
-            dissipated_energy_array = cohesive_model.dissipated_energy*np.ones_like(energy)
-            Discontinuity.compute_critical_value(stress, dissipated_energy_array/self.section)
-            for ind, disc in enumerate(disc_list):  
-                if dissipated_energy_array[0] > energy[Discontinuity.ruptured_cell_id[ind]]:
-                    raise ValueError(f" Dissipated energy bigger than internal energy")
-        else:
-            for ind, disc in enumerate(disc_list):  
-                disc.critical_separation = cohesive_model.critical_separation
-                disc.critical_strength = cohesive_model.critical_strength
         for ind, disc in enumerate(disc_list):  
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress

@@ -12,21 +12,25 @@ class CohesiveZoneModel:
     """
     A class for the computation of the cohesive force
     """
-    def __init__(self, cohesive_law_points: np.array, unloading_model: UnloadingModelBase, cohesive_zone_model_name, dissipated_energy, purcentage):
+    def __init__(self, cohesive_law_points: np.array, unloading_model: UnloadingModelBase, cohesive_zone_model_name, dissipated_energy, purcentage, cohesive_calculation_model):
         """
         Construction d'un modèle cohésif
 
         :param cohesive_law_points: array describing the stress - opening curve of the
         cohesive model
         :param unloading_model:
+        :param cohesive_zone_model_name: string for the name of calculation cohesive model
+        :param dissipated_energy: float for energy to dissipate by cohesive model if critical separation is reached (required for LinearPercent model)
+        :param purcentage: float for percentage of internal energy to dissipate (required for LinearPercent model)
+        :param cohesive_calculation_model: class for calculation of cohesive model
         """
         self._critical_separation = cohesive_law_points[-1, 0]
         self._critical_strength = cohesive_law_points[0,-1]
-        self._cohesive_law = CohesiveLaw(cohesive_law_points)
         self._unloading_model = unloading_model
         self._cohesive_zone_model_name = cohesive_zone_model_name
         self._dissipated_energy = dissipated_energy
         self._purcentage = purcentage
+        self._cohesive_calculation_model = cohesive_calculation_model
 
     @property
     def cohesive_zone_model_name(self):  # pylint: disable=invalid-name
@@ -34,6 +38,13 @@ class CohesiveZoneModel:
         Cohesive zone model name
         """
         return self._cohesive_zone_model_name
+
+    @property
+    def cohesive_calculation_model(self):  # pylint: disable=invalid-name
+        """
+        _cohesive calculation model
+        """
+        return self._cohesive_calculation_model
 
     @property
     def critical_separation(self):  # pylint: disable=invalid-name
@@ -74,8 +85,6 @@ class CohesiveZoneModel:
         """
         cohesive_force = 0.
         new_opening = disc.discontinuity_opening.new_value[0]
-        self._cohesive_law = CohesiveLaw(np.array([[0, disc.critical_strength], [disc.critical_separation, 0]]))
-
         if new_opening <= 0. and disc.history_max_opening < disc.critical_separation :
             cohesive_force = 0.
             disc.dissipated_energy.new_value = disc.critical_strength*disc.history_max_opening/2.
@@ -86,18 +95,19 @@ class CohesiveZoneModel:
             disc.dissipated_energy.new_value = disc.critical_strength*disc.history_max_opening/2.
 
         elif disc.history_max_opening <= new_opening < disc.critical_separation :
-            cohesive_force = self._cohesive_law.compute_cohesive_force(new_opening)
+            cohesive_force = disc._cohesive_law.compute_cohesive_force(new_opening)
             # Update the discontinuity indicators
             disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
             disc.history_min_cohesive_force = \
-                self._cohesive_law.compute_cohesive_force(disc.history_max_opening)
+                disc._cohesive_law.compute_cohesive_force(disc.history_max_opening)
             disc.damage_variable.new_value = new_opening / disc.critical_separation
             disc.dissipated_energy.new_value = disc.critical_strength*disc.history_max_opening/2.
+
         else :
             disc.damage_variable.new_value = 1.
             cohesive_force = 0.
             disc.history_max_opening = max(abs(disc.history_max_opening), abs(new_opening))
             disc.history_min_cohesive_force = 0.
             disc.dissipated_energy.new_value = disc.critical_strength*disc.critical_separation/2.
-
+            
         return cohesive_force
