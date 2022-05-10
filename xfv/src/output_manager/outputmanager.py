@@ -74,7 +74,12 @@ enr_field_list["EquivalentPlasticStrainRate"] = FieldConstruction(
     "AdditionalEquivalentPlasticStrainRate", "cells", ("enr_equivalent_plastic_strain_rate", ))
 enr_field_list["PlasticStrainRate"] = FieldConstruction(
     "AdditionalPlasticStrainRate", "cells", ("enr_plastic_strain_rate", ))
-
+enr_field_list["Porosity"] = FieldConstruction("AdditionalPorosity", "cells",
+                                               ("enr_porosity", "current_value"))
+field_list["ShearModulus"] = FieldConstruction("AdditionalShearModulus",
+                                               "cells", ("enr_shear_modulus", "current_value"))
+field_list["YieldStress"] = FieldConstruction("AdditionalYieldStress",
+                                              "cells", ("enr_yield_stress", "current_value"))
 
 class OutputManager(metaclass=Singleton):
     """
