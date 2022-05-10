@@ -299,6 +299,10 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :param porosity_model: model to compute the porosity model
         """
         self.cells.compute_new_porosity(delta_t, porosity_model, self.cells.classical)
+        # right part of enriched cells
+        if self.cells.enriched.any():
+            # test if any enriched cell in order to avoid error in the Newton initialization
+            self.cells.compute_enriched_elements_new_porosity(delta_t, porosity_model)
 
     def compute_new_cells_pseudo_viscosity(self, delta_t: float):
         """
@@ -598,7 +602,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
     @property
     def equivalent_plastic_strain_field(self) -> np.array:
         """
-        Porosity field
+        equivalent plastic strain field
         """
         return self.cells.equivalent_plastic_strain_field
 

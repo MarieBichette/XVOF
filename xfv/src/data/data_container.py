@@ -476,10 +476,20 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 initial_porosity_for_johnson = params['coefficients']['initial-porosity']
                 effective_strength_for_johnson = params['coefficients']['effective-strength']
                 viscosity_for_johnson = params['coefficients']['viscosity']
+                maximal_porosity_for_johnson = 1.e30
+
+                # Lorsque le critère de rupture est la porosité
+                failure_data = matter.get('failure')
+                failure_criterion_data = failure_data['failure-criterion']
+                fail_crit_name: str = failure_criterion_data['name']
+                fail_crit_value: Optional[float] = failure_criterion_data.get('value')
+                if fail_crit_name == 'Porosity':
+                    maximal_porosity_for_johnson = fail_crit_value
+                    print('maximal porosity = ', maximal_porosity_for_johnson)
                 porosity_model_props: PorosityModelProps = JohnsonModelProps(
                     initial_porosity_for_johnson,
                     effective_strength_for_johnson,
-                    viscosity_for_johnson)
+                    viscosity_for_johnson, maximal_porosity_for_johnson)
         except:
             raise ValueError(f"No keyword 'name' for porosity model name: {porosity_model_name}."
                              "Please choose among (JohnsonModel)."
