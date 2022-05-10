@@ -31,7 +31,7 @@ from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStre
 from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps, SCGShearModulusProps)
 from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
                                                      VonMisesCriterionProps)
-from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
+from xfv.src.data.rupture_criterion_props import (DoubleCriterionProps, RuptureCriterionProps,
                                                   DamageCriterionProps,
                                                   PorosityCriterionProps,
                                                   HalfRodComparisonCriterionProps,
@@ -486,6 +486,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 if fail_crit_name == 'Porosity':
                     maximal_porosity_for_johnson = fail_crit_value
                     print('maximal porosity = ', maximal_porosity_for_johnson)
+                elif fail_crit_name == 'DoubleCriterion':
+                    maximal_porosity_for_johnson = failure_criterion_data.get('value-one')
+                    print('maximal porosity = ', maximal_porosity_for_johnson)
+
                 porosity_model_props: PorosityModelProps = JohnsonModelProps(
                     initial_porosity_for_johnson,
                     effective_strength_for_johnson,
@@ -669,6 +673,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             coef = coef["InitThermo"]
             rho_0 = float(coef["initial_density"])
         params = matter.get('rheology')
+        if params is None:
+            return None, None, None
         coefficients_file = params.get('coefficients')
         with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
             coef = json.load(json_fid)
@@ -784,6 +790,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         elif fail_crit_name == "NonLocalStress":
             radius: Optional[int] = failure_criterion_data.get('radius')
             failure_criterion = NonLocalStressCriterionProps(fail_crit_value, radius)
+        elif fail_crit_name == 'DoubleCriterion':
+            value_one : Optional[float] = failure_criterion_data.get('value-one')
+            value_two : Optional[int] = failure_criterion_data.get('value-two')
+            failure_criterion = DoubleCriterionProps(value_one, value_two)
         else:
             raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "

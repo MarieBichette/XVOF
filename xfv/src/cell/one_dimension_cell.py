@@ -96,7 +96,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             if np.isnan(sound_velocity_new_value).any():
                 negative_vson = np.where(np.isnan(sound_velocity_new_value))
                 msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
-                msg += "density = {}\n".format(my_variables['NewDensity'][negative_vson])
+                msg += "density = {}\n".format(density[negative_vson])
                 msg += "energy = {}\n".format(energy_new_value[negative_vson])
                 msg += "pressure = {}\n".format(pressure_new_value[negative_vson])
                 raise ValueError(msg)
