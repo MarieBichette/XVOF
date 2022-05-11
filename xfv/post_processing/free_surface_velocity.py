@@ -7,6 +7,7 @@ import argparse
 import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
+import tikzplotlib
 
 from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolution_in_time_for_item
 
@@ -82,11 +83,12 @@ def run():
                 print("New t0 is : " + str(time_0))
         plt.plot((time - time_0) * 1.e+6, velocity, label=case)
         if args.write_data:
-            data_path = pathlib.Path.cwd().joinpath(case, args.file_write_data)
+            data_path = f"Free_surface_velocity_evolution.dat"
+            #data_path = pathlib.Path.cwd().joinpath(case, args.file_write_data)
             with open(data_path, "w") as file_object:
                 for x_data, y_data in zip(time, velocity):
                     file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
-            print("Data written in {:s}".format(data_path))
+            print("Data written in {:s}."+str(data_path))
 
     # ----------------------------------------------------------
     # Plot experimental data

@@ -20,4 +20,4 @@ class PorosityCriterion(RuptureCriterion):   # pylint: disable=too-few-public-me
         :param cells: cells on which to check the criterion
         :return: the mask of the cells where porosity is above the threshold porosity
         """
-        return cells.porosity.new_value > self.__limit_porosity
+        return cells.porosity.new_value >= self.__limit_porosity

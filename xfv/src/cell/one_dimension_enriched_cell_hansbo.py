@@ -90,10 +90,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._enr_deviatoric_stress_new = np.zeros([n_cells, 3])
         self._enr_deviatoric_strain_rate = np.zeros([n_cells, 3])
         self._enr_equivalent_plastic_strain_rate = np.zeros([n_cells])
+        self._enr_equivalent_plastic_strain = Field(n_cells, 0, 0)
         self._enr_plastic_strain_rate = np.zeros([n_cells, 3])
 
         # Indicator right part of enr cell is plastic
         self.plastic_enr_cells = np.zeros([n_cells], dtype=bool)
+
+        # Porosity
+        self._enr_porosity = Field(n_cells, np.zeros([n_cells]), np.zeros([n_cells]))
 
     def initialize_additional_cell_dof(self, disc: Discontinuity):
         """
@@ -120,6 +124,9 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self.enr_yield_stress.current_value[enr_cell] = \
             np.copy(self.yield_stress.current_value[enr_cell])
         self._enr_coordinates_x[enr_cell] = np.copy(self._coordinates_x[enr_cell])
+        self._enr_equivalent_plastic_strain.current_value[enr_cell] = \
+            np.copy(self.equivalent_plastic_strain.current_value[enr_cell])
+        self._enr_porosity.current_value[enr_cell] = np.copy(self.porosity.current_value[enr_cell])
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
@@ -137,6 +144,10 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             np.copy(self.yield_stress.new_value[enr_cell])
         self._enr_deviatoric_stress_new[enr_cell] = \
             np.copy(self._deviatoric_stress_new[enr_cell])
+        self._enr_equivalent_plastic_strain.new_value[enr_cell] = \
+            np.copy(self.equivalent_plastic_strain.new_value[enr_cell])
+        self._enr_porosity.new_value[enr_cell] = np.copy(self.porosity.new_value[enr_cell])
+
         # Other quantities initialization
         self._enr_deviatoric_strain_rate[enr_cell] = \
             np.copy(self._deviatoric_strain_rate[enr_cell])
@@ -295,11 +306,25 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         return self._enr_equivalent_plastic_strain_rate
 
     @property
+    def enr_equivalent_plastic_strain(self):
+        """
+        Accessor on the right part of cracked cell equivalent plastic strain at time t
+        """
+        return self._enr_equivalent_plastic_strain
+
+    @property
     def enr_plastic_strain_rate(self):
         """
         Accessor on the right part of cracked cell plastic strain rate tensor at time t
         """
         return self._enr_plastic_strain_rate
+
+    @property
+    def enr_porosity(self):
+        """
+        Accessor on the right part of cracked cell porosity at time t
+        """
+        return self._enr_porosity
 
     @property
     def pressure_field(self):
@@ -455,6 +480,20 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                 format(self.enr_artificial_viscosity.current_value[cell_i])
         print(message)
 
+    def compute_enriched_elements_new_porosity(self, delta_t, porosity_model):
+        """
+        Compute the new porosity according to the porosity model in XDATA
+
+        :param delta_t: model to compute the shear modulus
+        :param porosity_model: porosity model to compute
+        """
+        mask = self.enriched
+
+        self._enr_porosity.new_value[mask] = porosity_model.compute_porosity(
+            delta_t,
+            self.enr_porosity.current_value[mask],
+            self.enr_pressure.current_value[mask])
+
     def compute_enriched_elements_new_pressure(self, delta_t):
         """
         Compute pressure, internal energy and sound velocity in left and right parts of
@@ -469,7 +508,18 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         plasticity_activated = (target_model.plasticity_model is not None)
 
         mask = self.enriched
+
+        if self.data.material_target.porosity_model is not None:
+                (self.enr_density.current_value[mask], self.enr_density.new_value[mask],
+                 self.enr_pressure.current_value[mask]) = self._compute_macro_to_micro_hydro(
+                     self.enr_density.current_value[mask],
+                     self.enr_density.new_value[mask],
+                     self.enr_pressure.current_value[mask],
+                     self.enr_porosity.new_value[mask])
+
         if elasticity_activated or plasticity_activated:
+            # Not sure there is cells in the intersection mask_classic / target
+            # => test it before starting Newton
             self.enr_energy.current_value[mask] += \
                 OneDimensionCell.add_elastic_energy_method(
                     delta_t, self.enr_density.current_value[mask],
@@ -494,6 +544,17 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
                 density_right, density_right_new, pressure_right,
                 pressure_right_new, energy_right, energy_right_new,
                 pseudo_right, cson_right_new)
+
+        if self.data.material_target.porosity_model is not None:
+            self.enr_density.current_value[mask],\
+            self.enr_density.new_value[mask],\
+            self.enr_pressure.current_value[mask],\
+            pressure_new_right_value = self._compute_micro_to_macro_hydro(
+                density_right,
+                density_right_new,
+                pressure_right,
+                pressure_new_right_value,
+                self.enr_porosity.new_value[mask])
 
         # Save results :
         self.enr_pressure.new_value[mask] = pressure_new_right_value
@@ -681,7 +742,14 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         if not mask.any():
             return
         self.enr_shear_modulus.new_value[mask] = \
-            shear_modulus_model.compute(self.enr_density.new_value[mask])
+            shear_modulus_model.compute(self.enr_density.new_value[mask],self.enr_pressure.current_value[mask])
+
+        if self.data.material_target.porosity_model is not None:
+            self._enr_shear_modulus.new_value[mask] = self._compute_micro_to_macro_shear_modulus(
+                self.enr_shear_modulus.new_value[mask],
+                self.enr_density.new_value[mask],
+                self.enr_sound_velocity.current_value[mask],
+                self.enr_porosity.new_value[mask])
 
     def apply_plasticity_enr(self, mask_mesh, delta_t):
         """
@@ -707,6 +775,16 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             self._compute_equivalent_plastic_strain_rate(invariant_j2_el, shear_modulus,
                                                          yield_stress, delta_t)
         self._enr_deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
+        self._enr_equivalent_plastic_strain.new_value[:] = \
+            self._compute_enr_equivalent_plastic_strain(mask,delta_t)
+
+    def _compute_enr_equivalent_plastic_strain(self,mask,delta_t):
+        """
+        Compute the equivalent plastic strain
+        param t_time : temps t
+        """
+        enr_equivalent_plastic_strain = delta_t* self._enr_equivalent_plastic_strain_rate[:] + self._enr_equivalent_plastic_strain.current_value[:]
+        return enr_equivalent_plastic_strain
 
     def compute_enriched_yield_stress(self, yield_stress_model):
         """
@@ -716,7 +794,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         mask = self.enriched
         self.enr_yield_stress.new_value[mask] = \
-            yield_stress_model.compute(self.enr_density.new_value[mask])
+            yield_stress_model.compute(self.enr_density.new_value[mask],
+                                       self._enr_equivalent_plastic_strain.current_value[mask],self.enr_shear_modulus.new_value[mask])
+
+        if self.data.material_target.porosity_model is not None:
+            self._enr_yield_stress.new_value[mask] = self._compute_micro_to_macro_yield_stress(
+                self.enr_yield_stress.new_value[mask],
+                self.enr_porosity.new_value[mask])
 
     def compute_enriched_elements_new_time_step(self):
         """
@@ -766,6 +850,13 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self._right_part_size.increment_values()
         # Elasticity
         self._enr_deviatoric_stress_current[:] = self._enr_deviatoric_stress_new[:]
+        # Plasticity
+        self._enr_equivalent_plastic_strain.increment_values()
+        # Rheology
+        self._enr_shear_modulus.increment_values()
+        self._enr_yield_stress.increment_values()
+        # Porosity
+        self._enr_porosity.increment_values()
 
     def compute_new_coordinates(self, topology, node_coord):
         """

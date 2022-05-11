@@ -10,15 +10,20 @@ class YieldStress:  # pylint: disable=too-few-public-methods
     """
     Interface for yield stress computation
     """
-    def __init__(self, initial_value):
+    def __init__(self, init_value, init_shear_modulus, Y_max, beta, m):
         """
-        Initialization of the class
-        :param initial_value: yield_stress initial value
+        Initialization of the constant yield stress class
+
+        :param init_value: initial yield stress
         """
-        self.yield_stress = initial_value
+        self.init_value = init_value
+        self.init_shear_modulus = init_shear_modulus
+        self.Y_max = Y_max
+        self.beta = beta
+        self.m = m 
 
     @abstractmethod
-    def compute(self, density: np.array) -> np.array:
+    def compute(self, density: np.array, strain_plastic_eq, G) -> np.array:
         """
         Compute the new value of shear modulus
 

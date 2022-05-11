@@ -78,7 +78,7 @@ class OneDimensionNode(Node):
         Calcul des forces agissant sur les noeuds
 
         :param topologie: topologie du calcul
-        :param contrainte: tenseur des contriante de cauchy sigma xx
+        :param contrainte: tenseur des contrainte de cauchy sigma xx
         :param classical_cell_mask: masks of the classical cells
         :type topologie: Topology
         :type contrainte: numpy.array([nbr_of_node-1, 1], dtype=np.float64, order='C')
