@@ -11,10 +11,10 @@ class NonLocalStressCriterionWithMax(RuptureCriterion):  # pylint: disable=too-f
     """
     An class for non local failure criterion
     """
-    def __init__(self, value, radius, average_strategy):
+    def __init__(self, value, average_strategy):
         super().__init__()
         self.critical_value = value
-        self.non_local_criterion = NonLocalStressCriterion(value, radius, average_strategy)
+        self.non_local_criterion = NonLocalStressCriterion(value, average_strategy)
 
     def check_criterion(self, cells, *args, **kwargs):
         """
