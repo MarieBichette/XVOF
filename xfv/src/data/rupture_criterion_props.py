@@ -14,7 +14,7 @@ from xfv.src.rupturecriterion.maximalstress import MaximalStressCriterion
 from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xfv.src.rupturecriterion.nonlocalstress import NonLocalStressCriterion
 from xfv.src.rupturecriterion.nonlocalstresswithmax import NonLocalStressCriterionWithMax
-from xfv.src.rupturecriterion.nonlocalstressweight import IWeight, NoWeight, GaussianWeight, LinearWeight
+from xfv.src.rupturecriterion.nonlocalstressweight import IWeight, ArithmeticWeight, GaussianWeight, LinearWeight
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -118,10 +118,10 @@ class AverageWeightProps(TypeCheckedDataClass):
 
 ##########################################################
 
+
 @dataclass  # pylint: disable=missing-class-docstring
 class NonLocalStressCriterionProps(RuptureCriterionProps):
     value: Optional[float]  # optional to personalize the error message
-    radius: Optional[float]
     average_strategy: Optional[AverageWeightProps]
     _rupture_criterion_class = NonLocalStressCriterion
 
@@ -134,7 +134,6 @@ class NonLocalStressCriterionProps(RuptureCriterionProps):
 @dataclass  # pylint: disable=missing-class-docstring
 class NonLocalStressCriterionWithMaxProps(RuptureCriterionProps):
     value: Optional[float]  # optional to personalize the error message
-    radius: Optional[float]
     average_strategy: Optional[AverageWeightProps]
     _rupture_criterion_class = NonLocalStressCriterionWithMax
 
@@ -143,32 +142,38 @@ class NonLocalStressCriterionWithMaxProps(RuptureCriterionProps):
         self._ensure_defined('value', 'NonLocalStressCriterionWithMaxProps',
                              'failure/failure-criterion/value')  # ensures that exists
 
-
 # ------------------------------------------------------------------
 # ------------------------------------------------------------------
-
-
 
 
 @dataclass  # pylint: disable=missing-class-docstring
-class AverageWeightNoProps(AverageWeightProps):
-    _average_weight_class = NoWeight
+class AverageWeightArithmeticProps(AverageWeightProps):
+    _average_weight_class = ArithmeticWeight
+    radius: Optional[float]
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
+        self._ensure_defined('radius', 'AverageWeightLinearProps',
+                             'failure/failure-criterion/radius')  # ensures that exists
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class AverageWeightLinearProps(AverageWeightProps):
     _average_weight_class = LinearWeight
+    radius: Optional[float]
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
+        self._ensure_defined('radius', 'AverageWeightLinearProps',
+                             'failure/failure-criterion/radius')  # ensures that exists
 
 
 @dataclass  # pylint: disable=missing-class-docstring
 class AverageWeightGaussianProps(AverageWeightProps):
     _average_weight_class = GaussianWeight
+    radius: Optional[float]
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
+        self._ensure_defined('radius', 'AverageWeightGaussianProps',
+                             'failure/failure-criterion/radius')  # ensures that exists

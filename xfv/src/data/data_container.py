@@ -37,8 +37,7 @@ from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
                                                   MinimumPressureCriterionProps,
                                                   NonLocalStressCriterionProps,
                                                   NonLocalStressCriterionWithMaxProps,
-                                                  AverageWeightProps,
-                                                  AverageWeightNoProps,
+                                                  AverageWeightArithmeticProps,
                                                   AverageWeightLinearProps,
                                                   AverageWeightGaussianProps)
 from xfv.src.data.porosity_model_props import (PorosityModelProps,
@@ -719,13 +718,13 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         elif fail_crit_name == "NonLocalStress":
             radius: Optional[int] = failure_criterion_data.get('radius')
             average: Optional[str] = failure_criterion_data.get('average')
-            average_strategy = DataContainer.__buildAverageWeightProps(average)
-            failure_criterion = NonLocalStressCriterionProps(fail_crit_value, radius, average_strategy)
+            average_strategy = DataContainer.__buildAverageWeightProps(average, radius)
+            failure_criterion = NonLocalStressCriterionProps(fail_crit_value, average_strategy)
         elif fail_crit_name == "NonLocalStressWithMax":
             radius: Optional[int] = failure_criterion_data.get('radius')
             average: Optional[str] = failure_criterion_data.get('average')
-            average_strategy = DataContainer.__buildAverageWeightProps(average)
-            failure_criterion = NonLocalStressCriterionWithMaxProps(fail_crit_value, radius, average_strategy)
+            average_strategy = DataContainer.__buildAverageWeightProps(average, radius)
+            failure_criterion = NonLocalStressCriterionWithMaxProps(fail_crit_value, average_strategy)
         else:
             raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "
@@ -734,18 +733,20 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         return failure_criterion, fail_crit_value, failure_cell_index
 
     @staticmethod
-    def __buildAverageWeightProps(average_type):
+    def __buildAverageWeightProps(average_type, radius):
         """
         Build the appropriate object to compute average in non local failure criterion, according to the datafile
         """
-        if average_type == "Linear":
-            return AverageWeightLinearProps()
-        if average_type == "Gaussian":
-            return AverageWeightGaussianProps
-        if average_type is not None and average_type != "Zero":
-            raise ValueError("""Averaging function {average_type} is unknown. "
-                             "Please choose among (Zero, Linear, Gaussian)""")
-        return AverageWeightNoProps()
+        if average_type == "Arithmetic":
+            return AverageWeightArithmeticProps(radius)
+        elif average_type == "Linear":
+            return AverageWeightLinearProps(radius)
+        elif average_type == "Gaussian":
+            return AverageWeightGaussianProps(radius)
+        elif average_type is not None:
+            raise ValueError("""Wrong weighting function. Please choose among (Arithmetic, Linear, Gaussian)""")
+        else:
+            return AverageWeightArithmeticProps(radius)  # default value
 
 
 if __name__ == "__main__":
