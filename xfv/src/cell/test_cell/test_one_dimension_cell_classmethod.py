@@ -91,7 +91,7 @@ class OneDimensionCellClassMethodTest(unittest.TestCase):
         """
         Test of general_method_deviator_strain_rate
         """
-        mask = np.ones([self.nbr_cells], dtype=np.bool)
+        mask = np.ones([self.nbr_cells], dtype=bool)
         mask[0] = False
         mask[1] = False
         delta_t = 1.

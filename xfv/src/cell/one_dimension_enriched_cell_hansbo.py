@@ -68,7 +68,7 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         super().__init__(n_cells)
         #
         print(self._fields_manager)
-        self._classical = np.ones(n_cells, dtype=np.bool, order='C')
+        self._classical = np.ones(n_cells, dtype=bool, order='C')
 
         # Cell parts geometry
         self._left_part_size = Field(n_cells, np.zeros([n_cells]), np.zeros([n_cells]))

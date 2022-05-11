@@ -22,7 +22,7 @@ class HalfRodComparisonCriterion(RuptureCriterion):   # pylint: disable=too-few-
         :param cells: cells on which to check criterion
         :return: mask of the cells where only the ruptured_cell_index is set to True
         """
-        mask_milieu = np.ndarray(cells.pressure.new_value.shape, dtype=np.bool, order='C')
+        mask_milieu = np.ndarray(cells.pressure.new_value.shape, dtype=bool, order='C')
         mask_milieu[:] = False
         mask_milieu[self.__ruptured_cell_index] = True
         return mask_milieu

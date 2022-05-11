@@ -32,7 +32,7 @@ class ImposedPressureTest(unittest.TestCase):
         self.my_imposed_pressure = ImposedPressure(self._pressure)
         self.cells = OneDimensionCell(1000)
         self.cells.pressure_field[:] = 1.
-        self.ruptured_cells = np.ndarray([1000], dtype=np.bool, order='C')
+        self.ruptured_cells = np.ndarray([1000], dtype=bool, order='C')
         self.ruptured_cells[:] = False
         self.ruptured_cells[500] = True
 

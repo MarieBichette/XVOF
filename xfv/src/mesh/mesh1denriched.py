@@ -66,8 +66,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # ---------------------------------------------
         # Ruptured cells vector
         # ---------------------------------------------
-        self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
-        self.__plastic_cells = np.zeros(self.cells.number_of_cells, dtype=np.bool, order='C')
+        self.__ruptured_cells = np.zeros(self.cells.number_of_cells, dtype=bool, order='C')
+        self.__plastic_cells = np.zeros(self.cells.number_of_cells, dtype=bool, order='C')
 
         # Initialize cell fields
         self.cells.initialize_cell_fields(self.nodes.nodes_in_target,

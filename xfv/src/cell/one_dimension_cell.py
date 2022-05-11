@@ -221,8 +221,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         super().__init__(number_of_elements)
 
         # By default :all cells are classical (non enriched)
-        self._classical = np.ones([number_of_elements, ], dtype=np.bool, order='C')
-        self._enrichment_not_concerned = np.ones([number_of_elements, ], dtype=np.bool, order='C')
+        self._classical = np.ones([number_of_elements, ], dtype=bool, order='C')
+        self._enrichment_not_concerned = np.ones([number_of_elements, ], dtype=bool, order='C')
 
         self.dtc = []  # critical time step
 

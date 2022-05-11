@@ -20,7 +20,7 @@ class OneDimensionNode(Node):
         self._section = section
         self._nbr_of_nodes = nbr_of_nodes
         # By definition, these nodes are not enriched
-        self._classical = np.empty([self.number_of_nodes, ], dtype=np.bool, order='C')
+        self._classical = np.empty([self.number_of_nodes, ], dtype=bool, order='C')
         self._classical[:] = True
         self._enrichment_not_concerned = np.copy(self._classical)
 
