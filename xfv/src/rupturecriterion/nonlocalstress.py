@@ -18,8 +18,8 @@ def compute_weight(cells, weight_strategy):
     size = len(coord)  # nombre de mailles dans la cible
     weight_matrix = SymNDArray((size, size), dtype=np.float64)  # matrice symétrique par construction
 
-    enr_coord = np.copy(coord)
-    mask_enriched = cells.enriched[mask]
+    enr_coord = np.copy(cells.coordinates_x)
+    mask_enriched = np.logical_and(mask, cells.enriched)
     enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
     enr_weight_matrix = SymNDArray((size, size), dtype=np.float64)  # matrice symétrique par construction
 
@@ -52,11 +52,13 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         Check of the rupture criterion on the cells in arguments
         :param cells: cells on which to check the criterion
         """
+        # Pur gagner un peu de temps de calcul, on ne calcule le critère que sur la cible (pas sur le projectile)
         weight_matrix, enr_weight_matrix = compute_weight(cells, self.weight_strategy)
 
         stress = cells.stress_xx[cells.cell_in_target]
         enr_stress = np.copy(stress)
-        enr_stress[cells.enriched] = cells.enr_stress_xx[cells.enriched[cells.cell_in_target]]
+        mask_enriched = np.logical_and(cells.cell_in_target, cells.enriched)[cells.cell_in_target]  # mailles enrichies de target
+        enr_stress[mask_enriched] = cells.enr_stress_xx[cells.cell_in_target][mask_enriched]
 
         # retransformer les weight_matrix et enr_weight_matrix en array (plutôt que SymNDArray) pour
         # faire un produit matriciel avec np.dot()
@@ -67,4 +69,8 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         nbr_div = np.sum(weight_matrix, axis=0) + np.sum(enr_weight_matrix, axis=0)
         # axis = 0 ou 1 (la matrice est symétrique)
         global_stress = (mean_stress.flatten() + enr_mean_stress.flatten()) / nbr_div
-        return global_stress >= self.critical_value
+
+        # On reprend la taille nb_cell
+        return_value = np.zeros(cells.number_of_cells, dtype=bool)
+        return_value[cells.cell_in_target] = global_stress >= self.critical_value
+        return return_value

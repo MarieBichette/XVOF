@@ -39,13 +39,38 @@ class RuptureCriterionProps(TypeCheckedDataClass):
         return self._rupture_criterion_class(**asdict(self, dict_factory=self.dict_factory))
 
 
+##########################################################
+@dataclass  # pylint: disable=missing-class-docstring
+class AverageWeightProps(TypeCheckedDataClass):
+    _average_weight_class: Type[IWeight] = field(init=False, repr=False)
+
+    @staticmethod
+    def dict_factory(obj):
+        """
+        Removes the classes (instance of type) that are inside obj
+        """
+        result = {}
+        for key, value in obj:
+            if not isinstance(value, type):
+                result[key] = value
+        return result
+
+    def build_average_weight_obj(self):
+        """
+        Build and return the Weight object
+        """
+        return self._average_weight_class(**asdict(self, dict_factory=self.dict_factory))
+
+##########################################################
+
+
 @dataclass  # pylint: disable=missing-class-docstring
 class MaximalStressCriterionProps(RuptureCriterionProps):
     sigma_max: Optional[float]  # optional to personalize the error message
     _rupture_criterion_class = MaximalStressCriterion
 
     def __post_init__(self):
-        super().__post_init__()  #  typecheck first
+        super().__post_init__()  # typecheck first
         self._ensure_defined('sigma_max', 'MaximalStressCriterionProps',
                              'failure/failure-criterion/value')  # ensures that exists
 
@@ -94,31 +119,6 @@ class MinimumPressureCriterionProps(RuptureCriterionProps):
                              'failure/failure-criterion/value')  # ensures that exists
 
 
-##########################################################
-@dataclass  # pylint: disable=missing-class-docstring
-class AverageWeightProps(TypeCheckedDataClass):
-    _average_weight_class: Type[IWeight] = field(init=False, repr=False)
-
-    @staticmethod
-    def dict_factory(obj):
-        """
-        Removes the classes (instance of type) that are inside obj
-        """
-        result = {}
-        for key, value in obj:
-            if not isinstance(value, type):
-                result[key] = value
-        return result
-
-    def build_average_weight_obj(self):
-        """
-        Build and return the Weight object
-        """
-        return self._average_weight_class(**asdict(self, dict_factory=self.dict_factory))
-
-##########################################################
-
-
 @dataclass  # pylint: disable=missing-class-docstring
 class NonLocalStressCriterionProps(RuptureCriterionProps):
     value: Optional[float]  # optional to personalize the error message
@@ -129,6 +129,12 @@ class NonLocalStressCriterionProps(RuptureCriterionProps):
         super().__post_init__()  # typecheck first
         self._ensure_defined('value', 'NonLocalStressCriterionProps',
                              'failure/failure-criterion/value')  # ensures that exists
+
+    def build_rupture_criterion_obj(self):
+        """
+        Build and return the WeightingStrategy object
+        """
+        return self._rupture_criterion_class(self.value, self.average_strategy.build_average_weight_obj())
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -142,6 +148,12 @@ class NonLocalStressCriterionWithMaxProps(RuptureCriterionProps):
         self._ensure_defined('value', 'NonLocalStressCriterionWithMaxProps',
                              'failure/failure-criterion/value')  # ensures that exists
 
+    def build_rupture_criterion_obj(self):
+        """
+        Build and return the WeightingStrategy object
+        """
+        return self._rupture_criterion_class(self.value, self.average_strategy.build_average_weight_obj())
+
 # ------------------------------------------------------------------
 # ------------------------------------------------------------------
 
@@ -149,7 +161,7 @@ class NonLocalStressCriterionWithMaxProps(RuptureCriterionProps):
 @dataclass  # pylint: disable=missing-class-docstring
 class AverageWeightArithmeticProps(AverageWeightProps):
     _average_weight_class = ArithmeticWeight
-    radius: Optional[float]
+    radius: float
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
@@ -160,7 +172,7 @@ class AverageWeightArithmeticProps(AverageWeightProps):
 @dataclass  # pylint: disable=missing-class-docstring
 class AverageWeightLinearProps(AverageWeightProps):
     _average_weight_class = LinearWeight
-    radius: Optional[float]
+    radius: float
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
@@ -171,7 +183,7 @@ class AverageWeightLinearProps(AverageWeightProps):
 @dataclass  # pylint: disable=missing-class-docstring
 class AverageWeightGaussianProps(AverageWeightProps):
     _average_weight_class = GaussianWeight
-    radius: Optional[float]
+    radius: float
 
     def __post_init__(self):
         super().__post_init__()  # typecheck first
