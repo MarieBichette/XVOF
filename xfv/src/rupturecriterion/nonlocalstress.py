@@ -19,19 +19,17 @@ def compute_weight(cells, weight_strategy):
     weight_matrix = np.zeros([size, size], dtype=np.float64)
     enr_weight_matrix = np.zeros([size, size], dtype=np.float64)
 
-    # Le calcul enrichi = même calcul sauf que l'on prend les coordonnées enrichies au lieu des coordonnées classiques
+    # Le calcul enrichi = mï¿½me calcul sauf que l'on prend les coordonnï¿½es enrichies au lieu des coordonnï¿½es classiques
     # (si la maille est classique, on prendra deux fois la partie classique en compte)
     for i in range(0, size):
-        weight_i = weight_strategy.compute_weight(np.abs(coord - coord[i])).flatten()
-        weight_matrix[:, i] = weight_i
+        weight_matrix[:, i] = weight_strategy.compute_weight(np.abs(coord - coord[i])).flatten()
 
     if cells.enriched.any():
         enr_coord = np.copy(cells.coordinates_x)
-        mask_enriched = np.logical_and(mask, cells.enriched)
+        mask_enriched = np.where(np.logical_and(mask, cells.enriched))[0]
         enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
         for i in range(0, size):
-            enr_weight_i = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
-            enr_weight_matrix[:, i] = enr_weight_i
+            enr_weight_matrix[:, i] = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
 
     return weight_matrix, enr_weight_matrix
 
@@ -50,18 +48,18 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         Check of the rupture criterion on the cells in arguments
         :param cells: cells on which to check the criterion
         """
-        # Pour gagner un peu de temps de calcul, on ne calcule le critère que sur la cible (pas sur le projectile)
+        # Pour gagner un peu de temps de calcul, on ne calcule le critï¿½re que sur la cible (pas sur le projectile)
         weight_matrix, enr_weight_matrix = compute_weight(cells, self.weight_strategy)
 
         stress = cells.stress_xx[cells.cell_in_target]
         enr_stress = np.copy(stress)
-        mask_enriched = np.logical_and(cells.cell_in_target, cells.enriched)[cells.cell_in_target]  # mailles enrichies de target
+        mask_enriched = np.where(cells.enriched[cells.cell_in_target])[0]  # mailles enrichies de target
         enr_stress[mask_enriched] = cells.enr_stress_xx[cells.cell_in_target][mask_enriched]
 
         mean_stress = np.dot(weight_matrix, stress)
         enr_mean_stress = np.dot(enr_weight_matrix, enr_stress)
         nbr_div = np.sum(weight_matrix, axis=0) + np.sum(enr_weight_matrix, axis=0)
-        # axis = 0 ou 1 (la matrice est symétrique)
+        # axis = 0 ou 1 (la matrice est symï¿½trique)
         global_stress = (mean_stress.flatten() + enr_mean_stress.flatten()) / nbr_div
 
         # On reprend la taille nb_cell
