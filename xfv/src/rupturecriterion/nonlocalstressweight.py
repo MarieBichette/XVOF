@@ -28,9 +28,9 @@ class ArithmeticWeight(IWeight):
         """
         Weight = 1 for cells in the neighbourhood
         """
-        weight = np.zeros_like(length)
+        weight = np.zeros(length.shape)
         mask_in = np.abs(length) <= self.radius
-        weight[mask_in] = np.ones_like(length[mask_in])
+        weight[mask_in] = len(np.where(mask_in)[0]) * [1.]
         return weight
 
 
@@ -45,7 +45,7 @@ class LinearWeight(IWeight):
         """
         The weight is linearly decreasing with the distance to cell
         """
-        weight = np.zeros_like(length)
+        weight = np.zeros(length.shape)
         mask_in = np.abs(length) > self.radius
         weight[mask_in] = 1. - np.abs(length[mask_in] / self.radius)
         return weight

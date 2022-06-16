@@ -15,26 +15,24 @@ def compute_weight(cells, weight_strategy):
     """
     mask = cells.cell_in_target
     coord = cells.coordinates_x[mask]
-    size = len(coord)  # nombre de mailles dans la cible
-    weight_matrix = np.zeros([size, size], dtype=np.float64)  # matrice symétrique par construction
-
-    enr_coord = np.copy(cells.coordinates_x)
-    mask_enriched = np.logical_and(mask, cells.enriched)
-    enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
-    enr_weight_matrix = np.zeros([size, size], dtype=np.float64)  # matrice symétrique par construction
+    size = len(coord)
+    weight_matrix = np.zeros([size, size], dtype=np.float64)
+    enr_weight_matrix = np.zeros([size, size], dtype=np.float64)
 
     # Le calcul enrichi = même calcul sauf que l'on prend les coordonnées enrichies au lieu des coordonnées classiques
     # (si la maille est classique, on prendra deux fois la partie classique en compte)
     for i in range(0, size):
         weight_i = weight_strategy.compute_weight(np.abs(coord - coord[i])).flatten()
-        enr_weight_i = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
-        # import pdb; pdb.set_trace()
         weight_matrix[:, i] = weight_i
-        # weight_matrix[i, :] = weight_i
-        enr_weight_matrix[:, i] = enr_weight_i
-        # enr_weight_matrix[i, :i] = enr_weight_i
-        weight_matrix[i, i] = 1.
-        enr_weight_matrix[i, i] = 1.
+
+    if cells.enriched.any():
+        enr_coord = np.copy(cells.coordinates_x)
+        mask_enriched = np.logical_and(mask, cells.enriched)
+        enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
+        for i in range(0, size):
+            enr_weight_i = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
+            enr_weight_matrix[:, i] = enr_weight_i
+
     return weight_matrix, enr_weight_matrix
 
 
@@ -52,7 +50,7 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         Check of the rupture criterion on the cells in arguments
         :param cells: cells on which to check the criterion
         """
-        # Pur gagner un peu de temps de calcul, on ne calcule le critère que sur la cible (pas sur le projectile)
+        # Pour gagner un peu de temps de calcul, on ne calcule le critère que sur la cible (pas sur le projectile)
         weight_matrix, enr_weight_matrix = compute_weight(cells, self.weight_strategy)
 
         stress = cells.stress_xx[cells.cell_in_target]
