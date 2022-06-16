@@ -527,9 +527,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
             enr_cell = int(disc.get_ruptured_cell_id)
             index = disc.label - 1
             modified_coord[index, 0] = enr_cell
-            modified_coord[index, 1] = self.nodes.xt[disc.mask_in_nodes] + \
+            modified_coord[index, 1] = self.nodes.xt[disc.in_nodes] + \
                                        self.cells.left_part_size.current_value[enr_cell] / 2.
-            modified_coord[index, 2] = self.nodes.xt[disc.mask_out_nodes] - \
+            modified_coord[index, 2] = self.nodes.xt[disc.out_nodes] - \
                                        self.cells.right_part_size.current_value[enr_cell] / 2.
         modified_coord = np.sort(modified_coord, 0)
 

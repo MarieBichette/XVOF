@@ -50,8 +50,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         :return ud: velocity of the discontinuity right boundary
         """
         epsilon = disc.position_in_ruptured_element
-        u1g = node_velocity[disc.mask_in_nodes]
-        u2d = node_velocity[disc.mask_out_nodes]
+        u1g = node_velocity[disc.in_nodes]
+        u2d = node_velocity[disc.out_nodes]
         u2g = disc.enr_velocity_new[0]
         u1d = disc.enr_velocity_new[1]
         # ug, ud = cls._compute_discontinuity_borders_velocity(epsilon, u1g, u1d, u2g, u2d)
@@ -511,8 +511,8 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
             u_left, u_right = (
                 OneDimensionHansboEnrichedCell.compute_discontinuity_borders_velocity(
                     disc, node_velocity))
-            u_node_left = node_velocity[disc.mask_in_nodes]
-            u_node_right = node_velocity[disc.mask_out_nodes]
+            u_node_left = node_velocity[disc.in_nodes]
+            u_node_right = node_velocity[disc.out_nodes]
             self.left_part_size.new_value[disc.get_ruptured_cell_id] = (
                 self.left_part_size.current_value[disc.get_ruptured_cell_id]
                 + (u_left - u_node_left) * time_step)

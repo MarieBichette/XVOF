@@ -31,8 +31,8 @@ class EnrichedMassMatrix:
         epsilon = discontinuity.position_in_ruptured_element
         # Suppose les éléments voisins triés par position croissante
         connectivity = topology.cells_in_contact_with_node[:]
-        cells_on_right = connectivity[discontinuity.mask_out_nodes][0]
-        cells_on_left = connectivity[discontinuity.mask_in_nodes][0]
+        cells_on_right = connectivity[discontinuity.out_nodes][0]
+        cells_on_left = connectivity[discontinuity.in_nodes][0]
         cell_0 = cells_on_left[0]
         cell_1 = cells_on_left[1]
         cell_2 = cells_on_right[1]

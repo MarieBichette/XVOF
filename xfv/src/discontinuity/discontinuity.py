@@ -93,9 +93,9 @@ class Discontinuity:
             disc.out_nodes = Discontinuity.out_nodes[ind]
 
         self.__mask_in_nodes = mask_in_nodes
-        self.in_nodes[:] = np.where(self.__mask_in_nodes)[0]
+        self.in_nodes[:] = np.where(self.__mask_in_nodes)[0][0]
         self.__mask_out_nodes = mask_out_nodes
-        self.out_nodes[:] = np.where(self.__mask_out_nodes)[0]
+        self.out_nodes[:] = np.where(self.__mask_out_nodes)[0][0]
 
         # Save the cracked cell id associated to the disc
         # TODO : pourquoi array ??????

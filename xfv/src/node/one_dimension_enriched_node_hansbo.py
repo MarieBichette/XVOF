@@ -134,15 +134,15 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         # Consequence => initialization with array is impossible => node by node initialization
 
         # Velocity
-        disc.enr_velocity_current[0] = np.copy(self.umundemi[disc.mask_out_nodes])  # 2-
-        disc.enr_velocity_current[1] = np.copy(self.umundemi[disc.mask_in_nodes])  # 1+
-        disc.enr_velocity_new[0] = np.copy(self.upundemi[disc.mask_out_nodes])  # 2-
-        disc.enr_velocity_new[1] = np.copy(self.upundemi[disc.mask_in_nodes])  # 1+
+        disc.enr_velocity_current[0] = self.umundemi[disc.out_nodes]  # 2-
+        disc.enr_velocity_current[1] = self.umundemi[disc.in_nodes]  # 1+
+        disc.enr_velocity_new[0] = self.upundemi[disc.out_nodes]  # 2-
+        disc.enr_velocity_new[1] = self.upundemi[disc.in_nodes]  # 1+
         # Coordinates
-        disc.enr_coordinates_current[0] = np.copy(self.xt[disc.mask_out_nodes])  # 2-
-        disc.enr_coordinates_current[1] = np.copy(self.xt[disc.mask_in_nodes])  # 1+
-        disc.enr_coordinates_new[0] = np.copy(self.xtpdt[disc.mask_out_nodes])  # 2-
-        disc.enr_coordinates_new[1] = np.copy(self.xtpdt[disc.mask_in_nodes])  # 1+
+        disc.enr_coordinates_current[0] = self.xt[disc.out_nodes]  # 2-
+        disc.enr_coordinates_current[1] = self.xt[disc.in_nodes]  # 1+
+        disc.enr_coordinates_new[0] = self.xtpdt[disc.out_nodes]  # 2-
+        disc.enr_coordinates_new[1] = self.xtpdt[disc.in_nodes]  # 1+
 
     def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
         """
@@ -150,8 +150,9 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
 
         :param disc: discontinuity to be considered
         """
-        self._upundemi[disc.mask_disc_nodes] = np.copy(self._umundemi[disc.mask_disc_nodes])
-        self._xtpdt[disc.mask_disc_nodes] = np.copy(self._xt[disc.mask_disc_nodes])
+        enr_nodes = [disc.in_nodes[0], disc.out_nodes[0]]
+        self._upundemi[enr_nodes] = self._umundemi[enr_nodes]
+        self._xtpdt[enr_nodes] = self._xt[enr_nodes]
 
     @staticmethod
     def enriched_nodes_compute_new_coordinates(disc: Discontinuity, delta_t: float):
@@ -189,8 +190,8 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
 
             disc.enr_force[0] = f_node_right_minus * self.section  # F2-
             disc.enr_force[1] = f_node_left_plus * self.section  # F1+
-            self._force[disc.mask_in_nodes] += f_node_left_minus * self.section  # F1-
-            self._force[disc.mask_out_nodes] += f_node_right_plus * self.section  # F2+
+            self._force[disc.in_nodes] += f_node_left_minus * self.section  # F1-
+            self._force[disc.out_nodes] += f_node_right_plus * self.section  # F2+
 
     def compute_enriched_nodes_cohesive_forces(self, cohesive_model):
         """
