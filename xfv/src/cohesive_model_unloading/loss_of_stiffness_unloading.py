@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Definition of UnloadingModel with loss of stiffness
+Definition of UnloadingModel with loss of stiffness (elastic unloading)
 """
 from xfv.src.cohesive_model_unloading.unloading_model_base import UnloadingModelBase
 
