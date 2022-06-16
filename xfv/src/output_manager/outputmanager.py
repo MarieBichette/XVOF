@@ -194,16 +194,15 @@ class OutputManager(metaclass=Singleton):
                     elif field.name.startswith("Additional") and field.owner is not None:
                         mask_enr = field.owner.enriched
                         if mask_enr.any():
-                            cell_ids = np.where(mask_enr)[0]
+                            cell_ids = np.where(mask_enr)[0].tolist()
                             value = self.get_value_of_field(field, field.owner)
                             if len(value.shape) == 1:
                                 # Register cell scalar field
-                                enr_field = np.array([cell_ids.tolist(),
-                                                      value[mask_enr].tolist()]).transpose()
+                                enr_field = np.array([cell_ids, value[cell_ids].tolist()]).transpose()
 
                             elif value.shape[1] == 3:
                                 # Register cell tensor field
-                                enr_field = np.array([cell_ids.tolist(),
+                                enr_field = np.array([cell_ids,
                                                       value[mask_enr, 0].tolist(),
                                                       value[mask_enr, 1].tolist(),
                                                       value[mask_enr, 2].tolist()]).transpose()
@@ -253,8 +252,7 @@ class OutputManager(metaclass=Singleton):
                                                                   enrichment="Hansbo",
                                                                   discontinuity_position=eps)
                             # todo : faire passer la position de la disc. dans le tableau de
-                            #  donnees car peut varier
-                            # todo : d'une discontinuite a l'autre
+                            #  donnees car peut varier d'une discontinuite a l'autre
                     # end enriched disc field -----------------------
 
     def get_value_of_field(self, field: Field, owner) -> np.array:

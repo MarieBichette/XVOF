@@ -93,9 +93,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         :param delta_t: time step
         """
         inv_matrix = disc.mass_matrix_enriched.inverse_enriched_mass_matrix_coupling_dof
-        node_in = np.where(disc.mask_in_nodes)[0][0]
-        node_out = np.where(disc.mask_out_nodes)[0][0]
-        mask_disc = [node_in, node_out]
+        mask_disc = [disc.in_nodes[0], disc.out_nodes[0]]
         disc.enr_velocity_new += np.dot(inv_matrix.transpose(),
                                         self._force[mask_disc]) * delta_t
         self._upundemi[mask_disc] += np.dot(inv_matrix, disc.enr_force) * delta_t
@@ -129,20 +127,17 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
 
         :param disc: Discontinuity
         """
-        # Warning : enr_node_2 (2-) has the same velocity / coordinates as node 2 (node out)
-        # Warning : enr_node_1 (1+) has the same velocity / coordinates as node 1 (node in)
-        # Consequence => initialization with array is impossible => node by node initialization
+        # Warning : enr[0] : enr_node_2 (2-) has the same velocity / coordinates as node 2 (node out) 
+        # Warning : enr[1] : enr_node_1 (1+) has the same velocity / coordinates as node 1 (node in) 
 
+        slice_enr_nodes = [disc.out_nodes[0], disc.in_nodes[0]] # 2-, 1+
         # Velocity
-        disc.enr_velocity_current[0] = self.umundemi[disc.out_nodes]  # 2-
-        disc.enr_velocity_current[1] = self.umundemi[disc.in_nodes]  # 1+
-        disc.enr_velocity_new[0] = self.upundemi[disc.out_nodes]  # 2-
-        disc.enr_velocity_new[1] = self.upundemi[disc.in_nodes]  # 1+
+        disc.enr_velocity_current = self.umundemi[slice_enr_nodes]  # 2-, 1+
+        disc.enr_velocity_new = self.upundemi[slice_enr_nodes]  # 2-, 1+
+
         # Coordinates
-        disc.enr_coordinates_current[0] = self.xt[disc.out_nodes]  # 2-
-        disc.enr_coordinates_current[1] = self.xt[disc.in_nodes]  # 1+
-        disc.enr_coordinates_new[0] = self.xtpdt[disc.out_nodes]  # 2-
-        disc.enr_coordinates_new[1] = self.xtpdt[disc.in_nodes]  # 1+
+        disc.enr_coordinates_current = self.xt[slice_enr_nodes]  # 2-, 1+
+        disc.enr_coordinates_new = self.xtpdt[slice_enr_nodes]  # 2-, 1+
 
     def reinitialize_kinematics_after_contact(self, disc: Discontinuity):
         """

@@ -103,46 +103,30 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         """
         enr_cell = disc.get_ruptured_cell_id
         # Initialization of the current field value
-        self.enr_density.current_value[enr_cell] = \
-            np.copy(self.density.current_value[enr_cell])
-        self.enr_pressure.current_value[enr_cell] = \
-            np.copy(self.pressure.current_value[enr_cell])
-        self.enr_sound_velocity.current_value[enr_cell] = \
-            np.copy(self.sound_velocity.current_value[enr_cell])
-        self.enr_energy.current_value[enr_cell] = \
-            np.copy(self.energy.current_value[enr_cell])
-        self.enr_artificial_viscosity.current_value[enr_cell] = \
-            np.copy(self.pseudo.current_value[enr_cell])
-        self._enr_deviatoric_stress_current[enr_cell] = \
-            np.copy(self._deviatoric_stress_current[enr_cell])
-        self.enr_shear_modulus.current_value[enr_cell] = \
-            np.copy(self.shear_modulus.current_value[enr_cell])
-        self.enr_yield_stress.current_value[enr_cell] = \
-            np.copy(self.yield_stress.current_value[enr_cell])
-        self._enr_coordinates_x[enr_cell] = np.copy(self._coordinates_x[enr_cell])
+        self.enr_density.current_value[enr_cell] = self.density.current_value[enr_cell]
+        self.enr_pressure.current_value[enr_cell] = self.pressure.current_value[enr_cell]
+        self.enr_sound_velocity.current_value[enr_cell] = self.sound_velocity.current_value[enr_cell]
+        self.enr_energy.current_value[enr_cell] = self.energy.current_value[enr_cell]
+        self.enr_artificial_viscosity.current_value[enr_cell] = self.pseudo.current_value[enr_cell]
+        self._enr_deviatoric_stress_current[enr_cell] = self._deviatoric_stress_current[enr_cell]
+        self.enr_shear_modulus.current_value[enr_cell] = self.shear_modulus.current_value[enr_cell]
+        self.enr_yield_stress.current_value[enr_cell] = self.yield_stress.current_value[enr_cell]
+        self._enr_coordinates_x[enr_cell] = self._coordinates_x[enr_cell]
 
         # Initialization of new value field
         # (so that the current value is not erased if the field is not updated in current step)
-        self.enr_density.new_value[enr_cell] = np.copy(self.density.new_value[enr_cell])
-        self.enr_pressure.new_value[enr_cell] = \
-            np.copy(self.pressure.new_value[enr_cell])
-        self.enr_sound_velocity.new_value[enr_cell] = \
-            np.copy(self.sound_velocity.new_value[enr_cell])
-        self.enr_energy.new_value[enr_cell] = np.copy(self.energy.new_value[enr_cell])
-        self.enr_artificial_viscosity.new_value[enr_cell] = \
-            np.copy(self.pseudo.new_value[enr_cell])
-        self.enr_shear_modulus.new_value[enr_cell] = \
-            np.copy(self.shear_modulus.new_value[enr_cell])
-        self.enr_yield_stress.new_value[enr_cell] = \
-            np.copy(self.yield_stress.new_value[enr_cell])
-        self._enr_deviatoric_stress_new[enr_cell] = \
-            np.copy(self._deviatoric_stress_new[enr_cell])
+        self.enr_density.new_value[enr_cell] = self.density.new_value[enr_cell]
+        self.enr_pressure.new_value[enr_cell] = self.pressure.new_value[enr_cell]
+        self.enr_sound_velocity.new_value[enr_cell] = self.sound_velocity.new_value[enr_cell]
+        self.enr_energy.new_value[enr_cell] = self.energy.new_value[enr_cell]
+        self.enr_artificial_viscosity.new_value[enr_cell] = self.pseudo.new_value[enr_cell]
+        self.enr_shear_modulus.new_value[enr_cell] = self.shear_modulus.new_value[enr_cell]
+        self.enr_yield_stress.new_value[enr_cell] = self.yield_stress.new_value[enr_cell]
+        self._enr_deviatoric_stress_new[enr_cell] = self._deviatoric_stress_new[enr_cell]
         # Other quantities initialization
-        self._enr_deviatoric_strain_rate[enr_cell] = \
-            np.copy(self._deviatoric_strain_rate[enr_cell])
-        self._enr_stress[enr_cell] = np.copy(self._stress[enr_cell])
-        self._enr_equivalent_plastic_strain_rate[enr_cell] = \
-            np.copy(self._equivalent_plastic_strain_rate[enr_cell])
+        self._enr_deviatoric_strain_rate[enr_cell] = self._deviatoric_strain_rate[enr_cell]
+        self._enr_stress[enr_cell] = self._stress[enr_cell]
+        self._enr_equivalent_plastic_strain_rate[enr_cell] = self._equivalent_plastic_strain_rate[enr_cell]
 
     def reconstruct_enriched_hydro_field(self, classical_field: Field, enriched_field_name: str):
         """
@@ -600,16 +584,16 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         if not disc_list:
             return
 
-        mask_nodes_in = Discontinuity.in_nodes.flatten()
-        mask_nodes_out = Discontinuity.out_nodes.flatten()
+        nodes_in = Discontinuity.in_nodes.flatten()
+        nodes_out = Discontinuity.out_nodes.flatten()
         mask_cells_arr = Discontinuity.ruptured_cell_id.flatten()
         eps_arr = Discontinuity.discontinuity_position.flatten()
         u2g_arr = Discontinuity.enr_velocity_new[:, 0].flatten()
         u1d_arr = Discontinuity.enr_velocity_new[:, 1].flatten()
-        u_noeuds_new_in_arr = node_velocity_new[mask_nodes_in]
-        u_noeuds_new_out_arr = node_velocity_new[mask_nodes_out]
-        x_noeuds_new_in_arr = node_coord_new[mask_nodes_in]
-        x_noeuds_new_out_arr = node_coord_new[mask_nodes_out]
+        u_noeuds_new_in_arr = node_velocity_new[nodes_in]
+        u_noeuds_new_out_arr = node_velocity_new[nodes_out]
+        x_noeuds_new_in_arr = node_coord_new[nodes_in]
+        x_noeuds_new_out_arr = node_coord_new[nodes_out]
 
         xg_new_arr = np.concatenate((
             x_noeuds_new_in_arr,
@@ -618,17 +602,15 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         xd_new_arr = np.concatenate((
             x_noeuds_new_out_arr - self.right_part_size.new_value[mask_cells_arr][np.newaxis].T,
             x_noeuds_new_out_arr), axis=1)
-        x_new_arr = np.concatenate((xg_new_arr, xd_new_arr))
 
         u_discg_new_arr, u_discd_new_arr = self._compute_discontinuity_borders_velocity(
             eps_arr, u_noeuds_new_in_arr[:, 0], u1d_arr, u2g_arr, u_noeuds_new_out_arr[:, 0])
 
         ug_new_arr = np.concatenate((u_noeuds_new_in_arr, u_discg_new_arr[np.newaxis].T), axis=1)
         ud_new_arr = np.concatenate((u_discd_new_arr[np.newaxis].T, u_noeuds_new_out_arr), axis=1)
-        u_new_arr = np.concatenate((ug_new_arr, ud_new_arr))
 
-        deviator_left, deviator_right = np.split(
-            OneDimensionCell.general_method_deviator_strain_rate(dt, x_new_arr, u_new_arr), 2)
+        deviator_left = OneDimensionCell.general_method_deviator_strain_rate(dt, xg_new_arr, ug_new_arr)
+        deviator_right = OneDimensionCell.general_method_deviator_strain_rate(dt, xd_new_arr, ud_new_arr)
 
         self._deviatoric_strain_rate[mask_cells_arr] = deviator_left
         self._enr_deviatoric_strain_rate[mask_cells_arr] = deviator_right
@@ -645,31 +627,27 @@ class OneDimensionHansboEnrichedCell(OneDimensionCell):  # pylint: disable=too-m
         self.compute_enriched_deviatoric_strain_rate(delta_t, node_coord_new, node_velocity_new)
         # Compute rotation rate tensor : W = 0 en 1D
 
-        # Left part
         mask = self.enriched
+        enr_cells = np.where(mask)[0]
         if not mask.any():
             return
-        G = self.shear_modulus.new_value[mask]  # pylint: disable=invalid-name
-        self._deviatoric_stress_new[mask, 0] = (
-            self._deviatoric_stress_current[mask, 0] +
-            2. * G * self._deviatoric_strain_rate[mask, 0] * delta_t)
-        self._deviatoric_stress_new[mask, 1] = (
-            self._deviatoric_stress_current[mask, 1] +
-            2. * G * self._deviatoric_strain_rate[mask, 1] * delta_t)
-        self._deviatoric_stress_new[mask, 2] = (
-            self._deviatoric_stress_current[mask, 2] +
-            2. * G * self._deviatoric_strain_rate[mask, 2] * delta_t)
+        
+        # Left part
+        G = self.shear_modulus.new_value[enr_cells]  # pylint: disable=invalid-name
+        D = self._deviatoric_strain_rate[enr_cells, :]
+        S = self._deviatoric_stress_current[enr_cells, :]
+        self._deviatoric_stress_new[enr_cells, 0] = S[:, 0] + 2. * G * D[:, 0] * delta_t
+        self._deviatoric_stress_new[enr_cells, 1] = S[:, 1] + 2. * G * D[:, 1] * delta_t
+        self._deviatoric_stress_new[enr_cells, 2] = S[:, 2] + 2. * G * D[:, 2] * delta_t
+
         # Right part
-        Gd = self.enr_shear_modulus.new_value[mask]  # pylint: disable=invalid-name
-        self._enr_deviatoric_stress_new[mask, 0] = \
-            self.enr_deviatoric_stress_current[mask, 0] + \
-            2. * Gd * self.enr_deviatoric_strain_rate[mask, 0] * delta_t
-        self._enr_deviatoric_stress_new[mask, 1] = \
-            self.enr_deviatoric_stress_current[mask, 1] + \
-            2. * Gd * self.enr_deviatoric_strain_rate[mask, 1] * delta_t
-        self._enr_deviatoric_stress_new[mask, 2] = \
-            self.enr_deviatoric_stress_current[mask, 2] + \
-            2. * Gd * self.enr_deviatoric_strain_rate[mask, 2] * delta_t
+        Gd = self.enr_shear_modulus.new_value[enr_cells]  # pylint: disable=invalid-name
+        Dd = self.enr_deviatoric_strain_rate[enr_cells, :]
+        Sd = self.enr_deviatoric_stress_current[enr_cells, :]
+        self._enr_deviatoric_stress_new[enr_cells, 0] = Sd[:, 0] + 2. * Gd * Dd[:, 0] * delta_t
+        self._enr_deviatoric_stress_new[enr_cells, 1] = Sd[:, 1] + 2. * Gd * Dd[:, 1] * delta_t
+        self._enr_deviatoric_stress_new[enr_cells, 2] = Sd[:, 2] + 2. * Gd * Dd[:, 2] * delta_t
+
 
     def compute_enriched_shear_modulus(self, shear_modulus_model):
         """
