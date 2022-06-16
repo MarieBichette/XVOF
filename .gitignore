@@ -83,5 +83,10 @@ tags
 # Ignore the .TXT files
 *.TXT
 
+# Ignore tests cases
+xfv/etudes/
+xfv/reunion_recherche/
+
+
 # Ignore perfs measurement files
 *.prof
