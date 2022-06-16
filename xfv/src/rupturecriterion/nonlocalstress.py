@@ -16,25 +16,25 @@ def compute_weight(cells, weight_strategy):
     mask = cells.cell_in_target
     coord = cells.coordinates_x[mask]
     size = len(coord)  # nombre de mailles dans la cible
-    weight_matrix = SymNDArray((size, size), dtype=np.float64)  # matrice symétrique par construction
+    weight_matrix = np.zeros([size, size], dtype=np.float64)  # matrice symétrique par construction
 
     enr_coord = np.copy(cells.coordinates_x)
     mask_enriched = np.logical_and(mask, cells.enriched)
     enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
-    enr_weight_matrix = SymNDArray((size, size), dtype=np.float64)  # matrice symétrique par construction
+    enr_weight_matrix = np.zeros([size, size], dtype=np.float64)  # matrice symétrique par construction
 
-    # On remplit le triangle superieur de la matrice, et par construction, le triangle inférieur se remplit aussi
     # Le calcul enrichi = même calcul sauf que l'on prend les coordonnées enrichies au lieu des coordonnées classiques
     # (si la maille est classique, on prendra deux fois la partie classique en compte)
     for i in range(0, size):
-        weight_matrix[:i, i] = weight_strategy.compute_weight(np.abs(coord[:i] - coord[i])).flatten()
-        enr_weight_matrix[:i, i] = weight_strategy.compute_weight(np.abs(enr_coord[:i] - enr_coord[i])).flatten()
+        weight_i = weight_strategy.compute_weight(np.abs(coord - coord[i])).flatten()
+        enr_weight_i = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
+        # import pdb; pdb.set_trace()
+        weight_matrix[:, i] = weight_i
+        # weight_matrix[i, :] = weight_i
+        enr_weight_matrix[:, i] = enr_weight_i
+        # enr_weight_matrix[i, :i] = enr_weight_i
         weight_matrix[i, i] = 1.
         enr_weight_matrix[i, i] = 1.
-    # Reste le poids de la maille 0 par rapport à elle même...
-    weight_matrix[0, 0] = 1.
-    enr_weight_matrix[0, 0] = 1.
-
     return weight_matrix, enr_weight_matrix
 
 
@@ -60,10 +60,6 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
         mask_enriched = np.logical_and(cells.cell_in_target, cells.enriched)[cells.cell_in_target]  # mailles enrichies de target
         enr_stress[mask_enriched] = cells.enr_stress_xx[cells.cell_in_target][mask_enriched]
 
-        # retransformer les weight_matrix et enr_weight_matrix en array (plutôt que SymNDArray) pour
-        # faire un produit matriciel avec np.dot()
-        weight_matrix = np.array(weight_matrix)
-        enr_weight_matrix = np.array(enr_weight_matrix)
         mean_stress = np.dot(weight_matrix, stress)
         enr_mean_stress = np.dot(enr_weight_matrix, enr_stress)
         nbr_div = np.sum(weight_matrix, axis=0) + np.sum(enr_weight_matrix, axis=0)
