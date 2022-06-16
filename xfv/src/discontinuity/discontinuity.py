@@ -223,8 +223,8 @@ class Discontinuity:
         :param node_position: coordinates of the nodes
         """
         epsilon = self.discontinuity_position
-        coord_g = node_position[self.mask_in_nodes]
-        coord_d = node_position[self.mask_out_nodes]
+        coord_g = node_position[self.in_nodes]
+        coord_d = node_position[self.out_nodes]
         enr_coord_g = self.enr_coordinates_new[0]  # x2-
         enr_coord_d = self.enr_coordinates_new[1]  # x1+
         xg_new = (1 - epsilon) * coord_g + epsilon * enr_coord_g
