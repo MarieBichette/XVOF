@@ -25,7 +25,7 @@ def compute_weight(cells, weight_strategy):
     # (si la maille est classique, on prendra deux fois la partie classique en compte)
     for i in range(0, size):
         weight_matrix[:, i] = weight_strategy.compute_weight(np.abs(coord - coord[i])).flatten()
-        size_weight[i] = len(np.where(weight_matrix[:, i] != 0)[0])
+        size_weight[i] = len(np.where(weight_matrix[:, i] > 1e-16)[0])
 
     if cells.enriched.any():
         enr_coord = np.copy(cells.coordinates_x)
@@ -33,7 +33,7 @@ def compute_weight(cells, weight_strategy):
         enr_coord[mask_enriched] = cells.enr_coordinates_x[mask_enriched]
         for i in range(0, size):
             enr_weight_matrix[:, i] = weight_strategy.compute_weight(np.abs(enr_coord[cells.cell_in_target] - enr_coord[i])).flatten()
-            enr_size_weight[i] = len(np.where(enr_weight_matrix[:, i] != 0)[0])
+            enr_size_weight[i] = len(np.where(enr_weight_matrix[:, i] > 1e-16)[0])
 
     return size_weight, enr_size_weight, weight_matrix, enr_weight_matrix
 
@@ -57,8 +57,8 @@ class NonLocalStressCriterion(RuptureCriterion):  # pylint: disable=too-few-publ
 
         stress = cells.stress_xx[cells.cell_in_target]
         enr_stress = np.copy(stress)
-        mask_enriched = np.logical_and(cells.enriched, cells.cell_in_target)  # mailles enrichies de target
-        enr_stress[mask_enriched] = cells.enr_stress_xx[mask_enriched]
+        mask_enriched = np.where(cells.enriched[cells.cell_in_target])[0]  # mailles enrichies de target
+        enr_stress[mask_enriched] = cells.enr_stress_xx[cells.cell_in_target][mask_enriched]
 
         mean_stress = np.dot(weight_matrix, stress)
         enr_mean_stress = np.dot(enr_weight_matrix, enr_stress)
