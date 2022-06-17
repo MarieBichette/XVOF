@@ -46,7 +46,7 @@ class LinearWeight(IWeight):
         The weight is linearly decreasing with the distance to cell
         """
         weight = np.zeros(length.shape)
-        mask_in = np.abs(length) > self.radius
+        mask_in = np.abs(length) <= self.radius
         weight[mask_in] = 1. - np.abs(length[mask_in] / self.radius)
         return weight
 
@@ -62,5 +62,5 @@ class GaussianWeight(IWeight):
         """
         The weight is exponentially decreasing with the distance to cell
         """
-        raise NotImplementedError("""Il manque des paramètres dans lejeu de données pour calculer la gaussienne""")
+        raise NotImplementedError("""Il manque des paramï¿½tres dans lejeu de donnï¿½es pour calculer la gaussienne""")
 
