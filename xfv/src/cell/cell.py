@@ -85,6 +85,8 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self._nbr_of_cells, material_data.shear_modulus_init, material_data.shear_modulus_init)
         self._fields_manager["YieldStress"] = Field(
             self._nbr_of_cells, material_data.yield_stress_init, material_data.yield_stress_init)
+        # Plasticity
+        self._fields_manager["EquivalentPlasticStrain"] = Field(self._nbr_of_cells, 0., 0.)
         # Porosity
         self._fields_manager["Porosity"] = Field(
             self._nbr_of_cells, material_data.porosity_init, material_data.porosity_init)
@@ -226,6 +228,13 @@ class Cell:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         Yield stress separating elastic from plastic behavior
         """
         return self._fields_manager["YieldStress"]
+
+    @property
+    def equivalent_plastic_strain(self):
+        """
+        equivalent plastic strain
+        """
+        return self._fields_manager["EquivalentPlasticStrain"]
 
     @property
     def stress(self):

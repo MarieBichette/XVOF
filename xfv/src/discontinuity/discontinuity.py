@@ -5,6 +5,10 @@ A module implementing the Discontinuity class
 import numpy as np
 from xfv.src.fields.field import Field
 from xfv.src.data.enriched_mass_matrix_props import EnrichedMassMatrixProps
+from xfv.src.cohesive_calculation.lineardata import LinearData
+from xfv.src.cohesive_calculation.linearenergy import LinearEnergy
+from xfv.src.cohesive_calculation.linearpercent import LinearPercent
+from xfv.src.cohesive_model.cohesive_law import CohesiveLaw
 
 
 class Discontinuity:
@@ -27,6 +31,8 @@ class Discontinuity:
     ruptured_cell_id = np.zeros([], dtype=int)
     in_nodes = np.zeros([], dtype=int)
     out_nodes = np.zeros([], dtype=int)
+
+
 
     def __init__(self, cell_id: int, mask_in_nodes: np.array, mask_out_nodes: np.array,
                  discontinuity_position_in_ruptured_element: float,
@@ -81,6 +87,7 @@ class Discontinuity:
                 Discontinuity.in_nodes, np.zeros((1, 1), dtype=int), axis=0)
             Discontinuity.out_nodes = np.append(
                 Discontinuity.out_nodes, np.zeros((1, 1), dtype=int), axis=0)
+
         for ind, disc in enumerate(Discontinuity.discontinuity_list()):
             disc.enr_velocity_current = Discontinuity.enr_velocity_current[ind]
             disc.enr_velocity_new = Discontinuity.enr_velocity_new[ind]
@@ -91,6 +98,8 @@ class Discontinuity:
             disc.ruptured_cell_id = Discontinuity.ruptured_cell_id[ind]
             disc.in_nodes = Discontinuity.in_nodes[ind]
             disc.out_nodes = Discontinuity.out_nodes[ind]
+            
+
 
         self.__mask_in_nodes = mask_in_nodes
         self.in_nodes[:] = np.where(self.__mask_in_nodes)[0]
@@ -111,9 +120,13 @@ class Discontinuity:
         # (Always created but null if no damage data in the XDATA.json file...)
         self.cohesive_force = Field(1, current_value=0., new_value=0.)
         self.discontinuity_opening = Field(1, current_value=0., new_value=0.)
+        self.dissipated_energy = Field(1, current_value=0., new_value=0.)
         self.damage_variable = Field(1, current_value=0., new_value=0.)
         self.history_max_opening = 0.
         self.history_min_cohesive_force = 1.e+30
+        self._cohesive_law = []
+        self.critical_separation = None
+        self.critical_strength = None
 
         # Creation of the enriched mass matrix
         self.mass_matrix_enriched = enriched_mass_matrix_props.build_enriched_mass_matrix_obj()
@@ -231,6 +244,23 @@ class Discontinuity:
         xd_new = (1 - epsilon) * enr_coord_d + epsilon * coord_d
         self.discontinuity_opening.new_value = (xd_new - xg_new)[0][0]
 
+    def create_cohesive_law(self, cells, section, cohesive_model):
+        if cohesive_model.cohesive_zone_model_name is None :
+            return
+        ind = self.ruptured_cell_id
+        self.critical_strength, self.critical_separation = cohesive_model.cohesive_calculation_model.get_values(cells.energy.new_value, cells.stress, cells.mass, section, ind, cohesive_model)
+        points = np.array([
+            [0, self.critical_strength],
+            [self.critical_separation, 0]])
+        self._cohesive_law = CohesiveLaw(points)
+
+    def compute_critical_value(self, stress, energy):
+        for ind in range(len(Discontinuity.critical_strength)):
+            if abs(Discontinuity.critical_strength[ind]) < 1.e-16:
+                Discontinuity.critical_strength[ind] = abs(stress[Discontinuity.ruptured_cell_id[ind]])
+            if abs(Discontinuity.critical_separation[ind]) < 1.e-16:
+                Discontinuity.critical_separation[ind] = 2*energy[Discontinuity.ruptured_cell_id[ind]]/Discontinuity.critical_strength[ind]
+        
     def reinitialize_kinematics_after_contact(self):
         """
         Set the new velocity to the old one to cancel the increment that has lead to contact
@@ -245,7 +275,9 @@ class Discontinuity:
         # Kinematics
         self.enr_velocity_current[:] = self.enr_velocity_new[:]
         self.enr_coordinates_current[:] = self.enr_coordinates_new[:]
+        
         # Cohesive model
         self.cohesive_force.increment_values()
         self.damage_variable.increment_values()
         self.discontinuity_opening.increment_values()
+        self.dissipated_energy.increment_values()

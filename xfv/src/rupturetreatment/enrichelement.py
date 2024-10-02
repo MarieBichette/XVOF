@@ -35,7 +35,7 @@ class EnrichElement(RuptureTreatment):
         """
         return self.__lump
 
-    def apply_treatment(self, cells, ruptured_cells, nodes, topology, time):
+    def apply_treatment(self, cells, ruptured_cells, nodes, topology, time, cohesive_model, section):
         """
         Apply the rupture treatment by enriching one of the cells that is marked as ruptured cells
 
@@ -43,6 +43,9 @@ class EnrichElement(RuptureTreatment):
         :param ruptured_cells: boolean array marking the ruptured cells
         :param nodes: array of all nodes
         :param topology: topology of the problem
+        :param time:
+        :param cohesive_model: class for the cohesive model
+        :param section: float for section of material
         """
         if ruptured_cells.any():  # Enrichment is made once for all
             cells_to_be_enr = np.logical_and(ruptured_cells, ~cells.enriched)
@@ -68,7 +71,7 @@ class EnrichElement(RuptureTreatment):
                     print("==> In nodes : ", np.nonzero(in_nodes))
                     print("==> Out nodes : ", np.nonzero(out_nodes))
                     nodes.classical[nodes_to_be_enr] = False
-                    # Calcul coordonnées de la disc
+                    # Calcul coordonnï¿½es de la disc
                     x_left = nodes.xt[nodes_to_be_enr[0]]
                     x_right = nodes.xt[nodes_to_be_enr[1]]
                     assert x_left < x_right
@@ -78,6 +81,7 @@ class EnrichElement(RuptureTreatment):
                     disc = Discontinuity(cell_tb_enr, in_nodes, out_nodes,
                                          self.__position_rupture, self.__lump)
                     cells.classical[cell_tb_enr] = False
+                    disc.create_cohesive_law(cells, section, cohesive_model)
                     # Initialisation de la partie droite des champs + cell size
                     self.initialize_cracked_cell_size(cells, cell_tb_enr)
                     cells.initialize_additional_cell_dof(disc)
@@ -102,11 +106,11 @@ class EnrichElement(RuptureTreatment):
         cells.left_part_size.new_value = \
             self.__position_rupture * cells.size_t_plus_dt[cell_tb_enr]
         # L'initialisation des tailles gauches et droites courantes n'est
-        # pas nécessaire. On initialise simplement avec des tailles fictives de
-        # sorte qu'on peut gérer le calcul des forces cohésives à l'itération où la
-        # discontinuité est créée. Cette taille ficitive permet simplement
-        # d'obtenir une ouverture nulle de la fissure à l'itération de création de
-        # la discontinuité.  Elle sera écrasée après ce calcul lors de l'appel
+        # pas nï¿½cessaire. On initialise simplement avec des tailles fictives de
+        # sorte qu'on peut gï¿½rer le calcul des forces cohï¿½sives ï¿½ l'itï¿½ration oï¿½ la
+        # discontinuitï¿½ est crï¿½ï¿½e. Cette taille ficitive permet simplement
+        # d'obtenir une ouverture nulle de la fissure ï¿½ l'itï¿½ration de crï¿½ation de
+        # la discontinuitï¿½.  Elle sera ï¿½crasï¿½e aprï¿½s ce calcul lors de l'appel
         # de mesh.increment().
         cells.right_part_size.current_value = \
             (1. - self.__position_rupture) * cells.size_t[cell_tb_enr]

@@ -44,6 +44,7 @@ class JohnsonModelProps(PorosityModelProps):
     initial_porosity_for_johnson: float
     effective_strength_for_johnson: float
     viscosity_for_johnson: float  # pylint: disable=invalid-name
+    maximal_porosity_for_Johnson: float
     _porosity_model_class = JohnsonModel
 
     def __post_init__(self):

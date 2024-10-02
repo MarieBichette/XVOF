@@ -39,14 +39,13 @@ def run():
                 print("Done !")
                 print("~~~~~~~~~~~~~")
             # Plot field :
-            plt.plot(coord * 1.e+03, field_value, label=case)
-
-        if (ARGS.write_data):
-            data_path="{:s}Profile_{:s}_{:3.1e}.dat".format(case, ARGS.field, current_time)
-            with open(data_path, "w") as file_object:
-                for x_data, y_data in zip(coord, field_value):
-                    file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
-            print("Data written in {:s}".format(data_path))
+            plt.plot(coord * 1.e+03, field_value, label='temps = '+str(current_time)+' s')
+            if (ARGS.write_data):
+                data_path="Profile_{:s}_at_time_{:3.1e}.dat".format(ARGS.field, current_time)
+                with open(data_path, "w") as file_object:
+                    for x_data, y_data in zip(coord, field_value):
+                        file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))
+                print("Data written in {:s}".format(data_path))
 
 
 if __name__ == "__main__":

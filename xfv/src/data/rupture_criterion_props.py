@@ -13,7 +13,7 @@ from xfv.src.rupturecriterion.halfrodcomparison import HalfRodComparisonCriterio
 from xfv.src.rupturecriterion.maximalstress import MaximalStressCriterion
 from xfv.src.rupturecriterion.minimumpressure import MinimumPressureCriterion
 from xfv.src.rupturecriterion.nonlocalstress import NonLocalStressCriterion
-
+from xfv.src.rupturecriterion.doublecriterion import DoubleCriterion
 
 @dataclass  # pylint: disable=missing-class-docstring
 class RuptureCriterionProps(TypeCheckedDataClass):
@@ -102,3 +102,13 @@ class NonLocalStressCriterionProps(RuptureCriterionProps):
         super().__post_init__()  # typecheck first
         self._ensure_defined('value', 'NonLocalStressCriterionProps',
                              'failure/failure-criterion/value')  # ensures that exists
+
+@dataclass  # pylint: disable=missing-class-docstring
+class DoubleCriterionProps(RuptureCriterionProps):
+    p_limit: Optional[float]
+    number_cell: Optional[int]  # optional to personalize the error message
+
+    _rupture_criterion_class = DoubleCriterion
+
+    def __post_init__(self):
+        super().__post_init__()  # typecheck first

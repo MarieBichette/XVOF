@@ -96,7 +96,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
             if np.isnan(sound_velocity_new_value).any():
                 negative_vson = np.where(np.isnan(sound_velocity_new_value))
                 msg = "Sound speed square < 0 in cells {}\n".format(np.where(negative_vson))
-                msg += "density = {}\n".format(my_variables['NewDensity'][negative_vson])
+                msg += "density = {}\n".format(density[negative_vson])
                 msg += "energy = {}\n".format(energy_new_value[negative_vson])
                 msg += "pressure = {}\n".format(pressure_new_value[negative_vson])
                 raise ValueError(msg)
@@ -237,7 +237,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
                                                         order='C')
         self._plastic_strain_rate = np.zeros([number_of_elements, 3], dtype=np.float64,
                                              order='C')  # Dp_xx, Dp_yy, Dp_zz
-        # EOS :
+	# EOS :
         self._target_eos = self.data.material_target.constitutive_model.eos.build_eos_obj()
         self._projectile_eos = None
         if self.data.data_contains_a_projectile:
@@ -545,7 +545,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
         self.shear_modulus.new_value[mask] = shear_modulus_model.compute(
-            self.density.new_value[mask])
+            self.density.new_value[mask], self.pressure.current_value[mask])
 
         if self.data.material_target.porosity_model is not None:
             self.shear_modulus.new_value[mask] = self._compute_micro_to_macro_shear_modulus(
@@ -579,7 +579,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
 
         :type mask: np.array([nbr_cells, 1], dtype=bool)
         """
-        self.yield_stress.new_value[mask] = yield_stress_model.compute(self.density.new_value[mask])
+        self.yield_stress.new_value[mask] = yield_stress_model.compute(self.density.new_value[mask],
+                                                                       self.equivalent_plastic_strain.current_value[mask], self.shear_modulus.new_value[mask])
 
         if self.data.material_target.porosity_model is not None:
             self.yield_stress.new_value[mask] = self._compute_micro_to_macro_yield_stress(
@@ -707,6 +708,13 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         return  (j2 - yield_stress) / (3. * shear_modulus * dt)
 
+    def _compute_equivalent_plastic_strain(self,mask,delta_t):
+        """
+        Compute the equivalent plastic strain
+        param t_time : temps t
+        """
+        self.equivalent_plastic_strain.new_value[:] = self._equivalent_plastic_strain_rate[:]*delta_t + self.equivalent_plastic_strain.current_value[:]
+    
     def apply_plasticity(self, mask, delta_t):
         """
         Apply plasticity treatment if criterion is activated :
@@ -717,6 +725,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         :param mask: boolean array to identify cells to be computed
         :param dt: time step
         """
+
         invariant_j2_el = np.sqrt(compute_second_invariant(self.deviatoric_stress_new[mask, :]))
         yield_stress = self.yield_stress.new_value[mask]
         shear_modulus = self.shear_modulus.new_value[mask]
@@ -727,7 +736,8 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         self._equivalent_plastic_strain_rate[mask] = self._compute_equivalent_plastic_strain_rate(
             invariant_j2_el, shear_modulus, yield_stress, delta_t)
         self._deviatoric_stress_new[mask] *= radial_return[np.newaxis].T
-
+        self._compute_equivalent_plastic_strain(mask,delta_t)
+        
     def impose_pressure(self, ind_cell: int, pressure: float):
         """
         Pressure imposition
@@ -745,6 +755,7 @@ class OneDimensionCell(Cell):  # pylint: disable=too-many-public-methods
         """
         super().increment_variables()
         self._deviatoric_stress_current[:, :] = self._deviatoric_stress_new[:, :]
+        self.equivalent_plastic_strain.current_value = self.equivalent_plastic_strain.new_value
 
     def compute_new_coordinates(self, topology, x_coord):
         """

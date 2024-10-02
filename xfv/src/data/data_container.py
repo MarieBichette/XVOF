@@ -16,7 +16,9 @@ from xfv.src.data.user_defined_functions_props import (UserDefinedFunctionPropsT
                                                        MarchTableFunctionProps,
                                                        SuccessiveRampFunctionProps)
 from xfv.src.data.cohesive_model_props import (CohesiveZoneModelProps,
-                                               LinearCohesiveZoneModelProps,
+                                               LinearDataCohesiveZoneModelProps,
+                                               LinearPercentCohesiveZoneModelProps,
+                                               LinearEnergyCohesiveZoneModelProps,
                                                BilinearCohesiveZoneModelProps,
                                                TrilinearCohesiveZoneModelProps)
 from xfv.src.data.unloading_model_props import (UnloadingModelProps,
@@ -25,11 +27,11 @@ from xfv.src.data.unloading_model_props import (UnloadingModelProps,
 from xfv.src.data.contact_props import (ContactProps, PenaltyContactProps,
                                         LagrangianMultiplierProps)
 from xfv.src.data.equation_of_state_props import (EquationOfStateProps, MieGruneisenProps)
-from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps)
-from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps)
+from xfv.src.data.yield_stress_props import (YieldStressProps, ConstantYieldStressProps, SCGYieldStressProps)
+from xfv.src.data.shear_modulus_props import (ShearModulusProps, ConstantShearModulusProps, SCGShearModulusProps)
 from xfv.src.data.plasticity_criterion_props import (PlasticityCriterionProps,
                                                      VonMisesCriterionProps)
-from xfv.src.data.rupture_criterion_props import (RuptureCriterionProps,
+from xfv.src.data.rupture_criterion_props import (DoubleCriterionProps, RuptureCriterionProps,
                                                   DamageCriterionProps,
                                                   PorosityCriterionProps,
                                                   HalfRodComparisonCriterionProps,
@@ -99,7 +101,7 @@ class DatabaseProps(TypeCheckedDataClass):
 ALL_VARIABLES = ["NodeVelocity", "NodeCoordinates", "CellSize", "Pressure", "Density",
                  "InternalEnergy", "SoundVelocity", "ArtificialViscosity", "Stress",
                  "DeviatoricStress", "EquivalentPlasticStrainRate", "PlasticStrainRate",
-                 "Porosity", "CohesiveForce", "DiscontinuityOpening", "ShearModulus", "YieldStress"]
+                 "Porosity", "CohesiveForce", "DissipatedEnergy","DiscontinuityOpening", "ShearModulus", "YieldStress"]
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -385,8 +387,6 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         cohesive_model_name = params['name'].lower()
 
-        cohesive_strength = params['coefficients']['cohesive-strength']
-        critical_separation = params['coefficients']['critical-separation']
 
         unloading_model_name = params['unloading-model']['name'].lower()
         unloading_model_slope: Optional[float] = params['unloading-model'].get('slope')
@@ -400,25 +400,61 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
             raise ValueError(f"Unknwown unloading model name: {unloading_model_name} "
                              "Please choose among (progressiveunloading, "
                              " lossofstiffnessunloading)")
+        print('cohesive model is', cohesive_model_name)
+         
+        if cohesive_model_name == "lineardata":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
+            purcentage_internal_energy = 0.
+            dissipated_energy = 0.
+            cohesive_model_props = LinearDataCohesiveZoneModelProps(cohesive_strength, critical_separation,
+                                                                cohesive_model_name, unloading_model_props, dissipated_energy, purcentage_internal_energy)
+        elif cohesive_model_name == "linearenergy":
+            cohesive_strength = 0.
+            critical_separation = 0.
+            dissipated_energy = params['coefficients']['dissipated-energy']
+            purcentage_internal_energy = 0.
 
-        if cohesive_model_name == "linear":
-            cohesive_model_props: CohesiveZoneModelProps = LinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props)
+            # permet d'affecter la contrainte cohesive lorsque le critère de rupture est 'maximalstress'
+            failure_data = matter.get('failure')
+            failure_criterion_data = failure_data['failure-criterion']
+            fail_crit_name: str = failure_criterion_data['name']
+            fail_crit_value: Optional[float] = failure_criterion_data.get('value')
+            if fail_crit_name =='MaximalStress':
+                cohesive_strength = fail_crit_value
+            cohesive_model_props = LinearEnergyCohesiveZoneModelProps(cohesive_strength, critical_separation,
+                                                                cohesive_model_name, unloading_model_props,
+                                                                     dissipated_energy, purcentage_internal_energy)
+        elif cohesive_model_name == "linearpercent":
+            dissipated_energy = 0.
+            purcentage_internal_energy = params['coefficients']['purcentage-internal-energy']
+            cohesive_model_props = LinearPercentCohesiveZoneModelProps(0., 0.,
+                                                                cohesive_model_name, unloading_model_props,
+                                                                     dissipated_energy, purcentage_internal_energy)
         elif cohesive_model_name == "bilinear":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
+            purcentage_internal_energy = 0.
+            dissipated_energy = 0.
             cohesive_model_props = BilinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props,
+                cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
+                dissipated_energy, purcentage_internal_energy, purcentage_internal_energy, purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'])
+            
         elif cohesive_model_name == "trilinear":
+            cohesive_strength = params['coefficients']['cohesive-strength']
+            critical_separation = params['coefficients']['critical-separation']
             cohesive_model_props = TrilinearCohesiveZoneModelProps(
-                cohesive_strength, critical_separation, unloading_model_props,
+                cohesive_strength, critical_separation, cohesive_model_name, unloading_model_props,
+                dissipated_energy, purcentage_internal_energy, purcentage_internal_energy, purcentage_internal_energy,
                 params['coefficients']['separation-at-point-1'],
                 params['coefficients']['stress-at-point-1'],
                 params['coefficients']['separation-at-point-2'],
                 params['coefficients']['stress-at-point-2'])
         else:
             raise ValueError(f"Unknwon cohesive model: {cohesive_model_name} ."
-                             "Please choose among (linear, bilinear, trilinear)")
+                             "Please choose among (LinearData, LinearPercent, LinearEnergy, bilinear, trilinear)")
 
         return cohesive_model_props
 
@@ -440,10 +476,24 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                 initial_porosity_for_johnson = params['coefficients']['initial-porosity']
                 effective_strength_for_johnson = params['coefficients']['effective-strength']
                 viscosity_for_johnson = params['coefficients']['viscosity']
+                maximal_porosity_for_johnson = 1.e30
+
+                # Lorsque le critère de rupture est la porosité
+                failure_data = matter.get('failure')
+                failure_criterion_data = failure_data['failure-criterion']
+                fail_crit_name: str = failure_criterion_data['name']
+                fail_crit_value: Optional[float] = failure_criterion_data.get('value')
+                if fail_crit_name == 'Porosity':
+                    maximal_porosity_for_johnson = fail_crit_value
+                    print('maximal porosity = ', maximal_porosity_for_johnson)
+                elif fail_crit_name == 'DoubleCriterion':
+                    maximal_porosity_for_johnson = failure_criterion_data.get('value-one')
+                    print('maximal porosity = ', maximal_porosity_for_johnson)
+
                 porosity_model_props: PorosityModelProps = JohnsonModelProps(
                     initial_porosity_for_johnson,
                     effective_strength_for_johnson,
-                    viscosity_for_johnson)
+                    viscosity_for_johnson, maximal_porosity_for_johnson)
         except:
             raise ValueError(f"No keyword 'name' for porosity model name: {porosity_model_name}."
                              "Please choose among (JohnsonModel)."
@@ -510,6 +560,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                     isinstance(failure_criterion, MaximalStressCriterionProps)):
                 print("Failure criterion value and cohesive strength have different value. "
                       "This may result in errors in the future")
+                print('failure criterion =', failure_criterion)
+                print('cohesive strength =', cohesive_model.cohesive_strength)
 
         # Porosity model
         porosity_model_props = self.__get_porosity_model_props(material)
@@ -553,7 +605,7 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         return (velocity, pressure, temperature, density, internal_energy,
                 yield_stress, shear_modulus, porosity)
 
-    def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float]:
+    def __get_yield_stress_and_shear_modulus(self, matter) -> Tuple[float, float,Optional[float],Optional[float],Optional[float],Optional[float]]:
         """
         Returns the yield stress and shear modulus read from the json file specified
         under the coefficients key
@@ -568,8 +620,8 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
 
         with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
             coef = json.load(json_fid)
-            yield_stress = float(coef['EPP']["yield_stress"])
-            shear_modulus = float(coef['EPP']["shear_modulus"])
+            yield_stress = float(coef[params.get('plasticity-model')]["yield_stress"])
+            shear_modulus = float(coef[params.get('plasticity-model')]["shear_modulus"])
         return yield_stress, shear_modulus
 
     def __get_initial_porosity(self, matter)->float:
@@ -612,23 +664,47 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
                  plasticity_model : plasticity model
                  plasticity_criterion : plasticity criterion
         """
-        params = matter.get('rheology')
-        if not params:
-            return None, None, None
-
         yield_stress, shear_modulus = self.__get_yield_stress_and_shear_modulus(matter)
+        params = matter['initialization']
+        json_path = params['init-thermo']
+        
+        with open(self._datafile_dir / json_path, 'r') as json_fid:
+            coef = json.load(json_fid)
+            coef = coef["InitThermo"]
+            rho_0 = float(coef["initial_density"])
+        params = matter.get('rheology')
+        if params is None:
+            return None, None, None
+        coefficients_file = params.get('coefficients')
+        with open(self._datafile_dir / coefficients_file, 'r') as json_fid:
+            coef = json.load(json_fid)
+
         elasticity_model_name = params['elasticity-model']
-        if elasticity_model_name != "Linear":
-            raise ValueError(f"Model {elasticity_model_name} not implemented. Choose Linear")
-        elasticity_model = ConstantShearModulusProps(shear_modulus)
+        if elasticity_model_name == "Linear":
+            Gp_prime = 0.
+            elasticity_model = ConstantShearModulusProps(shear_modulus, rho_0, Gp_prime)
+        elif elasticity_model_name == "SCG":
+            Gp_prime = float(coef[params.get('elasticity-model')]["Gp_prime"])
+            elasticity_model = SCGShearModulusProps(shear_modulus, rho_0, Gp_prime)
+        else:
+            raise ValueError(f"Model {elasticity_model_name} not implemented. Choose Linear or SCG")
 
         plasticity_model_name = params.get('plasticity-model')
         if not plasticity_model_name:
             return elasticity_model, None, None
 
-        if plasticity_model_name != "EPP":
-            raise ValueError(f"Model {plasticity_model_name} not implemented. Choose EPP")
-        plasticity_model = ConstantYieldStressProps(yield_stress)
+        if plasticity_model_name == "EPP" :
+            beta = 0.
+            m = 0.
+            Y_max = 0.
+            plasticity_model = ConstantYieldStressProps(yield_stress, shear_modulus, Y_max, beta, m)
+        elif plasticity_model_name == "SCG":
+            beta = float(coef[params.get('plasticity-model')]["beta_ecrouissage"])
+            m = float(coef[params.get('plasticity-model')]["m_ecrouissage"])
+            Y_max = float(coef[params.get('plasticity-model')]["yield_stress_max"])
+            plasticity_model = SCGYieldStressProps(yield_stress, shear_modulus, Y_max, beta, m)
+        else:
+            raise ValueError(f"Model {plasticity_model_name} not implemented. Choose EPP or SCG")
 
         plasticity_criterion_name = params['plasticity-criterion']
         if plasticity_criterion_name == "VonMises":
@@ -714,6 +790,10 @@ class DataContainer(metaclass=Singleton):  # pylint: disable=too-few-public-meth
         elif fail_crit_name == "NonLocalStress":
             radius: Optional[int] = failure_criterion_data.get('radius')
             failure_criterion = NonLocalStressCriterionProps(fail_crit_value, radius)
+        elif fail_crit_name == 'DoubleCriterion':
+            value_one : Optional[float] = failure_criterion_data.get('value-one')
+            value_two : Optional[int] = failure_criterion_data.get('value-two')
+            failure_criterion = DoubleCriterionProps(value_one, value_two)
         else:
             raise ValueError(f"Unknown failure criterion {fail_crit_name}. "
                              "Please choose among (MinimumPressure, Damage, "

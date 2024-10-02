@@ -8,6 +8,7 @@ from typing import Type
 from xfv.src.data.type_checked_dataclass import TypeCheckedDataClass
 from xfv.src.rheology.yieldstress import YieldStress
 from xfv.src.rheology.constantyieldstress import ConstantYieldStress
+from xfv.src.rheology.scgyieldstress import SCGYieldStress
 
 
 @dataclass  # pylint: disable=missing-class-docstring
@@ -35,4 +36,11 @@ class YieldStressProps(TypeCheckedDataClass):
 @dataclass  # pylint: disable=missing-class-docstring, too-many-instance-attributes
 class ConstantYieldStressProps(YieldStressProps):
     init_value: float
+    init_shear_modulus: float
+    Y_max: float
+    beta: float
+    m: float
     _yield_stress_class = ConstantYieldStress
+
+class SCGYieldStressProps(ConstantYieldStressProps):
+    _yield_stress_class = SCGYieldStress

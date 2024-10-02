@@ -192,7 +192,7 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
             self._force[disc.mask_in_nodes] += f_node_left_minus * self.section  # F1-
             self._force[disc.mask_out_nodes] += f_node_right_plus * self.section  # F2+
 
-    def compute_enriched_nodes_cohesive_forces(self, cohesive_model):
+    def compute_enriched_nodes_cohesive_forces(self, cohesive_model, stress, energy):
         """
         Compute the cohesive forces for the enriched nodes
 
@@ -204,10 +204,10 @@ class OneDimensionHansboEnrichedNode(OneDimensionNode):
         nb_disc = len(disc_list)
 
         applied_force_arr = np.ndarray((nb_disc,))
-        for ind, disc in enumerate(disc_list):
-            # Compute cohesive stress
+        for ind, disc in enumerate(disc_list):  
             cohesive_stress = cohesive_model.compute_cohesive_stress(disc)
             disc.cohesive_force.new_value = cohesive_stress
+            disc.dissipated_energy.new_value *= self.section
             applied_force_arr[ind] = self.section * cohesive_stress
 
         self.apply_force_on_discontinuity_boundaries_arr(applied_force_arr)

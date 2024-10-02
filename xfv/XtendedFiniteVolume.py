@@ -31,11 +31,11 @@ def __create_mesh(meshfile: Path) -> Mesh1dEnriched:
     :param meshfile: path to the mesh file
     :param enrichment_type: type of enrichment desired
     """
-    coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,))
-    nodes_number = coord_mesh.shape[0]
+    coord_mesh = np.loadtxt(meshfile, dtype=np.float64, skiprows=2, usecols=(1,)) 
+    nodes_number = coord_mesh.shape[0] # donne le nombre des noeuds
     coord_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
-    coord_init[:, 0] = coord_mesh
-    vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C')
+    coord_init[:, 0] = coord_mesh  
+    vit_init = np.zeros([nodes_number, 1], dtype=np.float64, order='C') # fixe les vitesses initales des noeuds à zéro
     return Mesh1dEnriched(initial_coordinates=coord_init, initial_velocities=vit_init)
 
 
@@ -58,7 +58,7 @@ def __init_velocity(nodes, data):
         vitesse_cible = 0
 
     print("Projectile velocity initialized to : {:} m/s".format(vitesse_projectile))
-    nodes.upundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
+    nodes.upundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile  # demander signification
     nodes.umundemi[nodes.nodes_in_projectile, 0] = vitesse_projectile
     print("Target velocity initialized to : {:} m/s".format(vitesse_cible))
     nodes.upundemi[nodes.nodes_in_target, 0] = vitesse_cible
@@ -253,7 +253,7 @@ def main(directory: Path) -> None:
         projectile_model = data.material_projectile.constitutive_model
         (projectile_elasticity, projectile_plasticity, projectile_shear_modulus,
          projectile_yield_stress, projectile_plasticity_criterion) = \
-            _build_material_constitutive_model(projectile_model)
+         _build_material_constitutive_model(projectile_model)
     else:
         projectile_elasticity, projectile_plasticity = False, False
         projectile_shear_modulus = None

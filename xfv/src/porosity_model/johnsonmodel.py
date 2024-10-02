@@ -12,10 +12,11 @@ class JohnsonModel(PorosityModelBase):  # pylint: disable=too-few-public-methods
     def __init__(self,
                  initial_porosity_for_johnson,
                  effective_strength_for_johnson,
-                 viscosity_for_johnson):
+                 viscosity_for_johnson, maximal_porosity_for_Johnson):
         self.initial_porosity_for_johnson = initial_porosity_for_johnson
         self.effective_strength_for_johnson = effective_strength_for_johnson
         self.viscosity_for_johnson = viscosity_for_johnson
+        self.maximal_porosity_for_Johnson = maximal_porosity_for_Johnson
 
     def compute_porosity(self, delta_t: float,
                          porosity: np.array,
@@ -52,6 +53,7 @@ class JohnsonModel(PorosityModelBase):  # pylint: disable=too-few-public-methods
         Compute the new value of porosity
         """
         initial_porosity_for_johnson = self.initial_porosity_for_johnson
+        maximal_porosity_for_Johnson = self.maximal_porosity_for_Johnson
         viscosity_for_johnson = self.viscosity_for_johnson
 
         power = 1.0/3.0
@@ -62,5 +64,6 @@ class JohnsonModel(PorosityModelBase):  # pylint: disable=too-few-public-methods
         dalphadt = dalphadt/viscosity_for_johnson
         porosity_new = porosity + dalphadt*delta_t
         porosity_new = np.maximum(porosity_new, initial_porosity_for_johnson)
-        porosity_new = np.where(porosity > 1., porosity_new, 1.)
+        porosity_new = np.minimum(porosity_new, maximal_porosity_for_Johnson)
+        porosity_new = np.where(porosity_new > 1., porosity_new, 1.)
         return porosity_new

@@ -299,6 +299,10 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :param porosity_model: model to compute the porosity model
         """
         self.cells.compute_new_porosity(delta_t, porosity_model, self.cells.classical)
+        # right part of enriched cells
+        if self.cells.enriched.any():
+            # test if any enriched cell in order to avoid error in the Newton initialization
+            self.cells.compute_enriched_elements_new_porosity(delta_t, porosity_model)
 
     def compute_new_cells_pseudo_viscosity(self, delta_t: float):
         """
@@ -322,7 +326,9 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         Computation of cohesive forces at t+dt
         """
         if self.cohesive_zone_model is not None:
-            self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model)
+            self.nodes.compute_enriched_nodes_cohesive_forces(self.cohesive_zone_model,
+                                                              self.cells.stress[:,0],
+                                                self.cells.energy.new_value)
 
     def increment(self):
         """
@@ -453,7 +459,8 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         :type treatment: RuptureTreatment
         """
         treatment.apply_treatment(self.cells, self.__ruptured_cells,
-                                  self.nodes, self.__topology, time)
+                                  self.nodes, self.__topology, time,
+                                   self.cohesive_zone_model, self.nodes.section)
 
     def apply_plasticity(self, delta_t: float, yield_stress_model, plasticity_criterion,
                          mask_mesh: np.array):
@@ -473,7 +480,7 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         # la variable dev_stress_new et doit donc être appelée à la fin de
         # l'étape du calcul de plasticité pour conserver la prédiction élastique dans
         # le calcul du taux de déformation plastique, plasticité cumulée, ...
-
+        
         # 1) Compute yield stress
         self.cells.compute_yield_stress(yield_stress_model, mask_mesh)
         if mask_mesh.any() and self.cells.enriched.any():
@@ -591,6 +598,13 @@ class Mesh1dEnriched:  # pylint:disable=too-many-instance-attributes, too-many-p
         First component of the Cauchy stress tensor
         """
         return self.cells.stress_xx_field
+
+    @property
+    def equivalent_plastic_strain_field(self) -> np.array:
+        """
+        equivalent plastic strain field
+        """
+        return self.cells.equivalent_plastic_strain_field
 
     @property
     def porosity_field(self) -> np.array:

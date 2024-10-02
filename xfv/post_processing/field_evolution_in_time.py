@@ -6,6 +6,7 @@ Plot time evolution of a field for a given item id
 import argparse
 import pathlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from xfv.post_processing.tools.hdf5_postprocessing_tools import get_field_evolution_in_time_for_item
 
@@ -68,6 +69,10 @@ def run():
         if args.verbose:
             print("Path to database : {:}".format(path_to_db))
             print("Read field " + field + " in database... ")
+        # Permet de selectionner les items ids de toutes les cellules
+        if args.item_ids[0][0] == 1000:
+            args.item_ids[0] = []
+            args.item_ids[0] = [i for i in range(350,734)]
 
         for item_id in args.item_ids[0]:
             # Read database :
@@ -76,9 +81,10 @@ def run():
                 print("Done !")
                 print("~~~~~~~~~~~~~")
             # Plot field :
-            plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], '.-', label=case)
+            plt.plot(item_history[:, 0] * 1.e+6, item_history[:, 1], '.-', label= 'cell n°'+ str(item_id))
             if args.write_data:
-                data_path = f"{case}Field_evolution_{field}_{item_id}.dat"
+                data_path = f"Field_evolution_{field}_at_cell_{item_id}.dat"
+                #data_path = pathlib.Path.cwd().joinpath(case, f"Field_evolution_{field}_{item_id}.txt")
                 with open(data_path, "w") as file_object:
                     for x_data, y_data in zip(item_history[:, 0], item_history[:, 1]):
                         file_object.write("{:20.18g}\t{:20.18g}\n".format(x_data, y_data))

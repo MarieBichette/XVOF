@@ -12,16 +12,20 @@ class ConstantYieldStress(YieldStress):  # pylint: disable=too-few-public-method
     A class for constant yield stress calculation
     """
 
-    def __init__(self, init_value):
+    def __init__(self, init_value, init_shear_modulus, Y_max, beta, m):
         """
         Initialization of the constant yield stress class
 
         :param init_value: initial yield stress
         """
-        super().__init__(init_value)
+        super().__init__(init_value, init_shear_modulus, Y_max, beta, m)
         self.init_value = init_value
+        self.init_shear_modulus = init_shear_modulus
+        self.Y_max = Y_max
+        self.beta = beta
+        self.m = m 
 
-    def compute(self, density: np.array) -> np.array:
+    def compute(self, density: np.array, strain_plastic_eq, G) -> np.array:
         """
         Compute the value of the yield stress
 
